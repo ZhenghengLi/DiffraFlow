@@ -12,11 +12,14 @@ public class Dispatcher {
     AtomicInteger conn_counts;
     AtomicInteger max_conn_counts;
 
+    InetSocketAddress[] dest_addresses;
+
     Dispatcher(Properties props) {
         host = "localhost";
         port = 1234;
         conn_counts = new AtomicInteger(0);
         max_conn_counts = new AtomicInteger(10);
+        // create dest_addresses according to address list
 
     }
 

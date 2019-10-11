@@ -1,5 +1,10 @@
-# SHINEStream2
+# SHINEStream
+High volume data acquisition and online analysis system for SHINE project
 
-High volume data acquisition and online analysis system for SHINE project (Scheme 2: without disk cache)
+## dependencies
+1. dispatcher:  
+    (1) org.apache.kafka:kafka-clients:2.3.0
 
-![plan](docs/plan.png)
+2. ingester:  
+    (2) https://github.com/edenhill/librdkafka (v1.2.0)
+

@@ -41,4 +41,6 @@ bool shine::ImageConnection::start_connection() {
 
 void shine::ImageConnection::transfering() {
 
+    // push data into image_cache_
+
 }

@@ -5,6 +5,6 @@ High volume data acquisition and online analysis system for SHINE project
 1. dispatcher:  
     (1) org.apache.kafka:kafka-clients:2.3.0
 
-2. ingester:  
+2. combiner:  
     (2) https://github.com/edenhill/librdkafka (v1.2.0)
 

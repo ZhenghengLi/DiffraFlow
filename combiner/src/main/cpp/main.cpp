@@ -12,7 +12,7 @@ using namespace shine;
 int main(int argc, char** argv) {
 
     if (argc < 2) {
-        cout << "Usage: " << "ingester" << " <config.conf>" << endl;
+        cout << "Usage: " << "combiner" << " <config.conf>" << endl;
         return 2;
     }
 

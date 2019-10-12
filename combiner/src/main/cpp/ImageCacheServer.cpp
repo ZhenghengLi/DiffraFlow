@@ -36,6 +36,9 @@ shine::ImageCacheServer::~ImageCacheServer() {
     cleaner_->join();
     delete cleaner_;
     delete image_cache_;
+    if (server_sock_fd_ > 0) {
+        close(server_sock_fd_);
+    }
 }
 
 bool shine::ImageCacheServer::create_sock() {

@@ -13,7 +13,7 @@ namespace shine {
         ImageCache();
         ~ImageCache();
 
-        void put_frame(const ImageFrame& image_frame);
+        void put_frame(ImageFrame& image_frame);
 
         ImageData take_one_image();
 

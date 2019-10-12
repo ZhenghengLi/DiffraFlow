@@ -1,4 +1,5 @@
 #include "ImageCacheServer.hpp"
+#include "ImageConnection.hpp"
 
 #include <stdlib.h>
 #include <string.h>
@@ -11,15 +12,27 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::lock_guard;
+using std::unique_lock;
+using std::make_pair;
 
 shine::ImageCacheServer::ImageCacheServer(int p) {
     port_ = p;
     server_sock_fd_ = -1;
-    run_ = true;
+    server_run_ = true;
+    clean_wait_time_ = 500;
+    cleaner_run_ = true;
+    cleaner_ = new thread(
+        [this]() {
+            while (cleaner_run_) clean();
+        }
+    );
 }
 
 shine::ImageCacheServer::~ImageCacheServer() {
-
+    cleaner_run_ = false;
+    cleaner_->join();
+    delete cleaner_;
 }
 
 bool shine::ImageCacheServer::create_sock() {
@@ -47,16 +60,34 @@ int shine::ImageCacheServer::accept_client() {
 }
 
 void shine::ImageCacheServer::serve() {
-    while (run_) {
-        if (server_sock_fd_ < 0) {
-            cerr << "ERROR: socket is not open." << endl;
-            return;
+    if (server_sock_fd_ < 0) {
+        cerr << "ERROR: socket is not open." << endl;
+        return;
+    }
+    while (server_run_) {
+        ImageConnection* conn_object = new ImageConnection(accept_client(), this);
+        thread* conn_thread = new thread(
+            [&, conn_object]() {
+                conn_object->run();
+                cv_clean_.notify_one();
+            }
+        );
+        {
+            unique_lock<mutex> lk(mtx_);
+            connections_.push_back(make_pair(conn_object, conn_thread));
         }
-        int client_sock_fd = accept_client();
-
     }
 }
 
 void shine::ImageCacheServer::clean() {
-
+    unique_lock<mutex> lk(mtx_);
+    cv_clean_.wait_for(lk, std::chrono::milliseconds(clean_wait_time_));
+    for (connList::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {
+        if (iter->first->done()) {
+            iter->second->join();
+            delete iter->second;
+            delete iter->first;
+            connections_.erase(iter);
+        }
+    }
 }

@@ -8,3 +8,7 @@ High volume data acquisition and online analysis system for SHINE project
 2. combiner:  
     (2) https://github.com/edenhill/librdkafka (v1.2.0)
 
+## plan
+
+![plan](docs/plan.png)
+

@@ -3,7 +3,6 @@ package shine;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
-import java.net.*;
 
 public class ImageConnection implements Runnable {
     SocketChannel clientSocket;

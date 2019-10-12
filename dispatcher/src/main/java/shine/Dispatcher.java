@@ -31,7 +31,7 @@ public class Dispatcher {
             } catch (IOException e) {
                 System.out.println("Failed to connect to " + dest_addresses[i] + " : " + e);
             }
-
+            senders[i].start_runner();
         }
 
     }

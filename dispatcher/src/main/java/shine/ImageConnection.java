@@ -11,7 +11,6 @@ public class ImageConnection implements Runnable {
     ByteBuffer buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
     ByteBuffer buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
 
-    Sender[] senders;
 
     void swap_buffer() {
         ByteBuffer tmp_buffer = buffer_A;
@@ -22,10 +21,6 @@ public class ImageConnection implements Runnable {
     ImageConnection(SocketChannel clientSocket, Dispatcher dispatcher) {
         this.clientSocket = clientSocket;
         this.dispatcher = dispatcher;
-        senders = new Sender[dispatcher.dest_addresses.length];
-        for (int i = 0; i < dispatcher.dest_addresses.length; i++) {
-            senders[i].set_addr(dispatcher.dest_addresses[i]);
-        }
     }
 
     public void run() {
@@ -111,8 +106,8 @@ public class ImageConnection implements Runnable {
                 long identifier = buffer_A.getLong();  // => key
                 byte[] data_arr = new byte[size - 8];  // => value
                 buffer_A.get(data_arr);
-                int index = Long.hashCode(identifier) % senders.length;
-                senders[index].send(identifier, data_arr);
+                int index = Long.hashCode(identifier) % dispatcher.senders.length;
+                dispatcher.senders[index].send(identifier, data_arr);
             }
         }
         return true;

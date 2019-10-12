@@ -51,7 +51,7 @@ project(":dispatcher") {
     build.dependsOn("copyLibs")
 }
 
-project(":ingester") {
+project(":combiner") {
     apply plugin: 'cpp-application'
     application {
         targetMachines.add(machines.linux.x86_64)

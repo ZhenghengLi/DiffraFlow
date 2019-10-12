@@ -19,6 +19,7 @@ using std::condition_variable;
 namespace shine {
 
     class ImageConnection;
+    class ImageCache;
 
     typedef list< pair<ImageConnection*, thread*> > connList;
 
@@ -34,6 +35,8 @@ namespace shine {
         int clean_wait_time_;
         thread* cleaner_;
         atomic<bool> cleaner_run_;
+
+        ImageCache* image_cache_;
 
     public:
         ImageCacheServer(int p);

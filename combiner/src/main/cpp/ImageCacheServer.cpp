@@ -1,5 +1,6 @@
 #include "ImageCacheServer.hpp"
 #include "ImageConnection.hpp"
+#include "ImageCache.hpp"
 
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +22,7 @@ shine::ImageCacheServer::ImageCacheServer(int p) {
     server_sock_fd_ = -1;
     server_run_ = true;
     clean_wait_time_ = 500;
+    image_cache_ = new ImageCache();
     cleaner_run_ = true;
     cleaner_ = new thread(
         [this]() {
@@ -33,6 +35,7 @@ shine::ImageCacheServer::~ImageCacheServer() {
     cleaner_run_ = false;
     cleaner_->join();
     delete cleaner_;
+    delete image_cache_;
 }
 
 bool shine::ImageCacheServer::create_sock() {
@@ -65,7 +68,7 @@ void shine::ImageCacheServer::serve() {
         return;
     }
     while (server_run_) {
-        ImageConnection* conn_object = new ImageConnection(accept_client(), this);
+        ImageConnection* conn_object = new ImageConnection(accept_client(), image_cache_);
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();

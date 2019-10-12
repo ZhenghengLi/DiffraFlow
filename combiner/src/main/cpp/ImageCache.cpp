@@ -12,7 +12,8 @@ shine::ImageCache::~ImageCache() {
 
 }
 
-void shine::ImageCache::put_frame(const ImageFrame& image_frame) {
+void shine::ImageCache::put_frame(ImageFrame& image_frame) {
+    image_frame.print();
 
 }
 

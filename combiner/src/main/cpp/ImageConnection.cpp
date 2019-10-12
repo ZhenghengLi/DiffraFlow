@@ -16,8 +16,6 @@ shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
 
 shine::ImageConnection::~ImageConnection() {
     delete [] buffer_;
-    buffer_ = nullptr;
-    done_flag_ = false;
 }
 
 void shine::ImageConnection::run() {
@@ -35,11 +33,13 @@ bool shine::ImageConnection::done() {
 }
 
 bool shine::ImageConnection::start_connection() {
+    int read_size = read(client_sock_fd_, buffer_, buffer_size_);
 
     return true;
 }
 
 void shine::ImageConnection::transfering() {
+    int read_size = read(client_sock_fd_, buffer_, buffer_size_);
 
     // push data into image_cache_
 

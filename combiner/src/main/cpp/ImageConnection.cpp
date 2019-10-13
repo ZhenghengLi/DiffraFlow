@@ -8,12 +8,14 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::copy;
 
 shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
-    buffer_size_ = 1024 * 1024;
+    buffer_size_ = 100 * 1024 * 1024;
     buffer_ = new char[buffer_size_];
     slice_begin_ = 0;
-    slice_length_ = buffer_size_;
+    pkt_maxlen_ = 1024 * 1024;
+    pkt_data_ = new char[pkt_maxlen_];
     client_sock_fd_ = sock_fd;
     image_cache_ = img_cache_;
 }
@@ -24,7 +26,7 @@ shine::ImageConnection::~ImageConnection() {
 
 void shine::ImageConnection::run() {
     if (start_connection_()) {
-        while (done_flag_) transferring_();
+        while (done_flag_ && transferring_());
     }
     close(client_sock_fd_);
     done_flag_ = true;
@@ -39,7 +41,6 @@ bool shine::ImageConnection::start_connection_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length < 0) {
         cout << "socket is closed by the client." << endl;
-        done_flag_ = false;
         return false; 
     }
     if (slice_begin_  + slice_length < 8) {
@@ -48,9 +49,9 @@ bool shine::ImageConnection::start_connection_() {
     }
     uint32_t success_code = htonl(200);
     uint32_t failure_code = htonl(300);
-    int8_t header = decode_byte<int8_t>(buffer_, 0, 3);
-    int8_t size = decode_byte<int8_t>(buffer_, 4, 7);
-    if (header != 0xAAAABBBB || size != 0) {
+    int32_t head = decode_byte<int32_t>(buffer_, 0, 3);
+    int32_t size = decode_byte<int32_t>(buffer_, 4, 7);
+    if (head != 0xAAAABBBB || size != 0) {
         cout << "got wrong greeting message, close the connection." << endl;
         write(client_sock_fd_, &failure_code, 4);
         done_flag_ = false;
@@ -62,14 +63,61 @@ bool shine::ImageConnection::start_connection_() {
     return true;
 }
 
-void shine::ImageConnection::transferring_() {
+bool shine::ImageConnection::transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length < 0) {
         cout << "socket is closed by the client." << endl;
-        done_flag_ = false;
-        return; 
+        return false; 
     }
+    const size_t limit = slice_begin_ + slice_length;
+    size_t position = 0;
+    while (true) {
+        if (limit - position < 8) {
+            copy(buffer_ + position, buffer_ + limit, buffer_);
+            slice_begin_ = limit - position;
+            break;
+        }
 
-    // push data into image_cache_
+        // read head and size
+        int32_t head = decode_byte<int32_t>(buffer_ + position, 0, 3);
+        position += 4;
+        int32_t size = decode_byte<int32_t>(buffer_ + position, 0, 3);
+        position += 4;
 
+        // validation check for packet
+        if (head != 0xABCDEEFF) {
+            cout << "got unknown packet, close the connetion." << endl;
+            return false;
+        }
+        if (size > pkt_maxlen_) {
+            cout << "got too large packet, close the connection." << endl;
+            return false;
+        }
+        if (head == 0xABCDEEFF && size < 8) {
+            cout << "got wrong image packet, close the connection." << endl;
+            return false;
+        }
+
+        // continue to receive more data
+        if (limit - position < size) {
+            position -= 8;
+            copy(buffer_ + position, buffer_ + limit, buffer_);
+            slice_begin_ = limit - position;
+            break;
+        }
+
+        // decode one packet
+        if (head == 0xABCDEEFF) { // image data
+            int64_t identifier = decode_byte<int64_t>(buffer_ + position, 0, 7);
+            char* data = new char[size - 8];
+            copy(buffer_ + position + 8, buffer_ + position + size, data);
+            position += size;
+
+        } else {
+            cout << "CANNOT REACH HERE!" << endl;
+            return false;
+        }
+
+    }
+    return true;
 }

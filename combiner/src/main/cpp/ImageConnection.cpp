@@ -10,6 +10,8 @@ using std::endl;
 shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
     buffer_size_ = 1024 * 1024;
     buffer_ = new char[buffer_size_];
+    slice_begin_ = 0;
+    slice_length_ = buffer_size_;
     client_sock_fd_ = sock_fd;
     image_cache_ = img_cache_;
 }
@@ -32,17 +34,22 @@ bool shine::ImageConnection::done() {
 }
 
 bool shine::ImageConnection::start_connection() {
-    int read_size = read(client_sock_fd_, buffer_, buffer_size_);
+    slice_length_ = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
+    if (slice_length_ < 0) {
+        cout << "socket is closed by the client." << endl;
+        done_flag_ = false;
+        return false; 
+    }
 
     return true;
 }
 
 void shine::ImageConnection::transfering() {
-    int read_size = read(client_sock_fd_, buffer_, buffer_size_);
-    if (read_size < 0) {
+    slice_length_ = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
+    if (slice_length_ < 0) {
         cout << "socket is closed by the client." << endl;
         done_flag_ = false;
-        return ;
+        return; 
     }
 
     // push data into image_cache_

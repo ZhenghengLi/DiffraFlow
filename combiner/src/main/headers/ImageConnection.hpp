@@ -14,6 +14,8 @@ namespace shine {
     private:
         char* buffer_;
         size_t buffer_size_;
+        size_t slice_begin_;
+        int    slice_length_;
         int client_sock_fd_;
         ImageCache* image_cache_;
         atomic<bool> done_flag_;

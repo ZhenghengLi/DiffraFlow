@@ -9,7 +9,7 @@ public class ImageConnection implements Runnable {
     Dispatcher dispatcher;
     ByteBuffer buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
     ByteBuffer buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
-
+    int pkt_maxlen = 1024 * 1024;
 
     void swap_buffer() {
         ByteBuffer tmp_buffer = buffer_A;
@@ -87,8 +87,24 @@ public class ImageConnection implements Runnable {
                 swap_buffer();
                 break;
             }
+
+            // read head and size
             int head = buffer_A.getInt();
             int size = buffer_A.getInt();
+
+            // validation check for packet
+            if (size > pkt_maxlen) {
+                System.out.println("got too large packet, close the connection");
+                clientSocket.close();
+                return false;
+            }
+            if (head == 0xABCDEEFF && size < 8) {
+                System.out.println("got wrong image packet, close the connection");
+                clientSocket.close();
+                return false;
+            }
+
+            // continue to receive more data
             if (buffer_A.remaining() < size) {
                 buffer_A.position(buffer_A.position() - 8);
                 buffer_B.put(buffer_A);
@@ -96,18 +112,21 @@ public class ImageConnection implements Runnable {
                 swap_buffer();
                 break;
             }
-            if (head == 0xABCDEEFF) { // header of image data
-                if (size < 8) {
-                    System.out.println("got wrong image packet, close the connection.");
-                    clientSocket.close();
-                    return false;
-                }
+
+            // read and dispatch packet
+            switch (head) {
+            case 0xABCDEEFF: // image data
                 long identifier = buffer_A.getLong();  // => key
                 byte[] data_arr = new byte[size - 8];  // => value
                 buffer_A.get(data_arr);
                 int index = Long.hashCode(identifier) % dispatcher.senders.length;
                 dispatcher.senders[index].send(identifier, data_arr);
+                break;
+            default:
+                System.out.println("got unknown packet, jump it.");
+                buffer_A.position(buffer_A.position() + size);
             }
+
         }
         return true;
     }

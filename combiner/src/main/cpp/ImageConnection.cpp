@@ -85,10 +85,6 @@ bool shine::ImageConnection::transferring_() {
         position += 4;
 
         // validation check for packet
-        if (head != 0xABCDEEFF) {
-            cout << "got unknown packet, close the connetion." << endl;
-            return false;
-        }
         if (size > pkt_maxlen_) {
             cout << "got too large packet, close the connection." << endl;
             return false;
@@ -107,15 +103,17 @@ bool shine::ImageConnection::transferring_() {
         }
 
         // decode one packet
-        if (head == 0xABCDEEFF) { // image data
-            int64_t identifier = decode_byte<int64_t>(buffer_ + position, 0, 7);
-            char* data = new char[size - 8];
-            copy(buffer_ + position + 8, buffer_ + position + size, data);
+        switch (head) {
+        case 0xABCDEEFF: // image data
+            // int64_t identifier = decode_byte<int64_t>(buffer_ + position, 0, 7);
+            // char* data = new char[size - 8];
+            // copy(buffer_ + position + 8, buffer_ + position + size, data);
+            // decode (buffer_ + position, size);
             position += size;
-
-        } else {
-            cout << "CANNOT REACH HERE!" << endl;
-            return false;
+            break;
+        default:
+            cout << "got unknown packet, jump it." << endl;
+            position += size;
         }
 
     }

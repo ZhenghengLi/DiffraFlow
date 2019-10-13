@@ -26,7 +26,7 @@ shine::ImageCacheServer::ImageCacheServer(int p) {
     cleaner_run_ = true;
     cleaner_ = new thread(
         [this]() {
-            while (cleaner_run_) clean();
+            while (cleaner_run_) clean_();
         }
     );
 }
@@ -41,7 +41,7 @@ shine::ImageCacheServer::~ImageCacheServer() {
     }
 }
 
-bool shine::ImageCacheServer::create_sock() {
+bool shine::ImageCacheServer::create_sock_() {
     sockaddr_in server_addr, client_addr;
     server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -58,7 +58,7 @@ bool shine::ImageCacheServer::create_sock() {
     return true;
 }
 
-int shine::ImageCacheServer::accept_client() {
+int shine::ImageCacheServer::accept_client_() {
     sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     int client_sock_fd = accept(server_sock_fd_, (sockaddr*) &client_addr, &client_len);
@@ -66,12 +66,11 @@ int shine::ImageCacheServer::accept_client() {
 }
 
 void shine::ImageCacheServer::serve() {
-    if (server_sock_fd_ < 0) {
-        cerr << "ERROR: socket is not open." << endl;
-        return;
+    if (!create_sock_()) {
+        cout << "Failed to create server socket." << endl;
     }
     while (server_run_) {
-        ImageConnection* conn_object = new ImageConnection(accept_client(), image_cache_);
+        ImageConnection* conn_object = new ImageConnection(accept_client_(), image_cache_);
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();
@@ -85,7 +84,7 @@ void shine::ImageCacheServer::serve() {
     }
 }
 
-void shine::ImageCacheServer::clean() {
+void shine::ImageCacheServer::clean_() {
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait_for(lk, std::chrono::milliseconds(clean_wait_time_));
     for (connList::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {

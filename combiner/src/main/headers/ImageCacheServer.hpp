@@ -38,16 +38,16 @@ namespace shine {
 
         ImageCache* image_cache_;
 
+    private:
+        bool create_sock_();
+        int accept_client_();
+        void clean_();
+
     public:
         ImageCacheServer(int p);
         ~ImageCacheServer();
 
-        bool create_sock();
-        int accept_client();
-
         void serve();
-
-        void clean();
 
     };
 }

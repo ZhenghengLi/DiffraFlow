@@ -24,6 +24,9 @@ namespace shine {
 
         void run();
         bool done();
+        void set_stop() {
+            done_flag_ = false;
+        }
 
         bool start_connection();
         void transfering();

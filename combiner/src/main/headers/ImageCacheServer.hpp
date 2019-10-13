@@ -25,7 +25,6 @@ namespace shine {
 
     class ImageCacheServer {
     private:
-        int port_;
         int server_sock_fd_;
         atomic<bool> server_run_;
         connList connections_;
@@ -39,15 +38,20 @@ namespace shine {
         ImageCache* image_cache_;
 
     private:
-        bool create_sock_();
+        bool create_sock_(int port);
         int accept_client_();
         void clean_();
 
     public:
-        ImageCacheServer(int p);
+        ImageCacheServer();
         ~ImageCacheServer();
 
-        void serve();
+        void serve(int port);
+        void stop();
+
+        ImageCache* image_cache() {
+            return image_cache_;
+        }
 
     };
 }

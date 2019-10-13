@@ -4,13 +4,15 @@
 #include <iostream>
 #include <atomic>
 
+#include "Decoder.hpp"
+
 using std::atomic;
 
 namespace shine {
 
     class ImageCache;
 
-    class ImageConnection {
+    class ImageConnection: private Decoder {
     private:
         char* buffer_;
         size_t buffer_size_;

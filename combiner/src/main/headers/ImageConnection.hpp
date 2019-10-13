@@ -17,10 +17,13 @@ namespace shine {
         char* buffer_;
         size_t buffer_size_;
         size_t slice_begin_;
-        int    slice_length_;
         int client_sock_fd_;
         ImageCache* image_cache_;
         atomic<bool> done_flag_;
+
+    private:
+        bool start_connection_();
+        void transferring_();
 
     public:
         ImageConnection(int sock_fd, ImageCache* img_cache_);
@@ -32,8 +35,6 @@ namespace shine {
             done_flag_ = false;
         }
 
-        bool start_connection();
-        void transfering();
 
     };
 }

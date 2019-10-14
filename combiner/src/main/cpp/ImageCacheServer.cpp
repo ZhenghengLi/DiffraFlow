@@ -19,7 +19,6 @@ using std::make_pair;
 
 shine::ImageCacheServer::ImageCacheServer() {
     server_sock_fd_ = -1;
-    read_timeout_ = 1;
     server_run_ = true;
     clean_wait_time_ = 500;
     image_cache_ = new ImageCache();
@@ -45,7 +44,6 @@ bool shine::ImageCacheServer::create_sock_(int port) {
     if (server_sock_fd_ < 0) {
         return false;
     }
-
     bzero( (char*) &server_addr, sizeof(server_addr) );
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -53,7 +51,6 @@ bool shine::ImageCacheServer::create_sock_(int port) {
     if (bind(server_sock_fd_, (sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
         return false;
     }
-
     listen(server_sock_fd_, 5);
     return true;
 }
@@ -79,13 +76,6 @@ void shine::ImageCacheServer::serve(int port) {
             close(client_sock_fd);
             return;
         }
-
-        // timeval tv;
-        // bzero( (char*) &tv, sizeof(tv));
-        // tv.tv_sec = read_timeout_;
-        // tv.tv_usec = 0;
-        // setsockopt(client_sock_fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
         ImageConnection* conn_object = new ImageConnection(client_sock_fd, image_cache_);
         cout << "ImageConnection created." << endl;
         thread* conn_thread = new thread(

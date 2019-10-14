@@ -66,8 +66,11 @@ void shine::ImageCacheServer::serve(int port) {
     if (!create_sock_(port)) {
         cout << "Failed to create server socket." << endl;
     }
+    cout << "Successfully created socket on port " << port << " with server_sock_fd " << server_sock_fd_ << endl;
     while (server_run_) {
+        cout << "Waitting for connection ..." << endl;
         int client_sock_fd = accept_client_();
+        cout << "One connection is established with client_sock_fd " << client_sock_fd << endl;
         if (client_sock_fd < 0) return;
         if (!server_run_) {
             close(client_sock_fd);

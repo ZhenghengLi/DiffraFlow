@@ -9,7 +9,8 @@ using std::string;
 namespace shine {
     class Configuration {
         public:
-        map<string, string> kafka_props;
+            int port;
+
         public:
         Configuration();
         ~Configuration();

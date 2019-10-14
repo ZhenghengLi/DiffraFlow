@@ -6,6 +6,7 @@
 using std::ifstream;
 using std::stringstream;
 using std::cout;
+using std::cerr;
 using std::endl;
 
 shine::Configuration::Configuration() {
@@ -38,9 +39,11 @@ bool shine::Configuration::load(const char* filename) {
         // skip invalid line
         if (key == "" || value == "" || sep != "=") continue;
         // use key-value from here
-        if (key.find("kafka.") == 0) {
-            string name = key.substr(6);
-            kafka_props[name] = value;
+        if (key == "port") {
+            port = atoi(value.c_str());
+        } else {
+            cerr << "ERROR: found unknown configuration: " << key << endl;
+            return false;
         }
     }
     config_file.close();
@@ -49,12 +52,7 @@ bool shine::Configuration::load(const char* filename) {
 
 void shine::Configuration::print() {
     cout << " = Configuration Dump Begin =" << endl;
-    cout << endl;
-    cout << "   kafka: " << endl;
-    for (map<string, string>::iterator iter = kafka_props.begin(); iter != kafka_props.end(); iter++) {
-        cout << "     " << iter->first << " = " << iter->second << endl;
-    }
-    cout << endl;
+    cout << "  port = " << port << endl;
     cout << " = Configuration Dump End =" << endl;
 
 }

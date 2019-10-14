@@ -2,9 +2,7 @@
 #include <stdlib.h>
 
 #include "Configuration.hpp"
-#include "ImageFrame.hpp"
-
-#include "BlockingQueue.hpp"
+#include "ImageCacheServer.hpp"
 
 using namespace std;
 using namespace shine;
@@ -26,6 +24,9 @@ int main(int argc, char** argv) {
     cout << endl;
     config.print();
     cout << endl;
+
+    ImageCacheServer image_cache_server;
+    image_cache_server.serve(config.port);
 
     return 0;
 }

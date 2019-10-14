@@ -39,14 +39,17 @@ bool shine::ImageConnection::done() {
 }
 
 bool shine::ImageConnection::start_connection_() {
-    const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-    if (slice_length < 0) {
-        cout << "socket is closed by the client." << endl;
-        return false; 
-    }
-    if (slice_begin_  + slice_length < 12) {
-        slice_begin_ += slice_length;
-        return true;
+    while (true) {
+        const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
+        if (slice_length < 0) {
+            cout << "socket is closed by the client." << endl;
+            return false; 
+        }
+        if (slice_begin_ + slice_length < 12) {
+            slice_begin_ += slice_length;
+        } else {
+            break;
+        }
     }
     uint32_t success_code = htonl(200);
     uint32_t failure_code = htonl(300);

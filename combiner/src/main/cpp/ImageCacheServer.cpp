@@ -23,11 +23,11 @@ shine::ImageCacheServer::ImageCacheServer() {
     clean_wait_time_ = 500;
     image_cache_ = new ImageCache();
     cleaner_run_ = true;
-    cleaner_ = new thread(
-        [this]() {
-            while (cleaner_run_) clean_();
-        }
-    );
+//    cleaner_ = new thread(
+//        [this]() {
+//            while (cleaner_run_) clean_();
+//        }
+//    );
 }
 
 shine::ImageCacheServer::~ImageCacheServer() {
@@ -77,14 +77,17 @@ void shine::ImageCacheServer::serve(int port) {
             return;
         }
         ImageConnection* conn_object = new ImageConnection(client_sock_fd, image_cache_);
+        cout << "ImageConnection created." << endl;
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();
                 cv_clean_.notify_one();
             }
         );
+        cout << "conn_thread created." << endl;
         {
             unique_lock<mutex> lk(mtx_);
+            cout << "got mutex lock." << endl;
             if (!server_run_) {
                 conn_object->set_stop();
                 conn_thread->join();
@@ -93,6 +96,7 @@ void shine::ImageCacheServer::serve(int port) {
                 return;
             }
             connections_.push_back(make_pair(conn_object, conn_thread));
+            cout << "connection pushed into list" << endl;
         }
     }
 }

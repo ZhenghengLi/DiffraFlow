@@ -27,7 +27,7 @@ shine::ImageConnection::~ImageConnection() {
 
 void shine::ImageConnection::run() {
     if (start_connection_()) {
-        while (done_flag_ && transferring_());
+        while (!done_flag_ && transferring_());
     }
     close(client_sock_fd_);
     done_flag_ = true;
@@ -41,7 +41,7 @@ bool shine::ImageConnection::done() {
 bool shine::ImageConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-        if (slice_length < 0) {
+        if (slice_length == 0) {
             cout << "socket is closed by the client." << endl;
             return false; 
         }
@@ -71,7 +71,7 @@ bool shine::ImageConnection::start_connection_() {
 
 bool shine::ImageConnection::transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-    if (slice_length < 0) {
+    if (slice_length == 0) {
         cout << "socket is closed by the client." << endl;
         return false; 
     }

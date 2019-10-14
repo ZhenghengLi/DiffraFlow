@@ -28,6 +28,7 @@ namespace shine {
         int server_sock_fd_;
         atomic<bool> server_run_;
         connList connections_;
+        int read_timeout_;
 
         mutex mtx_;
         condition_variable cv_clean_;

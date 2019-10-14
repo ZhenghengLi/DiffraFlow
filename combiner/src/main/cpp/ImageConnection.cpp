@@ -40,8 +40,9 @@ bool shine::ImageConnection::done() {
 }
 
 void shine::ImageConnection::shift_left_(const size_t position, const size_t limit) {
-    if (position == 0) return;
-    copy(buffer_ + position, buffer_ + limit, buffer_);
+    if (position == 0) {
+        copy(buffer_ + position, buffer_ + limit, buffer_);
+    }
     slice_begin_ = limit - position;
 }
 

@@ -1,5 +1,6 @@
 #include "ImageConnection.hpp"
 #include "ImageCache.hpp"
+#include "ImageFrame.hpp"
 
 #include <unistd.h>
 #include <netinet/in.h>
@@ -89,7 +90,7 @@ bool shine::ImageConnection::transferring_() {
             cout << "got too large packet, close the connection." << endl;
             return false;
         }
-        if (head == 0xABCDEEFF && size < 8) {
+        if (head == 0xABCDEEFF && size <= 8) {
             cout << "got wrong image packet, close the connection." << endl;
             return false;
         }
@@ -103,12 +104,14 @@ bool shine::ImageConnection::transferring_() {
         }
 
         // decode one packet
+
+        // 0xABCDEEFF
+        ImageFrame image_frame;
+
         switch (head) {
         case 0xABCDEEFF: // image data
-            // int64_t identifier = decode_byte<int64_t>(buffer_ + position, 0, 7);
-            // char* data = new char[size - 8];
-            // copy(buffer_ + position + 8, buffer_ + position + size, data);
-            // decode (buffer_ + position, size);
+            image_frame.decode(buffer_ + position, size);
+            image_cache_->put_frame(image_frame);
             position += size;
             break;
         default:

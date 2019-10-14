@@ -1,5 +1,6 @@
 #include "ImageFrame.hpp"
 #include <algorithm>
+#include <cassert>
 
 using std::copy;
 using std::cout;
@@ -8,6 +9,12 @@ using std::endl;
 shine::ImageFrame::ImageFrame() {
     img_frame = nullptr;
     img_rawdata_ = nullptr;
+}
+
+shine::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
+    img_frame = nullptr;
+    img_rawdata_ = nullptr;
+    decode(buffer, size);
 }
 
 shine::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
@@ -32,16 +39,20 @@ shine::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
 }
 
 shine::ImageFrame::~ImageFrame() {
-
+    if (img_frame != nullptr) delete [] img_frame;
+    if (img_rawdata_ != nullptr) delete [] img_rawdata_;
 }
 
-bool shine::ImageFrame::decode(const char* img_rd, const size_t img_sz) {
+bool shine::ImageFrame::decode(const char* buffer, const size_t size) {
     if (img_rawdata_ != nullptr) {
         delete [] img_rawdata_;
     }
-    img_rawdata_ = new char[img_sz];
-    copy(img_rd, img_rd + img_sz, img_rawdata_);
-    img_rawsize_ = img_sz;
+    if (size < 8) return false;
+    img_key = decode_byte<int64_t>(buffer, 0, 7);
+    assert(size > 8);
+    img_rawdata_ = new char[size - 8];
+    copy(buffer + 8, buffer + size, img_rawdata_);
+    img_rawsize_ = size - 8;
     return true;
 }
 

@@ -2,9 +2,10 @@
 #define ImageFrame_H
 
 #include <iostream>
+#include "Decoder.hpp"
 
 namespace shine {
-    class ImageFrame {
+    class ImageFrame: private Decoder {
     private:
         char*  img_rawdata_;
         size_t img_rawsize_;
@@ -19,11 +20,12 @@ namespace shine {
 
     public:
         ImageFrame();
+        ImageFrame(const char* buffer, const size_t size);
         // copy constructor
         ImageFrame(const ImageFrame& img_frm);
         ~ImageFrame();
 
-        bool decode(const char* img_rd, const size_t img_sz);
+        bool decode(const char* buffer, const size_t size);
         void print();
 
     };

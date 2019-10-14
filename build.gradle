@@ -89,3 +89,15 @@ project(":combiner") {
     }
 }
 
+project(":testing") {
+    apply plugin: 'java'
+    dependencies {
+        implementation libs.commonsCli
+    }
+    tasks.create(name: "copyLibs", type: Copy) {
+        from configurations.default
+        into "${buildDir}/libs"
+    }
+    build.dependsOn("copyLibs")
+}
+

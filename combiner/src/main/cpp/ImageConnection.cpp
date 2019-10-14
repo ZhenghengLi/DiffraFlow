@@ -44,7 +44,7 @@ bool shine::ImageConnection::start_connection_() {
         cout << "socket is closed by the client." << endl;
         return false; 
     }
-    if (slice_begin_  + slice_length < 8) {
+    if (slice_begin_  + slice_length < 12) {
         slice_begin_ += slice_length;
         return true;
     }
@@ -52,12 +52,14 @@ bool shine::ImageConnection::start_connection_() {
     uint32_t failure_code = htonl(300);
     int32_t head = decode_byte<int32_t>(buffer_, 0, 3);
     int32_t size = decode_byte<int32_t>(buffer_, 4, 7);
-    if (head != 0xAAAABBBB || size != 0) {
+    if (head != 0xAAAABBBB || size != 4) {
         cout << "got wrong greeting message, close the connection." << endl;
         write(client_sock_fd_, &failure_code, 4);
         done_flag_ = false;
         return false;
     }
+    int32_t conn_id = decode_byte<int32_t>(buffer_, 8, 11);
+    cout << "connection ID: " << conn_id << endl;
     write(client_sock_fd_, &success_code, 4);
     // ready for transferring data
     slice_begin_ = 0;

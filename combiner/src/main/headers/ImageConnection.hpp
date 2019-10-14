@@ -35,9 +35,8 @@ namespace shine {
         void run();
         bool done();
         void set_stop() {
-            done_flag_ = false;
+            done_flag_ = true;
         }
-
 
     };
 }

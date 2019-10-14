@@ -19,6 +19,7 @@ shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
     pkt_data_ = new char[pkt_maxlen_];
     client_sock_fd_ = sock_fd;
     image_cache_ = img_cache_;
+    done_flag_ = false;
 }
 
 shine::ImageConnection::~ImageConnection() {

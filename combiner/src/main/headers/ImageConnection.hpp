@@ -26,6 +26,7 @@ namespace shine {
     private:
         bool start_connection_();
         bool transferring_();
+        void shift_left_(const size_t position, const size_t limit);
 
     public:
         ImageConnection(int sock_fd, ImageCache* img_cache_);

@@ -38,6 +38,12 @@ bool shine::ImageConnection::done() {
     return done_flag_;
 }
 
+void shine::ImageConnection::shift_left_(const size_t position, const size_t limit) {
+    if (position == 0) return;
+    copy(buffer_ + position, buffer_ + limit, buffer_);
+    slice_begin_ = limit - position;
+}
+
 bool shine::ImageConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
@@ -79,8 +85,7 @@ bool shine::ImageConnection::transferring_() {
     size_t position = 0;
     while (true) {
         if (limit - position < 8) {
-            copy(buffer_ + position, buffer_ + limit, buffer_);
-            slice_begin_ = limit - position;
+            shift_left_(position, limit);
             break;
         }
 
@@ -103,8 +108,7 @@ bool shine::ImageConnection::transferring_() {
         // continue to receive more data
         if (limit - position < size) {
             position -= 8;
-            copy(buffer_ + position, buffer_ + limit, buffer_);
-            slice_begin_ = limit - position;
+            shift_left_(position, limit);
             break;
         }
 

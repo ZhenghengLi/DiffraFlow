@@ -54,7 +54,7 @@ public class ImageConnection implements Runnable {
             clientSocket.close();
             return false;
         }
-        if (dispatcher.conn_counts.get() > dispatcher.max_conn_counts.get()) {
+        if (dispatcher.conn_counts.get() >= dispatcher.max_conn_counts.get()) {
             System.out.println("Reach the maximum connection counts, close connection.");
             buffer.clear();
             buffer.putInt(999);

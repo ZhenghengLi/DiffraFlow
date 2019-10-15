@@ -24,8 +24,8 @@ public class Sender {
         this.size_threshold = 512 * 1024;
         this.buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
         this.buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
-        this.senderRunner = new Thread(new SenderRunner(this));
         run = new AtomicBoolean(true);
+        this.senderRunner = new Thread(new SenderRunner(this));
         this.dest_addr = dest_addr;
         this.clientSocket = null;
         this.clientID = id;
@@ -36,15 +36,25 @@ public class Sender {
         senderRunner.start();
     }
 
-    synchronized public void stop_runner() {
+    synchronized private void set_stop() {
         run.set(false);
+        notify();
+    }
+
+    public void stop_runner() {
+        set_stop();
         try {
-            notify();
             senderRunner.join();
+            if (clientSocket != null) {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+            }
         } catch (InterruptedException e) {
             System.out.println(e);
         }
-
     }
 
     public void connect() throws IOException {

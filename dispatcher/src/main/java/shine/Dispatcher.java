@@ -68,6 +68,14 @@ public class Dispatcher {
         return true;
     }
 
+    public void stop_senders() {
+        if (senders != null) {
+            for (Sender sender: senders) {
+                sender.stop_runner();
+            }
+        }
+    }
+
     public void start() throws IOException{
         if (senders == null) {
             System.out.println("The dispatcher server is not initialized.");
@@ -128,7 +136,8 @@ public class Dispatcher {
         try {
             dispatcher.start();
         } catch(IOException e) {
-            System.out.println(e);
+            System.out.println("Failed to start Dispatcher server: " + e);
+            dispatcher.stop_senders();
         }
     }
 }

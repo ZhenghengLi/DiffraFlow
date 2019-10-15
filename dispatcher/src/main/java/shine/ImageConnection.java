@@ -10,6 +10,7 @@ public class ImageConnection implements Runnable {
     ByteBuffer buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
     ByteBuffer buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
     int pkt_maxlen = 1024 * 1024;
+    byte[] transfering_buffer = new byte[pkt_maxlen];
 
     void swap_buffer() {
         ByteBuffer tmp_buffer = buffer_A;
@@ -117,10 +118,9 @@ public class ImageConnection implements Runnable {
             switch (head) {
             case 0xABCDEEFF: // image data
                 long identifier = buffer_A.getLong();  // => key
-                byte[] data_arr = new byte[size - 8];  // => value
-                buffer_A.get(data_arr);
+                buffer_A.get(transfering_buffer, 0, size - 8);   // => value
                 int index = Long.hashCode(identifier) % dispatcher.senders.length;
-                dispatcher.senders[index].send(identifier, data_arr);
+                dispatcher.senders[index].send(identifier, transfering_buffer, size - 8);
                 break;
             default:
                 System.out.println("got unknown packet, jump it.");

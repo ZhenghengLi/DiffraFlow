@@ -82,7 +82,7 @@ public class Sender {
         }
     }
 
-    synchronized public void send(long identifier, byte[] data) {
+    synchronized public void send(long identifier, byte[] data, int size) {
         if (buffer_A.remaining() < 16 + data.length) {
             System.out.println("WARNING: buffer is full.");
             return;
@@ -90,7 +90,7 @@ public class Sender {
         buffer_A.putInt(0xABCDEEFF);
         buffer_A.putInt(8 + data.length);
         buffer_A.putLong(identifier);
-        buffer_A.put(data);
+        buffer_A.put(data, 0, size);
         if (buffer_A.position() > size_threshold) {
             notify();
         }

@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.*;
 
 public class Sender {
     InetSocketAddress dest_addr;
+    int clientID;
     SocketChannel clientSocket;
     ByteBuffer buffer_A;
     ByteBuffer buffer_B;
@@ -32,6 +33,10 @@ public class Sender {
 
     }
 
+    public void set_id(int id) {
+        clientID = id;
+    }
+
     public void start_runner() {
         run.set(true);
         senderRunner.start();
@@ -54,7 +59,8 @@ public class Sender {
         // send greeting message
         ByteBuffer buffer = ByteBuffer.allocateDirect(12);
         buffer.putInt(0xAAAABBBB);
-        buffer.putInt(0);
+        buffer.putInt(4);
+        buffer.putInt(clientID);
         clientSocket.write(buffer);
         buffer.clear();
         clientSocket.read(buffer);

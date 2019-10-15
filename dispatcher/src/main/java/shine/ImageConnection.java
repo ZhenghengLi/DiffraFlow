@@ -120,6 +120,7 @@ public class ImageConnection implements Runnable {
                 long identifier = buffer_A.getLong();  // => key
                 buffer_A.get(transfering_buffer, 0, size - 8);   // => value
                 int index = Long.hashCode(identifier) % dispatcher.senders.length;
+                System.out.println("Send data with key: " + identifier);
                 dispatcher.senders[index].send(identifier, transfering_buffer, size - 8);
                 break;
             default:

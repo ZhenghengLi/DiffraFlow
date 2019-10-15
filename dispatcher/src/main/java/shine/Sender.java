@@ -83,7 +83,7 @@ public class Sender {
     }
 
     synchronized public void send(long identifier, byte[] data, int size) {
-        if (buffer_A.remaining() < 16 + data.length) {
+        if (buffer_A.remaining() < 16 + size) {
             System.out.println("WARNING: buffer is full.");
             return;
         }
@@ -130,24 +130,28 @@ class SenderRunner implements Runnable {
     }
 
     void send_buffer(ByteBuffer buffer) {
+        // try to connect if lose connection
         if (sender.clientSocket == null || !sender.clientSocket.isConnected()) {
             try {
                 sender.connect();
             } catch (IOException e) {
-                System.out.println(e);
-                sender.close();
-                return;
-            }
-        } else {
-            try {
-                buffer.flip();
-                sender.clientSocket.write(buffer);
+                System.out.println("Faild to connect, discard the data in buffer: " + e);
                 buffer.clear();
-            } catch (IOException e) {
-                System.out.println(e);
                 sender.close();
                 return;
             }
+        }
+        // send data when connection is established.
+        try {
+            buffer.flip();
+            sender.clientSocket.write(buffer);
+            System.out.println("done a write");
+            buffer.clear();
+        } catch (IOException e) {
+            System.out.println("ERROR found while sending data, discard the data in buffer: " + e);
+            buffer.clear();
+            sender.close();
+            return;
         }
     }
 }

@@ -88,7 +88,7 @@ public class Sender {
             return;
         }
         buffer_A.putInt(0xABCDEEFF);
-        buffer_A.putInt(8 + data.length);
+        buffer_A.putInt(8 + size);
         buffer_A.putLong(identifier);
         buffer_A.put(data, 0, size);
         if (buffer_A.position() > size_threshold) {

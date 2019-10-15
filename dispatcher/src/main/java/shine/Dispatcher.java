@@ -57,8 +57,7 @@ public class Dispatcher {
         // and try the first connection
         senders = new Sender[dest_addresses.size()];
         for (int i = 0; i < dest_addresses.size(); i++) {
-            senders[i].set_addr(dest_addresses.get(i));
-            senders[i].set_id(sender_id);
+            senders[i] = new Sender(dest_addresses.get(i), sender_id);
             try {
                 senders[i].connect();
             } catch (IOException e) {
@@ -89,12 +88,12 @@ public class Dispatcher {
     public static void main(String[] args) {
         System.out.println("Starting Dispatcher ...");
         Options options = new Options();
-        options.addOption("a", "addrList", true, "address list file");
-        options.addOption("c", "config", true, "configuration file");
+        options.addRequiredOption("a", "addrList", true, "address list file");
+        options.addRequiredOption("c", "config", true, "configuration file");
         options.addOption("h", "help", false, "show help information");
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formater = new HelpFormatter();
-        String cmdLineSyntax = "Dispacher [options]";
+        String cmdLineSyntax = "Dispacher -a <addrList.txt> -c <config.conf> [other options]";
         CommandLine cmdLine;
         try {
             cmdLine = parser.parse(options, args);

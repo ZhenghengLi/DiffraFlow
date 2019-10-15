@@ -19,22 +19,16 @@ public class Sender {
     AtomicBoolean run;
     Thread senderRunner;
 
-    Sender() {
-        time_threshold = 100;
-        size_threshold = 512 * 1024;
-        buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
-        buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
-        senderRunner = new Thread(new SenderRunner(this));
-    }
-
-    public void set_addr(InetSocketAddress dest_addr) {
+    Sender(InetSocketAddress dest_addr, int id) {
+        this.time_threshold = 100;
+        this.size_threshold = 512 * 1024;
+        this.buffer_A = ByteBuffer.allocateDirect(1024 * 1024);
+        this.buffer_B = ByteBuffer.allocateDirect(1024 * 1024);
+        this.senderRunner = new Thread(new SenderRunner(this));
+        run = new AtomicBoolean(true);
         this.dest_addr = dest_addr;
-        clientSocket = null;
-
-    }
-
-    public void set_id(int id) {
-        clientID = id;
+        this.clientSocket = null;
+        this.clientID = id;
     }
 
     public void start_runner() {

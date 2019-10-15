@@ -55,14 +55,18 @@ public class Sender {
         buffer.putInt(0xAAAABBBB);
         buffer.putInt(4);
         buffer.putInt(clientID);
+        buffer.flip();
         clientSocket.write(buffer);
         buffer.clear();
         clientSocket.read(buffer);
+        buffer.flip();
         int response_code = buffer.getInt();
         if (response_code != 200) {
             clientSocket.close();
             clientSocket = null;
             throw new IOException("Got wrong response code.");
+        } else {
+            System.out.println("Successfully connectec to Combiner server: " + dest_addr);
         }
     }
 

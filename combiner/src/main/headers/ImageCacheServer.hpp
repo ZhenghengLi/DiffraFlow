@@ -31,9 +31,9 @@ namespace shine {
 
         mutex mtx_;
         condition_variable cv_clean_;
-        int clean_wait_time_;
         thread* cleaner_;
         atomic<bool> cleaner_run_;
+        atomic<int> dead_counts_;
 
         ImageCache* image_cache_;
 

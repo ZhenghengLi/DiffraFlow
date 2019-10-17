@@ -20,9 +20,9 @@ using std::make_pair;
 shine::ImageCacheServer::ImageCacheServer() {
     server_sock_fd_ = -1;
     server_run_ = true;
-    clean_wait_time_ = 500;
     image_cache_ = new ImageCache();
     cleaner_run_ = true;
+    dead_counts_ = 0;
     cleaner_ = new thread(
         [this]() {
             while (cleaner_run_) clean_();
@@ -80,6 +80,7 @@ void shine::ImageCacheServer::serve(int port) {
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();
+                dead_counts_++;
                 cv_clean_.notify_one();
             }
         );
@@ -99,13 +100,14 @@ void shine::ImageCacheServer::serve(int port) {
 
 void shine::ImageCacheServer::clean_() {
     unique_lock<mutex> lk(mtx_);
-    cv_clean_.wait_for(lk, std::chrono::milliseconds(clean_wait_time_));
+    cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
     for (connList::iterator iter = connections_.begin(); iter != connections_.end();) {
         if (iter->first->done()) {
             iter->second->join();
             delete iter->second;
             delete iter->first;
             iter = connections_.erase(iter);
+            dead_counts_--;
             cout << "delete one connection" << endl;
         } else {
             iter++;

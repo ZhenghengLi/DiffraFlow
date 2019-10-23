@@ -9,7 +9,13 @@ export CLASSPATH=
 export CLASSPATH=$CLASSPATH:$my_dir/dispatcher/build/libs/*
 
 # combiner
-export PATH=combiner/build/install/main/release:$PATH
+export PATH=$my_dir/combiner/build/install/main/release:$PATH
+
+# ingester
+export PATH=$my_dir/ingester/build/install/main/release:$PATH
+
+# monitor
+export PATH=$my_dir/monitor/build/install/main/release:$PATH
 
 # testing
 export CLASSPATH=$CLASSPATH:$my_dir/testing/build/libs/*

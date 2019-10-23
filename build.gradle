@@ -89,6 +89,32 @@ project(":combiner") {
     }
 }
 
+project(":ingester") {
+
+    apply plugin: 'cpp-application'
+    application {
+        targetMachines.add(machines.linux.x86_64)
+        binaries.configureEach {
+            linkTask.get().linkerArgs.add('-pthread')
+        }
+    }
+    build.dependsOn("assembleRelease")
+
+}
+
+project(":monitor") {
+
+    apply plugin: 'cpp-application'
+    application {
+        targetMachines.add(machines.linux.x86_64)
+        binaries.configureEach {
+            linkTask.get().linkerArgs.add('-pthread')
+        }
+    }
+    build.dependsOn("assembleRelease")
+
+}
+
 project(":testing") {
     apply plugin: 'java'
     dependencies {

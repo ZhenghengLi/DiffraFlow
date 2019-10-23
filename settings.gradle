@@ -11,5 +11,7 @@ rootProject.name = 'SHINEStream'
 
 include 'dispatcher'
 include 'combiner'
+include 'ingester'
+include 'monitor'
 include 'testing'
 

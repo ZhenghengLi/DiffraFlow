@@ -1,7 +1,9 @@
 # SHINEStream
+
 High volume data acquisition and online analysis system for SHINE project
 
 ## dependencies
+
 1. dispatcher:  
     (1) org.apache.kafka:kafka-clients:2.3.0
 
@@ -28,3 +30,6 @@ High volume data acquisition and online analysis system for SHINE project
 
 ![ingester-and-monitor](docs/images/ingester_and_monitor.png)
 
+## FFB
+
+![FFB](docs/images/ffb.png)

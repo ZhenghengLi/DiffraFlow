@@ -30,6 +30,6 @@ High volume data acquisition and online analysis system for SHINE project
 
 ![ingester-and-monitor](docs/images/ingester_and_monitor.png)
 
-## FFB
+## subsecond FFB
 
 ![FFB](docs/images/ffb.png)

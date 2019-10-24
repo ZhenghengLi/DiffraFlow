@@ -91,7 +91,6 @@ project(":combiner") {
 }
 
 project(":ingester") {
-
     apply plugin: 'cpp-application'
     application {
         targetMachines.add(machines.linux.x86_64)
@@ -104,11 +103,9 @@ project(":ingester") {
         }
     }
     build.dependsOn("assembleRelease")
-
 }
 
 project(":monitor") {
-
     apply plugin: 'cpp-application'
     application {
         targetMachines.add(machines.linux.x86_64)
@@ -121,5 +118,4 @@ project(":monitor") {
         }
     }
     build.dependsOn("assembleRelease")
-
 }

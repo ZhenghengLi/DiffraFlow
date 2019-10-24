@@ -51,12 +51,22 @@ project(":dispatcher") {
     build.dependsOn("copyLibs")
 }
 
+project(":common") {
+    apply plugin: 'cpp-library'
+    library {
+        linkage = [Linkage.STATIC]
+    }
+}
+
 project(":combiner") {
     apply plugin: 'cpp-application'
     application {
         targetMachines.add(machines.linux.x86_64)
         binaries.configureEach {
             linkTask.get().linkerArgs.add('-pthread')
+        }
+        dependencies {
+            implementation project(":common")
         }
     }
     build.dependsOn("assembleRelease")
@@ -97,6 +107,9 @@ project(":ingester") {
         binaries.configureEach {
             linkTask.get().linkerArgs.add('-pthread')
         }
+        dependencies {
+            implementation project(":common")
+        }
     }
     build.dependsOn("assembleRelease")
 
@@ -109,6 +122,9 @@ project(":monitor") {
         targetMachines.add(machines.linux.x86_64)
         binaries.configureEach {
             linkTask.get().linkerArgs.add('-pthread')
+        }
+        dependencies {
+            implementation project(":common")
         }
     }
     build.dependsOn("assembleRelease")

@@ -1,6 +1,11 @@
 #include "ImageData.hpp"
 #include "ImageFrame.hpp"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 shine::ImageData::ImageData() {
     imgFrm_len_ = 1;
     imgFrm_arr_ = new ImageFrame*[imgFrm_len_];
@@ -25,7 +30,7 @@ bool shine::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
 }
 
 bool shine::ImageData::serialize(char* data, size_t len) {
-
+    cout << "do serialization" << endl;
     return true;
 }
 

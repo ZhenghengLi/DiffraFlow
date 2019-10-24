@@ -148,5 +148,7 @@ tasks.create(name:'install', type: Copy) {
         dependsOn(":$name:assembleRelease")
         from("$name/build/lib/main/release/stripped/lib${name}.so") { into("lib") }
     }
-
+    // configuration
+    from("config") { into("conf") }
 }
+

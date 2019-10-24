@@ -22,5 +22,5 @@ done
 
 # cpp-library
 echo "Project 'common'"
-export LD_LIBRARY_PATH=$my_dir/common/build/lib/main/release/shared:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$my_dir/common/build/lib/main/release:$LD_LIBRARY_PATH
 

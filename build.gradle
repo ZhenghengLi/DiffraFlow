@@ -64,15 +64,20 @@ project(":testing") {
 // (1) CPATH: instead of using -I option when compiling,
 // (2) LIBRARY_PATH: instead of using -L option when linking.
 
+// cpp-libary
+
 project(":common") {
     apply plugin: 'cpp-library'
     library {
-        linkage = [Linkage.STATIC]
+        linkage = [Linkage.SHARED]
         binaries.configureEach {
             compileTask.get().compilerArgs.add('-Wall')
         }
     }
+    build.dependsOn("assembleRelease")
 }
+
+// cpp-application
 
 project(":combiner") {
     apply plugin: 'cpp-application'
@@ -118,4 +123,30 @@ project(":monitor") {
         }
     }
     build.dependsOn("assembleRelease")
+}
+
+def install_dir = 'install'
+if (hasProperty('installDir')) {
+    install_dir = installDir
+}
+
+tasks.create(name:'install', type: Copy) {
+    into install_dir
+    // java application
+    for (name in ['dispatcher', 'testing']) {
+        dependsOn(":$name:assemble")
+        from(project(":$name").jar) { into("jar/") }
+        from(project(":$name").configurations.default) { into ("jar") }
+    }
+    // c++ application
+    for (name in ['combiner', 'ingester', 'monitor']) {
+        dependsOn(":$name:assembleRelease")
+        from("$name/build/exe/main/release/stripped/$name"  ) { into("bin") }
+    }
+    // c++ library
+    for (name in ['common']) {
+        dependsOn(":$name:assembleRelease")
+        from("$name/build/lib/main/release/stripped/lib${name}.so") { into("lib") }
+    }
+
 }

@@ -8,3 +8,4 @@ gradlew.bat
 .settings
 **/bin/*
 install/*
+.vscode/*

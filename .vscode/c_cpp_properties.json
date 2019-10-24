@@ -4,7 +4,6 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/mark/CppLibs/librdkafka/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

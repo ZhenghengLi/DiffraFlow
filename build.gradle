@@ -125,10 +125,9 @@ project(":monitor") {
     build.dependsOn("assembleRelease")
 }
 
-def install_dir = 'install'
-if (hasProperty('installDir')) {
-    install_dir = installDir
-}
+apply plugin: "base"
+
+def install_dir = hasProperty('installDir') ? installDir : "$buildDir/install"
 
 tasks.create(name:'install', type: Copy) {
     into install_dir
@@ -151,4 +150,6 @@ tasks.create(name:'install', type: Copy) {
     // configuration
     from("config") { into("conf") }
 }
+
+build.dependsOn("install")
 

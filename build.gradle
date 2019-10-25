@@ -134,7 +134,7 @@ tasks.create(name:'install', type: Copy) {
     // java application
     for (name in ['dispatcher', 'testing']) {
         dependsOn(":$name:assemble")
-        from(project(":$name").jar) { into("jar/") }
+        from(project(":$name").jar) { into("jar") }
         from(project(":$name").configurations.default) { into ("jar") }
     }
     // c++ application

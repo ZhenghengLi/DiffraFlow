@@ -1,4 +1,4 @@
-# SHINEStream
+# StreamPlanB
 
 High volume data acquisition and online analysis system for SHINE project
 

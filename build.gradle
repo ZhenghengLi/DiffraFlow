@@ -129,6 +129,8 @@ apply plugin: "base"
 
 def install_dir = hasProperty('installDir') ? installDir : "$buildDir/install"
 
+import java.nio.file.*
+
 tasks.create(name:'install', type: Copy) {
     into install_dir
     // java application
@@ -140,12 +142,14 @@ tasks.create(name:'install', type: Copy) {
     // c++ application
     for (name in ['combiner', 'ingester', 'monitor']) {
         dependsOn(":$name:assembleRelease")
-        from("$name/build/exe/main/release/stripped/$name"  ) { into("bin") }
+        def exefile = "exe/main/release/stripped/$name"
+        from(Paths.get(project(":$name").buildDir.toString(), exefile)) { into("bin") }
     }
     // c++ library
     for (name in ['common']) {
         dependsOn(":$name:assembleRelease")
-        from("$name/build/lib/main/release/stripped/lib${name}.so") { into("lib") }
+        def libfile = "lib/main/release/stripped/lib${name}.so"
+        from(Paths.get(project(":$name").buildDir.toString(), libfile)) { into("lib") }
     }
     // configuration
     from("config") { into("conf") }

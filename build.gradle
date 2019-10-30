@@ -72,6 +72,7 @@ project(":common") {
         linkage = [Linkage.SHARED]
         binaries.configureEach {
             compileTask.get().compilerArgs.add('-Wall')
+            compileTask.get().compilerArgs.add('-std=c++11')
         }
     }
     build.dependsOn("assembleRelease")
@@ -82,9 +83,9 @@ project(":common") {
 project(":combiner") {
     apply plugin: 'cpp-application'
     application {
-        targetMachines.add(machines.linux.x86_64)
         binaries.configureEach {
             compileTask.get().compilerArgs.add('-Wall')
+            compileTask.get().compilerArgs.add('-std=c++11')
             linkTask.get().linkerArgs.add('-pthread')
             linkTask.get().linkerArgs.add('-lrdkafka++')
         }
@@ -98,9 +99,9 @@ project(":combiner") {
 project(":ingester") {
     apply plugin: 'cpp-application'
     application {
-        targetMachines.add(machines.linux.x86_64)
         binaries.configureEach {
             compileTask.get().compilerArgs.add('-Wall')
+            compileTask.get().compilerArgs.add('-std=c++11')
             linkTask.get().linkerArgs.add('-pthread')
         }
         dependencies {
@@ -113,9 +114,9 @@ project(":ingester") {
 project(":monitor") {
     apply plugin: 'cpp-application'
     application {
-        targetMachines.add(machines.linux.x86_64)
         binaries.configureEach {
             compileTask.get().compilerArgs.add('-Wall')
+            compileTask.get().compilerArgs.add('-std=c++11')
             linkTask.get().linkerArgs.add('-pthread')
         }
         dependencies {

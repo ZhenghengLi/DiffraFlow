@@ -92,9 +92,9 @@ bool shine::ImageConnection::transferring_() {
         }
 
         // read head and size
-        int32_t head = decode_byte<int32_t>(buffer_ + position, 0, 3);
+        uint32_t head = decode_byte<uint32_t>(buffer_ + position, 0, 3);
         position += 4;
-        int32_t size = decode_byte<int32_t>(buffer_ + position, 0, 3);
+        uint32_t size = decode_byte<uint32_t>(buffer_ + position, 0, 3);
         position += 4;
 
         // validation check for packet

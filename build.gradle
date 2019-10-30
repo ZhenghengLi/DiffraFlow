@@ -1,3 +1,6 @@
+import java.nio.file.*
+import org.gradle.internal.os.OperatingSystem
+
 buildscript {
     repositories {
         mavenCentral()
@@ -16,149 +19,26 @@ buildscript {
 allprojects {
     repositories {
         mavenCentral()
+        jcenter()
     }
 }
-
-ext {
-    gradleVersion = "$versions.gradle"
-    minJavaVersion = "8"
-}
-
-apply from: file('wrapper.gradle')
-apply plugin: "com.dorongold.task-tree"
 
 subprojects {
     println "Project '$project.name'"
 }
 
-// java projects
+defaultTasks 'downloadWrapper'
 
-project(":dispatcher") {
-    apply plugin: 'java'
-    dependencies {
-        implementation libs.commonsCli
-        implementation libs.kafkaClients
-    }
-    tasks.create(name: "copyLibs", type: Copy) {
-        from configurations.default
-        into "${buildDir}/libs"
-    }
-    build.dependsOn("copyLibs")
-}
-
-project(":testing") {
-    apply plugin: 'java'
-    dependencies {
-        implementation libs.commonsCli
-    }
-    tasks.create(name: "copyLibs", type: Copy) {
-        from configurations.default
-        into "${buildDir}/libs"
-    }
-    build.dependsOn("copyLibs")
-}
-
-// c++ projects
-
-// before build, set the following environment variables for external libraries:
-// (1) CPATH: instead of using -I option when compiling,
-// (2) LIBRARY_PATH: instead of using -L option when linking.
-
-// cpp-libary
-
-project(":common") {
-    apply plugin: 'cpp-library'
-    library {
-        linkage = [Linkage.SHARED]
-        binaries.configureEach {
-            compileTask.get().compilerArgs.add('-Wall')
-            compileTask.get().compilerArgs.add('-std=c++11')
-        }
-    }
-    build.dependsOn("assembleRelease")
-}
-
-// cpp-application
-
-project(":combiner") {
-    apply plugin: 'cpp-application'
-    application {
-        binaries.configureEach {
-            compileTask.get().compilerArgs.add('-Wall')
-            compileTask.get().compilerArgs.add('-std=c++11')
-            linkTask.get().linkerArgs.add('-pthread')
-            linkTask.get().linkerArgs.add('-lrdkafka++')
-        }
-        dependencies {
-            implementation project(":common")
-        }
-    }
-    build.dependsOn("assembleRelease")
-}
-
-project(":ingester") {
-    apply plugin: 'cpp-application'
-    application {
-        binaries.configureEach {
-            compileTask.get().compilerArgs.add('-Wall')
-            compileTask.get().compilerArgs.add('-std=c++11')
-            linkTask.get().linkerArgs.add('-pthread')
-        }
-        dependencies {
-            implementation project(":common")
-        }
-    }
-    build.dependsOn("assembleRelease")
-}
-
-project(":monitor") {
-    apply plugin: 'cpp-application'
-    application {
-        binaries.configureEach {
-            compileTask.get().compilerArgs.add('-Wall')
-            compileTask.get().compilerArgs.add('-std=c++11')
-            linkTask.get().linkerArgs.add('-pthread')
-        }
-        dependencies {
-            implementation project(":common")
-        }
-    }
-    build.dependsOn("assembleRelease")
+task downloadWrapper(type: Wrapper) {
+    description = "Download the gradle wrapper and requisite files. Overwrites existing wrapper files."
+    gradleVersion = versions.gradle
 }
 
 apply plugin: "base"
-
-def install_dir = hasProperty('installDir') ? installDir : "$buildDir/install"
-
-import java.nio.file.*
-import org.gradle.internal.os.OperatingSystem
+apply plugin: "com.dorongold.task-tree"
 
 tasks.create(name:'install', type: Copy) {
-    into install_dir
-    // java application
-    for (name in ['dispatcher', 'testing']) {
-        dependsOn(":$name:assemble")
-        from(project(":$name").jar) { into("jar") }
-        from(project(":$name").configurations.default) { into ("jar") }
-    }
-    // c++ application
-    for (name in ['combiner', 'ingester', 'monitor']) {
-        dependsOn(":$name:assembleRelease")
-        def exefile = "$name"
-        def exepath = "exe/main/release/stripped"
-        from(Paths.get(project(":$name").buildDir.toString(), exepath, exefile)) { into("bin") }
-    }
-    // c++ library
-    for (name in ['common']) {
-        dependsOn(":$name:assembleRelease")
-        def libfile = "lib${name}.so"
-        if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
-            libfile = "lib${name}.dylib"
-        }
-        def libpath = "lib/main/release/stripped"
-        from(Paths.get(project(":$name").buildDir.toString(), libpath, libfile)) { into("lib") }
-    }
-    // configuration
+    into "$project.buildDir/install"
     from("config") { into("conf") }
 }
 

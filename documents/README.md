@@ -2,25 +2,25 @@
 
 ## blueprint
 
-![plan](docs/images/plan.png)
+![plan](images/plan.png)
 
 ## online event-building
 
-![online-event-building](docs/images/online_event_building.png)
+![online-event-building](images/online_event_building.png)
 
 ## dispatcher
 
-![dispatcher](docs/images/dispatcher_node.png)
+![dispatcher](images/dispatcher_node.png)
 
 ## combiner
 
-![combiner](docs/images/combiner_node.png)
+![combiner](images/combiner_node.png)
 
 ## ingester and monitor
 
-![ingester-and-monitor](docs/images/ingester_and_monitor.png)
+![ingester-and-monitor](images/ingester_and_monitor.png)
 
 ## subsecond FFB
 
-![FFB](docs/images/ffb.png)
+![FFB](images/ffb.png)
 

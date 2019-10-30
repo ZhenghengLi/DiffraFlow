@@ -131,6 +131,7 @@ apply plugin: "base"
 def install_dir = hasProperty('installDir') ? installDir : "$buildDir/install"
 
 import java.nio.file.*
+import org.gradle.internal.os.OperatingSystem
 
 tasks.create(name:'install', type: Copy) {
     into install_dir
@@ -143,14 +144,19 @@ tasks.create(name:'install', type: Copy) {
     // c++ application
     for (name in ['combiner', 'ingester', 'monitor']) {
         dependsOn(":$name:assembleRelease")
-        def exefile = "exe/main/release/stripped/$name"
-        from(Paths.get(project(":$name").buildDir.toString(), exefile)) { into("bin") }
+        def exefile = "$name"
+        def exepath = "exe/main/release/stripped"
+        from(Paths.get(project(":$name").buildDir.toString(), exepath, exefile)) { into("bin") }
     }
     // c++ library
     for (name in ['common']) {
         dependsOn(":$name:assembleRelease")
-        def libfile = "lib/main/release/stripped/lib${name}.so"
-        from(Paths.get(project(":$name").buildDir.toString(), libfile)) { into("lib") }
+        def libfile = "lib${name}.so"
+        if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+            libfile = "lib${name}.dylib"
+        }
+        def libpath = "lib/main/release/stripped"
+        from(Paths.get(project(":$name").buildDir.toString(), libpath, libfile)) { into("lib") }
     }
     // configuration
     from("config") { into("conf") }

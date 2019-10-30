@@ -23,4 +23,5 @@ done
 # cpp-library
 echo "Project 'common'"
 export LD_LIBRARY_PATH=$my_dir/common/build/lib/main/release:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$my_dir/common/build/lib/main/release:$DYLD_LIBRARY_PATH
 

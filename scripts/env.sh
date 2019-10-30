@@ -11,4 +11,5 @@ export CLASSPATH=$installDir/jar/*
 export PATH=$installDir/bin:$PATH
 
 export LD_LIBRARY_PATH=$installDir/lib:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$installDir/lib:$DYLD_LIBRARY_PATH
 

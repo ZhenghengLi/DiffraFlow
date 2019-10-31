@@ -1,28 +1,11 @@
-import java.nio.file.*
-import org.gradle.internal.os.OperatingSystem
-
-plugins {
-    id 'cpp-application'
-}
+apply from: "$rootDir/gradle/common_cpp_app.gradle"
 
 application {
     binaries.configureEach {
-        compileTask.get().compilerArgs.add('-Wall')
-        compileTask.get().compilerArgs.add('-std=c++11')
-        linkTask.get().linkerArgs.add('-pthread')
+
     }
     dependencies {
         implementation project(":diffraflow:common")
     }
 }
-
-tasks.create(name:'install', type: Copy) {
-    into "$rootProject.buildDir/install"
-    dependsOn 'assembleRelease'
-    def exefile = "$project.name"
-    def exepath = "exe/main/release/stripped"
-    from(Paths.get("$buildDir", exepath, exefile)) { into("bin") }
-}
-
-build.dependsOn('install')
 

@@ -1,27 +1,6 @@
-import java.nio.file.*
-import org.gradle.internal.os.OperatingSystem
-
-plugins {
-    id 'java'
-}
+apply from: "$rootDir/gradle/common_java.gradle"
 
 dependencies {
-    implementation libs.commonsCli
+
 }
-
-tasks.create(name: "copyLibs", type: Copy) {
-    from configurations.default
-    into "${buildDir}/libs"
-}
-
-// build.dependsOn("copyLibs")
-
-tasks.create(name:'install', type: Copy) {
-    into "$rootProject.buildDir/install"
-    dependsOn 'assemble'
-    from(project.jar) { into("jar") }
-    from(project.configurations.default) { into ("jar") }
-}
-
-build.dependsOn('install')
 

@@ -1,6 +1,6 @@
 # DiffraFlow
 
-High volume data acquisition and on-the-fly analysis for area detectors.
+High volume data acquisition and on-the-fly data analysis for area detectors.
 
 Started on 12th September 2019, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to DFS system (sink) at very high overall rate (e.g. >100GiB/s).
 

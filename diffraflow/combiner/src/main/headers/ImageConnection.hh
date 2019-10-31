@@ -4,7 +4,7 @@
 #include <iostream>
 #include <atomic>
 
-#include "Decoder.hpp"
+#include "Decoder.hh"
 
 using std::atomic;
 

@@ -1,7 +1,7 @@
 #ifndef ImageData_H
 #define ImageData_H
 
-#include "Decoder.hpp"
+#include "Decoder.hh"
 
 namespace shine {
 

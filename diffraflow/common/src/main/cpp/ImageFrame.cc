@@ -1,4 +1,4 @@
-#include "ImageFrame.hpp"
+#include "ImageFrame.hh"
 #include <algorithm>
 #include <cassert>
 

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "Configuration.hpp"
-#include "ImageCacheServer.hpp"
+#include "Configuration.hh"
+#include "ImageCacheServer.hh"
 
 using namespace std;
 using namespace shine;

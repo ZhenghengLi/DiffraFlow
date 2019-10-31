@@ -1,6 +1,6 @@
-#include "ImageConnection.hpp"
-#include "ImageCache.hpp"
-#include "ImageFrame.hpp"
+#include "ImageConnection.hh"
+#include "ImageCache.hh"
+#include "ImageFrame.hh"
 
 #include <unistd.h>
 #include <netinet/in.h>

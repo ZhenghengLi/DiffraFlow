@@ -2,7 +2,7 @@
 #define ImageFrame_H
 
 #include <iostream>
-#include "Decoder.hpp"
+#include "Decoder.hh"
 
 namespace shine {
     class ImageFrame: private Decoder {

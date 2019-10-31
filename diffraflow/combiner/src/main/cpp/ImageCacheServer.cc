@@ -1,6 +1,6 @@
-#include "ImageCacheServer.hpp"
-#include "ImageConnection.hpp"
-#include "ImageCache.hpp"
+#include "ImageCacheServer.hh"
+#include "ImageConnection.hh"
+#include "ImageCache.hh"
 
 #include <stdlib.h>
 #include <string.h>

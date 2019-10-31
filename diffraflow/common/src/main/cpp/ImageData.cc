@@ -1,5 +1,5 @@
-#include "ImageData.hpp"
-#include "ImageFrame.hpp"
+#include "ImageData.hh"
+#include "ImageFrame.hh"
 
 #include <iostream>
 

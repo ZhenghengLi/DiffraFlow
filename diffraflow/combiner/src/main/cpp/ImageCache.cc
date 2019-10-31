@@ -1,6 +1,6 @@
-#include "ImageCache.hpp"
-#include "ImageFrame.hpp"
-#include "ImageData.hpp"
+#include "ImageCache.hh"
+#include "ImageFrame.hh"
+#include "ImageData.hh"
 
 using shine::ImageData;
 

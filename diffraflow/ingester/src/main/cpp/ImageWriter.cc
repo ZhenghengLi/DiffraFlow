@@ -1,5 +1,5 @@
-#include "ImageWriter.hpp"
-#include "ImageData.hpp"
+#include "ImageWriter.hh"
+#include "ImageData.hh"
 
 #include <iostream>
 

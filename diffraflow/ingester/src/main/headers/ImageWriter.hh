@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <mutex>
-#include "BlockingQueue.hpp"
+#include "BlockingQueue.hh"
 
 using std::vector;
 using std::mutex;

@@ -1,12 +1,15 @@
 # DiffraFlow
 
-High volume data acquisition and online analysis system for SHINE project
+High volume data acquisition and on-the-fly analysis for area detectors.
 
-## dependencies
+Started on 12th September 2019, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to DFS system (sink) at very high overall rate (e.g. >100GiB/s).
 
-1. dispatcher:  
-    (1) org.apache.kafka:kafka-clients:2.3.0
+The software should be capable of doing event-building online for all events before data sink, as well as online doing calibration, deep event filtering and fast feedback based on full event image data.
 
-2. combiner:  
-    (2) https://github.com/edenhill/librdkafka (v1.2.0)
+Currently, the overall design of data flow is as below, and more details will be in documents.
 
+![plan](documents/images/plan.png)
+
+The overall design is quite similar to LCLS-II's (see: https://ieeexplore.ieee.org/document/8533033). The difference could be that this design uses two PC layes to do data transfering and Data Reduction Pipline (DRP), which will make it possible to do online event-building under very high data rate condition.
+
+This project is under developing ...

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ImageData.hpp"
+#include "ImageWriter.hpp"
 
 using namespace std;
 using namespace shine;

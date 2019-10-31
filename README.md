@@ -2,7 +2,7 @@
 
 High volume data acquisition and on-the-fly data analysis for area detectors.
 
-Started on 12th September 2019, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to DFS system (sink) at very high overall rate (e.g. >100GiB/s).
+Started on 12th September 2019, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to distributed file system (sink) at very high overall rate (e.g. >100GiB/s).
 
 The software should be capable of doing event-building online for all events before data sink, as well as online doing calibration, deep event filtering and fast feedback based on full event image data.
 

@@ -21,16 +21,6 @@ namespace shine {
     };
 }
 
-shine::PrimitiveSerializer::PrimitiveSerializer() {
-    short number = 0x1;
-    char* num_p = (char*)&number;
-    if (num_p[0] == 1) {
-        isLittleEndian_ = true;
-    } else {
-        isLittleEndian_ = false;
-    }
-}
-
 template <class T>
 size_t shine::PrimitiveSerializer::serialize(T value, char* buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) return 0;

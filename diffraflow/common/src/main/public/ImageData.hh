@@ -2,12 +2,13 @@
 #define ImageData_H
 
 #include "Decoder.hh"
+#include "PrimitiveSerializer.hh"
 
 namespace shine {
 
     class ImageFrame;
 
-    class ImageData: private Decoder {
+    class ImageData: private Decoder, private PrimitiveSerializer {
     private:
         size_t imgFrm_len_;
         ImageFrame** imgFrm_arr_;

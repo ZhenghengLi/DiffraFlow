@@ -3,9 +3,10 @@
 
 #include <iostream>
 #include "Decoder.hh"
+#include "PrimitiveSerializer.hh"
 
 namespace shine {
-    class ImageFrame: private Decoder {
+    class ImageFrame: private Decoder, private PrimitiveSerializer {
     private:
         char*  img_rawdata_;
         size_t img_rawsize_;

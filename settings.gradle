@@ -1,11 +1,11 @@
 
 rootProject.name = 'DiffraFlow'
 
-include 'diffraflow:dispatcher'
-include 'diffraflow:common'
-include 'diffraflow:combiner'
-include 'diffraflow:ingester'
-include 'diffraflow:monitor'
+include ':diffraflow:dispatcher'
+include ':diffraflow:common'
+include ':diffraflow:combiner'
+include ':diffraflow:ingester'
+include ':diffraflow:monitor'
 
-include 'testing'
+include ':testing'
 

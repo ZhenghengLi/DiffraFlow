@@ -11,7 +11,8 @@ library {
     }
 }
 
-tasks.create(name:'install', type: Copy) {                                                                                                                                                                                                                                                into "$rootProject.buildDir/install"
+tasks.create(name:'install', type: Copy) {
+    into "$rootProject.buildDir/install"
     dependsOn 'assembleRelease'
     def libfile = "lib${project.name}.so"
     if (OperatingSystem.current() == OperatingSystem.MAC_OS) {

@@ -1,11 +1,10 @@
 
 rootProject.name = 'DiffraFlow'
 
-include ':diffraflow:dispatcher'
-include ':diffraflow:common'
-include ':diffraflow:combiner'
-include ':diffraflow:ingester'
-include ':diffraflow:monitor'
+new File("$rootDir/diffraflow").eachDir {
+    if (it.name.startsWith('.')) return
+    include ":${it.parentFile.name}:${it.name}"
+}
 
 include ':testing'
 

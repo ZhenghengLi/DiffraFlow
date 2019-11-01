@@ -6,7 +6,7 @@ Started on 12th September 2019, this project is proposed to develop an optimized
 
 The software should be capable of doing event-building online for all events before data sink, as well as online doing calibration, deep event filtering and fast feedback based on full event image data.
 
-Currently, the overall design of data flow is as below, and more details will be in documents.
+Currently, the overall design of data flow is as below, and more details will be in documents and wiki.
 
 ![plan](documents/images/plan.png)
 

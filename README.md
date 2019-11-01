@@ -8,7 +8,7 @@ The software should be capable of doing event-building online for all events bef
 
 Currently, the overall design of data flow is as below, and more details will be in documents and wiki.
 
-![plan](documents/images/plan.png)
+![plan](docs/images/plan.png)
 
 The overall design is quite similar to LCLS-II's (see: https://ieeexplore.ieee.org/document/8533033). The difference could be that this design uses two PC layes to do data transfering and Data Reduction Pipline (DRP), which will make it possible to do online event-building under very high data rate condition.
 

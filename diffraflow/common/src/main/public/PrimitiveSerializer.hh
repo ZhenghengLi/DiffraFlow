@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <iostream>
 
 namespace shine {
     class PrimitiveSerializer {
@@ -23,7 +24,10 @@ namespace shine {
 
 template <class T>
 size_t shine::PrimitiveSerializer::serialize(T value, char* buffer_p, size_t buffer_l) {
-    if (!std::is_fundamental<T>::value) return 0;
+    if (!std::is_fundamental<T>::value) {
+        std::cerr << "WARNING: cannnot serialize data of non-fundamental types." << std::endl;
+        return 0;
+    }
     size_t byte_l = sizeof(T);
     if (byte_l < buffer_l) return 0;
     char* const byte_p = reinterpret_cast<char*>(&value);
@@ -41,7 +45,10 @@ size_t shine::PrimitiveSerializer::serialize(T value, char* buffer_p, size_t buf
 
 template <class T>
 size_t shine::PrimitiveSerializer::deserialize(T* value_p, char* buffer_p, size_t buffer_l) {
-    if (!std::is_fundamental<T>::value) return 0;
+    if (!std::is_fundamental<T>::value) {
+        std::cerr << "WARNING: cannnot deserialize data of non-fundamental types." << std::endl;
+        return 0;
+    }
     size_t byte_l = sizeof(T);
     if (byte_l < buffer_l) return 0;
     char* byte_p = reinterpret_cast<char*>(value_p);

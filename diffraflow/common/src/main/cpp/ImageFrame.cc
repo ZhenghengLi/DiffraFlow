@@ -18,6 +18,15 @@ shine::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
 }
 
 shine::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
+    copyObj(img_frm);
+}
+
+shine::ImageFrame::~ImageFrame() {
+    if (img_frame != nullptr) delete [] img_frame;
+    if (img_rawdata_ != nullptr) delete [] img_rawdata_;
+}
+
+void shine::ImageFrame::copyObj(const ImageFrame& img_frm) {
     det_id = img_frm.det_id;
     img_width = img_frm.img_width;
     img_height = img_frm.img_height;
@@ -38,9 +47,9 @@ shine::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
     }
 }
 
-shine::ImageFrame::~ImageFrame() {
-    if (img_frame != nullptr) delete [] img_frame;
-    if (img_rawdata_ != nullptr) delete [] img_rawdata_;
+shine::ImageFrame& shine::ImageFrame::operator=(const ImageFrame& img_frm) {
+    copyObj(img_frm);
+    return *this;
 }
 
 bool shine::ImageFrame::decode(const char* buffer, const size_t size) {
@@ -66,4 +75,23 @@ void shine::ImageFrame::print() {
         cout << img_rawdata_[i];
     }
     cout << "]" << endl;
+}
+
+size_t shine::ImageFrame::serialize(char* const data, size_t len) {
+    size_t gOffset = 0;
+    size_t offset = serializeValue<uint32_t>(kObjectHead, data, len - gOffset);
+    return 0;
+}
+
+size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
+
+    return 0;
+}
+
+size_t shine::ImageFrame::object_size() {
+    return 0;
+}
+
+int shine::ImageFrame::object_type() {
+    return 1231;
 }

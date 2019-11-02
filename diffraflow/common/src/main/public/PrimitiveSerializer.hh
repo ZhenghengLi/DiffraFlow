@@ -14,16 +14,16 @@ namespace shine {
         PrimitiveSerializer();
 
         template <class T>
-        size_t serialize(T value, char* buffer_p, size_t buffer_l);
+        size_t serializeValue(T value, char* const buffer_p, size_t buffer_l);
 
         template <class T>
-        size_t deserialize(T* value_p, char* buffer_p, size_t buffer_l);
+        size_t deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l);
 
     };
 }
 
 template <class T>
-size_t shine::PrimitiveSerializer::serialize(T value, char* buffer_p, size_t buffer_l) {
+size_t shine::PrimitiveSerializer::serializeValue(T value, char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
         std::cerr << "WARNING: cannnot serialize data of non-fundamental types." << std::endl;
         return 0;
@@ -44,7 +44,7 @@ size_t shine::PrimitiveSerializer::serialize(T value, char* buffer_p, size_t buf
 }
 
 template <class T>
-size_t shine::PrimitiveSerializer::deserialize(T* value_p, char* buffer_p, size_t buffer_l) {
+size_t shine::PrimitiveSerializer::deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
         std::cerr << "WARNING: cannnot deserialize data of non-fundamental types." << std::endl;
         return 0;

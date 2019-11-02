@@ -39,6 +39,7 @@ namespace shine {
         size_t deserialize(const char* const data, size_t len);
         size_t object_size();
         int object_type();
+        void clear_data();
 
     };
 }

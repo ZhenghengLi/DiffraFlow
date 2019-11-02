@@ -4,16 +4,19 @@
 
 using std::copy;
 using std::cout;
+using std::cerr;
 using std::endl;
 
 shine::ImageFrame::ImageFrame() {
     img_frame = nullptr;
     img_rawdata_ = nullptr;
+    img_rawsize_ = 0;
 }
 
 shine::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
     img_frame = nullptr;
     img_rawdata_ = nullptr;
+    img_rawsize_ = 0;
     decode(buffer, size);
 }
 
@@ -78,20 +81,62 @@ void shine::ImageFrame::print() {
 }
 
 size_t shine::ImageFrame::serialize(char* const data, size_t len) {
-    size_t gOffset = 0;
-    size_t offset = serializeValue<uint32_t>(kObjectHead, data, len - gOffset);
-    return 0;
+    size_t gOffset = 0, offset = 0;
+    // head
+    offset = serializeValue<uint32_t>(kObjectHead, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // size
+    offset = serializeValue<uint32_t>(object_size(), data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // type
+    offset = serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // data
+    // - img_rawsize_
+    offset = serializeValue<uint32_t>(img_rawsize_, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - img_rawdata_
+    if (img_rawsize_ > len - gOffset) return 0;
+    for (size_t i = 0; i < img_rawsize_; i++) {
+        (data + gOffset)[i] = img_rawdata_[i];
+    }
+    gOffset += img_rawsize_;
+    return gOffset;
 }
 
 size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
+    size_t gOffset = 0, offset = 0;
+    // check type
+    int objType = 0;
+    offset = deserializeValue<int32_t>(&objType, data, len);
+    if (offset > 0) gOffset += offset; else return 0;
+    if (objType != object_type()) {
+        cerr << "WARNING: the type of object to deserialize is wrong." << endl;
+        return 0;
+    }
+    // read data
+
+
 
     return 0;
 }
 
 size_t shine::ImageFrame::object_size() {
-    return 0;
+    size_t theSize = 0;
+    // type
+    theSize += sizeof(int32_t);
+    // data
+    // - img_rawsize_
+    theSize += sizeof(uint32_t);
+    // - img_rawdata_
+    theSize += img_rawsize_;
+    return theSize;
 }
 
 int shine::ImageFrame::object_type() {
     return 1231;
+}
+
+void shine::ImageFrame::clear_data() {
+
 }

@@ -38,3 +38,7 @@ size_t shine::ImageData::object_size() {
 int shine::ImageData::object_type() {
     return 1232;
 }
+
+void shine::ImageData::clear_data() {
+
+}

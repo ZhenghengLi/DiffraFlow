@@ -9,15 +9,15 @@
 namespace shine {
     class ImageFrame: public ObjectSerializer, private Decoder, private PrimitiveSerializer {
     private:
-        char*  img_rawdata_;
-        size_t img_rawsize_;
+        char*    img_rawdata_;
+        uint32_t img_rawsize_;
 
     public:
         int64_t img_key;
-        int     det_id;
+        int32_t det_id;
         double  img_time;     // unit: second
-        int     img_width;
-        int     img_height;
+        int32_t img_width;
+        int32_t img_height;
         float*  img_frame;    // size = width * height;
 
     private:

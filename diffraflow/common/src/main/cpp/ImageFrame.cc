@@ -56,9 +56,7 @@ shine::ImageFrame& shine::ImageFrame::operator=(const ImageFrame& img_frm) {
 }
 
 bool shine::ImageFrame::decode(const char* buffer, const size_t size) {
-    if (img_rawdata_ != nullptr) {
-        delete [] img_rawdata_;
-    }
+    clear_data();
     if (size < 8) return false;
     img_key = decode_byte<int64_t>(buffer, 0, 7);
     assert(size > 8);
@@ -105,20 +103,29 @@ size_t shine::ImageFrame::serialize(char* const data, size_t len) {
 }
 
 size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
+    clear_data();
     size_t gOffset = 0, offset = 0;
     // check type
     int objType = 0;
-    offset = deserializeValue<int32_t>(&objType, data, len);
+    offset = deserializeValue<int32_t>(&objType, data + gOffset, len - gOffset);
     if (offset > 0) gOffset += offset; else return 0;
     if (objType != object_type()) {
-        cerr << "WARNING: the type of object to deserialize is wrong." << endl;
+        cerr << "WARNING: the type of object to deserialize does not match." << endl;
         return 0;
     }
     // read data
-
-
-
-    return 0;
+    // - img_rawsize_
+    offset = deserializeValue<uint32_t>(&img_rawsize_, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - img_rawdata_
+    if (img_rawsize_ > 0) {
+        img_rawdata_ = new char[img_rawsize_];
+        for (size_t i = 0; i < img_rawsize_; i++) {
+            img_rawdata_[i] = (data + gOffset)[i];
+        }
+    }
+    gOffset += img_rawsize_;
+    return gOffset;
 }
 
 size_t shine::ImageFrame::object_size() {
@@ -138,5 +145,13 @@ int shine::ImageFrame::object_type() {
 }
 
 void shine::ImageFrame::clear_data() {
-
+    img_rawsize_ = 0;
+    if (img_rawdata_ != nullptr) {
+        delete [] img_rawdata_;
+    }
+    img_rawdata_ = nullptr;
+    if (img_frame != nullptr) {
+        delete [] img_frame;
+    }
+    img_frame = nullptr;
 }

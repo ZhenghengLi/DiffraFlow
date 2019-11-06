@@ -6,6 +6,7 @@
 
 using std::cout;
 using std::endl;
+using std::cerr;
 using std::copy;
 
 shine::ImageData::ImageData() {
@@ -57,32 +58,94 @@ bool shine::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
 
 size_t shine::ImageData::serialize(char* const data, size_t len) {
     size_t gOffset = 0, offset = 0;
-    // head
-    offset = gPS.serializeValue<uint32_t>(kObjectHead, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
-    // size
-    offset = gPS.serializeValue<uint32_t>(object_size(), data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
     // type
     offset = gPS.serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
     if (offset > 0) gOffset += offset; else return 0;
     // data
-    return 0;
+    // - event_key
+    offset = gPS.serializeValue<int64_t>(event_key, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - event_time
+    offset = gPS.serializeValue<double>(event_time, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - imgFrm_len
+    offset = gPS.serializeValue<uint32_t>(imgFrm_len, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - status_arr
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        offset = gPS.serializeValue<uint8_t>(status_arr[i], data + gOffset, len - gOffset);
+        if (offset > 0) gOffset += offset; else return 0;
+    }
+    // - imgFrm_arr
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        if (status_arr[i] == 0x0) continue;  // only serialize valid image frame.
+        offset = imgFrm_arr[i].serialize(data + gOffset, len - gOffset);
+        if (offset > 0) gOffset += offset; else return 0;
+    }
+    return gOffset;
 }
 
 size_t shine::ImageData::deserialize(const char* const data, size_t len) {
-    cout << "do deserialization" << endl;
-    return 0;
+    clear_data();
+    size_t gOffset = 0, offset = 0;
+    // check type
+    int objType = 0;
+    offset = gPS.deserializeValue<int32_t>(&objType, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    if (objType != object_type()) {
+        cerr << "WARNING: the type of object to deserialize does not match." << endl;
+        return 0;
+    }
+    // read data
+    // - event_key
+    offset = gPS.deserializeValue<int64_t>(&event_key, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // -event_time
+    offset = gPS.deserializeValue<double>(&event_time, data + gOffset, len - gOffset);
+    if (offset > 0) gOffset += offset; else return 0;
+    // - imgFrm_len
+    offset = gPS.deserializeValue<uint32_t>(&imgFrm_len, data + gOffset, len - gOffset);
+    // - status_arr
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        offset = gPS.deserializeValue<uint8_t>(&status_arr[i], data + gOffset, len - gOffset);
+        if (offset > 0) gOffset += offset; else return 0;
+    }
+    // - imgFrm_arr
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        if (status_arr[i] == 0x0) continue;  // skip invalid image frame
+        offset = imgFrm_arr[i].deserialize(data + gOffset, len - gOffset);
+        if (offset > 0) gOffset += offset; else return 0;
+    }
+    return gOffset;
 }
 
 size_t shine::ImageData::object_size() {
-    return 0;
+    size_t theSize = 0;
+    // type
+    theSize += sizeof(int32_t);
+    // data
+    // - event_key
+    theSize += sizeof(int64_t);
+    // - event_time
+    theSize += sizeof(double);
+    // - imgFrm_len
+    theSize += sizeof(uint32_t);
+    // - status_arr
+    theSize += sizeof(uint8_t) * imgFrm_len;
+    // - imgFrm_arr
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        if (status_arr[i] == 0x0) continue;
+        theSize += imgFrm_arr[i].object_size();
+    }
+    return theSize;
 }
 
 int shine::ImageData::object_type() {
-    return 1232;
+    return obj_type_;
 }
 
 void shine::ImageData::clear_data() {
-
+    for (size_t i = 0; i < imgFrm_len; i++) {
+        status_arr[i] = 0x0;
+    }
 }

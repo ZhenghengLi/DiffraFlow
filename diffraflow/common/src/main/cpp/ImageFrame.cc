@@ -80,12 +80,6 @@ void shine::ImageFrame::print() {
 
 size_t shine::ImageFrame::serialize(char* const data, size_t len) {
     size_t gOffset = 0, offset = 0;
-    // head
-    offset = gPS.serializeValue<uint32_t>(kObjectHead, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
-    // size
-    offset = gPS.serializeValue<uint32_t>(object_size(), data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
     // type
     offset = gPS.serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
     if (offset > 0) gOffset += offset; else return 0;
@@ -119,6 +113,7 @@ size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
     if (offset > 0) gOffset += offset; else return 0;
     // - img_rawdata_
     if (img_rawsize_ > 0) {
+        if (img_rawsize_ > len - gOffset) return 0;
         img_rawdata_ = new char[img_rawsize_];
         for (size_t i = 0; i < img_rawsize_; i++) {
             img_rawdata_[i] = (data + gOffset)[i];
@@ -141,7 +136,7 @@ size_t shine::ImageFrame::object_size() {
 }
 
 int shine::ImageFrame::object_type() {
-    return 1231;
+    return obj_type_;
 }
 
 void shine::ImageFrame::clear_data() {

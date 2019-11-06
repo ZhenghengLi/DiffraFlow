@@ -9,6 +9,9 @@
 namespace shine {
     class ImageFrame: public ObjectSerializer {
     private:
+        static const int obj_type_ = 1231;
+
+    private:
         char*    img_rawdata_;
         uint32_t img_rawsize_;
 

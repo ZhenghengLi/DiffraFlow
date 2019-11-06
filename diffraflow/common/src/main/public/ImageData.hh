@@ -10,10 +10,13 @@ namespace shine {
     class ImageFrame;
 
     class ImageData: public ObjectSerializer {
+    private:
+        static const int obj_type_ = 1232;
+
     public:
         uint32_t     imgFrm_len;  // number of sub-detectors
-        ImageFrame*  imgFrm_arr;  // image data from each sub-detector
         uint8_t*     status_arr;  // alignment status
+        ImageFrame*  imgFrm_arr;  // image data from each sub-detector
         
         int64_t      event_key;   // equal to image_key
         double       event_time;  // equal to image_time

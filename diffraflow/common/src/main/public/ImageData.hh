@@ -13,7 +13,7 @@ namespace shine {
     public:
         uint32_t     imgFrm_len;  // number of sub-detectors
         ImageFrame*  imgFrm_arr;  // image data from each sub-detector
-        uint8_t*     status_arr;  // record alignment status
+        uint8_t*     status_arr;  // alignment status
         
         int64_t      event_key;   // equal to image_key
         double       event_time;  // equal to image_time

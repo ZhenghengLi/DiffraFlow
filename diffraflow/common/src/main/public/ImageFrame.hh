@@ -18,9 +18,9 @@ namespace shine {
     public:
         int64_t img_key;
         double  img_time;     // unit: second
-        int32_t det_id;
-        int32_t img_width;
-        int32_t img_height;
+        uint32_t det_id;
+        uint32_t img_width;
+        uint32_t img_height;
         float*  img_frame;    // size = width * height;
 
     private:

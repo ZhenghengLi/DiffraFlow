@@ -82,6 +82,7 @@ size_t shine::ImageData::serialize(char* const data, size_t len) {
         offset = imgFrm_arr[i].serialize(data + gOffset, len - gOffset);
         if (offset > 0) gOffset += offset; else return 0;
     }
+    // return
     return gOffset;
 }
 
@@ -116,6 +117,7 @@ size_t shine::ImageData::deserialize(const char* const data, size_t len) {
         offset = imgFrm_arr[i].deserialize(data + gOffset, len - gOffset);
         if (offset > 0) gOffset += offset; else return 0;
     }
+    // return
     return gOffset;
 }
 
@@ -137,6 +139,7 @@ size_t shine::ImageData::object_size() {
         if (status_arr[i] == 0x0) continue;
         theSize += imgFrm_arr[i].object_size();
     }
+    // return
     return theSize;
 }
 

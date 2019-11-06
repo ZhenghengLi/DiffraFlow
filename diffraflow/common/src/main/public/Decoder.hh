@@ -9,12 +9,14 @@
 
 namespace shine {
     class Decoder {
-    protected:
+    public:
         template <class T>
         T decode_bit(const char* buffer, size_t begin, size_t end);
         template <class T>
         T decode_byte(const char* buffer, size_t begin, size_t end); 
     };
+
+    static Decoder gDC;
 
     template <class T>
     T Decoder::decode_bit(const char* buffer, size_t begin, size_t end) {
@@ -50,7 +52,6 @@ namespace shine {
         }
         return sum;
     }
-
 }
 
 #endif

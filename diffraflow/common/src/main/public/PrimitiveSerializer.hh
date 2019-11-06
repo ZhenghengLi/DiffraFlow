@@ -20,6 +20,9 @@ namespace shine {
         size_t deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l);
 
     };
+
+    static PrimitiveSerializer gPS;
+
 }
 
 template <class T>

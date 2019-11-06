@@ -5,9 +5,9 @@
 #include <cstdint>
 
 // serialized object has this general structure:
-// 0 -3 : 0xFEEDBEEF
-// 4 -7 : int size
-// 8 -11: int type
+// 0 -3 : uint32_t head:0xFEEDBEEF
+// 4 -7 : uint32_t size
+// 8 -11: int32_t  type
 // 12-x : contents
 
 namespace shine {

@@ -7,21 +7,21 @@
 #include "ObjectSerializer.hh"
 
 namespace shine {
-    class ImageFrame: public ObjectSerializer, private Decoder, private PrimitiveSerializer {
+    class ImageFrame: public ObjectSerializer {
     private:
         char*    img_rawdata_;
         uint32_t img_rawsize_;
 
     public:
         int64_t img_key;
-        int32_t det_id;
         double  img_time;     // unit: second
+        int32_t det_id;
         int32_t img_width;
         int32_t img_height;
         float*  img_frame;    // size = width * height;
 
     private:
-        void copyObj(const ImageFrame& img_frm);
+        void copyObj_(const ImageFrame& img_frm);
 
     public:
         ImageFrame();

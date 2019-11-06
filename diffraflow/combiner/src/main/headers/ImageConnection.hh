@@ -12,7 +12,7 @@ namespace shine {
 
     class ImageCache;
 
-    class ImageConnection: private Decoder {
+    class ImageConnection {
     private:
         char* buffer_;
         size_t buffer_size_;

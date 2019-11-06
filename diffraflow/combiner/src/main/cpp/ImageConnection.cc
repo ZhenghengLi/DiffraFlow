@@ -61,15 +61,15 @@ bool shine::ImageConnection::start_connection_() {
     }
     uint32_t success_code = htonl(200);
     uint32_t failure_code = htonl(300);
-    int32_t head = decode_byte<int32_t>(buffer_, 0, 3);
-    int32_t size = decode_byte<int32_t>(buffer_, 4, 7);
+    int32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
+    int32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     if (head != 0xAAAABBBB || size != 4) {
         cout << "got wrong greeting message, close the connection." << endl;
         write(client_sock_fd_, &failure_code, 4);
         done_flag_ = false;
         return false;
     }
-    int32_t conn_id = decode_byte<int32_t>(buffer_, 8, 11);
+    int32_t conn_id = gDC.decode_byte<int32_t>(buffer_, 8, 11);
     cout << "connection ID: " << conn_id << endl;
     write(client_sock_fd_, &success_code, 4);
     // ready for transferring data
@@ -92,9 +92,9 @@ bool shine::ImageConnection::transferring_() {
         }
 
         // read head and size
-        uint32_t head = decode_byte<uint32_t>(buffer_ + position, 0, 3);
+        uint32_t head = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
         position += 4;
-        uint32_t size = decode_byte<uint32_t>(buffer_ + position, 0, 3);
+        uint32_t size = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
         position += 4;
 
         // validation check for packet

@@ -25,10 +25,12 @@ namespace shine {
 
     protected:
         void shift_left_(const size_t position, const size_t limit);
-        int32_t get_connection_id_();
+        int32_t get_connection_id_() {
+            return connection_id_;
+        }
 
         // methods to be implemented
-        virtual void before_transferring() = 0;
+        virtual void before_transferring_() = 0;
         virtual bool do_transferring_() = 0;
 
     public:

@@ -1,6 +1,7 @@
 #include "ImageFrameConnection.hh"
 #include "ImageCache.hh"
 #include "ImageFrame.hh"
+#include "Decoder.hh"
 
 #include <unistd.h>
 #include <netinet/in.h>
@@ -11,77 +12,25 @@ using std::cerr;
 using std::endl;
 using std::copy;
 
-shine::ImageFrameConnection::ImageFrameConnection(int sock_fd, ImageCache* img_cache_) {
-    buffer_size_ = 100 * 1024 * 1024;
-    buffer_ = new char[buffer_size_];
-    slice_begin_ = 0;
-    pkt_maxlen_ = 1024 * 1024;
-    pkt_data_ = new char[pkt_maxlen_];
-    client_sock_fd_ = sock_fd;
+shine::ImageFrameConnection::ImageFrameConnection(
+    int sock_fd, ImageCache* img_cache_):
+    GeneralConnection(sock_fd, 100 * 1024 * 1024, 1024 * 1024, 0xAAAABBBB) {
     image_cache_ = img_cache_;
-    done_flag_ = false;
 }
 
 shine::ImageFrameConnection::~ImageFrameConnection() {
-    delete [] buffer_;
+
 }
 
-void shine::ImageFrameConnection::run() {
-    if (start_connection_()) {
-        while (!done_flag_ && transferring_());
-    }
-    close(client_sock_fd_);
-    done_flag_ = true;
-    return;
+void shine::ImageFrameConnection::before_transferring_() {
+    cout << "connection ID: " << get_connection_id_() << endl;
 }
 
-bool shine::ImageFrameConnection::done() {
-    return done_flag_;
-}
-
-void shine::ImageFrameConnection::shift_left_(const size_t position, const size_t limit) {
-    if (position == 0) {
-        copy(buffer_ + position, buffer_ + limit, buffer_);
-    }
-    slice_begin_ = limit - position;
-}
-
-bool shine::ImageFrameConnection::start_connection_() {
-    while (true) {
-        const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-        if (slice_length == 0) {
-            cout << "socket is closed by the client." << endl;
-            return false; 
-        }
-        if (slice_begin_ + slice_length < 12) {
-            slice_begin_ += slice_length;
-        } else {
-            break;
-        }
-    }
-    uint32_t success_code = htonl(200);
-    uint32_t failure_code = htonl(300);
-    int32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
-    int32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
-    if (head != 0xAAAABBBB || size != 4) {
-        cout << "got wrong greeting message, close the connection." << endl;
-        write(client_sock_fd_, &failure_code, 4);
-        done_flag_ = false;
-        return false;
-    }
-    int32_t conn_id = gDC.decode_byte<int32_t>(buffer_, 8, 11);
-    cout << "connection ID: " << conn_id << endl;
-    write(client_sock_fd_, &success_code, 4);
-    // ready for transferring data
-    slice_begin_ = 0;
-    return true;
-}
-
-bool shine::ImageFrameConnection::transferring_() {
+bool shine::ImageFrameConnection::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
         cout << "socket is closed by the client." << endl;
-        return false; 
+        return false;
     }
     const size_t limit = slice_begin_ + slice_length;
     size_t position = 0;

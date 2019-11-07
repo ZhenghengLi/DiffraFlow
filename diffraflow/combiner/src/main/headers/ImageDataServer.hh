@@ -1,32 +1,22 @@
 #ifndef ImageDataServer_H
 #define ImageDataServer_H
 
-#include <thread>
-#include <vector>
-#include <list>
-#include <atomic>
-#include <mutex>
-#include <condition_variable>
-
-using std::thread;
-using std::vector;
-using std::list;
-using std::pair;
-using std::atomic;
-using std::mutex;
-using std::condition_variable;
+#include "GeneralServer.hh"
 
 namespace shine {
 
-    class ImageFrameConnection;
+    class ImageDataConnection;
     class ImageCache;
 
-    class ImageDataServer {
+    class ImageDataServer: public GeneralServer {
     private:
         ImageCache* image_cache_;
 
+    protected:
+        GeneralConnection* new_connection_(int client_sock_fd);
+
     public:
-        ImageDataServer(ImageCache* img_cache);
+        ImageDataServer(string sock_path, ImageCache* img_cache);
         ~ImageDataServer();
 
     };

@@ -29,7 +29,7 @@ shine::GeneralConnection::~GeneralConnection() {
 
 void shine::GeneralConnection::run() {
     if (start_connection_()) {
-        before_transferring();
+        before_transferring_();
         while (!done_flag_ && do_transferring_());
     }
     close(client_sock_fd_);
@@ -72,7 +72,6 @@ bool shine::GeneralConnection::start_connection_() {
         return false;
     }
     connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
-    cout << "connection ID: " << connection_id_ << endl;
     write(client_sock_fd_, &success_code, 4);
     // ready for transferring data
     slice_begin_ = 0;

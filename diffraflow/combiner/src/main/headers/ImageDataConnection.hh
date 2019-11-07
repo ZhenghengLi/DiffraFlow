@@ -1,11 +1,24 @@
 #ifndef ImageDataConnection_H
 #define ImageDataConnection_H
 
+#include "GeneralConnection.hh"
+
 namespace shine {
-    class ImageDataConnection {
+
+    class ImageCache;
+
+    class ImageDataConnection: public GeneralConnection {
+    private:
+        ImageCache* image_cache_;
+
+    protected:
+        void before_transferring_();
+        bool do_transferring_();
+
     public:
-        ImageDataConnection();
+        ImageDataConnection(int sock_fd, ImageCache* img_cache_);
         ~ImageDataConnection();
+
     };
 }
 

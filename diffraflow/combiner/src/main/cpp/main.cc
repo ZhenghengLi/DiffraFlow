@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
     cout << endl;
 
     ImageCache image_cache;
-    ImageFrameServer image_frame_server(&image_cache);
-    image_frame_server.serve(config.port);
+    ImageFrameServer image_frame_server(config.port, &image_cache);
+    image_frame_server.serve();
 
     return 0;
 }

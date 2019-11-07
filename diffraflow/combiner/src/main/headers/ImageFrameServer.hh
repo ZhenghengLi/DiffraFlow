@@ -21,13 +21,14 @@ namespace shine {
     class ImageFrameConnection;
     class ImageCache;
 
-    typedef list< pair<ImageFrameConnection*, thread*> > connList;
-
     class ImageFrameServer {
+    private:
+        typedef list< pair<ImageFrameConnection*, thread*> > connListT_;
+
     private:
         int server_sock_fd_;
         atomic<bool> server_run_;
-        connList connections_;
+        connListT_ connections_;
 
         mutex mtx_;
         condition_variable cv_clean_;

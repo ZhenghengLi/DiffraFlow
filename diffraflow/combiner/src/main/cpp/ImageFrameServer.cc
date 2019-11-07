@@ -103,7 +103,7 @@ void shine::ImageFrameServer::serve(int port) {
 void shine::ImageFrameServer::clean_() {
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
-    for (connList::iterator iter = connections_.begin(); iter != connections_.end();) {
+    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
         if (iter->first->done()) {
             iter->second->join();
             delete iter->second;
@@ -121,7 +121,7 @@ void shine::ImageFrameServer::stop() {
     server_run_ = false;
     unique_lock<mutex> lk(mtx_);
     // close all connections
-    for (connList::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {
+    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {
         iter->first->set_stop();
         iter->second->join();
         delete iter->second;

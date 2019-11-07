@@ -1,6 +1,8 @@
 #ifndef ImageCache_H
 #define ImageCache_H
 
+#include "BlockingQueue.hh"
+
 namespace shine {
 
     class ImageFrame;
@@ -8,6 +10,7 @@ namespace shine {
 
     class ImageCache {
     private:
+        BlockingQueue<ImageData> image_data_queue_;
 
     public:
         ImageCache();
@@ -15,9 +18,7 @@ namespace shine {
 
         void put_frame(ImageFrame& image_frame);
 
-        ImageData take_one_image();
-
-
+        bool take_one_image(ImageData& image_data);
 
     };
 }

@@ -1,5 +1,5 @@
-#ifndef ImageConnection_H
-#define ImageConnection_H
+#ifndef ImageFrameConnection_H
+#define ImageFrameConnection_H
 
 #include <iostream>
 #include <atomic>
@@ -12,7 +12,7 @@ namespace shine {
 
     class ImageCache;
 
-    class ImageConnection {
+    class ImageFrameConnection {
     private:
         char* buffer_;
         size_t buffer_size_;
@@ -29,8 +29,8 @@ namespace shine {
         void shift_left_(const size_t position, const size_t limit);
 
     public:
-        ImageConnection(int sock_fd, ImageCache* img_cache_);
-        ~ImageConnection();
+        ImageFrameConnection(int sock_fd, ImageCache* img_cache_);
+        ~ImageFrameConnection();
 
         void run();
         bool done();

@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 #include "Configuration.hh"
-#include "ImageCacheServer.hh"
+#include "ImageFrameServer.hh"
+#include "ImageCache.hh"
 
 using namespace std;
 using namespace shine;
@@ -25,8 +26,9 @@ int main(int argc, char** argv) {
     config.print();
     cout << endl;
 
-    ImageCacheServer image_cache_server;
-    image_cache_server.serve(config.port);
+    ImageCache image_cache;
+    ImageFrameServer image_frame_server(&image_cache);
+    image_frame_server.serve(config.port);
 
     return 0;
 }

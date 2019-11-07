@@ -1,5 +1,5 @@
-#include "ImageCacheServer.hh"
-#include "ImageConnection.hh"
+#include "ImageFrameServer.hh"
+#include "ImageFrameConnection.hh"
 #include "ImageCache.hh"
 
 #include <stdlib.h>
@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include <cassert>
 
 using std::cout;
 using std::cerr;
@@ -17,10 +18,11 @@ using std::lock_guard;
 using std::unique_lock;
 using std::make_pair;
 
-shine::ImageCacheServer::ImageCacheServer() {
+shine::ImageFrameServer::ImageFrameServer(ImageCache* img_cache) {
+    assert(img_cache != nullptr);
     server_sock_fd_ = -1;
     server_run_ = true;
-    image_cache_ = new ImageCache();
+    image_cache_ = img_cache;
     cleaner_run_ = true;
     dead_counts_ = 0;
     cleaner_ = new thread(
@@ -30,7 +32,7 @@ shine::ImageCacheServer::ImageCacheServer() {
     );
 }
 
-shine::ImageCacheServer::~ImageCacheServer() {
+shine::ImageFrameServer::~ImageFrameServer() {
     cleaner_run_ = false;
     cleaner_->join();
     stop();
@@ -38,7 +40,7 @@ shine::ImageCacheServer::~ImageCacheServer() {
     delete image_cache_;
 }
 
-bool shine::ImageCacheServer::create_sock_(int port) {
+bool shine::ImageFrameServer::create_sock_(int port) {
     sockaddr_in server_addr, client_addr;
     server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -55,14 +57,14 @@ bool shine::ImageCacheServer::create_sock_(int port) {
     return true;
 }
 
-int shine::ImageCacheServer::accept_client_() {
+int shine::ImageFrameServer::accept_client_() {
     sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     int client_sock_fd = accept(server_sock_fd_, (sockaddr*) &client_addr, &client_len);
     return client_sock_fd;
 }
 
-void shine::ImageCacheServer::serve(int port) {
+void shine::ImageFrameServer::serve(int port) {
     if (!create_sock_(port)) {
         cout << "Failed to create server socket." << endl;
     }
@@ -76,7 +78,7 @@ void shine::ImageCacheServer::serve(int port) {
             close(client_sock_fd);
             return;
         }
-        ImageConnection* conn_object = new ImageConnection(client_sock_fd, image_cache_);
+        ImageFrameConnection* conn_object = new ImageFrameConnection(client_sock_fd, image_cache_);
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();
@@ -98,7 +100,7 @@ void shine::ImageCacheServer::serve(int port) {
     }
 }
 
-void shine::ImageCacheServer::clean_() {
+void shine::ImageFrameServer::clean_() {
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
     for (connList::iterator iter = connections_.begin(); iter != connections_.end();) {
@@ -115,7 +117,7 @@ void shine::ImageCacheServer::clean_() {
     }
 }
 
-void shine::ImageCacheServer::stop() {
+void shine::ImageFrameServer::stop() {
     server_run_ = false;
     unique_lock<mutex> lk(mtx_);
     // close all connections

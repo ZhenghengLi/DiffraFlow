@@ -1,5 +1,5 @@
-#ifndef ImageCacheServer_H
-#define ImageCacheServer_H
+#ifndef ImageFrameServer_H
+#define ImageFrameServer_H
 
 #include <thread>
 #include <vector>
@@ -18,12 +18,12 @@ using std::condition_variable;
 
 namespace shine {
 
-    class ImageConnection;
+    class ImageFrameConnection;
     class ImageCache;
 
-    typedef list< pair<ImageConnection*, thread*> > connList;
+    typedef list< pair<ImageFrameConnection*, thread*> > connList;
 
-    class ImageCacheServer {
+    class ImageFrameServer {
     private:
         int server_sock_fd_;
         atomic<bool> server_run_;
@@ -43,15 +43,11 @@ namespace shine {
         void clean_();
 
     public:
-        ImageCacheServer();
-        ~ImageCacheServer();
+        ImageFrameServer(ImageCache* img_cache);
+        ~ImageFrameServer();
 
         void serve(int port);
         void stop();
-
-        ImageCache* image_cache() {
-            return image_cache_;
-        }
 
     };
 }

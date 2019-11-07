@@ -1,4 +1,4 @@
-#include "ImageConnection.hh"
+#include "ImageFrameConnection.hh"
 #include "ImageCache.hh"
 #include "ImageFrame.hh"
 
@@ -11,7 +11,7 @@ using std::cerr;
 using std::endl;
 using std::copy;
 
-shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
+shine::ImageFrameConnection::ImageFrameConnection(int sock_fd, ImageCache* img_cache_) {
     buffer_size_ = 100 * 1024 * 1024;
     buffer_ = new char[buffer_size_];
     slice_begin_ = 0;
@@ -22,11 +22,11 @@ shine::ImageConnection::ImageConnection(int sock_fd, ImageCache* img_cache_) {
     done_flag_ = false;
 }
 
-shine::ImageConnection::~ImageConnection() {
+shine::ImageFrameConnection::~ImageFrameConnection() {
     delete [] buffer_;
 }
 
-void shine::ImageConnection::run() {
+void shine::ImageFrameConnection::run() {
     if (start_connection_()) {
         while (!done_flag_ && transferring_());
     }
@@ -35,18 +35,18 @@ void shine::ImageConnection::run() {
     return;
 }
 
-bool shine::ImageConnection::done() {
+bool shine::ImageFrameConnection::done() {
     return done_flag_;
 }
 
-void shine::ImageConnection::shift_left_(const size_t position, const size_t limit) {
+void shine::ImageFrameConnection::shift_left_(const size_t position, const size_t limit) {
     if (position == 0) {
         copy(buffer_ + position, buffer_ + limit, buffer_);
     }
     slice_begin_ = limit - position;
 }
 
-bool shine::ImageConnection::start_connection_() {
+bool shine::ImageFrameConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
@@ -77,7 +77,7 @@ bool shine::ImageConnection::start_connection_() {
     return true;
 }
 
-bool shine::ImageConnection::transferring_() {
+bool shine::ImageFrameConnection::transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
         cout << "socket is closed by the client." << endl;

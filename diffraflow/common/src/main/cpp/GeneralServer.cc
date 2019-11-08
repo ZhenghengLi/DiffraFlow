@@ -10,10 +10,8 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <cassert>
+#include <boost/log/trivial.hpp>
 
-using std::cout;
-using std::cerr;
-using std::endl;
 using std::lock_guard;
 using std::unique_lock;
 using std::make_pair;
@@ -97,36 +95,40 @@ int shine::GeneralServer::accept_client_() {
 void shine::GeneralServer::serve() {
     if (is_ipc_) {
         if (create_ipc_sock_()) {
-            cout << "Successfully created socket on unix socket file "
-                 << server_sock_path_
-                 << " with server_sock_fd "
-                 << server_sock_fd_ << endl;
+            BOOST_LOG_TRIVIAL(info)
+                << "Successfully created socket on unix socket file "
+                << server_sock_path_
+                << " with server_sock_fd "
+                << server_sock_fd_;
         } else {
-            cerr << "Failed to create server socket on unix socket file "
-                 << server_sock_path_
-                 << "." << endl;
+            BOOST_LOG_TRIVIAL(error)
+                << "Failed to create server socket on unix socket file "
+                << server_sock_path_
+                << ".";
             return;
         }
     } else {
         if (create_tcp_sock_()) {
-            cout << "Successfully created socket on port "
-                 << server_sock_port_
-                 << " with server_sock_fd "
-                 << server_sock_fd_ << endl;
+            BOOST_LOG_TRIVIAL(info)
+                << "Successfully created socket on port "
+                << server_sock_port_
+                << " with server_sock_fd "
+                << server_sock_fd_;
         } else {
-            cerr << "Failed to create server socket on port "
-                 << server_sock_port_
-                 << "." << endl;
+            BOOST_LOG_TRIVIAL(error)
+                << "Failed to create server socket on port "
+                << server_sock_port_
+                << ".";
             return;
         }
     }
     while (server_run_) {
-        cout << "Waitting for connection ..." << endl;
+        BOOST_LOG_TRIVIAL(info) << "Waitting for connection ...";
         int client_sock_fd = accept_client_();
-        cout << "One connection is established with client_sock_fd " << client_sock_fd << endl;
+        BOOST_LOG_TRIVIAL(info) << "One connection is established with client_sock_fd " << client_sock_fd;
         if (client_sock_fd < 0) {
             if (server_run_) {
-                cerr << "got wrong client_sock_fd when server is running." << endl;
+            BOOST_LOG_TRIVIAL(error) << "got wrong client_sock_fd when server is running.";
             }
             return;
         }
@@ -166,7 +168,7 @@ void shine::GeneralServer::clean_() {
             delete iter->first;
             iter = connections_.erase(iter);
             dead_counts_--;
-            cout << "delete one connection" << endl;
+            BOOST_LOG_TRIVIAL(info) << "delete one connection";
         } else {
             iter++;
         }
@@ -192,5 +194,5 @@ void shine::GeneralServer::stop() {
             unlink(server_sock_path_.c_str());
         }
     }
-    cout << "INFO: server is closed." << endl;
+    BOOST_LOG_TRIVIAL(info) << "server is closed.";
 }

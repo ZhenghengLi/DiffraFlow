@@ -1,1 +1,8 @@
 apply from: "$rootDir/gradle/common_cpp_lib.gradle"
+
+library {
+    binaries.configureEach {
+        compileTask.get().compilerArgs.add('-DBOOST_LOG_DYN_LINK')
+        linkTask.get().linkerArgs.add('-lboost_log')
+    }
+}

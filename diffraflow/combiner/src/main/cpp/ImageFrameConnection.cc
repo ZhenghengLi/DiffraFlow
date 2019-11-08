@@ -6,10 +6,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <algorithm>
+#include <boost/log/trivial.hpp>
 
-using std::cout;
-using std::cerr;
-using std::endl;
 using std::copy;
 
 shine::ImageFrameConnection::ImageFrameConnection(
@@ -23,13 +21,13 @@ shine::ImageFrameConnection::~ImageFrameConnection() {
 }
 
 void shine::ImageFrameConnection::before_transferring_() {
-    cout << "connection ID: " << get_connection_id_() << endl;
+    BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
 }
 
 bool shine::ImageFrameConnection::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
-        cout << "socket is closed by the client." << endl;
+        BOOST_LOG_TRIVIAL(info) << "socket is closed by the client.";
         return false;
     }
     const size_t limit = slice_begin_ + slice_length;
@@ -48,11 +46,11 @@ bool shine::ImageFrameConnection::do_transferring_() {
 
         // validation check for packet
         if (size > pkt_maxlen_) {
-            cout << "got too large packet, close the connection." << endl;
+            BOOST_LOG_TRIVIAL(info) << "got too large packet, close the connection.";
             return false;
         }
         if (head == 0xABCDEEFF && size <= 8) {
-            cout << "got wrong image packet, close the connection." << endl;
+            BOOST_LOG_TRIVIAL(info) << "got wrong image packet, close the connection.";
             return false;
         }
 
@@ -75,7 +73,7 @@ bool shine::ImageFrameConnection::do_transferring_() {
             position += size;
             break;
         default:
-            cout << "got unknown packet, jump it." << endl;
+            BOOST_LOG_TRIVIAL(info) << "got unknown packet, jump it.";
             position += size;
         }
 

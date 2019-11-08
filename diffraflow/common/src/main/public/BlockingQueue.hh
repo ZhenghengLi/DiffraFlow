@@ -56,6 +56,7 @@ namespace shine {
 
         void abort();
         bool aborted();
+        void resume();
     };
 
     template <typename E>
@@ -96,7 +97,7 @@ namespace shine {
     template <typename E>
     bool BlockingQueue<E>::push(const E& el) {
         unique_lock<mutex> lk(mtx_);
-        cv_push_.wait(lk, [&]() {return  aborted_ || internal_queue_->size() < max_size_;});
+        cv_push_.wait(lk, [&]() {return aborted_ || internal_queue_->size() < max_size_;});
         if (aborted_) {
             return false;
         }
@@ -110,7 +111,7 @@ namespace shine {
         if (timeout < 0) return false;
         unique_lock<mutex> lk(mtx_);
         if (cv_push_.wait_for(lk, std::chrono::milliseconds(timeout),
-            [&]() {return  aborted_ || internal_queue_->size() < max_size_;})) {
+            [&]() {return aborted_ || internal_queue_->size() < max_size_;})) {
             if (aborted_) {
                 return false;
             }
@@ -126,7 +127,7 @@ namespace shine {
     template <typename E>
     bool BlockingQueue<E>::take(E& el) {
         unique_lock<mutex> lk(mtx_);
-        cv_take_.wait(lk, [&]() {return  aborted_ || !internal_queue_->empty();});
+        cv_take_.wait(lk, [&]() {return aborted_ || !internal_queue_->empty();});
         if (aborted_) {
             return false;
         }
@@ -141,7 +142,7 @@ namespace shine {
         if (timeout < 0) return false;
         unique_lock<mutex> lk(mtx_);
         if (cv_take_.wait_for(lk, std::chrono::milliseconds(timeout),
-            [&]() {return  aborted_ || !internal_queue_->empty();})) {
+            [&]() {return aborted_ || !internal_queue_->empty();})) {
             if (aborted_) {
                 return false;
             }
@@ -211,6 +212,11 @@ namespace shine {
     template <typename E>
     bool BlockingQueue<E>::aborted() {
         return aborted_;
+    }
+
+    template <typename E>
+    void BlockingQueue<E>::resume() {
+        aborted_ = false;
     }
 
 }

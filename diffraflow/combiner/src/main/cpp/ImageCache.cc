@@ -25,6 +25,6 @@ void shine::ImageCache::put_frame(ImageFrame& image_frame) {
     image_data_queue_.push(image_data);
 }
 
-bool shine::ImageCache::take_one_image(ImageData& image_data) {
-    return image_data_queue_.take(image_data);
+bool shine::ImageCache::take_one_image(ImageData& image_data, int timeout_ms) {
+    return image_data_queue_.take(image_data, timeout_ms);
 }

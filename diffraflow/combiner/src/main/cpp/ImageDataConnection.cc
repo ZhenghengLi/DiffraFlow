@@ -59,7 +59,12 @@ bool shine::ImageDataConnection::do_transferring_() {
 
     // send image data from here
     for (int i = 0; i < img_count; i++) {
-
+        ImageData image_data;
+        while (!image_cache_->take_one_image(image_data, 50)) {
+            if (done_flag_) return false;
+        }
+        // serialize image_data into buffer
+        // send data in buffer
     }
 
 

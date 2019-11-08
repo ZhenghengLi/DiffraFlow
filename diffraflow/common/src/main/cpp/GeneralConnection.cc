@@ -39,6 +39,11 @@ bool shine::GeneralConnection::done() {
     return done_flag_;
 }
 
+void shine::GeneralConnection::set_stop() {
+    // TODO: should stop the blocing socket read in do_transferring here.
+    done_flag_ = true;
+}
+
 void shine::GeneralConnection::shift_left_(const size_t position, const size_t limit) {
     if (position == 0) {
         copy(buffer_ + position, buffer_ + limit, buffer_);

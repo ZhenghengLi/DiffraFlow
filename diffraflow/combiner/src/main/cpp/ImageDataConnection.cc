@@ -68,6 +68,7 @@ bool shine::ImageDataConnection::do_transferring_() {
         // send the data in buffer
         // check if the sock_fd is closed when writting data
         // if closed return false;
+        // note: like read(), when write() return 0, it means the sock_fd is closed.
 
     }
 

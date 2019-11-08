@@ -1,10 +1,15 @@
 apply from: "$rootDir/gradle/common_cpp_app.gradle"
+import org.gradle.internal.os.OperatingSystem
 
 application {
     binaries.configureEach {
         compileTask.get().compilerArgs.add('-DBOOST_ALL_DYN_LINK')
         linkTask.get().linkerArgs.add('-lrdkafka++')
-        linkTask.get().linkerArgs.add('-lboost_log')
+        if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+            linkTask.get().linkerArgs.add('-lboost_log-mt')
+        } else {
+            linkTask.get().linkerArgs.add('-lboost_log')
+        }
     }
     dependencies {
         implementation project(":diffraflow:common")

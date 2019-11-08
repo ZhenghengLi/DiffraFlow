@@ -1,8 +1,13 @@
 apply from: "$rootDir/gradle/common_cpp_lib.gradle"
+import org.gradle.internal.os.OperatingSystem
 
 library {
     binaries.configureEach {
         compileTask.get().compilerArgs.add('-DBOOST_ALL_DYN_LINK')
-        linkTask.get().linkerArgs.add('-lboost_log')
+        if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+            linkTask.get().linkerArgs.add('-lboost_log-mt')
+        } else {
+            linkTask.get().linkerArgs.add('-lboost_log')
+        }
     }
 }

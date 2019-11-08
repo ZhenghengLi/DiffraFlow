@@ -24,7 +24,7 @@ namespace shine {
         condition_variable cv_push_;
         condition_variable cv_take_;
         queue<E>* internal_queue_;
-        atomic_bool aborted_;
+        atomic<bool> stopped_;
         atomic<size_t> max_size_;
     public:
         BlockingQueue(size_t ms = 100);
@@ -37,13 +37,13 @@ namespace shine {
         size_t size();
         bool empty();
 
-        // blocking push until have space, return false when aborted
+        // blocking push until have space, return false when stopped
         bool push(const E& el);
-        // blocking push with timeout, return false when timeout or aborted
+        // blocking push with timeout, return false when timeout or stopped
         bool push(const E& el, int timeout);
-        // blocking take until have element, return false when aborted
+        // blocking take until have element, return false when stopped
         bool take(E& el);
-        // blocking take with timeout, return false when timeout or aborted
+        // blocking take with timeout, return false when timeout or stopped
         bool take(E& el, int timeout);
         // push only when have space now, otherwise directly return false
         bool offer(const E& el);
@@ -54,8 +54,8 @@ namespace shine {
         // non-blocking take only when get lock and have element
         bool try_get(E& el);
 
-        void abort();
-        bool aborted();
+        void stop();
+        bool stopped();
         void resume();
     };
 
@@ -63,7 +63,7 @@ namespace shine {
     BlockingQueue<E>::BlockingQueue(size_t ms) {
         max_size_ = ms;
         internal_queue_ = new queue<E>();
-        aborted_ = false;
+        stopped_ = false;
     }
 
     template <typename E>
@@ -96,11 +96,10 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::push(const E& el) {
+        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_);
-        cv_push_.wait(lk, [&]() {return aborted_ || internal_queue_->size() < max_size_;});
-        if (aborted_) {
-            return false;
-        }
+        cv_push_.wait(lk, [&]() {return stopped_ || internal_queue_->size() < max_size_;});
+        if (stopped_) return false;
         internal_queue_->push(el);
         cv_take_.notify_one();
         return true;
@@ -108,13 +107,12 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::push(const E& el, int timeout) {
+        if (stopped_) return false;
         if (timeout < 0) return false;
         unique_lock<mutex> lk(mtx_);
         if (cv_push_.wait_for(lk, std::chrono::milliseconds(timeout),
-            [&]() {return aborted_ || internal_queue_->size() < max_size_;})) {
-            if (aborted_) {
-                return false;
-            }
+            [&]() {return stopped_ || internal_queue_->size() < max_size_;})) {
+            if (stopped_) return false;
             internal_queue_->push(el);
             cv_take_.notify_one();
             return true;
@@ -126,11 +124,10 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::take(E& el) {
+        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_);
-        cv_take_.wait(lk, [&]() {return aborted_ || !internal_queue_->empty();});
-        if (aborted_) {
-            return false;
-        }
+        cv_take_.wait(lk, [&]() {return stopped_ || !internal_queue_->empty();});
+        if (stopped_) return false;
         el = internal_queue_->front();
         internal_queue_->pop();
         cv_push_.notify_one();
@@ -139,13 +136,12 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::take(E& el, int timeout) {
+        if (stopped_) return false;
         if (timeout < 0) return false;
         unique_lock<mutex> lk(mtx_);
         if (cv_take_.wait_for(lk, std::chrono::milliseconds(timeout),
-            [&]() {return aborted_ || !internal_queue_->empty();})) {
-            if (aborted_) {
-                return false;
-            }
+            [&]() {return stopped_ || !internal_queue_->empty();})) {
+            if (stopped_) return false;
             el = internal_queue_->front();
             internal_queue_->pop();
             cv_push_.notify_one();
@@ -158,6 +154,7 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::offer(const E& el) {
+        if (stopped_) return false;
         lock_guard<mutex> lk(mtx_);
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
@@ -169,6 +166,7 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::get(E& el) {
+        if (stopped_) return false;
         lock_guard<mutex> lk(mtx_);
         if (internal_queue_->empty()) {
             return false;
@@ -180,6 +178,7 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::try_offer(const E& el) {
+        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->size() < max_size_) {
@@ -192,6 +191,7 @@ namespace shine {
 
     template <typename E>
     bool BlockingQueue<E>::try_get(E& el) {
+        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->empty()) {
@@ -203,20 +203,20 @@ namespace shine {
     }
 
     template <typename E>
-    void BlockingQueue<E>::abort() {
-        aborted_ = true;
+    void BlockingQueue<E>::stop() {
+        stopped_ = true;
         cv_push_.notify_all();
         cv_take_.notify_all();
     }
 
     template <typename E>
-    bool BlockingQueue<E>::aborted() {
-        return aborted_;
+    bool BlockingQueue<E>::stopped() {
+        return stopped_;
     }
 
     template <typename E>
     void BlockingQueue<E>::resume() {
-        aborted_ = false;
+        stopped_ = false;
     }
 
 }

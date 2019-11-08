@@ -60,13 +60,16 @@ bool shine::ImageDataConnection::do_transferring_() {
     // send image data from here
     for (int i = 0; i < img_count; i++) {
         ImageData image_data;
-        while (!image_cache_->take_one_image(image_data, 50)) {
+        while (!image_cache_->take_one_image(image_data, WAIT_TIME_MS)) {
             if (done_flag_) return false;
+            if (image_cache_->img_queue_stopped()) return false;
         }
         // serialize image_data into buffer
-        // send data in buffer
-    }
+        // send the data in buffer
+        // check if the sock_fd is closed when writting data
+        // if closed return false;
 
+    }
 
     return true;
 }

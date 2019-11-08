@@ -3,6 +3,8 @@
 
 #include "GeneralConnection.hh"
 
+#define WAIT_TIME_MS 50
+
 namespace shine {
 
     class ImageCache;

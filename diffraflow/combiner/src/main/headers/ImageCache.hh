@@ -18,6 +18,8 @@ namespace shine {
 
         void put_frame(ImageFrame& image_frame);
         bool take_one_image(ImageData& image_data, int timeout_ms);
+        void img_queue_stop();
+        bool img_queue_stopped();
 
     };
 }

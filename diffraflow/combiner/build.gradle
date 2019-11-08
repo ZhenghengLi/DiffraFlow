@@ -7,8 +7,10 @@ application {
         linkTask.get().linkerArgs.add('-lrdkafka++')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
             linkTask.get().linkerArgs.add('-lboost_log-mt')
+            linkTask.get().linkerArgs.add('-lboost_system-mt')
         } else {
             linkTask.get().linkerArgs.add('-lboost_log')
+            linkTask.get().linkerArgs.add('-lboost_system')
         }
     }
     dependencies {

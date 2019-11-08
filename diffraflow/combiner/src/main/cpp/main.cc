@@ -1,5 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 #include "Configuration.hh"
 #include "ImageFrameServer.hh"
@@ -25,6 +28,10 @@ int main(int argc, char** argv) {
     cout << endl;
     config.print();
     cout << endl;
+
+    boost::log::core::get()->set_filter(
+        boost::log::trivial::severity >= boost::log::trivial::debug
+    );
 
     ImageCache image_cache;
     ImageFrameServer image_frame_server(config.port, &image_cache);

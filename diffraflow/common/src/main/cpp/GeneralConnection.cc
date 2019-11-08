@@ -40,7 +40,7 @@ bool shine::GeneralConnection::done() {
 }
 
 void shine::GeneralConnection::set_stop() {
-    // TODO: should stop the blocing socket read in do_transferring here.
+    shutdown(client_sock_fd_, SHUT_RDWR);
     done_flag_ = true;
 }
 
@@ -55,7 +55,7 @@ bool shine::GeneralConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
-            BOOST_LOG_TRIVIAL(info) << "socket is closed by the client.";
+            BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";
             return false;
         }
         if (slice_begin_ + slice_length < 12) {

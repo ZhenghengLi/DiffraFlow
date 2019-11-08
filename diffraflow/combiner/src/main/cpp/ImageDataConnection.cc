@@ -30,7 +30,7 @@ bool shine::ImageDataConnection::do_transferring_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
-            BOOST_LOG_TRIVIAL(warning) << "socket is closed by the client.";
+            BOOST_LOG_TRIVIAL(warning) << "socket " << client_sock_fd_ << " is closed.";
             return false;
         }
         if (slice_begin_ + slice_length < 12) {

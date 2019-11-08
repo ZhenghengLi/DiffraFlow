@@ -27,7 +27,7 @@ void shine::ImageFrameConnection::before_transferring_() {
 bool shine::ImageFrameConnection::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
-        BOOST_LOG_TRIVIAL(info) << "socket is closed by the client.";
+        BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";
         return false;
     }
     const size_t limit = slice_begin_ + slice_length;

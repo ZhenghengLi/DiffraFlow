@@ -124,7 +124,12 @@ void shine::GeneralServer::serve() {
         cout << "Waitting for connection ..." << endl;
         int client_sock_fd = accept_client_();
         cout << "One connection is established with client_sock_fd " << client_sock_fd << endl;
-        if (client_sock_fd < 0) return;
+        if (client_sock_fd < 0) {
+            if (server_run_) {
+                cerr << "got wrong client_sock_fd when server is running." << endl;
+            }
+            return;
+        }
         if (!server_run_) {
             close(client_sock_fd);
             return;
@@ -181,6 +186,11 @@ void shine::GeneralServer::stop() {
     }
     // close the server socket
     if (server_sock_fd_ > 0) {
+        shutdown(server_sock_fd_, SHUT_RDWR);
         close(server_sock_fd_);
+        if (is_ipc_) {
+            unlink(server_sock_path_.c_str());
+        }
     }
+    cout << "INFO: server is closed." << endl;
 }

@@ -5,10 +5,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <algorithm>
+#include <boost/log/trivial.hpp>
 
-using std::cout;
-using std::cerr;
-using std::endl;
 using std::copy;
 
 shine::GeneralConnection::GeneralConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd) {
@@ -52,7 +50,7 @@ bool shine::GeneralConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
-            cout << "socket is closed by the client." << endl;
+            BOOST_LOG_TRIVIAL(info) << "socket is closed by the client.";
             return false;
         }
         if (slice_begin_ + slice_length < 12) {
@@ -66,7 +64,7 @@ bool shine::GeneralConnection::start_connection_() {
     uint32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     if (head != greeting_head_ || size != 4) {
-        cout << "got wrong greeting message, close the connection." << endl;
+        BOOST_LOG_TRIVIAL(info) << "got wrong greeting message, close the connection.";
         write(client_sock_fd_, &failure_code, 4);
         done_flag_ = false;
         return false;

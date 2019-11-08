@@ -1,5 +1,6 @@
 #include "ImageDataConnection.hh"
 #include "ImageCache.hh"
+#include "ImageData.hh"
 #include "Decoder.hh"
 
 #include <unistd.h>
@@ -24,58 +25,43 @@ void shine::ImageDataConnection::before_transferring_() {
 }
 
 bool shine::ImageDataConnection::do_transferring_() {
-    const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-    if (slice_length == 0) {
-        BOOST_LOG_TRIVIAL(info) << "socket is closed by the client.";
+    // read image data request message
+    slice_begin_ = 0;
+    while (true) {
+        const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
+        if (slice_length == 0) {
+            BOOST_LOG_TRIVIAL(warning) << "socket is closed by the client.";
+            return false;
+        }
+        if (slice_begin_ + slice_length < 12) {
+            slice_begin_ += slice_length;
+        } else {
+            break;
+        }
+    }
+
+    uint32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
+    uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
+    if (head != 0xABABCAFE || size != 4) {
+        BOOST_LOG_TRIVIAL(warning) << "got wrong image data request message, close the connection.";
         return false;
     }
-    const size_t limit = slice_begin_ + slice_length;
-    size_t position = 0;
-    while (true) {
-        if (limit - position < 8) {
-            shift_left_(position, limit);
-            break;
-        }
+    int img_count = gDC.decode_byte<int32_t>(buffer_, 8, 11);
+    if (img_count < 1) {
+        BOOST_LOG_TRIVIAL(warning) << "got invalid image count: " << img_count << ", close the connection.";
+        return false;
+    }
+    if (img_count > 10) {
+        BOOST_LOG_TRIVIAL(warning) << "got too large image count: " << img_count << ", close the connection.";
+        return false;
+    }
+    BOOST_LOG_TRIVIAL(info) << "got one request with " << img_count << " images.";
 
-        // read head and size
-        uint32_t head = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
-        position += 4;
-        uint32_t size = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
-        position += 4;
-
-        // validation check for packet
-        if (size > pkt_maxlen_) {
-            BOOST_LOG_TRIVIAL(info) << "got too large packet, close the connection.";
-            return false;
-        }
-        if (head == 0xABCDEEFF && size <= 8) {
-            BOOST_LOG_TRIVIAL(info) << "got wrong image packet, close the connection.";
-            return false;
-        }
-
-        // continue to receive more data
-        if (limit - position < size) {
-            position -= 8;
-            shift_left_(position, limit);
-            break;
-        }
-
-        // decode one packet
-
-        // 0xABCDEEFF
-//        ImageFrame image_frame;
-//
-//        switch (head) {
-//        case 0xABCDEEFF: // image data
-//            image_frame.decode(buffer_ + position, size);
-//            image_cache_->put_frame(image_frame);
-//            position += size;
-//            break;
-//        default:
-//            BOOST_LOG_TRIVIAL(info) << "got unknown packet, jump it.";
-//            position += size;
-//        }
+    // send image data from here
+    for (int i = 0; i < img_count; i++) {
 
     }
+
+
     return true;
 }

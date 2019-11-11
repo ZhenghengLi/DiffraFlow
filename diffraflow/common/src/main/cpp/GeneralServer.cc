@@ -147,7 +147,7 @@ void shine::GeneralServer::serve() {
         {
             unique_lock<mutex> lk(mtx_);
             if (!server_run_) {
-                conn_object->set_stop();
+                conn_object->stop();
                 conn_thread->join();
                 delete conn_thread;
                 delete conn_object;
@@ -180,7 +180,7 @@ void shine::GeneralServer::stop() {
     unique_lock<mutex> lk(mtx_);
     // close all connections
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {
-        iter->first->set_stop();
+        iter->first->stop();
         iter->second->join();
         delete iter->second;
         delete iter->first;

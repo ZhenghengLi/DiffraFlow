@@ -39,7 +39,7 @@ bool shine::GeneralConnection::done() {
     return done_flag_;
 }
 
-void shine::GeneralConnection::set_stop() {
+void shine::GeneralConnection::stop() {
     shutdown(client_sock_fd_, SHUT_RDWR);
     done_flag_ = true;
 }

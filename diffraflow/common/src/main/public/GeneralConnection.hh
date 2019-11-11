@@ -39,7 +39,7 @@ namespace shine {
 
         void run();
         bool done();
-        void set_stop();
+        void stop();
 
 
     };

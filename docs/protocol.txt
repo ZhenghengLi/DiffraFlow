@@ -1,0 +1,29 @@
+dispatcher -> D
+combiner   -> C
+ingester   -> E
+monitor    -> B
+client     -> A
+
+TCP: dispatcher -> combiner
+greeting:    0xDDCC1234    (int)4       (int)id
+return code: succ(1234)    fail(4321)
+transfering: 0xDDD00CCC    (int)size    (char[])payload
+
+TCP: combiner -> ingester
+greeting:    0xCCEE1234    (int)4       (int)0
+return code: succ(1234)    fail(4321)
+transfering: 0xCCC00EEE    (int)size    (char[])payload
+
+TCP: ingester -> monitor
+greeting:    0xEEBB1234    (int)4       (int)0
+return code: succ(1234)    fail(4321)
+transfering: 0xEEE00BBB    (int)size    (char[])payload
+
+TCP: client -> monitor (request in a round-robin way from all monitors)
+greeting:    0xAABB1234    (int)4       (int)0
+return code: succ(1234)    fail(4321)
+request:     0xAAA00BBB    (int)8       (long)time
+when have newer data:
+response1    0xBBB00AAA    (int)size    (char[])payload
+otherwise:
+response2    0xBBB11AAA    (int)4       (int)0

@@ -16,7 +16,7 @@ using std::condition_variable;
 using std::atomic_bool;
 using std::atomic;
 
-namespace shine {
+namespace diffraflow {
     template <typename E>
     class BlockingQueue {
     private:

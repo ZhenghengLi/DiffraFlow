@@ -9,7 +9,7 @@
 #include "ImageCache.hh"
 
 using namespace std;
-using namespace shine;
+using namespace diffraflow;
 
 int main(int argc, char** argv) {
 
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     }
 
     string config_fn = argv[1];
-    shine::Configuration config;
+    diffraflow::Configuration config;
     if (!config.load(config_fn.c_str())) {
         cout << "Failed to load configuration file: " << config_fn << endl;
         return 1;

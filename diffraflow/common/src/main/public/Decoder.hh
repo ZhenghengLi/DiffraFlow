@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <stdint.h>
 
-namespace shine {
+namespace diffraflow {
     class Decoder {
     public:
         template <class T>

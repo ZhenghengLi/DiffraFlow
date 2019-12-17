@@ -9,7 +9,7 @@ using std::vector;
 using std::mutex;
 using std::lock_guard;
 
-namespace shine {
+namespace diffraflow {
 
     class ImageData;
 

@@ -5,7 +5,7 @@
 
 #define WAIT_TIME_MS 50
 
-namespace shine {
+namespace diffraflow {
 
     class ImageCache;
 

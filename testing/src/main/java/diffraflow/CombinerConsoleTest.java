@@ -1,4 +1,4 @@
-package shine;
+package diffraflow;
 
 import java.net.*;
 import java.io.*;

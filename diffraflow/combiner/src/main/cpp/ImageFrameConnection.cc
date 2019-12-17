@@ -10,21 +10,21 @@
 
 using std::copy;
 
-shine::ImageFrameConnection::ImageFrameConnection(
+diffraflow::ImageFrameConnection::ImageFrameConnection(
     int sock_fd, ImageCache* img_cache_):
     GeneralConnection(sock_fd, 100 * 1024 * 1024, 1024 * 1024, 0xAAAABBBB) {
     image_cache_ = img_cache_;
 }
 
-shine::ImageFrameConnection::~ImageFrameConnection() {
+diffraflow::ImageFrameConnection::~ImageFrameConnection() {
 
 }
 
-void shine::ImageFrameConnection::before_transferring_() {
+void diffraflow::ImageFrameConnection::before_transferring_() {
     BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
 }
 
-bool shine::ImageFrameConnection::do_transferring_() {
+bool diffraflow::ImageFrameConnection::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
         BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";

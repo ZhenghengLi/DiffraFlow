@@ -10,21 +10,21 @@
 
 using std::copy;
 
-shine::ImageDataConnection::ImageDataConnection(
+diffraflow::ImageDataConnection::ImageDataConnection(
     int sock_fd, ImageCache* img_cache_):
     GeneralConnection(sock_fd, 100 * 1024 * 1024, 10 * 1024 * 1024, 0xBBBBCCCC) {
     image_cache_ = img_cache_;
 }
 
-shine::ImageDataConnection::~ImageDataConnection() {
+diffraflow::ImageDataConnection::~ImageDataConnection() {
 
 }
 
-void shine::ImageDataConnection::before_transferring_() {
+void diffraflow::ImageDataConnection::before_transferring_() {
     BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
 }
 
-bool shine::ImageDataConnection::do_transferring_() {
+bool diffraflow::ImageDataConnection::do_transferring_() {
     // read image data request message
     slice_begin_ = 0;
     while (true) {

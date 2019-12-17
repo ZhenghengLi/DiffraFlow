@@ -7,7 +7,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-shine::ImageFrame::ImageFrame() {
+diffraflow::ImageFrame::ImageFrame() {
     img_frame = nullptr;
     img_rawdata_ = nullptr;
     img_rawsize_ = 0;
@@ -15,7 +15,7 @@ shine::ImageFrame::ImageFrame() {
     img_height = 0;
 }
 
-shine::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
+diffraflow::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
     img_frame = nullptr;
     img_rawdata_ = nullptr;
     img_rawsize_ = 0;
@@ -24,16 +24,16 @@ shine::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
     decode(buffer, size);
 }
 
-shine::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
+diffraflow::ImageFrame::ImageFrame(const ImageFrame& img_frm) {
     copyObj_(img_frm);
 }
 
-shine::ImageFrame::~ImageFrame() {
+diffraflow::ImageFrame::~ImageFrame() {
     if (img_frame != nullptr) delete [] img_frame;
     if (img_rawdata_ != nullptr) delete [] img_rawdata_;
 }
 
-void shine::ImageFrame::copyObj_(const ImageFrame& img_frm) {
+void diffraflow::ImageFrame::copyObj_(const ImageFrame& img_frm) {
     det_id = img_frm.det_id;
     img_width = img_frm.img_width;
     img_height = img_frm.img_height;
@@ -54,12 +54,12 @@ void shine::ImageFrame::copyObj_(const ImageFrame& img_frm) {
     }
 }
 
-shine::ImageFrame& shine::ImageFrame::operator=(const ImageFrame& img_frm) {
+diffraflow::ImageFrame& diffraflow::ImageFrame::operator=(const ImageFrame& img_frm) {
     copyObj_(img_frm);
     return *this;
 }
 
-bool shine::ImageFrame::decode(const char* buffer, const size_t size) {
+bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     clear_data();
     if (size < 8) return false;
     img_key = gDC.decode_byte<int64_t>(buffer, 0, 7);
@@ -71,7 +71,7 @@ bool shine::ImageFrame::decode(const char* buffer, const size_t size) {
     return true;
 }
 
-void shine::ImageFrame::print() {
+void diffraflow::ImageFrame::print() {
     if (img_rawdata_ == nullptr) {
         cout << "there is no data to print" << endl;
     }
@@ -83,7 +83,7 @@ void shine::ImageFrame::print() {
     cout << "]" << endl;
 }
 
-size_t shine::ImageFrame::serialize(char* const data, size_t len) {
+size_t diffraflow::ImageFrame::serialize(char* const data, size_t len) {
     size_t gOffset = 0, offset = 0;
     // type
     offset = gPS.serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
@@ -123,7 +123,7 @@ size_t shine::ImageFrame::serialize(char* const data, size_t len) {
     return gOffset;
 }
 
-size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
+size_t diffraflow::ImageFrame::deserialize(const char* const data, size_t len) {
     clear_data();
     size_t gOffset = 0, offset = 0;
     // check type
@@ -175,7 +175,7 @@ size_t shine::ImageFrame::deserialize(const char* const data, size_t len) {
     return gOffset;
 }
 
-size_t shine::ImageFrame::object_size() {
+size_t diffraflow::ImageFrame::object_size() {
     size_t theSize = 0;
     // type
     theSize += sizeof(int32_t);
@@ -200,11 +200,11 @@ size_t shine::ImageFrame::object_size() {
     return theSize;
 }
 
-int shine::ImageFrame::object_type() {
+int diffraflow::ImageFrame::object_type() {
     return obj_type_;
 }
 
-void shine::ImageFrame::clear_data() {
+void diffraflow::ImageFrame::clear_data() {
     img_rawsize_ = 0;
     if (img_rawdata_ != nullptr) {
         delete [] img_rawdata_;

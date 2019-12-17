@@ -6,7 +6,7 @@
 using std::map;
 using std::string;
 
-namespace shine {
+namespace diffraflow {
     class Configuration {
         public:
             int port;

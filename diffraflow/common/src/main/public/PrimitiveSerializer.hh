@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <iostream>
 
-namespace shine {
+namespace diffraflow {
     class PrimitiveSerializer {
     private:
         bool isLittleEndian_;
@@ -26,7 +26,7 @@ namespace shine {
 }
 
 template <class T>
-size_t shine::PrimitiveSerializer::serializeValue(T value, char* const buffer_p, size_t buffer_l) {
+size_t diffraflow::PrimitiveSerializer::serializeValue(T value, char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
         std::cerr << "WARNING: cannnot serialize data of non-fundamental types." << std::endl;
         return 0;
@@ -47,7 +47,7 @@ size_t shine::PrimitiveSerializer::serializeValue(T value, char* const buffer_p,
 }
 
 template <class T>
-size_t shine::PrimitiveSerializer::deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l) {
+size_t diffraflow::PrimitiveSerializer::deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
         std::cerr << "WARNING: cannnot deserialize data of non-fundamental types." << std::endl;
         return 0;

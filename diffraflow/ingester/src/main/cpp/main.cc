@@ -3,7 +3,7 @@
 #include "ImageWriter.hh"
 
 using namespace std;
-using namespace shine;
+using namespace diffraflow;
 
 int main(int argc, char** argv) {
     cout << "I am ingester." << endl;

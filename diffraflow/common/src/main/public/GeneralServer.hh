@@ -17,7 +17,7 @@ using std::atomic;
 using std::mutex;
 using std::condition_variable;
 
-namespace shine {
+namespace diffraflow {
 
     class GeneralConnection;
 

@@ -6,7 +6,7 @@
 
 using std::atomic;
 
-namespace shine {
+namespace diffraflow {
     class GeneralConnection {
     private:
         uint32_t greeting_head_;

@@ -16,7 +16,7 @@ using std::lock_guard;
 using std::unique_lock;
 using std::make_pair;
 
-shine::GeneralServer::GeneralServer(int port) {
+diffraflow::GeneralServer::GeneralServer(int port) {
     server_sock_fd_ = -1;
     server_run_ = true;
     server_sock_port_ = port;
@@ -25,7 +25,7 @@ shine::GeneralServer::GeneralServer(int port) {
     start_cleaner_();
 }
 
-shine::GeneralServer::GeneralServer(string sock_path) {
+diffraflow::GeneralServer::GeneralServer(string sock_path) {
     server_sock_fd_ = -1;
     server_run_ = true;
     server_sock_port_ = 0;
@@ -34,14 +34,14 @@ shine::GeneralServer::GeneralServer(string sock_path) {
     start_cleaner_();
 }
 
-shine::GeneralServer::~GeneralServer() {
+diffraflow::GeneralServer::~GeneralServer() {
     cleaner_run_ = false;
     cleaner_->join();
     stop();
     delete cleaner_;
 }
 
-void shine::GeneralServer::start_cleaner_() {
+void diffraflow::GeneralServer::start_cleaner_() {
     dead_counts_ = 0;
     cleaner_run_ = true;
     cleaner_ = new thread(
@@ -51,7 +51,7 @@ void shine::GeneralServer::start_cleaner_() {
     );
 }
 
-bool shine::GeneralServer::create_tcp_sock_() {
+bool diffraflow::GeneralServer::create_tcp_sock_() {
     sockaddr_in server_addr;
     server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -68,7 +68,7 @@ bool shine::GeneralServer::create_tcp_sock_() {
     return true;
 }
 
-bool shine::GeneralServer::create_ipc_sock_() {
+bool diffraflow::GeneralServer::create_ipc_sock_() {
     sockaddr_un server_addr;
     server_sock_fd_ = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -87,12 +87,12 @@ bool shine::GeneralServer::create_ipc_sock_() {
     return true;
 }
 
-int shine::GeneralServer::accept_client_() {
+int diffraflow::GeneralServer::accept_client_() {
     int client_sock_fd = accept(server_sock_fd_, NULL, NULL);
     return client_sock_fd;
 }
 
-void shine::GeneralServer::serve() {
+void diffraflow::GeneralServer::serve() {
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             BOOST_LOG_TRIVIAL(info)
@@ -158,7 +158,7 @@ void shine::GeneralServer::serve() {
     }
 }
 
-void shine::GeneralServer::clean_() {
+void diffraflow::GeneralServer::clean_() {
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
@@ -175,7 +175,7 @@ void shine::GeneralServer::clean_() {
     }
 }
 
-void shine::GeneralServer::stop() {
+void diffraflow::GeneralServer::stop() {
     server_run_ = false;
     unique_lock<mutex> lk(mtx_);
     // close all connections

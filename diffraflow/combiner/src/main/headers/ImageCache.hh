@@ -3,7 +3,7 @@
 
 #include "BlockingQueue.hh"
 
-namespace shine {
+namespace diffraflow {
 
     class ImageFrame;
     class ImageData;

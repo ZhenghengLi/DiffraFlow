@@ -1,7 +1,7 @@
 #ifndef ServerManager_H
 #define ServerManager_H
 
-namespace shine {
+namespace diffraflow {
     class ImageCache;
 
     class ServerManager {

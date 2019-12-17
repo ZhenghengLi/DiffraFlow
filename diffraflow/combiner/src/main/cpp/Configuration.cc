@@ -9,15 +9,15 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-shine::Configuration::Configuration() {
+diffraflow::Configuration::Configuration() {
 
 }
 
-shine::Configuration::~Configuration() {
+diffraflow::Configuration::~Configuration() {
 
 }
 
-bool shine::Configuration::load(const char* filename) {
+bool diffraflow::Configuration::load(const char* filename) {
     ifstream config_file;
     config_file.open(filename);
     if (!config_file.is_open()) {
@@ -50,7 +50,7 @@ bool shine::Configuration::load(const char* filename) {
     return true;
 }
 
-void shine::Configuration::print() {
+void diffraflow::Configuration::print() {
     cout << " = Configuration Dump Begin =" << endl;
     cout << "  port = " << port << endl;
     cout << " = Configuration Dump End =" << endl;

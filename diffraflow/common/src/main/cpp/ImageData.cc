@@ -9,11 +9,11 @@ using std::endl;
 using std::cerr;
 using std::copy;
 
-shine::ImageData::ImageData() {
+diffraflow::ImageData::ImageData() {
     ImageData(1);
 }
 
-shine::ImageData::ImageData(uint32_t numOfDet) {
+diffraflow::ImageData::ImageData(uint32_t numOfDet) {
     imgFrm_len = numOfDet;
     imgFrm_arr = new ImageFrame[imgFrm_len];
     status_arr = new uint8_t[imgFrm_len];
@@ -22,15 +22,15 @@ shine::ImageData::ImageData(uint32_t numOfDet) {
     }
 }
 
-shine::ImageData::ImageData(const ImageData& img_data) {
+diffraflow::ImageData::ImageData(const ImageData& img_data) {
     copyObj_(img_data);
 }
 
-shine::ImageData& shine::ImageData::operator=(const ImageData& img_data) {
+diffraflow::ImageData& diffraflow::ImageData::operator=(const ImageData& img_data) {
     copyObj_(img_data);
 }
 
-void shine::ImageData::copyObj_(const ImageData& img_data) {
+void diffraflow::ImageData::copyObj_(const ImageData& img_data) {
     if (imgFrm_len != img_data.imgFrm_len) {
         imgFrm_len = img_data.imgFrm_len;
         delete [] imgFrm_arr;
@@ -44,19 +44,19 @@ void shine::ImageData::copyObj_(const ImageData& img_data) {
     event_time = img_data.event_time;
 }
 
-shine::ImageData::~ImageData() {
+diffraflow::ImageData::~ImageData() {
     delete [] imgFrm_arr;
     delete [] status_arr;
 }
 
-bool shine::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
+bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
     if (index >= imgFrm_len) return false;
     imgFrm_arr[index] = imgfrm;
     status_arr[index] = 0x1;
     return true;
 }
 
-size_t shine::ImageData::serialize(char* const data, size_t len) {
+size_t diffraflow::ImageData::serialize(char* const data, size_t len) {
     size_t gOffset = 0, offset = 0;
     // type
     offset = gPS.serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
@@ -86,7 +86,7 @@ size_t shine::ImageData::serialize(char* const data, size_t len) {
     return gOffset;
 }
 
-size_t shine::ImageData::deserialize(const char* const data, size_t len) {
+size_t diffraflow::ImageData::deserialize(const char* const data, size_t len) {
     clear_data();
     size_t gOffset = 0, offset = 0;
     // check type
@@ -121,7 +121,7 @@ size_t shine::ImageData::deserialize(const char* const data, size_t len) {
     return gOffset;
 }
 
-size_t shine::ImageData::object_size() {
+size_t diffraflow::ImageData::object_size() {
     size_t theSize = 0;
     // type
     theSize += sizeof(int32_t);
@@ -143,11 +143,11 @@ size_t shine::ImageData::object_size() {
     return theSize;
 }
 
-int shine::ImageData::object_type() {
+int diffraflow::ImageData::object_type() {
     return obj_type_;
 }
 
-void shine::ImageData::clear_data() {
+void diffraflow::ImageData::clear_data() {
     for (size_t i = 0; i < imgFrm_len; i++) {
         status_arr[i] = 0x0;
     }

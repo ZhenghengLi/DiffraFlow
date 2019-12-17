@@ -6,7 +6,7 @@
 #include "PrimitiveSerializer.hh"
 #include "ObjectSerializer.hh"
 
-namespace shine {
+namespace diffraflow {
     class ImageFrame: public ObjectSerializer {
     private:
         static const int obj_type_ = 1231;

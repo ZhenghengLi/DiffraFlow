@@ -1,9 +1,9 @@
 #include "ServerManager.hh"
 
-shine::ServerManager::ServerManager() {
+diffraflow::ServerManager::ServerManager() {
 
 }
 
-shine::ServerManager::~ServerManager() {
+diffraflow::ServerManager::~ServerManager() {
 
 }

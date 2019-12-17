@@ -1,6 +1,6 @@
 #include "PrimitiveSerializer.hh"
 
-shine::PrimitiveSerializer::PrimitiveSerializer() {
+diffraflow::PrimitiveSerializer::PrimitiveSerializer() {
     short number = 0x1;
     char* num_p = (char*)&number;
     if (num_p[0] == 1) {

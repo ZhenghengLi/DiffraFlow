@@ -10,7 +10,7 @@
 // 8 -11: int32_t  type
 // 12-x : contents
 
-namespace shine {
+namespace diffraflow {
     class ObjectSerializer {
     public:
         static const uint32_t kObjectHead = 0xFEEDBEEF;

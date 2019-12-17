@@ -3,7 +3,7 @@
 
 #include "GeneralServer.hh"
 
-namespace shine {
+namespace diffraflow {
 
     class ImageFrameConnection;
     class ImageCache;

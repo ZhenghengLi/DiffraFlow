@@ -17,7 +17,7 @@ using std::condition_variable;
 namespace diffraflow {
     class Sender {
     public:
-        Sender(string hostname, int port, int id, size_t buff_size = 4194304 /* 4MiB */);
+        Sender(string hostname, int port, int id);
         ~Sender();
 
         bool conn();
@@ -25,7 +25,7 @@ namespace diffraflow {
         // push and block on buffer full
         void push(long key, char* data, size_t len);
         // swap with lock
-        void swap();
+        bool swap();
 
         // use a background thread sending data
         void start();
@@ -49,9 +49,12 @@ namespace diffraflow {
         size_t buffer_A_pos_;
         char*  buffer_B_;
         size_t buffer_B_pos_;
+        size_t size_threshold_;
+        size_t time_threshold_; // ms
 
         mutex mtx_;
-        condition_variable cv_;
+        condition_variable cv_push_;
+        condition_variable cv_swap_;
 
     };
 }

@@ -6,14 +6,18 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <string.h>
+#include <algorithm>
+#include <chrono>
 
 #include <boost/log/trivial.hpp>
 
-diffraflow::Sender::Sender(string hostname, int port, int id, size_t buff_size) {
+diffraflow::Sender::Sender(string hostname, int port, int id) {
     dest_host_ = hostname;
     dest_port_ = port;
     sender_id_ = id;
-    buffer_size_ = buff_size;
+    buffer_size_ = 1024 * 1024 * 4; // 4 MiB
+    size_threshold_ = 1024 * 1024;  // 1 MiB
+    time_threshold_ = 100; // 0.1 second
     buffer_A_ = new char[buffer_size_];
     buffer_A_pos_ = 0;
     buffer_B_ = new char[buffer_size_];
@@ -66,11 +70,32 @@ bool diffraflow::Sender::conn() {
 }
 
 void diffraflow::Sender::push(long key, char* data, size_t len) {
-
+    unique_lock<mutex> lk(mtx_);
+    cv_push_.wait(lk, [&]() {return len <= buffer_size_ - buffer_A_pos_;});
+    std::copy(data, data + len, buffer_A_);
+    buffer_A_pos_ += len;
+    if (buffer_A_pos_ > size_threshold_) {
+        cv_swap_.notify_one();
+    }
 }
 
-void diffraflow::Sender::swap() {
-
+bool diffraflow::Sender::swap() {
+    unique_lock<mutex> lk(mtx_);
+    if (buffer_A_pos_ < size_threshold_) {
+        cv_swap_.wait_for(lk, std::chrono::microseconds(time_threshold_));
+    }
+    if (buffer_A_pos_ > 0) {
+        // do the swap
+        char*  tmp_buff = buffer_A_;
+        size_t tmp_size = buffer_A_pos_;
+        buffer_A_ = buffer_B_;
+        buffer_A_pos_ = buffer_B_pos_;
+        buffer_B_ = tmp_buff;
+        buffer_B_pos_ = tmp_size;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void diffraflow::Sender::start() {

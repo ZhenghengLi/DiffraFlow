@@ -1,0 +1,6 @@
+apply from: "$rootDir/gradle/common_java.gradle"
+
+dependencies {
+    implementation libs.kafkaClients
+}
+

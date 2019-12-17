@@ -1,6 +1,11 @@
-apply from: "$rootDir/gradle/common_java.gradle"
+apply from: "$rootDir/gradle/common_cpp_app.gradle"
 
-dependencies {
-    implementation libs.kafkaClients
+application {
+    binaries.configureEach {
+
+    }
+    dependencies {
+        implementation project(":diffraflow:common")
+    }
 }
 

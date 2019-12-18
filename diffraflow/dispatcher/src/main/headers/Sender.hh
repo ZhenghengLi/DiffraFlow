@@ -7,12 +7,15 @@
 #include <chrono>
 #include <atomic>
 #include <condition_variable>
+#include <atomic>
 
 using std::string;
 using std::mutex;
 using std::lock_guard;
 using std::unique_lock;
 using std::condition_variable;
+using std::atomic_bool;
+using std::atomic;
 
 namespace diffraflow {
     class Sender {
@@ -20,22 +23,23 @@ namespace diffraflow {
         Sender(string hostname, int port, int id);
         ~Sender();
 
-        bool conn();
+        bool connect_to_combiner();
+        void close_connection();
 
-        // push and block on buffer full
+        // push to buffer_A and block on buffer full
         void push(long key, char* data, size_t len);
-        // swap with lock
-        bool swap();
 
         // use a background thread sending data
         void start();
         void stop();
 
     private:
-        // swap and send
-        void run_();
-        // send over TCP
+        // swap buffer_A and buffer_B with lock
+        bool swap_();
+        // send buffer_B over TCP
         void send_();
+        // swap then send
+        void run_();
 
     private:
         // socket
@@ -46,15 +50,16 @@ namespace diffraflow {
         // buffer
         size_t buffer_size_;
         char*  buffer_A_;
-        size_t buffer_A_pos_;
+        size_t buffer_A_limit_;
         char*  buffer_B_;
-        size_t buffer_B_pos_;
+        size_t buffer_B_limit_;
         size_t size_threshold_;
         size_t time_threshold_; // ms
 
         mutex mtx_;
         condition_variable cv_push_;
         condition_variable cv_swap_;
+        atomic_bool run_flag_;
 
     };
 }

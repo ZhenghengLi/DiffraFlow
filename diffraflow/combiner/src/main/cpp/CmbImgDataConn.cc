@@ -1,5 +1,5 @@
-#include "ImageDataConnection.hh"
-#include "ImageCache.hh"
+#include "CmbImgDataConn.hh"
+#include "CmbImgCache.hh"
 #include "ImageData.hh"
 #include "Decoder.hh"
 
@@ -10,21 +10,21 @@
 
 using std::copy;
 
-diffraflow::ImageDataConnection::ImageDataConnection(
-    int sock_fd, ImageCache* img_cache_):
+diffraflow::CmbImgDataConn::CmbImgDataConn(
+    int sock_fd, CmbImgCache* img_cache_):
     GeneralConnection(sock_fd, 100 * 1024 * 1024, 10 * 1024 * 1024, 0xBBBBCCCC) {
     image_cache_ = img_cache_;
 }
 
-diffraflow::ImageDataConnection::~ImageDataConnection() {
+diffraflow::CmbImgDataConn::~CmbImgDataConn() {
 
 }
 
-void diffraflow::ImageDataConnection::before_transferring_() {
+void diffraflow::CmbImgDataConn::before_transferring_() {
     BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
 }
 
-bool diffraflow::ImageDataConnection::do_transferring_() {
+bool diffraflow::CmbImgDataConn::do_transferring_() {
     // read image data request message
     slice_begin_ = 0;
     while (true) {

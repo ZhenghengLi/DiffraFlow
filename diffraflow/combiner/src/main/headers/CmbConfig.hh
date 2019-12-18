@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef CmbConfig_H
+#define CmbConfig_H
 
 #include <map>
 
@@ -7,13 +7,13 @@ using std::map;
 using std::string;
 
 namespace diffraflow {
-    class Configuration {
+    class CmbConfig {
         public:
             int port;
 
         public:
-        Configuration();
-        ~Configuration();
+        CmbConfig();
+        ~CmbConfig();
         bool load(const char* filename);
         void print();
     };

@@ -4,9 +4,9 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 
-#include "Configuration.hh"
-#include "ImageFrameServer.hh"
-#include "ImageCache.hh"
+#include "CmbConfig.hh"
+#include "CmbImgFrmSrv.hh"
+#include "CmbImgCache.hh"
 
 using namespace std;
 using namespace diffraflow;
@@ -19,9 +19,9 @@ int main(int argc, char** argv) {
     }
 
     string config_fn = argv[1];
-    diffraflow::Configuration config;
+    diffraflow::CmbConfig config;
     if (!config.load(config_fn.c_str())) {
-        cout << "Failed to load configuration file: " << config_fn << endl;
+        cout << "Failed to load CmbConfig file: " << config_fn << endl;
         return 1;
     }
 
@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
         boost::log::trivial::severity >= boost::log::trivial::debug
     );
 
-    ImageCache image_cache;
-    ImageFrameServer image_frame_server(config.port, &image_cache);
+    CmbImgCache image_cache;
+    CmbImgFrmSrv image_frame_server(config.port, &image_cache);
     image_frame_server.serve();
 
     return 0;

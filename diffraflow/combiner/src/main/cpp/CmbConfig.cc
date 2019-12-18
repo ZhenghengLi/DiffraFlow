@@ -1,4 +1,4 @@
-#include "Configuration.hh"
+#include "CmbConfig.hh"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -9,15 +9,15 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-diffraflow::Configuration::Configuration() {
+diffraflow::CmbConfig::CmbConfig() {
 
 }
 
-diffraflow::Configuration::~Configuration() {
+diffraflow::CmbConfig::~CmbConfig() {
 
 }
 
-bool diffraflow::Configuration::load(const char* filename) {
+bool diffraflow::CmbConfig::load(const char* filename) {
     ifstream config_file;
     config_file.open(filename);
     if (!config_file.is_open()) {
@@ -42,7 +42,7 @@ bool diffraflow::Configuration::load(const char* filename) {
         if (key == "port") {
             port = atoi(value.c_str());
         } else {
-            cerr << "ERROR: found unknown configuration: " << key << endl;
+            cerr << "ERROR: found unknown CmbConfig: " << key << endl;
             return false;
         }
     }
@@ -50,9 +50,9 @@ bool diffraflow::Configuration::load(const char* filename) {
     return true;
 }
 
-void diffraflow::Configuration::print() {
-    cout << " = Configuration Dump Begin =" << endl;
+void diffraflow::CmbConfig::print() {
+    cout << " = CmbConfig Dump Begin =" << endl;
     cout << "  port = " << port << endl;
-    cout << " = Configuration Dump End =" << endl;
+    cout << " = CmbConfig Dump End =" << endl;
 
 }

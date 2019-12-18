@@ -1,5 +1,5 @@
-#ifndef ImageCache_H
-#define ImageCache_H
+#ifndef CmbImgCache_H
+#define CmbImgCache_H
 
 #include "BlockingQueue.hh"
 
@@ -8,13 +8,13 @@ namespace diffraflow {
     class ImageFrame;
     class ImageData;
 
-    class ImageCache {
+    class CmbImgCache {
     private:
         BlockingQueue<ImageData> image_data_queue_;
 
     public:
-        ImageCache();
-        ~ImageCache();
+        CmbImgCache();
+        ~CmbImgCache();
 
         void put_frame(ImageFrame& image_frame);
         bool take_one_image(ImageData& image_data, int timeout_ms);

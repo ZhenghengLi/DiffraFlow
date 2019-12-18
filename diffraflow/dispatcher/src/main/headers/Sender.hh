@@ -28,7 +28,7 @@ namespace diffraflow {
         void close_connection();
 
         // push to buffer_A and block on buffer full
-        void push(long key, char* data, size_t len);
+        void push(const char* data, const size_t len);
 
         // use a background thread sending data
         void start();

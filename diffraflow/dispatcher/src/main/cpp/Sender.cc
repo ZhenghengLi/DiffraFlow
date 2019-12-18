@@ -95,11 +95,18 @@ void diffraflow::Sender::close_connection() {
     }
 }
 
-void diffraflow::Sender::push(long key, char* data, size_t len) {
+void diffraflow::Sender::push(const char* data, const size_t len) {
     unique_lock<mutex> lk(mtx_);
-    cv_push_.wait(lk, [&]() {return len <= buffer_size_ - buffer_A_limit_;});
-    std::copy(data, data + len, buffer_A_);
-    buffer_A_limit_ += len;
+    // wait when there is no enough space
+    cv_push_.wait(lk, [&]() {return len + 8 <= buffer_size_ - buffer_A_limit_;});
+    // head
+    gPS.serializeValue<uint32_t>(0xABCDEEFF, buffer_A_ + buffer_A_limit_, 4);
+    // size
+    gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_ + 4, 4);
+    // payload
+    std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 8);
+    buffer_A_limit_ += 8 + len;
+    // foreward limit and check size threshold
     if (buffer_A_limit_ > size_threshold_) {
         cv_swap_.notify_one();
     }

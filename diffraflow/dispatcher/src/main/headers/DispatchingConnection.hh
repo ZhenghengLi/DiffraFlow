@@ -2,6 +2,7 @@
 #define DispatchingConnection_H
 
 #include <cstddef>
+#include <cstdint>
 
 #include "GeneralConnection.hh"
 
@@ -17,6 +18,9 @@ namespace diffraflow {
     protected:
         void before_transferring_();
         bool do_transferring_();
+
+    private:
+        int hash_long_(int64_t value);
 
     private:
         Sender** sender_array_;

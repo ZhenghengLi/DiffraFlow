@@ -1,6 +1,6 @@
 #include <iostream>
 #include "ImageData.hh"
-#include "ImageWriter.hh"
+#include "IngImgWriter.hh"
 
 using namespace std;
 using namespace diffraflow;

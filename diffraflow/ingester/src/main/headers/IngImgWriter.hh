@@ -1,5 +1,5 @@
-#ifndef ImageWriter_H
-#define ImageWriter_H
+#ifndef IngImgWriter_H
+#define IngImgWriter_H
 
 #include <vector>
 #include <mutex>
@@ -13,7 +13,7 @@ namespace diffraflow {
 
     class ImageData;
 
-    class ImageWriter {
+    class IngImgWriter {
     private:
         mutex mtx_;
 
@@ -24,8 +24,8 @@ namespace diffraflow {
         bool stop_flag_;
 
     public:
-        ImageWriter(BlockingQueue<ImageData>* q_arr, size_t q_size);
-        ~ImageWriter();
+        IngImgWriter(BlockingQueue<ImageData>* q_arr, size_t q_size);
+        ~IngImgWriter();
 
         bool openfiles(const vector<int>& partitions);
         void closefiles();

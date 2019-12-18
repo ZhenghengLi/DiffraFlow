@@ -1,4 +1,4 @@
-#include "ImageWriter.hh"
+#include "IngImgWriter.hh"
 #include "ImageData.hh"
 
 #include <iostream>
@@ -6,34 +6,34 @@
 using std::cout;
 using std::endl;
 
-diffraflow::ImageWriter::ImageWriter(BlockingQueue<ImageData>* q_arr, size_t q_size) {
+diffraflow::IngImgWriter::IngImgWriter(BlockingQueue<ImageData>* q_arr, size_t q_size) {
     img_q_arr_ = q_arr;
     img_q_size_ = q_size;
     wait_time_ = 100;
     stop_flag_ = false;
 }
 
-diffraflow::ImageWriter::~ImageWriter() {
+diffraflow::IngImgWriter::~IngImgWriter() {
 
 }
 
-bool diffraflow::ImageWriter::openfiles(const vector<int>& partitions) {
+bool diffraflow::IngImgWriter::openfiles(const vector<int>& partitions) {
     lock_guard<mutex> lk(mtx_);
     // open HDF5 files on DFS for each partition
     return true;
 }
 
-void diffraflow::ImageWriter::closefiles() {
+void diffraflow::IngImgWriter::closefiles() {
     lock_guard<mutex> lk(mtx_);
 
 }
 
-void diffraflow::ImageWriter::set_stop() {
+void diffraflow::IngImgWriter::set_stop() {
     lock_guard<mutex> lk(mtx_);
     stop_flag_ = true;
 }
 
-void diffraflow::ImageWriter::run() {
+void diffraflow::IngImgWriter::run() {
     cout << "Start running ..." << endl;
     while (true) {
         bool is_stopped = false;

@@ -46,28 +46,44 @@ bool diffraflow::Sender::connect_to_combiner() {
         return false;
     }
     if (connect(client_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen)) {
-        close(client_sock_fd_);
-        client_sock_fd_ = -1;
+        close_connection();
         BOOST_LOG_TRIVIAL(error) << "Connection to " << dest_host_ << " failed.";
         return false;
     }
     freeaddrinfo(infoptr);
     // send greeting message for varification
     char buffer[12];
-    gPS.serializeValue<uint32_t>(0xAAAABBBB, buffer, 12);
-    gPS.serializeValue<uint32_t>(4, buffer + 4, 8);
+    gPS.serializeValue<uint32_t>(0xAAAABBBB, buffer, 4);
+    gPS.serializeValue<uint32_t>(4, buffer + 4, 4);
     gPS.serializeValue<int32_t>(sender_id_, buffer + 8, 4);
-    write(client_sock_fd_, buffer, 12);
-    read(client_sock_fd_, buffer, 12);
+    for (size_t pos = 0; pos < 12;) {
+        int count = write(client_sock_fd_, buffer + pos, 12 - pos);
+        if (count > 0) {
+            pos += count;
+        } else {
+            close_connection();
+            BOOST_LOG_TRIVIAL(error) << "error found when doing the first write.";
+            return false;
+        }
+    }
+    for (size_t pos = 0; pos < 4;) {
+        int count = read(client_sock_fd_, buffer + pos, 4 - pos);
+        if (count > 0) {
+            pos += count;
+        } else {
+            close_connection();
+            BOOST_LOG_TRIVIAL(error) << "error found when doing the first read.";
+            return false;
+        }
+    }
     int response_code = 0;
-    gPS.deserializeValue<int32_t>(&response_code, buffer, 12);
+    gPS.deserializeValue<int32_t>(&response_code, buffer, 4);
     if (response_code != 200) {
-        close(client_sock_fd_);
-        client_sock_fd_ = -1;
+        close_connection();
         BOOST_LOG_TRIVIAL(error) << "Got wrong response code, close the connection.";
         return false;
     } else {
-        BOOST_LOG_TRIVIAL(info) << "Successfully connectec to Combiner server " << dest_host_ << ":" << dest_port_;
+        BOOST_LOG_TRIVIAL(info) << "Successfully connected to combiner running on " << dest_host_ << ":" << dest_port_;
         return true;
     }
 }

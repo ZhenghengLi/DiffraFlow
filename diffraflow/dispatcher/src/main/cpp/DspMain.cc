@@ -3,6 +3,6 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    cout << "I am monitor." << endl;
+    cout << "I am dispatcher." << endl;
     return 0;
 }

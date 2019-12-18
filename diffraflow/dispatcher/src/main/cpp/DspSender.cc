@@ -1,4 +1,4 @@
-#include "Sender.hh"
+#include "DspSender.hh"
 #include "PrimitiveSerializer.hh"
 
 #include <sys/socket.h>
@@ -11,7 +11,7 @@
 
 #include <boost/log/trivial.hpp>
 
-diffraflow::Sender::Sender(string hostname, int port, int id) {
+diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     dest_host_ = hostname;
     dest_port_ = port;
     sender_id_ = id;
@@ -26,12 +26,12 @@ diffraflow::Sender::Sender(string hostname, int port, int id) {
     sending_thread_ = nullptr;
 }
 
-diffraflow::Sender::~Sender() {
+diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
 }
 
-bool diffraflow::Sender::connect_to_combiner() {
+bool diffraflow::DspSender::connect_to_combiner() {
     addrinfo hints, *infoptr;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -88,14 +88,14 @@ bool diffraflow::Sender::connect_to_combiner() {
     }
 }
 
-void diffraflow::Sender::close_connection() {
+void diffraflow::DspSender::close_connection() {
     if (client_sock_fd_ >= 0) {
         close(client_sock_fd_);
         client_sock_fd_ = -1;
     }
 }
 
-void diffraflow::Sender::push(const char* data, const size_t len) {
+void diffraflow::DspSender::push(const char* data, const size_t len) {
     unique_lock<mutex> lk(mtx_);
     // wait when there is no enough space
     cv_push_.wait(lk, [&]() {return len + 8 <= buffer_size_ - buffer_A_limit_;});
@@ -112,7 +112,7 @@ void diffraflow::Sender::push(const char* data, const size_t len) {
     }
 }
 
-bool diffraflow::Sender::swap_() {
+bool diffraflow::DspSender::swap_() {
     unique_lock<mutex> lk(mtx_);
     if (buffer_A_limit_ < size_threshold_) {
         cv_swap_.wait_for(lk, std::chrono::microseconds(time_threshold_));
@@ -131,7 +131,7 @@ bool diffraflow::Sender::swap_() {
     }
 }
 
-void diffraflow::Sender::send_() {
+void diffraflow::DspSender::send_() {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
@@ -161,7 +161,7 @@ void diffraflow::Sender::send_() {
     BOOST_LOG_TRIVIAL(info) << "done a write.";
 }
 
-void diffraflow::Sender::start() {
+void diffraflow::DspSender::start() {
     run_flag_ = true;
     sending_thread_ = new thread(
         [this]() {
@@ -172,7 +172,7 @@ void diffraflow::Sender::start() {
     );
 }
 
-void diffraflow::Sender::stop() {
+void diffraflow::DspSender::stop() {
     run_flag_ = false;
     if (sending_thread_ != nullptr) {
         sending_thread_->join();

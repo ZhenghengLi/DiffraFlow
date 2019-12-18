@@ -1,5 +1,5 @@
-#ifndef Sender_H
-#define Sender_H
+#ifndef DspSender_H
+#define DspSender_H
 
 #include <string>
 #include <thread>
@@ -19,10 +19,10 @@ using std::atomic_bool;
 using std::atomic;
 
 namespace diffraflow {
-    class Sender {
+    class DspSender {
     public:
-        Sender(string hostname, int port, int id);
-        ~Sender();
+        DspSender(string hostname, int port, int id);
+        ~DspSender();
 
         bool connect_to_combiner();
         void close_connection();

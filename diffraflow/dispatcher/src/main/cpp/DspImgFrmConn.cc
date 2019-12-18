@@ -1,26 +1,26 @@
-#include "DispatchingConnection.hh"
+#include "DspImgFrmConn.hh"
 #include "PrimitiveSerializer.hh"
 #include "Decoder.hh"
-#include "Sender.hh"
+#include "DspSender.hh"
 #include <boost/log/trivial.hpp>
 
-diffraflow::DispatchingConnection::DispatchingConnection(int sock_fd,
-    Sender** sender_arr, size_t sender_cnt):
+diffraflow::DspImgFrmConn::DspImgFrmConn(int sock_fd,
+    DspSender** sender_arr, size_t sender_cnt):
     GeneralConnection(sock_fd, 100 * 1024 * 1024, 1024 * 1024, 0xAABBCCDD) {
     sender_array_ = sender_arr;
     sender_count_ = sender_cnt;
 
 }
 
-diffraflow::DispatchingConnection::~DispatchingConnection() {
+diffraflow::DspImgFrmConn::~DspImgFrmConn() {
 
 }
 
-void diffraflow::DispatchingConnection::before_transferring_() {
+void diffraflow::DspImgFrmConn::before_transferring_() {
     BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
 }
 
-bool diffraflow::DispatchingConnection::do_transferring_() {
+bool diffraflow::DspImgFrmConn::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
         BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";
@@ -79,6 +79,6 @@ bool diffraflow::DispatchingConnection::do_transferring_() {
     return true;
 }
 
-int diffraflow::DispatchingConnection::hash_long_(int64_t value) {
+int diffraflow::DspImgFrmConn::hash_long_(int64_t value) {
     return (int) (value ^ (value >> 32));
 }

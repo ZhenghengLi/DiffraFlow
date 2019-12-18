@@ -1,5 +1,5 @@
-#ifndef ServerManager_H
-#define ServerManager_H
+#ifndef DspSrvMan_H
+#define DspSrvMan_H
 
 #include <vector>
 #include <algorithm>
@@ -10,10 +10,10 @@ using std::string;
 using std::vector;
 
 namespace diffraflow {
-    class ServerManager {
+    class DspSrvMan {
     public:
-        ServerManager();
-        ~ServerManager();
+        DspSrvMan();
+        ~DspSrvMan();
 
     private:
         // vector< pair<string, int> > read_address_list_(const char* filename);

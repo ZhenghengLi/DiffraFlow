@@ -10,6 +10,7 @@
 #include <atomic>
 
 using std::string;
+using std::thread;
 using std::mutex;
 using std::lock_guard;
 using std::unique_lock;
@@ -38,8 +39,6 @@ namespace diffraflow {
         bool swap_();
         // send buffer_B over TCP
         void send_();
-        // swap then send
-        void run_();
 
     private:
         // socket
@@ -55,7 +54,8 @@ namespace diffraflow {
         size_t buffer_B_limit_;
         size_t size_threshold_;
         size_t time_threshold_; // ms
-
+        // sending thread
+        thread* sending_thread_;
         mutex mtx_;
         condition_variable cv_push_;
         condition_variable cv_swap_;

@@ -23,6 +23,7 @@ diffraflow::Sender::Sender(string hostname, int port, int id) {
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
     client_sock_fd_ = -1;
+    sending_thread_ = nullptr;
 }
 
 diffraflow::Sender::~Sender() {
@@ -120,31 +121,39 @@ void diffraflow::Sender::send_() {
     }
     for (size_t pos = 0; pos < buffer_B_limit_;) {
         int count = write(client_sock_fd_, buffer_B_ + pos, buffer_B_limit_ - pos);
-        if (count == 0) {
+        if (count == 0) { // need to test
             // BOOST_LOG_TRIVIAL(warning) << "connection is closed from the other side.";
             close_connection();
             buffer_B_limit_ = 0;
             return;
         } else if (count < 0) {
-            BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            // BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            close_connection();
             buffer_B_limit_ = 0;
             return;
         } else {
             pos += count;
         }
     }
-}
-
-void diffraflow::Sender::run_() {
-    while (run_flag_) {
-        if (swap_()) send_();
-    }
+    BOOST_LOG_TRIVIAL(info) << "done a write.";
 }
 
 void diffraflow::Sender::start() {
-
+    run_flag_ = true;
+    sending_thread_ = new thread(
+        [this]() {
+            while (run_flag_) {
+                if (swap_()) send_();
+            }
+        }
+    );
 }
 
 void diffraflow::Sender::stop() {
-
+    run_flag_ = false;
+    if (sending_thread_ != nullptr) {
+        sending_thread_->join();
+        delete sending_thread_;
+        sending_thread_ = nullptr;
+    }
 }

@@ -1,13 +1,15 @@
 #ifndef CmbConfig_H
 #define CmbConfig_H
 
+#include "GenericConfiguration.hh"
+
 #include <map>
 
 using std::map;
 using std::string;
 
 namespace diffraflow {
-    class CmbConfig {
+    class CmbConfig: public GenericConfiguration {
         public:
             int port;
 

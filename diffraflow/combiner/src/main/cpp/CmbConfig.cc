@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <boost/log/trivial.hpp>
 
 using std::ifstream;
 using std::stringstream;
@@ -18,35 +19,18 @@ diffraflow::CmbConfig::~CmbConfig() {
 }
 
 bool diffraflow::CmbConfig::load(const char* filename) {
-    ifstream config_file;
-    config_file.open(filename);
-    if (!config_file.is_open()) {
-        cout << "config file open failed." << endl;
+    vector< pair<string, string> > conf_KV_vec;
+    if (!read_conf_KV_vec_(filename, conf_KV_vec)) {
+        BOOST_LOG_TRIVIAL(error) << "Failed to read configuration file: " << filename;
         return false;
     }
-    stringstream ss;
-    string oneline;
-    string key, value, sep;
-    while (true) {
-        key = ""; value = ""; sep = ""; oneline = "";
-        getline(config_file, oneline);
-        if (config_file.eof()) break;
-        // skip comments
-        if (oneline.find("#") != string::npos) continue;
-        // read key-value
-        ss.clear(); ss.str(oneline);
-        ss >> key >> sep >> value;
-        // skip invalid line
-        if (key == "" || value == "" || sep != "=") continue;
-        // use key-value from here
+    for (size_t i = 0; i < conf_KV_vec.size(); i++) {
+        string key = conf_KV_vec[i].first;
+        string value = conf_KV_vec[i].second;
         if (key == "port") {
             port = atoi(value.c_str());
-        } else {
-            cerr << "ERROR: found unknown CmbConfig: " << key << endl;
-            return false;
         }
     }
-    config_file.close();
     return true;
 }
 

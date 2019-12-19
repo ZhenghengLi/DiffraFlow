@@ -48,6 +48,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
     if (conf_KV_vec.size() > 0) {
         return true;
     } else {
+        BOOST_LOG_TRIVIAL(warning) << "there is no valid configurations in file: " << filename;
         return false;
     }
 }

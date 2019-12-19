@@ -1,13 +1,11 @@
 #include "DspSrvMan.hh"
 
 #include <fstream>
-#include <sstream>
 
 #include <boost/log/trivial.hpp>
 #include <boost/algorithm/string.hpp>
 
 using std::ifstream;
-using std::stringstream;
 using std::make_pair;
 
 diffraflow::DspSrvMan::DspSrvMan() {
@@ -26,7 +24,6 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
         BOOST_LOG_TRIVIAL(error) << "address file open failed.";
         return false;
     }
-    stringstream ss;
     string oneline;
     while (true) {
         oneline = "";
@@ -37,7 +34,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
         if (oneline[0] == '#') continue;
         // extract host and port
         vector<string> host_port;
-        boost::split(host_port, oneline, boost::is_any_of(":#"));
+        boost::split(host_port, oneline, boost::is_any_of(":"));
         if (host_port.size() < 2) {
             BOOST_LOG_TRIVIAL(error) << "found unknown address: " << oneline;
             return false;
@@ -52,5 +49,9 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
         }
         addr_vec.push_back(make_pair(host_str, port_num));
     }
-    return true;
+    if (addr_vec.size() > 0) {
+        return true;
+    } else {
+        return false;
+    }
 }

@@ -52,6 +52,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
     if (addr_vec.size() > 0) {
         return true;
     } else {
+            BOOST_LOG_TRIVIAL(error) << "empty address file: " << filename;
         return false;
     }
 }

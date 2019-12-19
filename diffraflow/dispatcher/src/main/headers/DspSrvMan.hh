@@ -16,8 +16,7 @@ namespace diffraflow {
         ~DspSrvMan();
 
     private:
-        // vector< pair<string, int> > read_address_list_(const char* filename);
-        bool read_address_list_(const char* filename);
+        bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
     };
 }
 

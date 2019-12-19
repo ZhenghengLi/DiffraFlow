@@ -1,5 +1,5 @@
-#ifndef GeneralConnection_H
-#define GeneralConnection_H
+#ifndef GenericConnection_H
+#define GenericConnection_H
 
 #include <iostream>
 #include <atomic>
@@ -7,7 +7,7 @@
 using std::atomic;
 
 namespace diffraflow {
-    class GeneralConnection {
+    class GenericConnection {
     private:
         uint32_t greeting_head_;
         int32_t connection_id_;
@@ -34,8 +34,8 @@ namespace diffraflow {
         virtual bool do_transferring_() = 0;
 
     public:
-        GeneralConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd);
-        ~GeneralConnection();
+        GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd);
+        ~GenericConnection();
 
         void run();
         bool done();

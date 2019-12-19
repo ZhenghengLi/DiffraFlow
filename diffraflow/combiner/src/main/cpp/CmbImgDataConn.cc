@@ -12,7 +12,7 @@ using std::copy;
 
 diffraflow::CmbImgDataConn::CmbImgDataConn(
     int sock_fd, CmbImgCache* img_cache_):
-    GeneralConnection(sock_fd, 100 * 1024 * 1024, 10 * 1024 * 1024, 0xBBBBCCCC) {
+    GenericConnection(sock_fd, 100 * 1024 * 1024, 10 * 1024 * 1024, 0xBBBBCCCC) {
     image_cache_ = img_cache_;
 }
 

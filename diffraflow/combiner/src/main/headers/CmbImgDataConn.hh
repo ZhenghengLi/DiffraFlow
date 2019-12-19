@@ -1,7 +1,7 @@
 #ifndef CmbImgDataConn_H
 #define CmbImgDataConn_H
 
-#include "GeneralConnection.hh"
+#include "GenericConnection.hh"
 
 #define WAIT_TIME_MS 50
 
@@ -9,7 +9,7 @@ namespace diffraflow {
 
     class CmbImgCache;
 
-    class CmbImgDataConn: public GeneralConnection {
+    class CmbImgDataConn: public GenericConnection {
     private:
         CmbImgCache* image_cache_;
 

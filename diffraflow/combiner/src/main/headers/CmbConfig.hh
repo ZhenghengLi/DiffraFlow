@@ -12,10 +12,10 @@ namespace diffraflow {
             int port;
 
         public:
-        CmbConfig();
-        ~CmbConfig();
-        bool load(const char* filename);
-        void print();
+            CmbConfig();
+            ~CmbConfig();
+            bool load(const char* filename);
+            void print();
     };
 }
 

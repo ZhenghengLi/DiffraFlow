@@ -1,19 +1,19 @@
 #ifndef CmbImgFrmSrv_H
 #define CmbImgFrmSrv_H
 
-#include "GeneralServer.hh"
+#include "GenericServer.hh"
 
 namespace diffraflow {
 
     class CmbImgFrmConn;
     class CmbImgCache;
 
-    class CmbImgFrmSrv: public GeneralServer {
+    class CmbImgFrmSrv: public GenericServer {
     private:
         CmbImgCache* image_cache_;
 
     protected:
-        GeneralConnection* new_connection_(int client_sock_fd);
+        GenericConnection* new_connection_(int client_sock_fd);
 
     public:
         CmbImgFrmSrv(int port, CmbImgCache* img_cache);

@@ -17,6 +17,9 @@ namespace diffraflow {
 
     private:
         bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
+
+    private:
+        int dispatcher_id_;
     };
 }
 

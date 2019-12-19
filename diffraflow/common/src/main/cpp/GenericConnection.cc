@@ -1,4 +1,4 @@
-#include "GeneralConnection.hh"
+#include "GenericConnection.hh"
 #include "Decoder.hh"
 
 #include <cassert>
@@ -9,7 +9,7 @@
 
 using std::copy;
 
-diffraflow::GeneralConnection::GeneralConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd) {
+diffraflow::GenericConnection::GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd) {
     assert(sock_fd > 0);
     client_sock_fd_ = sock_fd;
     buffer_size_ = buff_sz;
@@ -21,11 +21,11 @@ diffraflow::GeneralConnection::GeneralConnection(int sock_fd, size_t buff_sz, si
     connection_id_ = -1;
 }
 
-diffraflow::GeneralConnection::~GeneralConnection() {
+diffraflow::GenericConnection::~GenericConnection() {
     delete [] buffer_;
 }
 
-void diffraflow::GeneralConnection::run() {
+void diffraflow::GenericConnection::run() {
     if (start_connection_()) {
         before_transferring_();
         while (!done_flag_ && do_transferring_());
@@ -35,23 +35,23 @@ void diffraflow::GeneralConnection::run() {
     return;
 }
 
-bool diffraflow::GeneralConnection::done() {
+bool diffraflow::GenericConnection::done() {
     return done_flag_;
 }
 
-void diffraflow::GeneralConnection::stop() {
+void diffraflow::GenericConnection::stop() {
     shutdown(client_sock_fd_, SHUT_RDWR);
     done_flag_ = true;
 }
 
-void diffraflow::GeneralConnection::shift_left_(const size_t position, const size_t limit) {
+void diffraflow::GenericConnection::shift_left_(const size_t position, const size_t limit) {
     if (position == 0) {
         copy(buffer_ + position, buffer_ + limit, buffer_);
     }
     slice_begin_ = limit - position;
 }
 
-bool diffraflow::GeneralConnection::start_connection_() {
+bool diffraflow::GenericConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {

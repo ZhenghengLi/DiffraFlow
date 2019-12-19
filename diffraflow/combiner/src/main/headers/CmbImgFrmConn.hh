@@ -1,13 +1,13 @@
 #ifndef CmbImgFrmConn_H
 #define CmbImgFrmConn_H
 
-#include "GeneralConnection.hh"
+#include "GenericConnection.hh"
 
 namespace diffraflow {
 
     class CmbImgCache;
 
-    class CmbImgFrmConn: public GeneralConnection {
+    class CmbImgFrmConn: public GenericConnection {
     private:
         CmbImgCache* image_cache_;
 

@@ -1,5 +1,5 @@
-#include "GeneralServer.hh"
-#include "GeneralConnection.hh"
+#include "GenericServer.hh"
+#include "GenericConnection.hh"
 
 #include <cstdlib>
 #include <cstring>
@@ -16,7 +16,7 @@ using std::lock_guard;
 using std::unique_lock;
 using std::make_pair;
 
-diffraflow::GeneralServer::GeneralServer(int port) {
+diffraflow::GenericServer::GenericServer(int port) {
     server_sock_fd_ = -1;
     server_run_ = true;
     server_sock_port_ = port;
@@ -25,7 +25,7 @@ diffraflow::GeneralServer::GeneralServer(int port) {
     start_cleaner_();
 }
 
-diffraflow::GeneralServer::GeneralServer(string sock_path) {
+diffraflow::GenericServer::GenericServer(string sock_path) {
     server_sock_fd_ = -1;
     server_run_ = true;
     server_sock_port_ = 0;
@@ -34,14 +34,14 @@ diffraflow::GeneralServer::GeneralServer(string sock_path) {
     start_cleaner_();
 }
 
-diffraflow::GeneralServer::~GeneralServer() {
+diffraflow::GenericServer::~GenericServer() {
     cleaner_run_ = false;
     cleaner_->join();
     stop();
     delete cleaner_;
 }
 
-void diffraflow::GeneralServer::start_cleaner_() {
+void diffraflow::GenericServer::start_cleaner_() {
     dead_counts_ = 0;
     cleaner_run_ = true;
     cleaner_ = new thread(
@@ -51,7 +51,7 @@ void diffraflow::GeneralServer::start_cleaner_() {
     );
 }
 
-bool diffraflow::GeneralServer::create_tcp_sock_() {
+bool diffraflow::GenericServer::create_tcp_sock_() {
     sockaddr_in server_addr;
     server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -68,7 +68,7 @@ bool diffraflow::GeneralServer::create_tcp_sock_() {
     return true;
 }
 
-bool diffraflow::GeneralServer::create_ipc_sock_() {
+bool diffraflow::GenericServer::create_ipc_sock_() {
     sockaddr_un server_addr;
     server_sock_fd_ = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -87,12 +87,12 @@ bool diffraflow::GeneralServer::create_ipc_sock_() {
     return true;
 }
 
-int diffraflow::GeneralServer::accept_client_() {
+int diffraflow::GenericServer::accept_client_() {
     int client_sock_fd = accept(server_sock_fd_, NULL, NULL);
     return client_sock_fd;
 }
 
-void diffraflow::GeneralServer::serve() {
+void diffraflow::GenericServer::serve() {
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             BOOST_LOG_TRIVIAL(info)
@@ -136,7 +136,7 @@ void diffraflow::GeneralServer::serve() {
             close(client_sock_fd);
             return;
         }
-        GeneralConnection* conn_object = new_connection_(client_sock_fd);
+        GenericConnection* conn_object = new_connection_(client_sock_fd);
         thread* conn_thread = new thread(
             [&, conn_object]() {
                 conn_object->run();
@@ -158,7 +158,7 @@ void diffraflow::GeneralServer::serve() {
     }
 }
 
-void diffraflow::GeneralServer::clean_() {
+void diffraflow::GenericServer::clean_() {
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
@@ -175,7 +175,7 @@ void diffraflow::GeneralServer::clean_() {
     }
 }
 
-void diffraflow::GeneralServer::stop() {
+void diffraflow::GenericServer::stop() {
     server_run_ = false;
     unique_lock<mutex> lk(mtx_);
     // close all connections

@@ -1,5 +1,5 @@
-#ifndef GeneralServer_H
-#define GeneralServer_H
+#ifndef GenericServer_H
+#define GenericServer_H
 
 #include <thread>
 #include <vector>
@@ -19,11 +19,11 @@ using std::condition_variable;
 
 namespace diffraflow {
 
-    class GeneralConnection;
+    class GenericConnection;
 
-    class GeneralServer {
+    class GenericServer {
     private:
-        typedef list< pair<GeneralConnection*, thread*> > connListT_;
+        typedef list< pair<GenericConnection*, thread*> > connListT_;
 
     private:
         bool is_ipc_;
@@ -48,12 +48,12 @@ namespace diffraflow {
 
     protected:
         // methods to be implemented
-        virtual GeneralConnection* new_connection_(int client_sock_fd) = 0;
+        virtual GenericConnection* new_connection_(int client_sock_fd) = 0;
 
     public:
-        GeneralServer(int port);
-        GeneralServer(string sock_path);
-        ~GeneralServer();
+        GenericServer(int port);
+        GenericServer(string sock_path);
+        ~GenericServer();
 
         void serve();
         void stop();

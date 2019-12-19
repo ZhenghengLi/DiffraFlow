@@ -4,13 +4,13 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "GeneralConnection.hh"
+#include "GenericConnection.hh"
 
 namespace diffraflow {
 
     class DspSender;
 
-    class DspImgFrmConn: public GeneralConnection {
+    class DspImgFrmConn: public GenericConnection {
     public:
         DspImgFrmConn(int sock_fd, DspSender** sender_arr, size_t sender_cnt);
         ~DspImgFrmConn();

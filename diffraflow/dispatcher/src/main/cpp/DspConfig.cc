@@ -2,7 +2,8 @@
 #include <boost/log/trivial.hpp>
 
 diffraflow::DspConfig::DspConfig() {
-
+    dispatcher_id = 1234;
+    listen_port = 2727;
 }
 
 diffraflow::DspConfig::~DspConfig() {
@@ -18,8 +19,10 @@ bool diffraflow::DspConfig::load(const char* filename) {
     for (size_t i = 0; i < conf_KV_vec.size(); i++) {
         string key = conf_KV_vec[i].first;
         string value = conf_KV_vec[i].second;
-        if (key == "port") {
-            port = atoi(value.c_str());
+        if (key == "listen_port") {
+            listen_port = atoi(value.c_str());
+        } else if (key == "dispatcher_id") {
+            dispatcher_id = atoi(value.c_str());
         }
     }
     return true;

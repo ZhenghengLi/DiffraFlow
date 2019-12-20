@@ -125,6 +125,7 @@ bool diffraflow::DspSender::swap_() {
         buffer_A_limit_ = buffer_B_limit_;
         buffer_B_ = tmp_buff;
         buffer_B_limit_ = tmp_size;
+        cv_push_.notify_one();
         return true;
     } else {
         return false;
@@ -158,6 +159,8 @@ void diffraflow::DspSender::send_() {
             pos += count;
         }
     }
+    // all data in buffer_B_ is sent, reset the limit
+    buffer_B_limit_ = 0;
     BOOST_LOG_TRIVIAL(info) << "done a write.";
 }
 

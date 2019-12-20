@@ -1,4 +1,6 @@
 #include "DspSrvMan.hh"
+#include "DspConfig.hh"
+#include "DspSender.hh"
 
 #include <fstream>
 
@@ -8,12 +10,46 @@
 using std::ifstream;
 using std::make_pair;
 
-diffraflow::DspSrvMan::DspSrvMan() {
-
+diffraflow::DspSrvMan::DspSrvMan(DspConfig* config) {
+    config_obj_ = config;
+    sender_arr_ = nullptr;
+    sender_cnt_ = 0;
 }
 
 diffraflow::DspSrvMan::~DspSrvMan() {
 
+}
+
+bool diffraflow::DspSrvMan::create_senders(const char* address_list_fn) {
+    // note: do this before staring DspImgFrmSrv
+    vector< pair<string, int> > addr_vec;
+    if (!read_address_list_(address_list_fn, addr_vec)) {
+        BOOST_LOG_TRIVIAL(error) << "Failed to read combiner address list.";
+        return false;
+    }
+    sender_cnt_ = addr_vec.size();
+    sender_arr_ = new DspSender*[sender_cnt_];
+    for (size_t i = 0; i < addr_vec.size(); i++) {
+        sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, config_obj_->dispatcher_id);
+        if (!sender_arr_[i]->connect_to_combiner()) {
+            BOOST_LOG_TRIVIAL(warning) << sprintf("Failed to do the first connection to combiner %s:%d",
+                addr_vec[i].first.c_str(), addr_vec[i].second);
+        }
+        sender_arr_[i]->start();
+    }
+    return true;
+}
+
+void diffraflow::DspSrvMan::delete_senders() {
+    // note: stop DspImgFrmSrv and wait for one second before doing this,
+    // note: to make sure no new data will be pushed and all remained data is sent.
+    if (sender_arr_ != nullptr) {
+        for (size_t i = 0; i < sender_cnt_; i++) {
+            sender_arr_[i]->stop();
+            delete sender_arr_[i];
+        }
+        delete [] sender_arr_;
+    }
 }
 
 bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec) {

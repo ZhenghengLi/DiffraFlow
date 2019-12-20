@@ -3,6 +3,10 @@
 
 #include "GenericConfiguration.hh"
 
+#include <string>
+
+using std::string;
+
 namespace diffraflow {
     class DspConfig: public GenericConfiguration {
     public:
@@ -13,7 +17,8 @@ namespace diffraflow {
         void print();
 
     public:
-        int port;
+        int dispatcher_id;
+        int listen_port;
 
     };
 }

@@ -24,6 +24,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     buffer_B_limit_ = 0;
     client_sock_fd_ = -1;
     sending_thread_ = nullptr;
+    run_flag_ = false;
 }
 
 diffraflow::DspSender::~DspSender() {
@@ -96,9 +97,11 @@ void diffraflow::DspSender::close_connection() {
 }
 
 void diffraflow::DspSender::push(const char* data, const size_t len) {
+    if (!run_flag_) return;
     unique_lock<mutex> lk(mtx_);
     // wait when there is no enough space
-    cv_push_.wait(lk, [&]() {return len + 8 <= buffer_size_ - buffer_A_limit_;});
+    cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 8 <= buffer_size_ - buffer_A_limit_);});
+    if (!run_flag_) return;
     // head
     gPS.serializeValue<uint32_t>(0xABCDEEFF, buffer_A_ + buffer_A_limit_, 4);
     // size
@@ -113,6 +116,7 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
 }
 
 bool diffraflow::DspSender::swap_() {
+    // swap buffer_A_ and buffer_B_ for async sending
     unique_lock<mutex> lk(mtx_);
     if (buffer_A_limit_ < size_threshold_) {
         cv_swap_.wait_for(lk, std::chrono::microseconds(time_threshold_));
@@ -133,39 +137,56 @@ bool diffraflow::DspSender::swap_() {
 }
 
 void diffraflow::DspSender::send_() {
+    // send all data in buffer_B_
+    if (buffer_B_limit_ > 0) {
+        send_buffer_(buffer_B_, buffer_B_limit_);
+    }
+}
+
+void diffraflow::DspSender::send_remaining() {
+    lock_guard<mutex> lk(mtx_);
+    // send all data in buffer_A
+    if (buffer_A_limit_ > 0) {
+        send_buffer_(buffer_A_, buffer_A_limit_);
+    }
+}
+
+void diffraflow::DspSender::send_buffer_(const char* buffer, size_t& limit) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
             // BOOST_LOG_TRIVIAL(info) << "reconnected to combiner.";
         } else {
             // BOOST_LOG_TRIVIAL(warning) << "failed to reconnect to combiner, discard data in buffer.";
-            buffer_B_limit_ = 0;
+            limit = 0;
             return;
         }
     }
-    for (size_t pos = 0; pos < buffer_B_limit_;) {
-        int count = write(client_sock_fd_, buffer_B_ + pos, buffer_B_limit_ - pos);
+    for (size_t pos = 0; pos < limit;) {
+        int count = write(client_sock_fd_, buffer + pos, limit - pos);
         if (count == 0) { // need to test
             // BOOST_LOG_TRIVIAL(warning) << "connection is closed from the other side.";
             close_connection();
-            buffer_B_limit_ = 0;
+            limit = 0;
             return;
         } else if (count < 0) {
             // BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();
-            buffer_B_limit_ = 0;
+            limit = 0;
             return;
         } else {
             pos += count;
         }
     }
-    // all data in buffer_B_ is sent, reset the limit
-    buffer_B_limit_ = 0;
+    // all data in buffer is sent, reset the limit
+    limit = 0;
     BOOST_LOG_TRIVIAL(info) << "done a write.";
 }
 
 void diffraflow::DspSender::start() {
+    if (run_flag_) return;
     run_flag_ = true;
+    if (sending_thread_ != nullptr) return;
     sending_thread_ = new thread(
         [this]() {
             while (run_flag_) {
@@ -176,10 +197,12 @@ void diffraflow::DspSender::start() {
 }
 
 void diffraflow::DspSender::stop() {
+    if (!run_flag_) return;
     run_flag_ = false;
     if (sending_thread_ != nullptr) {
         sending_thread_->join();
         delete sending_thread_;
         sending_thread_ = nullptr;
     }
+    cv_push_.notify_one();
 }

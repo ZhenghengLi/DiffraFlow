@@ -41,11 +41,11 @@ bool diffraflow::DspSrvMan::create_senders(const char* address_list_fn) {
 }
 
 void diffraflow::DspSrvMan::delete_senders() {
-    // note: stop DspImgFrmSrv and wait for one second before doing this,
-    // note: to make sure no new data will be pushed and all remained data is sent.
+    // note: stop DspImgFrmSrv before doing this,
     if (sender_arr_ != nullptr) {
         for (size_t i = 0; i < sender_cnt_; i++) {
             sender_arr_[i]->stop();
+            sender_arr_[i]->send_remaining();
             delete sender_arr_[i];
         }
         delete [] sender_arr_;

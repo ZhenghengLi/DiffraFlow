@@ -29,6 +29,7 @@ namespace diffraflow {
 
         // push to buffer_A and block on buffer full
         void push(const char* data, const size_t len);
+        void send_remaining();
 
         // use a background thread sending data
         void start();
@@ -39,6 +40,8 @@ namespace diffraflow {
         bool swap_();
         // send buffer_B over TCP
         void send_();
+        // help function
+        void send_buffer_(const char* buffer, size_t& limit);
 
     private:
         // socket

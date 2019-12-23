@@ -144,6 +144,7 @@ void diffraflow::DspSender::send_() {
 }
 
 void diffraflow::DspSender::send_remaining() {
+    // do this only after stopping and before deleting
     lock_guard<mutex> lk(mtx_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {

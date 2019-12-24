@@ -45,6 +45,7 @@ namespace diffraflow {
         int accept_client_();
         void clean_();
         void start_cleaner_();
+        void stop_cleaner_();
 
     protected:
         // methods to be implemented

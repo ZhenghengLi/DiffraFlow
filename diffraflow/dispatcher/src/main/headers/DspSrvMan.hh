@@ -13,22 +13,27 @@ namespace diffraflow {
 
     class DspConfig;
     class DspSender;
+    class DspImgFrmSrv;
 
     class DspSrvMan {
     public:
         DspSrvMan(DspConfig* config);
         ~DspSrvMan();
 
-        bool create_senders(const char* address_list_fn);
-        void delete_senders();
+        void start_run();
+        void terminate();
 
     private:
+        bool create_senders_(const char* address_list_fn, int dispatcher_id);
+        void delete_senders_();
         bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
 
     private:
         DspConfig*  config_obj_;
         DspSender** sender_arr_;
         size_t      sender_cnt_;
+
+        DspImgFrmSrv* imgfrm_srv_;
 
     };
 }

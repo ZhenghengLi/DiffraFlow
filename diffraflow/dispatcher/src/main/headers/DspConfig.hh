@@ -19,6 +19,7 @@ namespace diffraflow {
     public:
         int dispatcher_id;
         int listen_port;
+        string combiner_address_file;
 
     };
 }

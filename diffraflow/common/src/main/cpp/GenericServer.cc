@@ -18,27 +18,22 @@ using std::make_pair;
 
 diffraflow::GenericServer::GenericServer(int port) {
     server_sock_fd_ = -1;
-    server_run_ = true;
+    server_run_ = false;
     server_sock_port_ = port;
     server_sock_path_ = "";
     is_ipc_ = false;
-    start_cleaner_();
 }
 
 diffraflow::GenericServer::GenericServer(string sock_path) {
     server_sock_fd_ = -1;
-    server_run_ = true;
+    server_run_ = false;
     server_sock_port_ = 0;
     server_sock_path_ = sock_path;
     is_ipc_ = true;
-    start_cleaner_();
 }
 
 diffraflow::GenericServer::~GenericServer() {
-    cleaner_run_ = false;
-    cleaner_->join();
     stop();
-    delete cleaner_;
 }
 
 void diffraflow::GenericServer::start_cleaner_() {
@@ -49,6 +44,13 @@ void diffraflow::GenericServer::start_cleaner_() {
             while (cleaner_run_) clean_();
         }
     );
+}
+
+void diffraflow::GenericServer::stop_cleaner_() {
+    cleaner_run_ = false;
+    cv_clean_.notify_one();
+    cleaner_->join();
+    delete cleaner_;
 }
 
 bool diffraflow::GenericServer::create_tcp_sock_() {
@@ -93,6 +95,8 @@ int diffraflow::GenericServer::accept_client_() {
 }
 
 void diffraflow::GenericServer::serve() {
+    if (server_run_) return;
+    server_run_ = true;
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             BOOST_LOG_TRIVIAL(info)
@@ -105,6 +109,7 @@ void diffraflow::GenericServer::serve() {
                 << "Failed to create server socket on unix socket file "
                 << server_sock_path_
                 << ".";
+            server_run_ = false;
             return;
         }
     } else {
@@ -119,19 +124,21 @@ void diffraflow::GenericServer::serve() {
                 << "Failed to create server socket on port "
                 << server_sock_port_
                 << ".";
+                server_run_ = false;
             return;
         }
     }
+    // start cleaner only when server socket is successfully opened and is accepting connections.
+    start_cleaner_();
+    // start accepting clients
     while (server_run_) {
         BOOST_LOG_TRIVIAL(info) << "Waitting for connection ...";
         int client_sock_fd = accept_client_();
-        BOOST_LOG_TRIVIAL(info) << "One connection is established with client_sock_fd " << client_sock_fd;
         if (client_sock_fd < 0) {
-            if (server_run_) {
-            BOOST_LOG_TRIVIAL(error) << "got wrong client_sock_fd when server is running.";
-            }
+            if (server_run_) BOOST_LOG_TRIVIAL(error) << "got wrong client_sock_fd when server is running.";
             return;
         }
+        BOOST_LOG_TRIVIAL(info) << "One connection is established with client_sock_fd " << client_sock_fd;
         if (!server_run_) {
             close(client_sock_fd);
             return;
@@ -159,8 +166,9 @@ void diffraflow::GenericServer::serve() {
 }
 
 void diffraflow::GenericServer::clean_() {
+    if (!cleaner_run_) return;
     unique_lock<mutex> lk(mtx_);
-    cv_clean_.wait(lk, [&]() {return dead_counts_ > 0;});
+    cv_clean_.wait(lk, [&]() {return (!cleaner_run_ || dead_counts_ > 0);});
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
         if (iter->first->done()) {
             iter->second->join();
@@ -176,23 +184,28 @@ void diffraflow::GenericServer::clean_() {
 }
 
 void diffraflow::GenericServer::stop() {
+    if (!server_run_) return;
     server_run_ = false;
-    unique_lock<mutex> lk(mtx_);
-    // close all connections
-    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); iter++) {
+    if (server_sock_fd_ < 0) return;
+    // shutdown server socket in case new connection come in
+    // SHUT_RD means further receptions will be disallowed.
+    // so here only stop accepting, the opened connections are still alive.
+    shutdown(server_sock_fd_, SHUT_RD);
+    if (is_ipc_) {
+        unlink(server_sock_path_.c_str());
+    }
+    // stop cleaner, then lock is not needed.
+    stop_cleaner_();
+    // close and delete all running connections
+    // cleaner is stopped and no new connection can come in, so doing this without lock is safe.
+    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
         iter->first->stop();
         iter->second->join();
         delete iter->second;
         delete iter->first;
-        connections_.erase(iter);
+        iter = connections_.erase(iter);
     }
-    // close the server socket
-    if (server_sock_fd_ > 0) {
-        shutdown(server_sock_fd_, SHUT_RDWR);
-        close(server_sock_fd_);
-        if (is_ipc_) {
-            unlink(server_sock_path_.c_str());
-        }
-    }
+    // release socket resource
+    close(server_sock_fd_);
     BOOST_LOG_TRIVIAL(info) << "server is closed.";
 }

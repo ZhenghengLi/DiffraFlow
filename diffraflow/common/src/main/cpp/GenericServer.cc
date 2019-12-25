@@ -138,6 +138,7 @@ void diffraflow::GenericServer::serve() {
         }
         BOOST_LOG_TRIVIAL(info) << "One connection is established with client_sock_fd " << client_sock_fd;
         if (!server_run_) {
+            shutdown(client_sock_fd, SHUT_RDWR);
             close(client_sock_fd);
             return;
         }
@@ -151,14 +152,14 @@ void diffraflow::GenericServer::serve() {
         );
         {
             unique_lock<mutex> lk(mtx_);
-            if (!server_run_) {
+            if (server_run_) {
+                connections_.push_back(make_pair(conn_object, conn_thread));
+            } else {
                 conn_object->stop();
                 conn_thread->join();
                 delete conn_thread;
                 delete conn_object;
-                return;
             }
-            connections_.push_back(make_pair(conn_object, conn_thread));
         }
     }
 }
@@ -184,23 +185,25 @@ void diffraflow::GenericServer::clean_() {
 void diffraflow::GenericServer::stop() {
     if (!server_run_) return;
     server_run_ = false;
-    // shutdown server socket in case new connection come in
-    // SHUT_RD means further receptions will be disallowed.
+    // shutdown server socket in case new connection come in.
+    // SHUT_RD means further receptions will be disallowed,
     // so here only stop accepting, the opened connections are still alive.
     shutdown(server_sock_fd_, SHUT_RD);
     if (is_ipc_) {
         unlink(server_sock_path_.c_str());
     }
-    // stop cleaner, then lock is not needed.
+    // stop cleaner
     stop_cleaner_();
     // close and delete all running connections
-    // cleaner is stopped and no new connection can come in, so doing this without lock is safe.
-    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
-        iter->first->stop();
-        iter->second->join();
-        delete iter->second;
-        delete iter->first;
-        iter = connections_.erase(iter);
+    {
+        unique_lock<mutex> lk(mtx_);
+        for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
+            iter->first->stop();
+            iter->second->join();
+            delete iter->second;
+            delete iter->first;
+            iter = connections_.erase(iter);
+        }
     }
     // release socket resource
     close(server_sock_fd_);

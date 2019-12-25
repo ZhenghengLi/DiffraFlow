@@ -10,6 +10,6 @@ Currently, the overall design of data flow is as below, and more details will be
 
 ![plan](docs/images/plan.png)
 
-The overall design is quite similar to LCLS-II's (see: https://ieeexplore.ieee.org/document/8533033). The difference could be that this design uses two PC layes to do data transfering and Data Reduction Pipline (DRP), which will make it possible to do online event-building under very high data rate condition.
+The overall design is quite similar to LCLS-II's (see: https://ieeexplore.ieee.org/document/8533033). The difference could be that this design uses a MapReduce-like data shuffling process to do the online event-building, which will make it easier to do online data filtering based on full event data.
 
 This project is under developing ...

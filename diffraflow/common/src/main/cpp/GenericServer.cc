@@ -96,7 +96,6 @@ int diffraflow::GenericServer::accept_client_() {
 
 void diffraflow::GenericServer::serve() {
     if (server_run_) return;
-    server_run_ = true;
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             BOOST_LOG_TRIVIAL(info)
@@ -109,7 +108,6 @@ void diffraflow::GenericServer::serve() {
                 << "Failed to create server socket on unix socket file "
                 << server_sock_path_
                 << ".";
-            server_run_ = false;
             return;
         }
     } else {
@@ -124,10 +122,10 @@ void diffraflow::GenericServer::serve() {
                 << "Failed to create server socket on port "
                 << server_sock_port_
                 << ".";
-                server_run_ = false;
             return;
         }
     }
+    server_run_ = true;
     // start cleaner only when server socket is successfully opened and is accepting connections.
     start_cleaner_();
     // start accepting clients
@@ -185,8 +183,6 @@ void diffraflow::GenericServer::clean_() {
 
 void diffraflow::GenericServer::stop() {
     if (!server_run_) return;
-    server_run_ = false;
-    if (server_sock_fd_ < 0) return;
     // shutdown server socket in case new connection come in
     // SHUT_RD means further receptions will be disallowed.
     // so here only stop accepting, the opened connections are still alive.
@@ -207,5 +203,6 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
+    server_run_ = false;
     BOOST_LOG_TRIVIAL(info) << "server is closed.";
 }

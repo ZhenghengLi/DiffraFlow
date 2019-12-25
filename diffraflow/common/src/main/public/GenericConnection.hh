@@ -35,7 +35,7 @@ namespace diffraflow {
 
     public:
         GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd);
-        ~GenericConnection();
+        virtual ~GenericConnection();
 
         void run();
         bool done();

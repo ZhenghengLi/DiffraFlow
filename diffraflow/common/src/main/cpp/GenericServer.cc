@@ -179,7 +179,7 @@ void diffraflow::GenericServer::clean_() {
             dead_counts_--;
             BOOST_LOG_TRIVIAL(info) << "delete one connection";
         } else {
-            iter++;
+            ++iter;
         }
     }
 }

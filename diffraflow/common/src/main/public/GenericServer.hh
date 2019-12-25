@@ -52,9 +52,9 @@ namespace diffraflow {
         virtual GenericConnection* new_connection_(int client_sock_fd) = 0;
 
     public:
-        GenericServer(int port);
-        GenericServer(string sock_path);
-        ~GenericServer();
+        explicit GenericServer(int port);
+        explicit GenericServer(string sock_path);
+        virtual ~GenericServer();
 
         void serve();
         void stop();

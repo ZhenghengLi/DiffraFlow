@@ -35,8 +35,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
 }
 
 void diffraflow::CmbConfig::print() {
-    cout << " = CmbConfig Dump Begin =" << endl;
+    cout << " = Configuration Dump Begin =" << endl;
     cout << "  port = " << port << endl;
-    cout << " = CmbConfig Dump End =" << endl;
+    cout << " = Configuration Dump End =" << endl;
 
 }

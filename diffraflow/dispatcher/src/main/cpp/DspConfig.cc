@@ -1,5 +1,9 @@
 #include "DspConfig.hh"
 #include <boost/log/trivial.hpp>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = -1;
@@ -47,5 +51,9 @@ bool diffraflow::DspConfig::load(const char* filename) {
 }
 
 void diffraflow::DspConfig::print() {
-
+    cout << " ---- Configuration Dump Begin ----" << endl;
+    cout << "  listen_port = " << listen_port << endl;
+    cout << "  dispatcher_id = " << dispatcher_id << endl;
+    cout << "  combiner_address_file = " << combiner_address_file << endl;
+    cout << " ---- Configuration Dump End ----" << endl;
 }

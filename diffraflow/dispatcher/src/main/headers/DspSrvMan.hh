@@ -4,10 +4,12 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <atomic>
 
 using std::pair;
 using std::string;
 using std::vector;
+using std::atomic_bool;
 
 namespace diffraflow {
 
@@ -34,6 +36,7 @@ namespace diffraflow {
         size_t      sender_cnt_;
 
         DspImgFrmSrv* imgfrm_srv_;
+        atomic_bool running_flag_;
 
     };
 }

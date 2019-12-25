@@ -16,6 +16,7 @@ diffraflow::DspSrvMan::DspSrvMan(DspConfig* config) {
     sender_arr_ = nullptr;
     sender_cnt_ = 0;
     imgfrm_srv_ = nullptr;
+    running_flag_ = false;
 }
 
 diffraflow::DspSrvMan::~DspSrvMan() {
@@ -23,6 +24,7 @@ diffraflow::DspSrvMan::~DspSrvMan() {
 }
 
 void diffraflow::DspSrvMan::start_run() {
+    if (running_flag_) return;
     // create senders
     if (create_senders_(config_obj_->combiner_address_file.c_str(), config_obj_->dispatcher_id)) {
         BOOST_LOG_TRIVIAL(info) << sender_cnt_ << " senders are created.";
@@ -35,10 +37,12 @@ void diffraflow::DspSrvMan::start_run() {
     // create receiving server
     imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_port, sender_arr_, sender_cnt_);
     // start to serve and block
+    running_flag_ = true;
     imgfrm_srv_->serve();
 }
 
 void diffraflow::DspSrvMan::terminate() {
+    if (!running_flag_) return;
     // stop senders
     if (sender_arr_ == nullptr) return;
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->stop();
@@ -48,6 +52,7 @@ void diffraflow::DspSrvMan::terminate() {
     imgfrm_srv_ = nullptr;
     // delete senders
     delete_senders_();
+    running_flag_ = false;
 }
 
 bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dispatcher_id) {

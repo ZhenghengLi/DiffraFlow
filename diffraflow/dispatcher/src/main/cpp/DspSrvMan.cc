@@ -43,6 +43,7 @@ void diffraflow::DspSrvMan::start_run() {
 
 void diffraflow::DspSrvMan::terminate() {
     if (!running_flag_) return;
+    running_flag_ = false;
     // stop senders
     if (sender_arr_ == nullptr) return;
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->stop();
@@ -52,7 +53,6 @@ void diffraflow::DspSrvMan::terminate() {
     imgfrm_srv_ = nullptr;
     // delete senders
     delete_senders_();
-    running_flag_ = false;
 }
 
 bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dispatcher_id) {

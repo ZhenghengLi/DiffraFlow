@@ -183,6 +183,7 @@ void diffraflow::GenericServer::clean_() {
 
 void diffraflow::GenericServer::stop() {
     if (!server_run_) return;
+    server_run_ = false;
     // shutdown server socket in case new connection come in
     // SHUT_RD means further receptions will be disallowed.
     // so here only stop accepting, the opened connections are still alive.
@@ -203,6 +204,5 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
-    server_run_ = false;
     BOOST_LOG_TRIVIAL(info) << "server is closed.";
 }

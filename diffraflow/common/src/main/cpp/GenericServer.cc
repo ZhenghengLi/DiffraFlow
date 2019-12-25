@@ -126,6 +126,7 @@ void diffraflow::GenericServer::serve() {
         }
     }
     server_run_ = true;
+    dead_counts_ = 0;
     // start cleaner only when server socket is successfully opened and is accepting connections.
     start_cleaner_();
     // start accepting clients
@@ -168,6 +169,7 @@ void diffraflow::GenericServer::clean_() {
     if (!cleaner_run_) return;
     unique_lock<mutex> lk(mtx_);
     cv_clean_.wait(lk, [&]() {return (!cleaner_run_ || dead_counts_ > 0);});
+    if (!cleaner_run_) return;
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
         if (iter->first->done()) {
             iter->second->join();
@@ -203,6 +205,7 @@ void diffraflow::GenericServer::stop() {
             delete iter->second;
             delete iter->first;
             iter = connections_.erase(iter);
+            dead_counts_--;
         }
     }
     // release socket resource

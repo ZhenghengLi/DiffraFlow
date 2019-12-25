@@ -2,7 +2,7 @@
 
 High volume data acquisition and online data analysis for area detectors.
 
-Started on 12th September 2019 by Zhengheng Li after he joined BE SHINE, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to distributed file system (sink) at very high overall input rate (e.g. >100GiB/s).
+Started on 12th September 2019 by Zhengheng Li after he joined BE-SHINE, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to distributed file system (sink) at very high overall input rate (e.g. >100GiB/s).
 
 The software should be capable of doing online event-building for all events before data sink, as well as doing online calibration, deep event filtering and quasi-realtime analysis for fast feedback based on full event image data.
 

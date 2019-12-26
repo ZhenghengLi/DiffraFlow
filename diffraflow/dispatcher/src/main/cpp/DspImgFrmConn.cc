@@ -58,13 +58,13 @@ bool diffraflow::DspImgFrmConn::do_transferring_() {
         }
 
         // dispatch one packet
-        uint64_t identifier;
+        int64_t identifier;
         int index;
 
         switch (head) {
         case 0xABCDEEFF: // image data
             // extract identifier
-            identifier = gDC.decode_byte<uint64_t>(buffer_ + position, 0, 7);
+            identifier = gDC.decode_byte<int64_t>(buffer_ + position, 0, 7);
             index = hash_long_(identifier) % sender_count_;
             BOOST_LOG_TRIVIAL(info) << "Send data with key: " << identifier;
             sender_array_[index]->push(buffer_ + position, size);

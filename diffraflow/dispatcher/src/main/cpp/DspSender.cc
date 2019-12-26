@@ -59,7 +59,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
     gPS.serializeValue<uint32_t>(4, buffer + 4, 4);
     gPS.serializeValue<int32_t>(sender_id_, buffer + 8, 4);
     for (size_t pos = 0; pos < 12;) {
-        int count = send(client_sock_fd_, buffer + pos, 12 - pos, MSG_NOSIGNAL);
+        int count = write(client_sock_fd_, buffer + pos, 12 - pos);
         if (count > 0) {
             pos += count;
         } else {
@@ -165,7 +165,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, size_t& limit) {
         }
     }
     for (size_t pos = 0; pos < limit;) {
-        int count = send(client_sock_fd_, buffer + pos, limit - pos, MSG_NOSIGNAL);
+        int count = write(client_sock_fd_, buffer + pos, limit - pos);
         if (count < 0) {
             BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();

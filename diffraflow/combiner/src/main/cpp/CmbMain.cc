@@ -38,9 +38,20 @@ void init(CmbConfig* config_obj) {
     );
     // register signal action
     struct sigaction action;
+    // for Ctrl-C
     memset(&action, 0, sizeof(action));
     action.sa_handler = &clean;
-    sigaction(SIGINT, &action, nullptr);
+    if (sigaction(SIGINT, &action, nullptr)) {
+        perror("sigaction() failed.");
+        exit(1);
+    }
+    // ignore SIGPIPE
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &action, nullptr)) {
+        perror("sigaction() failed.");
+        exit(1);
+    }
 }
 
 int main(int argc, char** argv) {

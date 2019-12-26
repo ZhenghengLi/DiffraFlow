@@ -70,12 +70,12 @@ bool diffraflow::GenericConnection::start_connection_() {
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     if (head != greeting_head_ || size != 4) {
         BOOST_LOG_TRIVIAL(info) << "got wrong greeting message, close the connection.";
-        send(client_sock_fd_, &failure_code, 4, MSG_NOSIGNAL);
+        write(client_sock_fd_, &failure_code, 4);
         done_flag_ = false;
         return false;
     }
     connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
-    send(client_sock_fd_, &success_code, 4, MSG_NOSIGNAL);
+    write(client_sock_fd_, &success_code, 4);
     // ready for transferring data
     slice_begin_ = 0;
     return true;

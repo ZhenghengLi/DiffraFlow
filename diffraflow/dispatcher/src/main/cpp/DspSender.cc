@@ -166,12 +166,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, size_t& limit) {
     }
     for (size_t pos = 0; pos < limit;) {
         int count = send(client_sock_fd_, buffer + pos, limit - pos, MSG_NOSIGNAL);
-        if (count == 0) { // need to test
-            BOOST_LOG_TRIVIAL(warning) << "connection is closed from the other side.";
-            close_connection();
-            limit = 0;
-            return;
-        } else if (count < 0) {
+        if (count < 0) {
             BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();
             limit = 0;

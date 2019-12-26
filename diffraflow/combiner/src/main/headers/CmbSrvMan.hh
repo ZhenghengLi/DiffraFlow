@@ -1,6 +1,10 @@
 #ifndef CmbSrvMan_H
 #define CmbSrvMan_H
 
+#include <atomic>
+
+using std::atomic_bool;
+
 namespace diffraflow {
 
     class CmbConfig;
@@ -18,7 +22,9 @@ namespace diffraflow {
     private:
         CmbConfig* config_obj_;
         CmbImgCache* image_cache_;
-        CmbImgFrmSrv* image_frame_server_;
+
+        CmbImgFrmSrv* imgfrm_srv_;
+        atomic_bool running_flag_;
 
     };
 }

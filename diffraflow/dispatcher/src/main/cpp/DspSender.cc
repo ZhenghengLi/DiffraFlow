@@ -59,7 +59,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
     gPS.serializeValue<uint32_t>(4, buffer + 4, 4);
     gPS.serializeValue<int32_t>(sender_id_, buffer + 8, 4);
     for (size_t pos = 0; pos < 12;) {
-        int count = write(client_sock_fd_, buffer + pos, 12 - pos);
+        int count = send(client_sock_fd_, buffer + pos, 12 - pos, MSG_NOSIGNAL);
         if (count > 0) {
             pos += count;
         } else {

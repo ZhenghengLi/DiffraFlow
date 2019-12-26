@@ -32,7 +32,7 @@ void clean(int signum) {
     exit(0);
 }
 
-void init() {
+void init(DspConfig* config_obj) {
     // set log level
     boost::log::core::get()->set_filter(
         boost::log::trivial::severity >= boost::log::trivial::info
@@ -45,8 +45,6 @@ void init() {
 }
 
 int main(int argc, char** argv) {
-
-    init();
 
     if (argc < 2) {
         cout << "Usage: " << "dispatcher" << " <config.conf>" << endl;
@@ -61,10 +59,14 @@ int main(int argc, char** argv) {
     }
     gConfiguration->print();
 
+    // -----------------------------------------
+    init(gConfiguration);
+
     gServerManager = new DspSrvMan(gConfiguration);
     gServerManager->start_run();
 
     clean(0);
+    // -----------------------------------------
 
     return 0;
 }

@@ -157,22 +157,22 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, size_t& limit) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
-            // BOOST_LOG_TRIVIAL(info) << "reconnected to combiner.";
+            BOOST_LOG_TRIVIAL(info) << "reconnected to combiner.";
         } else {
-            // BOOST_LOG_TRIVIAL(warning) << "failed to reconnect to combiner, discard data in buffer.";
+            BOOST_LOG_TRIVIAL(warning) << "failed to reconnect to combiner, discard data in buffer.";
             limit = 0;
             return;
         }
     }
     for (size_t pos = 0; pos < limit;) {
-        int count = write(client_sock_fd_, buffer + pos, limit - pos);
+        int count = send(client_sock_fd_, buffer + pos, limit - pos, MSG_NOSIGNAL);
         if (count == 0) { // need to test
-            // BOOST_LOG_TRIVIAL(warning) << "connection is closed from the other side.";
+            BOOST_LOG_TRIVIAL(warning) << "connection is closed from the other side.";
             close_connection();
             limit = 0;
             return;
         } else if (count < 0) {
-            // BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();
             limit = 0;
             return;

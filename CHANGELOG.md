@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### TODO (edit: 2019-12-25)
+### TODO (edit: 2019-12-26)
 
 - [x] rewrite `dispatcher' by C++.
 - [ ] data exchange protocol should be redesigned using some unified rules.

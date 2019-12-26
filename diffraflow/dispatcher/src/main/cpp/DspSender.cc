@@ -46,9 +46,10 @@ bool diffraflow::DspSender::connect_to_combiner() {
         BOOST_LOG_TRIVIAL(error) << "Socket creationg error";
         return false;
     }
+    ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(dest_port_);
     if (connect(client_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen)) {
         close_connection();
-        BOOST_LOG_TRIVIAL(error) << "Connection to " << dest_host_ << " failed.";
+        BOOST_LOG_TRIVIAL(error) << "Connection to " << dest_host_ << ":" << dest_port_ << " failed.";
         return false;
     }
     freeaddrinfo(infoptr);

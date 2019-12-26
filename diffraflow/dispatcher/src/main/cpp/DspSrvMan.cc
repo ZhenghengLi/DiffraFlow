@@ -67,8 +67,9 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     for (size_t i = 0; i < addr_vec.size(); i++) {
         sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id);
         if (sender_arr_[i]->connect_to_combiner()) {
-            BOOST_LOG_TRIVIAL(info) << sprintf("Successfully connected to combiner %s:%d.",
-                addr_vec[i].first.c_str(), addr_vec[i].second);
+            BOOST_LOG_TRIVIAL(info) << "Successfully connected to combiner "
+                                    << addr_vec[i].first.c_str()
+                                    << ":" << addr_vec[i].second;
         } else {
             BOOST_LOG_TRIVIAL(warning) << "Failed to do the first connection to combiner "
                                        << addr_vec[i].first.c_str()

@@ -70,8 +70,9 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
             BOOST_LOG_TRIVIAL(info) << sprintf("Successfully connected to combiner %s:%d.",
                 addr_vec[i].first.c_str(), addr_vec[i].second);
         } else {
-            BOOST_LOG_TRIVIAL(warning) << sprintf("Failed to do the first connection to combiner %s:%d",
-                addr_vec[i].first.c_str(), addr_vec[i].second);
+            BOOST_LOG_TRIVIAL(warning) << "Failed to do the first connection to combiner "
+                                       << addr_vec[i].first.c_str()
+                                       << ":" << addr_vec[i].second;
         }
         // sender_arr_[i]->start();
     }

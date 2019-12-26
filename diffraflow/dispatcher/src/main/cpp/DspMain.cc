@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <csignal>
 #include <cstring>
+#include <thread>
+#include <chrono>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -16,6 +18,7 @@ DspConfig* gConfiguration = nullptr;
 DspSrvMan* gServerManager = nullptr;
 
 void clean(int signum) {
+    cout << "do cleaning ..." << endl;
     if (gServerManager != nullptr) {
         gServerManager->terminate();
         delete gServerManager;
@@ -32,7 +35,7 @@ void clean(int signum) {
 void init() {
     // set log level
     boost::log::core::get()->set_filter(
-        boost::log::trivial::severity >= boost::log::trivial::debug
+        boost::log::trivial::severity >= boost::log::trivial::info
     );
     // register signal action
     struct sigaction action;

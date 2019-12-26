@@ -19,7 +19,7 @@ namespace diffraflow {
 
     class DspSrvMan {
     public:
-        DspSrvMan(DspConfig* config);
+        explicit DspSrvMan(DspConfig* config);
         ~DspSrvMan();
 
         void start_run();

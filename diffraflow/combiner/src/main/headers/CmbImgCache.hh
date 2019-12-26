@@ -9,17 +9,17 @@ namespace diffraflow {
     class ImageData;
 
     class CmbImgCache {
-    private:
-        BlockingQueue<ImageData> image_data_queue_;
-
     public:
         CmbImgCache();
         ~CmbImgCache();
 
-        void put_frame(ImageFrame& image_frame);
+        void put_frame(const ImageFrame& image_frame);
         bool take_one_image(ImageData& image_data, int timeout_ms);
         void img_queue_stop();
         bool img_queue_stopped();
+
+    private:
+        BlockingQueue<ImageData> image_data_queue_;
 
     };
 }

@@ -71,7 +71,7 @@ bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     return true;
 }
 
-void diffraflow::ImageFrame::print() {
+void diffraflow::ImageFrame::print() const {
     if (img_rawdata_ == nullptr) {
         cout << "there is no data to print" << endl;
     }

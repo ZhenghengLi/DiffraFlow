@@ -36,13 +36,13 @@ namespace diffraflow {
         ImageFrame& operator=(const ImageFrame& img_frm);
 
         bool decode(const char* buffer, const size_t size);
-        void print();
+        void print() const;
 
-        size_t serialize(char* const data, size_t len);
-        size_t deserialize(const char* const data, size_t len);
-        size_t object_size();
-        int object_type();
-        void clear_data();
+        size_t serialize(char* const data, size_t len) override;
+        size_t deserialize(const char* const data, size_t len) override;
+        size_t object_size() override;
+        int object_type() override;
+        void clear_data() override;
 
     };
 }

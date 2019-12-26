@@ -17,7 +17,7 @@ namespace diffraflow {
         uint32_t     imgFrm_len;  // number of sub-detectors
         uint8_t*     status_arr;  // alignment status
         ImageFrame*  imgFrm_arr;  // image data from each sub-detector
-        
+
         int64_t      event_key;   // equal to image_key
         double       event_time;  // equal to image_time
 
@@ -26,7 +26,7 @@ namespace diffraflow {
 
     public:
         ImageData();
-        ImageData(uint32_t numOfDet);
+        explicit ImageData(uint32_t numOfDet);
         ImageData(const ImageData& img_data);
         ~ImageData();
 
@@ -34,11 +34,11 @@ namespace diffraflow {
 
         bool put_imgfrm(size_t index, const ImageFrame& imgfrm);
 
-        size_t serialize(char* const data, size_t len);
-        size_t deserialize(const char* const data, size_t len);
-        size_t object_size();
-        int object_type();
-        void clear_data();
+        size_t serialize(char* const data, size_t len) override;
+        size_t deserialize(const char* const data, size_t len) override;
+        size_t object_size() override;
+        int object_type() override;
+        void clear_data() override;
 
     };
 }

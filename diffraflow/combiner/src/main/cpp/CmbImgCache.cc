@@ -16,7 +16,7 @@ diffraflow::CmbImgCache::~CmbImgCache() {
 
 }
 
-void diffraflow::CmbImgCache::put_frame(ImageFrame& image_frame) {
+void diffraflow::CmbImgCache::put_frame(const ImageFrame& image_frame) {
     // in this function, put image from into priority queue, then try to do time alignment
     cout << "CmbImgCache::put_frame:" << endl;
     image_frame.print();

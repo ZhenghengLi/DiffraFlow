@@ -14,4 +14,4 @@ or
 astyle --style=attach --indent=spaces=4 --indent-namespaces --pad-oper --pad-header --align-pointer=type --add-braces *.hh,*.cc
 ```
 
-for more details of the rules, see the document of [astyle](http://astyle.sourceforge.net/astyle.html).
+for details of the rules, see the document of [astyle](http://astyle.sourceforge.net/astyle.html).

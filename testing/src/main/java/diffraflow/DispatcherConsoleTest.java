@@ -6,9 +6,13 @@ import java.util.*;
 
 public class DispatcherConsoleTest {
     public static void main(String[] args) throws IOException{
-        System.out.println("Start test ...");
-        
-        Socket sock = new Socket("localhost", 1234);
+        if (args.length < 1) {
+            System.out.println("please input the port.");
+            return;
+        }
+        System.out.println("Start test on port " + args[0] + " ...");
+
+        Socket sock = new Socket("localhost", Integer.parseInt(args[0]));
         DataInputStream in = new DataInputStream(sock.getInputStream());
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());
         int head = 0xAABBCCDD;

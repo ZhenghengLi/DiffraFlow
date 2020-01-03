@@ -64,8 +64,8 @@ bool diffraflow::GenericConnection::start_connection_() {
             break;
         }
     }
-    uint32_t success_code = htonl(200);
-    uint32_t failure_code = htonl(300);
+    uint32_t success_code = htonl(1234);
+    uint32_t failure_code = htonl(4321);
     uint32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     if (head != greeting_head_ || size != 4) {

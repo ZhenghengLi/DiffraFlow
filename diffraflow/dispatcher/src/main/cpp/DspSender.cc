@@ -80,7 +80,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
     }
     int response_code = 0;
     gPS.deserializeValue<int32_t>(&response_code, buffer, 4);
-    if (response_code != 200) {
+    if (response_code != 1234) {
         close_connection();
         BOOST_LOG_TRIVIAL(error) << "Got wrong response code, close the connection.";
         return false;

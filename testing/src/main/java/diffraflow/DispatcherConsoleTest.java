@@ -15,10 +15,10 @@ public class DispatcherConsoleTest {
         Socket sock = new Socket("localhost", Integer.parseInt(args[0]));
         DataInputStream in = new DataInputStream(sock.getInputStream());
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());
-        int head = 0xAABBCCDD;
-        int size = 4;
-        out.writeInt(head);
-        out.writeInt(size);
+        int packet_head = 0xFFDD1234;
+        int packet_size = 4;
+        out.writeInt(packet_head);
+        out.writeInt(packet_size);
         out.writeInt(1614);
         out.flush();
         int res = in.readInt();
@@ -29,15 +29,17 @@ public class DispatcherConsoleTest {
 
         Random rand = new Random();
 
-        head = 0xABCDEEFF;
+        packet_head = 0xFFF22DDD;
+        int payload_type = 0xABCDFFFF;
         while (true) {
             String line = buff_in.readLine();
             if (line.length() == 0) continue;
             if (line == "quit") break;
             System.out.println(line + " : " + line.getBytes().length);
             byte[] data = line.getBytes();
-            out.writeInt(head);
-            out.writeInt(data.length + 8);
+            out.writeInt(packet_head);
+            out.writeInt(data.length + 4 + 8);
+            out.writeInt(payload_type);
             long identifier = rand.nextLong();
             System.out.println("identifier: " + identifier);
             out.writeLong(identifier);

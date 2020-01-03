@@ -1,29 +1,50 @@
-dispatcher -> D
-combiner   -> C
-ingester   -> E
-monitor    -> B
-client     -> A
+1. one character name for each endpoint:
+    source       -> F
+    dispatcher   -> D
+    combiner     -> C
+    ingester     -> E
+    monitor      -> B
+    client       -> A
 
-TCP: dispatcher -> combiner
-greeting:    0xDDCC1234    (int)4       (int)id
-return code: succ(1234)    fail(4321)
-transfering: 0xDDD00CCC    (int)size    (char[])payload
+2. common data format for transfering:
+    [header(4):size(4):type(4):payload(size-4)]
 
-TCP: combiner -> ingester
-greeting:    0xCCEE1234    (int)4       (int)0
-return code: succ(1234)    fail(4321)
-transfering: 0xCCC00EEE    (int)size    (char[])payload
+3. definition for different payload types
+    (1) 0xABCDFFFF: raw image frame data
+    (2) 0xABCDEEEE: merged full image data, serialized ImageData object
+    (3) 0xAABB1111: 8 bytes time
 
-TCP: ingester -> monitor
-greeting:    0xEEBB1234    (int)4       (int)0
-return code: succ(1234)    fail(4321)
-transfering: 0xEEE00BBB    (int)size    (char[])payload
+4. specific protocol between different endpoints:
+    (1) TCP: source -> dispatcher (push)
+        greeting:    0xFFDD1234    (int)4       (int)id
+        return code: succ(1234)    fail(4321)
+        transfering: 0xFFF22DDD    (int)size    (uint)type   (char[])payload
 
-TCP: client -> monitor (request in a round-robin way from all monitors)
-greeting:    0xAABB1234    (int)4       (int)0
-return code: succ(1234)    fail(4321)
-request:     0xAAA00BBB    (int)8       (long)time
-when have newer data:
-response1    0xBBB00AAA    (int)size    (char[])payload
-otherwise:
-response2    0xBBB11AAA    (int)4       (int)0
+    (2) TCP: dispatcher -> combiner (push)
+        greeting:    0xDDCC1234    (int)4       (int)id
+        return code: succ(1234)    fail(4321)
+        transfering: 0xDDD22CCC    (int)size    (uint)type   (char[])payload
+
+    (3) TCP: ingester -> combiner (pull)
+        greeting:    0xEECC1234    (int)4       (int)0
+        return code: succ(1234)    fail(4321)
+        request:     0xEEE22CCC    (int)size    (int)1
+        response:    0xCCC22EEE    (int)size    (uint)type   (char[])payload
+
+    (4) TCP: ingester -> monitor (push)
+        greeting:    0xEEBB1234    (int)4       (int)0
+        return code: succ(1234)    fail(4321)
+        transfering: 0xEEE22BBB    (int)size    (uint)type   (char[])payload
+        response:    0xBBB22EEE    (int)size    (uint)type   (char[])payload
+
+    (5) TCP: client -> monitor (request in a round-robin way from all monitors)
+        greeting:    0xAABB1234    (int)4       (int)0
+        return code: succ(1234)    fail(4321)
+        request:     0xAAA22BBB    (int)size    (uint)type   (char[])payload
+        response:    0xBBB22AAA    (int)size    (uint)type   (char[])payload
+
+5. data flow among client, monitor and ingester
+    (1) req_time, now_time, hold_flag, ready_flag, tran_flag
+    (2) client -> monitor: if req_time < now_time: set hold_flag = true and ready = false and wait_for, else pass
+    (3) ingester -> monitor: if hold_flag: transfer image data then set ready = true and notify, else update now_time
+    (4) monitor -> client: if ready: transfer image data, else pass

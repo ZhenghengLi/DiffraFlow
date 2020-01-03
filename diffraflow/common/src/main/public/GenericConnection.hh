@@ -24,14 +24,19 @@ namespace diffraflow {
         atomic<bool> done_flag_;
 
     protected:
+        enum ProcessRes {kContinue, kBreak, kStop};
+
+    protected:
         void shift_left_(const size_t position, const size_t limit);
         int32_t get_connection_id_() {
             return connection_id_;
         }
 
         // methods to be implemented
-        virtual void before_transferring_() = 0;
-        virtual bool do_transferring_() = 0;
+        virtual void before_transferring_();
+        virtual bool do_transferring_();
+        virtual ProcessRes process_payload_(const size_t payload_position,
+            const uint32_t payload_size, const uint32_t payload_type);
 
     public:
         GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd);

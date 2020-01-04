@@ -6,7 +6,7 @@
 
 diffraflow::DspImgFrmConn::DspImgFrmConn(int sock_fd,
     DspSender** sender_arr, size_t sender_cnt):
-    GenericConnection(sock_fd, 100 * 1024 * 1024, 1024 * 1024, 0xFFDD1234) {
+    GenericConnection(sock_fd, 0xFFDD1234, 0xFFF22DDD, 0xDDD22FFF, 100 * 1024 * 1024, 1024 * 1024) {
     sender_array_ = sender_arr;
     sender_count_ = sender_cnt;
 

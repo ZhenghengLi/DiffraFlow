@@ -9,13 +9,17 @@
 
 using std::copy;
 
-diffraflow::GenericConnection::GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd) {
+diffraflow::GenericConnection::GenericConnection(int sock_fd,
+    uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
+    size_t buff_sz, size_t pkt_ml) {
     assert(sock_fd > 0);
     client_sock_fd_ = sock_fd;
+    greeting_head_ = greet_hd;
+    receiving_head_ = recv_hd;
+    sending_head_ = send_hd;
     buffer_size_ = buff_sz;
     buffer_ = new char[buffer_size_];
     pkt_maxlen_ = pkt_ml;
-    greeting_head_ = greet_hd;
     slice_begin_ = 0;
     done_flag_ = false;
     connection_id_ = -1;
@@ -82,7 +86,7 @@ bool diffraflow::GenericConnection::start_connection_() {
 }
 
 void diffraflow::GenericConnection::before_transferring_() {
-    BOOST_LOG_TRIVIAL(info) << "connection ID: " << get_connection_id_();
+    BOOST_LOG_TRIVIAL(info) << "connection ID: " << connection_id_;
 }
 
 bool diffraflow::GenericConnection::do_transferring_() {
@@ -107,7 +111,7 @@ bool diffraflow::GenericConnection::do_transferring_() {
         uint32_t packet_size = gDC.decode_byte<uint32_t>(buffer_ + position, 4, 7);
         position += 8;
         // head and size check for packet
-        if (packet_head != 0xFFF22DDD) {
+        if (packet_head != receiving_head_) {
             BOOST_LOG_TRIVIAL(info) << "got wrong packet, close the connection.";
             return false;
         }

@@ -8,14 +8,22 @@ using std::atomic;
 
 namespace diffraflow {
     class GenericConnection {
-    private:
-        uint32_t greeting_head_;
-        int32_t connection_id_;
+    public:
+        GenericConnection(int sock_fd,
+            uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
+            size_t buff_sz, size_t pkt_ml );
+        virtual ~GenericConnection();
 
-    private:
-        bool start_connection_();
+        void run();
+        bool done();
+        void stop();
 
     protected:
+        int32_t connection_id_;
+        uint32_t greeting_head_;
+        uint32_t receiving_head_;
+        uint32_t sending_head_;
+
         char* buffer_;
         size_t buffer_size_;
         size_t slice_begin_;
@@ -28,9 +36,6 @@ namespace diffraflow {
 
     protected:
         void shift_left_(const size_t position, const size_t limit);
-        int32_t get_connection_id_() {
-            return connection_id_;
-        }
 
         // methods to be implemented
         virtual void before_transferring_();
@@ -38,14 +43,8 @@ namespace diffraflow {
         virtual ProcessRes process_payload_(const size_t payload_position,
             const uint32_t payload_size, const uint32_t payload_type);
 
-    public:
-        GenericConnection(int sock_fd, size_t buff_sz, size_t pkt_ml, uint32_t greet_hd);
-        virtual ~GenericConnection();
-
-        void run();
-        bool done();
-        void stop();
-
+    private:
+        bool start_connection_();
 
     };
 }

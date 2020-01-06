@@ -15,7 +15,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     dest_host_ = hostname;
     dest_port_ = port;
     sender_id_ = id;
-    buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 64 B
+    buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 16 B
     size_threshold_ = 1024 * 1024;  // 1 MiB
     time_threshold_ = 100; // 0.1 second
     buffer_A_ = new char[buffer_size_];

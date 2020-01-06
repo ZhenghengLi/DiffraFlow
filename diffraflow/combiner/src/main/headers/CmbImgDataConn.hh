@@ -3,8 +3,6 @@
 
 #include "GenericConnection.hh"
 
-#define WAIT_TIME_MS 50
-
 namespace diffraflow {
 
     class CmbImgCache;

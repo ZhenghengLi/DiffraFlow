@@ -9,10 +9,6 @@ using std::endl;
 using std::cerr;
 using std::copy;
 
-diffraflow::ImageData::ImageData() {
-    ImageData(1);
-}
-
 diffraflow::ImageData::ImageData(uint32_t numOfDet) {
     imgFrm_len = numOfDet;
     imgFrm_arr = new ImageFrame[imgFrm_len];
@@ -54,6 +50,11 @@ bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
     imgFrm_arr[index] = imgfrm;
     status_arr[index] = 0x1;
     return true;
+}
+
+void diffraflow::ImageData::print() {
+    cout << "ImageData[0]:" << endl;
+    imgFrm_arr[0].print();
 }
 
 size_t diffraflow::ImageData::serialize(char* const data, size_t len) {

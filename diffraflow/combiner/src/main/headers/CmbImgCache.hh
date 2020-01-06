@@ -1,7 +1,10 @@
 #ifndef CmbImgCache_H
 #define CmbImgCache_H
 
+#include <queue>
 #include "BlockingQueue.hh"
+
+using std::queue;
 
 namespace diffraflow {
 
@@ -10,16 +13,20 @@ namespace diffraflow {
 
     class CmbImgCache {
     public:
-        CmbImgCache();
+        explicit CmbImgCache(size_t num_of_dets);
         ~CmbImgCache();
 
         void put_frame(const ImageFrame& image_frame);
-        bool take_one_image(ImageData& image_data, int timeout_ms);
+        bool do_alignment();
+        bool take_one_image(ImageData& image_data);
         void img_queue_stop();
         bool img_queue_stopped();
 
     private:
-        BlockingQueue<ImageData> image_data_queue_;
+        size_t              imgfrm_queues_len_;
+        queue<ImageFrame>*  imgfrm_queues_arr_;
+
+        BlockingQueue<ImageData> imgdat_queue_;
 
     };
 }

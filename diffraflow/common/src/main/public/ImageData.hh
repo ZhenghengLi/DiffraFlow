@@ -25,8 +25,7 @@ namespace diffraflow {
         void copyObj_(const ImageData& img_data);
 
     public:
-        ImageData();
-        explicit ImageData(uint32_t numOfDet);
+        explicit ImageData(uint32_t numOfDet = 1);
         ImageData(const ImageData& img_data);
         ~ImageData();
 
@@ -34,6 +33,9 @@ namespace diffraflow {
 
         bool put_imgfrm(size_t index, const ImageFrame& imgfrm);
 
+        void print();
+
+        // serialization functions
         size_t serialize(char* const data, size_t len) override;
         size_t deserialize(const char* const data, size_t len) override;
         size_t object_size() override;

@@ -24,8 +24,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
     buffer_B_imgct_ = 0;
-    buff_compr_A_ = new char[buffer_size_];
-    buff_compr_B_ = new char[buffer_size_];
+    buff_compr_ = new char[buffer_size_];
     client_sock_fd_ = -1;
     sending_thread_ = nullptr;
     run_flag_ = false;
@@ -34,8 +33,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
 diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
-    delete [] buff_compr_A_;
-    delete [] buff_compr_B_;
+    delete [] buff_compr_;
 }
 
 bool diffraflow::DspSender::connect_to_combiner() {
@@ -145,8 +143,9 @@ bool diffraflow::DspSender::swap_() {
 
 void diffraflow::DspSender::send_() {
     // send all data in buffer_B_
+    lock_guard<mutex> lk_send(mtx_send_);
     if (buffer_B_limit_ > 0) {
-        send_buffer_(buffer_B_, buff_compr_B_, buffer_B_limit_, buffer_B_imgct_);
+        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_);
         buffer_B_limit_ = 0;
         buffer_B_imgct_ = 0;
     }
@@ -154,16 +153,17 @@ void diffraflow::DspSender::send_() {
 
 void diffraflow::DspSender::send_remaining() {
     // do this only after stopping and before deleting
+    lock_guard<mutex> lk_send(mtx_send_);
     lock_guard<mutex> lk(mtx_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {
-        send_buffer_(buffer_A_, buff_compr_A_, buffer_A_limit_, buffer_A_imgct_);
+        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_);
         buffer_A_limit_ = 0;
         buffer_A_imgct_ = 0;
     }
 }
 
-void diffraflow::DspSender::send_buffer_(const char* buffer, char* buff_compr, const size_t limit, const size_t imgct) {
+void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit, const size_t imgct) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
@@ -191,7 +191,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, char* buff_compr, c
         }
     }
     BOOST_LOG_TRIVIAL(info) << "done a write for head.";
-    // compression can be done here: buffer -> buff_compr,
+    // compression can be done here: buffer -> buff_compr_,
     // now directly send image sequence data without compression
     for (size_t pos = 0; pos < limit;) {
         int count = write(client_sock_fd_, buffer + pos, limit - pos);

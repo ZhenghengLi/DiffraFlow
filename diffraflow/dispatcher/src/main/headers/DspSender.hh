@@ -41,8 +41,7 @@ namespace diffraflow {
         // send buffer_B over TCP
         void send_();
         // help function
-        void send_buffer_(const char* buffer, char* buff_compr,
-            const size_t limit, const size_t num_of_imgs);
+        void send_buffer_(const char* buffer, const size_t limit, const size_t num_of_imgs);
 
     private:
         // socket
@@ -61,11 +60,11 @@ namespace diffraflow {
         size_t size_threshold_;
         size_t time_threshold_; // ms
         // buffer for compression
-        char*  buff_compr_A_;
-        char*  buff_compr_B_;
+        char*  buff_compr_;
         // sending thread
         thread* sending_thread_;
         mutex mtx_;
+        mutex mtx_send_;
         condition_variable cv_push_;
         condition_variable cv_swap_;
         atomic_bool run_flag_;

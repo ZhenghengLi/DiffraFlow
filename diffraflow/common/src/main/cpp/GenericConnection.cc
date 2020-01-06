@@ -21,12 +21,14 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     buffer_ = new char[buffer_size_];
     pkt_maxlen_ = pkt_ml;
     slice_begin_ = 0;
+    buff_compr_ = new char[pkt_maxlen_];
     done_flag_ = false;
     connection_id_ = -1;
 }
 
 diffraflow::GenericConnection::~GenericConnection() {
     delete [] buffer_;
+    delete [] buff_compr_;
 }
 
 void diffraflow::GenericConnection::run() {

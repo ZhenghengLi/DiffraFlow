@@ -28,6 +28,7 @@ namespace diffraflow {
         size_t buffer_size_;
         size_t slice_begin_;
         size_t pkt_maxlen_;
+        char* buff_compr_;
         int client_sock_fd_;
         atomic<bool> done_flag_;
 

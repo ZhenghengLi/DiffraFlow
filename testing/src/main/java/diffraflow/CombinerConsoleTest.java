@@ -7,7 +7,7 @@ import java.util.*;
 public class CombinerConsoleTest {
     public static void main(String[] args) throws IOException{
         System.out.println("Start test ...");
-        
+
         Socket sock = new Socket("localhost", 6666);
         DataInputStream in = new DataInputStream(sock.getInputStream());
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());

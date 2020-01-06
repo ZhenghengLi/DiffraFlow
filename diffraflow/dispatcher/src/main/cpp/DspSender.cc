@@ -55,7 +55,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
     freeaddrinfo(infoptr);
     // send greeting message for varification
     char buffer[12];
-    gPS.serializeValue<uint32_t>(0xAAAABBBB, buffer, 4);
+    gPS.serializeValue<uint32_t>(0xDDCC1234, buffer, 4);
     gPS.serializeValue<uint32_t>(4, buffer + 4, 4);
     gPS.serializeValue<int32_t>(sender_id_, buffer + 8, 4);
     for (size_t pos = 0; pos < 12;) {
@@ -101,15 +101,17 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
     if (!run_flag_) return;
     unique_lock<mutex> lk(mtx_);
     // wait when there is no enough space
-    cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 8 <= buffer_size_ - buffer_A_limit_);});
+    cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 12 <= buffer_size_ - buffer_A_limit_);});
     if (!run_flag_) return;
-    // head
-    gPS.serializeValue<uint32_t>(0xABCDEEFF, buffer_A_ + buffer_A_limit_, 4);
-    // size
-    gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_ + 4, 4);
-    // payload
-    std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 8);
-    buffer_A_limit_ += 8 + len;
+    // packet_head
+    gPS.serializeValue<uint32_t>(0xDDD22CCC, buffer_A_ + buffer_A_limit_, 4);
+    // packet_size
+    gPS.serializeValue<uint32_t>(len + 4, buffer_A_ + buffer_A_limit_ + 4, 4);
+    // payload_type
+    gPS.serializeValue<uint32_t>(0xABCDFFFF, buffer_A_ + buffer_A_limit_ + 8, 4);
+    // payload_data
+    std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 12);
+    buffer_A_limit_ += 12 + len;
     // foreward limit and check size threshold
     if (buffer_A_limit_ > size_threshold_) {
         cv_swap_.notify_one();

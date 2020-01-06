@@ -8,16 +8,17 @@ namespace diffraflow {
     class CmbImgCache;
 
     class CmbImgFrmConn: public GenericConnection {
-    private:
-        CmbImgCache* image_cache_;
-
-    protected:
-        void before_transferring_();
-        bool do_transferring_();
-
     public:
         CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_);
         ~CmbImgFrmConn();
+
+    protected:
+        ProcessRes process_payload_(const size_t payload_position,
+            const uint32_t payload_size, const uint32_t payload_type);
+
+    private:
+        CmbImgCache* image_cache_;
+
 
     };
 }

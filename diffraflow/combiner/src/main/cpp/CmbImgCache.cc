@@ -34,7 +34,6 @@ bool diffraflow::CmbImgCache::do_alignment() {
     }
     ImageData image_data;
     image_data.put_imgfrm(0, imgfrm_queues_arr_[0].front());
-    BOOST_LOG_TRIVIAL(info) << "after put_imgfrm.";
     imgfrm_queues_arr_[0].pop();
     image_data.print();
     // imgdat_queue_.push(image_data);

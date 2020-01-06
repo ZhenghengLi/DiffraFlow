@@ -20,8 +20,10 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     time_threshold_ = 100; // 0.1 second
     buffer_A_ = new char[buffer_size_];
     buffer_A_limit_ = 0;
+    buffer_A_imgct_ = 0;
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
+    buffer_B_imgct_ = 0;
     client_sock_fd_ = -1;
     sending_thread_ = nullptr;
     run_flag_ = false;
@@ -101,17 +103,14 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
     if (!run_flag_) return;
     unique_lock<mutex> lk(mtx_);
     // wait when there is no enough space
-    cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 12 <= buffer_size_ - buffer_A_limit_);});
+    cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 4 <= buffer_size_ - buffer_A_limit_);});
     if (!run_flag_) return;
-    // packet_head
-    gPS.serializeValue<uint32_t>(0xDDD22CCC, buffer_A_ + buffer_A_limit_, 4);
-    // packet_size
-    gPS.serializeValue<uint32_t>(len + 4, buffer_A_ + buffer_A_limit_ + 4, 4);
-    // payload_type
-    gPS.serializeValue<uint32_t>(0xABCDFFFF, buffer_A_ + buffer_A_limit_ + 8, 4);
-    // payload_data
-    std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 12);
-    buffer_A_limit_ += 12 + len;
+    // image frame size
+    gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_, 4);
+    // image frame data
+    std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 4);
+    buffer_A_limit_ += 4 + len;
+    buffer_A_imgct_ += 1;
     // foreward limit and check size threshold
     if (buffer_A_limit_ > size_threshold_) {
         cv_swap_.notify_one();
@@ -126,12 +125,13 @@ bool diffraflow::DspSender::swap_() {
     }
     if (buffer_A_limit_ > 0) {
         // do the swap
-        char*  tmp_buff = buffer_A_;
-        size_t tmp_size = buffer_A_limit_;
-        buffer_A_ = buffer_B_;
-        buffer_A_limit_ = buffer_B_limit_;
-        buffer_B_ = tmp_buff;
-        buffer_B_limit_ = tmp_size;
+        char* tmp_buff = buffer_B_;
+        buffer_B_ = buffer_A_;
+        buffer_B_limit_ = buffer_A_limit_;
+        buffer_B_imgct_ = buffer_A_imgct_;
+        buffer_A_ = tmp_buff;
+        buffer_A_limit_ = 0;
+        buffer_A_imgct_ = 0;
         cv_push_.notify_one();
         return true;
     } else {
@@ -142,7 +142,9 @@ bool diffraflow::DspSender::swap_() {
 void diffraflow::DspSender::send_() {
     // send all data in buffer_B_
     if (buffer_B_limit_ > 0) {
-        send_buffer_(buffer_B_, buffer_B_limit_);
+        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_);
+        buffer_B_limit_ = 0;
+        buffer_B_imgct_ = 0;
     }
 }
 
@@ -151,35 +153,53 @@ void diffraflow::DspSender::send_remaining() {
     lock_guard<mutex> lk(mtx_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {
-        send_buffer_(buffer_A_, buffer_A_limit_);
+        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_);
+        buffer_A_limit_ = 0;
+        buffer_A_imgct_ = 0;
     }
 }
 
-void diffraflow::DspSender::send_buffer_(const char* buffer, size_t& limit) {
+void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit, const size_t imgct) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
             BOOST_LOG_TRIVIAL(info) << "reconnected to combiner.";
         } else {
             BOOST_LOG_TRIVIAL(warning) << "failed to reconnect to combiner, discard data in buffer.";
-            limit = 0;
             return;
         }
     }
-    for (size_t pos = 0; pos < limit;) {
-        int count = write(client_sock_fd_, buffer + pos, limit - pos);
+    // packet_head(4) : packet_size(4) : image_seq_head(4) : image_count(4) : image_seq_data
+    // send head
+    char head_buffer[16];
+    gPS.serializeValue<uint32_t>(0xDDD22CCC, head_buffer, 4);
+    gPS.serializeValue<uint32_t>(8 + limit, head_buffer + 4, 4);
+    gPS.serializeValue<uint32_t>(0xABCDFFFF, head_buffer + 8, 4);
+    gPS.serializeValue<uint32_t>(imgct, head_buffer + 12, 4);
+    for (size_t pos = 0; pos < 16;) {
+        int count = write(client_sock_fd_, head_buffer + pos, 16 - pos);
         if (count < 0) {
             BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();
-            limit = 0;
             return;
         } else {
             pos += count;
         }
     }
-    // all data in buffer is sent, reset the limit
-    limit = 0;
-    BOOST_LOG_TRIVIAL(info) << "done a write.";
+    BOOST_LOG_TRIVIAL(info) << "done a write for head.";
+    // compression can be done here,
+    // now directly send image sequence data without compression
+    for (size_t pos = 0; pos < limit;) {
+        int count = write(client_sock_fd_, buffer + pos, limit - pos);
+        if (count < 0) {
+            BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            close_connection();
+            return;
+        } else {
+            pos += count;
+        }
+    }
+    BOOST_LOG_TRIVIAL(info) << "done a write for data.";
 }
 
 void diffraflow::DspSender::start() {

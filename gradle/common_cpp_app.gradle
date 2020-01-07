@@ -21,7 +21,7 @@ tasks.create(name:'install', type: Copy) {
 
 build.dependsOn = ['install']
 
-gradle.taskGraph.whenReady {
-    installRelease.enabled = false
+tasks.withType(InstallExecutable) {
+    it.enabled = false
 }
 

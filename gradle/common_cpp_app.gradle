@@ -19,5 +19,9 @@ tasks.create(name:'install', type: Copy) {
     from(Paths.get("$buildDir", exepath, exefile)) { into("bin") }
 }
 
-build.dependsOn('install')
+build.dependsOn = ['install']
+
+gradle.taskGraph.whenReady {
+    installRelease.enabled = false
+}
 

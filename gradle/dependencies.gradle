@@ -7,7 +7,7 @@ ext {
 
 versions += [
     gradle: '6.0',
-    taskTree: '1.4',
+    taskTree: '1.5',
     commonsCli: '1.4',
     kafkaClients: '2.3.0'
 ]

@@ -35,3 +35,7 @@ tasks.create(name:'packageDebug', type: Copy) {
 
 assemble.dependsOn('packageDebug')
 
+tasks.withType(InstallExecutable) {
+    it.enabled = false
+}
+

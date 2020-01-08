@@ -173,6 +173,7 @@ namespace diffraflow {
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            return true;
         }
     }
 

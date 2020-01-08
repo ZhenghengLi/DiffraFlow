@@ -76,12 +76,29 @@ bool diffraflow::GenericConnection::start_connection_() {
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     if (head != greeting_head_ || size != 4) {
         BOOST_LOG_TRIVIAL(info) << "got wrong greeting message, close the connection.";
-        write(client_sock_fd_, &failure_code, 4);
+        for (size_t pos = 0; pos < 4;) {
+            int count = write(client_sock_fd_, &failure_code, 4);
+            if (count < 0) {
+                BOOST_LOG_TRIVIAL(warning) << "error found when sending failure code: " << strerror(errno);
+                break;
+            } else {
+                pos += count;
+            }
+        }
         done_flag_ = false;
         return false;
     }
     connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
-    write(client_sock_fd_, &success_code, 4);
+    for (size_t pos = 0; pos < 4;) {
+        int count = write(client_sock_fd_, &success_code, 4);
+        if (count < 0) {
+            BOOST_LOG_TRIVIAL(warning) << "error found when sending success code: " << strerror(errno);
+            done_flag_ = false;
+            return false;
+        } else {
+            pos += count;
+        }
+    }
     // ready for transferring data
     slice_begin_ = 0;
     return true;

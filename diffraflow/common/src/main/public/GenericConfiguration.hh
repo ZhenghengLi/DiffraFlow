@@ -13,7 +13,7 @@ namespace diffraflow {
     class GenericConfiguration {
     public:
         GenericConfiguration();
-        ~GenericConfiguration();
+        virtual ~GenericConfiguration();
 
         virtual bool load(const char* filename) = 0;
         virtual void print() = 0;

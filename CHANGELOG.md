@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - 'dispatcher' is rewritten by C++, and the Java version is removed.
-- Use an unified data exchange protocol between different components. the protocol is defined by docs/protocol.txt.
-- The data transferred from 'dispatcher' to 'combiner' can be compressed, but now the compression code is not added yet.
+- Use an unified data exchange protocol between different components, and the protocol is defined by docs/protocol.txt.
+- The data transferred from 'dispatcher' to 'combiner' can be compressed, but now the compression code is not yet added.
 
 ## [0.0.1] - 2019-10-31
 

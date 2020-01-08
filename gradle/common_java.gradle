@@ -7,19 +7,19 @@ dependencies {
     implementation libs.commonsCli
 }
 
-tasks.create(name: "copyLibs", type: Copy) {
-    from configurations.default
-    into "${buildDir}/libs"
-}
-
-// build.dependsOn("copyLibs")
-
-tasks.create(name:'install', type: Copy) {
-    into "$rootProject.buildDir/install"
+tasks.create(name:'packageRelease', type: Copy) {
+    into "$rootProject.buildDir/package_release"
     dependsOn 'assemble'
     from(project.jar) { into("jar") }
     from(project.configurations.default) { into ("jar") }
 }
 
-build.dependsOn = ['install']
+tasks.create(name:'packageDebug', type: Copy) {
+    into "$rootProject.buildDir/package_debug"
+    dependsOn 'assemble'
+    from(project.jar) { into("jar") }
+    from(project.configurations.default) { into ("jar") }
+}
+
+build.dependsOn('packageDebug')
 

@@ -11,8 +11,8 @@ library {
     }
 }
 
-tasks.create(name:'install', type: Copy) {
-    into "$rootProject.buildDir/install"
+tasks.create(name:'packageRelease', type: Copy) {
+    into "$rootProject.buildDir/package_release"
     dependsOn 'assembleRelease'
     def libfile = "lib${project.name}.so"
     if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
@@ -22,5 +22,16 @@ tasks.create(name:'install', type: Copy) {
     from(Paths.get("$buildDir", libpath, libfile)) { into("lib") }
 }
 
-build.dependsOn = ['install']
+tasks.create(name:'packageDebug', type: Copy) {
+    into "$rootProject.buildDir/package_debug"
+    dependsOn 'assembleDebug'
+    def libfile = "lib${project.name}.so"
+    if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+        libfile = "lib${project.name}.dylib"
+    }
+    def libpath = "lib/main/debug"
+    from(Paths.get("$buildDir", libpath, libfile)) { into("lib") }
+}
+
+assemble.dependsOn('packageDebug')
 

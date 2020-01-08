@@ -4,7 +4,7 @@ tmp_dir=$(dirname ${BASH_SOURCE[0]})
 my_dir=$(cd $tmp_dir/.. > /dev/null ; pwd)
 
 # change this variable if needed
-packageDir=$my_dir/build/package_debug
+packageDir=$my_dir/build/package_release
 
 export CLASSPATH=$packageDir/jar/*
 

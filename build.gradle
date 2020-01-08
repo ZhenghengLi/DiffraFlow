@@ -37,9 +37,15 @@ task downloadWrapper(type: Wrapper) {
 apply plugin: "base"
 apply plugin: "com.dorongold.task-tree"
 
-tasks.create(name:'install', type: Copy) {
-    into "$project.buildDir/install"
+tasks.create(name:'packageRelease', type: Copy) {
+    into "$project.buildDir/package_release"
     from("config") { into("conf") }
 }
 
-build.dependsOn("install")
+tasks.create(name:'packageDebug', type: Copy) {
+    into "$project.buildDir/package_debug"
+    from("config") { into("conf") }
+}
+
+assemble.dependsOn('packageDebug')
+

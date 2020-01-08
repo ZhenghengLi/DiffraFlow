@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### In progress (edit: 2019-12-26)
+(empty)
 
-- [x] rewrite `dispatcher' by C++.
-- [ ] data exchange protocol should be redesigned using some unified rules.
-- [ ] data exchange among combiner, ingester and monitor should be using TCP on localhost for the convenience of deployment by Docker.
+## [0.0.2] - 2020-01-08
+
+### Changed
+
+- 'dispatcher' is rewritten by C++, and the Java version is removed.
+- Use an unified data exchange protocol between different components. the protocol is defined by docs/protocol.txt.
+- The data transferred from 'dispatcher' to 'combiner' can be compressed, but now the compression code is not added yet.
 
 ## [0.0.1] - 2019-10-31
 

@@ -22,7 +22,7 @@ diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
 
 diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
     const size_t payload_position, const uint32_t payload_size, const uint32_t payload_type) {
-    if (payload_type == 0xABCDF8F8) {
+    if (payload_type == 0xABCDFF00) {
         // uncompressed image frame sequence data
         if (payload_size < 4) {
             BOOST_LOG_TRIVIAL(warning) << "got wrong image frame sequence data, close the connection.";

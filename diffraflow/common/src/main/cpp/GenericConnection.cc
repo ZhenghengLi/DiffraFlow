@@ -1,5 +1,6 @@
 #include "GenericConnection.hh"
 #include "Decoder.hh"
+#include "PrimitiveSerializer.hh"
 
 #include <cassert>
 #include <unistd.h>
@@ -58,6 +59,7 @@ void diffraflow::GenericConnection::shift_left_(const size_t position, const siz
 }
 
 bool diffraflow::GenericConnection::start_connection_() {
+    slice_begin_ = 0;
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
@@ -70,14 +72,15 @@ bool diffraflow::GenericConnection::start_connection_() {
             break;
         }
     }
-    uint32_t success_code = htonl(1234);
-    uint32_t failure_code = htonl(4321);
     uint32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
+    connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
     if (head != greeting_head_ || size != 4) {
         BOOST_LOG_TRIVIAL(info) << "got wrong greeting message, close the connection.";
+        // send failure code which is 4321
+        gPS.serializeValue<uint32_t>(4321, buffer_, 4);
         for (size_t pos = 0; pos < 4;) {
-            int count = write(client_sock_fd_, &failure_code, 4);
+            int count = write(client_sock_fd_, buffer_ + pos, 4 - pos);
             if (count < 0) {
                 BOOST_LOG_TRIVIAL(warning) << "error found when sending failure code: " << strerror(errno);
                 break;
@@ -88,9 +91,10 @@ bool diffraflow::GenericConnection::start_connection_() {
         done_flag_ = false;
         return false;
     }
-    connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
+    // send success code which is 1234
+    gPS.serializeValue<uint32_t>(1234, buffer_, 4);
     for (size_t pos = 0; pos < 4;) {
-        int count = write(client_sock_fd_, &success_code, 4);
+        int count = write(client_sock_fd_, buffer_ + pos, 4 - pos);
         if (count < 0) {
             BOOST_LOG_TRIVIAL(warning) << "error found when sending success code: " << strerror(errno);
             done_flag_ = false;

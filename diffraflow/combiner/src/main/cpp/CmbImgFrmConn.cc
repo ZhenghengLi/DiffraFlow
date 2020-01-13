@@ -6,7 +6,10 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <algorithm>
+#include <string>
+
 #include <boost/log/trivial.hpp>
+#include <snappy.h>
 
 using std::copy;
 
@@ -34,14 +37,19 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
             return kStop;
 
         }
-        // decompressing can be done here:
-        // buffer_[payload_position + 4 : payload_position + payload_size] => buff_compr_
-        // the compression method here is planned to use snappy: github.com/google/snappy
-        // current_buffer = buff_compr_
-        char* const current_buffer = buffer_ + payload_position + 4;
+
+        // - uncompress and process
+        // std::string uncompressed_str;
+        // snappy::Uncompress(buffer_ + payload_position + 4, payload_size - 4, &uncompressed_str);
+        // const char* current_buffer = uncompressed_str.data();
+        // const size_t current_limit = uncompressed_str.size();
+
+        // - directly process without uncompressing
+        const char* current_buffer = buffer_ + payload_position + 4;
         const size_t current_limit = payload_size - 4;
-        size_t current_position = 0;
+
         // process data in current_buffer
+        size_t current_position = 0;
         for (size_t i = 0; i < image_counts; i++) {
             if (current_limit - current_position <= 4) {
                 BOOST_LOG_TRIVIAL(warning) << "unexpectedly reach the end of image frame sequence data, close the connection.";

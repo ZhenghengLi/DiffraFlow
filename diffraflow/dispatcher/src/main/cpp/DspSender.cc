@@ -8,8 +8,10 @@
 #include <string.h>
 #include <algorithm>
 #include <chrono>
+#include <string>
 
 #include <boost/log/trivial.hpp>
+#include <snappy.h>
 
 diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     dest_host_ = hostname;
@@ -171,11 +173,22 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
             return;
         }
     }
-    // packet_head(4) | packet_size(4) | image_seq_head(4) | image_count(4) | image_seq_data
+    // packet format: packet_head(4) | packet_size(4) | image_seq_head(4) | image_count(4) | image_seq_data
+
+    // - send compressed data
+    // std::string compressed_str;
+    // snappy::Compress(buffer, limit, &compressed_str);
+    // const char* current_buffer = compressed_str.data();
+    // const size_t current_limit = compressed_str.size();
+
+    // - send uncompressed data
+    const char* current_buffer = buffer;
+    size_t current_limit = limit;
+
     // send head
     char head_buffer[16];
     gPS.serializeValue<uint32_t>(0xDDD22CCC, head_buffer, 4);
-    gPS.serializeValue<uint32_t>(8 + limit, head_buffer + 4, 4);
+    gPS.serializeValue<uint32_t>(8 + current_limit, head_buffer + 4, 4);
     gPS.serializeValue<uint32_t>(0xABCDFF00, head_buffer + 8, 4);
     gPS.serializeValue<uint32_t>(imgct, head_buffer + 12, 4);
     for (size_t pos = 0; pos < 16;) {
@@ -189,11 +202,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         }
     }
     BOOST_LOG_TRIVIAL(info) << "done a write for head.";
-    // compression can be done here before sending
-    // the compression method here is planned to use snappy: github.com/google/snappy
-    // now directly send image sequence data without compression
-    const char* current_buffer = buffer;
-    size_t current_limit = limit;
+
     // send data in current_buffer
     for (size_t pos = 0; pos < current_limit;) {
         int count = write(client_sock_fd_, current_buffer + pos, current_limit - pos);

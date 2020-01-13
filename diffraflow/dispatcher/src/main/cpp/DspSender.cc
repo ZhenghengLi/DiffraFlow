@@ -24,7 +24,6 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
     buffer_B_imgct_ = 0;
-    buff_compr_ = new char[buffer_size_];
     client_sock_fd_ = -1;
     sending_thread_ = nullptr;
     run_flag_ = false;
@@ -33,7 +32,6 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
 diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
-    delete [] buff_compr_;
 }
 
 bool diffraflow::DspSender::connect_to_combiner() {
@@ -123,7 +121,7 @@ bool diffraflow::DspSender::swap_() {
     // swap buffer_A_ and buffer_B_ for async sending
     unique_lock<mutex> lk(mtx_);
     if (buffer_A_limit_ < size_threshold_) {
-        cv_swap_.wait_for(lk, std::chrono::microseconds(time_threshold_));
+        cv_swap_.wait_for(lk, std::chrono::milliseconds(time_threshold_));
     }
     if (buffer_A_limit_ > 0) {
         // do the swap
@@ -191,7 +189,8 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         }
     }
     BOOST_LOG_TRIVIAL(info) << "done a write for head.";
-    // compression can be done here: buffer -> buff_compr_,
+    // compression can be done here before sending
+    // the compression method here is planned to use snappy: github.com/google/snappy
     // now directly send image sequence data without compression
     for (size_t pos = 0; pos < limit;) {
         int count = write(client_sock_fd_, buffer + pos, limit - pos);

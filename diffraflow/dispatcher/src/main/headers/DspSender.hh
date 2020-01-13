@@ -59,8 +59,6 @@ namespace diffraflow {
         size_t buffer_B_imgct_;
         size_t size_threshold_;
         size_t time_threshold_; // ms
-        // buffer for compression
-        char*  buff_compr_;
         // sending thread
         thread* sending_thread_;
         mutex mtx_;

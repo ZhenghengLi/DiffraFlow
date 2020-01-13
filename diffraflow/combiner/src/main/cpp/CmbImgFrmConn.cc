@@ -36,6 +36,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         }
         // decompressing can be done here:
         // buffer_[payload_position + 4 : payload_position + payload_size] => buff_compr_
+        // the compression method here is planned to use snappy: github.com/google/snappy
         // current_buffer = buff_compr_
         char* const current_buffer = buffer_ + payload_position + 4;
         size_t current_position = 0;

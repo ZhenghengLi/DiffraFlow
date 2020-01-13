@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-(empty)
+### Added
+
+- The code (using [Snappy](https://github.com/google/snappy)) to compress the data transferred from 'dispatcher' to 'combiner' is added.
 
 ## [0.0.2] - 2020-01-08
 

@@ -13,7 +13,7 @@
 #include <boost/log/trivial.hpp>
 #include <snappy.h>
 
-diffraflow::DspSender::DspSender(string hostname, int port, int id) {
+diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_flag) {
     dest_host_ = hostname;
     dest_port_ = port;
     sender_id_ = id;
@@ -29,6 +29,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id) {
     client_sock_fd_ = -1;
     sending_thread_ = nullptr;
     run_flag_ = false;
+    compress_flag_ = compr_flag;
 }
 
 diffraflow::DspSender::~DspSender() {
@@ -145,7 +146,7 @@ void diffraflow::DspSender::send_() {
     // send all data in buffer_B_
     lock_guard<mutex> lk_send(mtx_send_);
     if (buffer_B_limit_ > 0) {
-        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_, false);
+        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_);
         buffer_B_limit_ = 0;
         buffer_B_imgct_ = 0;
     }
@@ -157,14 +158,13 @@ void diffraflow::DspSender::send_remaining() {
     lock_guard<mutex> lk(mtx_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {
-        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_, false);
+        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_);
         buffer_A_limit_ = 0;
         buffer_A_imgct_ = 0;
     }
 }
 
-void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
-    const size_t imgct, const bool compress_flag) {
+void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit, const size_t imgct) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
@@ -183,14 +183,14 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
 
     // - send compressed data if compress_flag is true
     std::string compressed_str;
-    if (compress_flag) {
+    if (compress_flag_) {
         payload_type = 0xABCDFF01;
         snappy::Compress(buffer, limit, &compressed_str);
         current_buffer = compressed_str.data();
         current_limit = compressed_str.size();
     }
 
-    // BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << limit << ", sent size = " << current_limit;
+    BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << limit << ", sent size = " << current_limit;
 
     // send head
     char head_buffer[16];

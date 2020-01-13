@@ -1,6 +1,7 @@
 #include "DspConfig.hh"
 #include <boost/log/trivial.hpp>
 #include <iostream>
+#include <sstream>
 
 using std::cout;
 using std::endl;
@@ -9,6 +10,7 @@ diffraflow::DspConfig::DspConfig() {
     dispatcher_id = -1;
     listen_port = -1;
     combiner_address_file = "";
+    compress_flag = false;
 }
 
 diffraflow::DspConfig::~DspConfig() {
@@ -31,6 +33,11 @@ bool diffraflow::DspConfig::load(const char* filename) {
             dispatcher_id = atoi(value.c_str());
         } else if (key == "combiner_address_file") {
             combiner_address_file = value;
+        } else if (key == "compress_flag") {
+            std::istringstream(value) >> std::boolalpha >> compress_flag;
+        } else {
+            BOOST_LOG_TRIVIAL(warning) << "Found unknown configuration which is ignored: "
+                << key << " = " << value << " in " << filename;
         }
     }
     // check

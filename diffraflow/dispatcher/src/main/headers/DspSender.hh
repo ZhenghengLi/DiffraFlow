@@ -21,7 +21,7 @@ using std::atomic;
 namespace diffraflow {
     class DspSender {
     public:
-        DspSender(string hostname, int port, int id);
+        DspSender(string hostname, int port, int id, bool compr_flag = false);
         ~DspSender();
 
         bool connect_to_combiner();
@@ -41,8 +41,7 @@ namespace diffraflow {
         // send buffer_B over TCP
         void send_();
         // help function
-        void send_buffer_(const char* buffer, const size_t limit,
-            const size_t num_of_imgs, const bool compress_flag = false);
+        void send_buffer_(const char* buffer, const size_t limit, const size_t num_of_imgs);
 
     private:
         // socket
@@ -67,6 +66,7 @@ namespace diffraflow {
         condition_variable cv_push_;
         condition_variable cv_swap_;
         atomic_bool run_flag_;
+        bool compress_flag_;
 
     };
 }

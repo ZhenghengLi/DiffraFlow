@@ -26,7 +26,7 @@ namespace diffraflow {
         void terminate();
 
     private:
-        bool create_senders_(const char* address_list_fn, int dispatcher_id);
+        bool create_senders_(const char* address_list_fn, int dispatcher_id, bool compress_flag = false);
         void delete_senders_();
         bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
 

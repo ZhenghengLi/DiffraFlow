@@ -57,7 +57,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         current_limit = uncompressed_str.size();
     }
 
-    // BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << payload_size - 4 << ", processed size = " << current_limit;
+    BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << payload_size - 4 << ", processed size = " << current_limit;
 
     // process data in current_buffer
     size_t current_position = 0;

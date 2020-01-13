@@ -2,7 +2,7 @@
 
 ## Coding style
 
-c++ coding style should follow the way of  
+C++ and Java coding style should follow the way of  
 
 ```bash
 astyle -A2 -s4 -N -p -H -k1 -j -xU *.hh,*.cc

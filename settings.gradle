@@ -6,5 +6,5 @@ new File("$rootDir/diffraflow").eachDir {
     include ":${it.parentFile.name}:${it.name}"
 }
 
-include ':testing'
+include ':testing:console_test'
 

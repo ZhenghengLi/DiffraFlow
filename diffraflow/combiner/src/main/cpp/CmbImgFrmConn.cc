@@ -41,6 +41,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         char* const current_buffer = buffer_ + payload_position + 4;
         size_t current_position = 0;
         const size_t current_limit = payload_size - 4;
+        // process data in current_buffer
         for (size_t i = 0; i < image_counts; i++) {
             if (current_limit - current_position <= 4) {
                 BOOST_LOG_TRIVIAL(warning) << "unexpectedly reach the end of image frame sequence data, close the connection.";

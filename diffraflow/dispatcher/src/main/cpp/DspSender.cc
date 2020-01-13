@@ -192,8 +192,11 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     // compression can be done here before sending
     // the compression method here is planned to use snappy: github.com/google/snappy
     // now directly send image sequence data without compression
-    for (size_t pos = 0; pos < limit;) {
-        int count = write(client_sock_fd_, buffer + pos, limit - pos);
+    const char* current_buffer = buffer;
+    size_t current_limit = limit;
+    // send data in current_buffer
+    for (size_t pos = 0; pos < current_limit;) {
+        int count = write(client_sock_fd_, current_buffer + pos, current_limit - pos);
         if (count < 0) {
             BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
             close_connection();

@@ -190,6 +190,8 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         current_limit = compressed_str.size();
     }
 
+    // BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << limit << ", sent size = " << current_limit;
+
     // send head
     char head_buffer[16];
     gPS.serializeValue<uint32_t>(0xDDD22CCC, head_buffer, 4);

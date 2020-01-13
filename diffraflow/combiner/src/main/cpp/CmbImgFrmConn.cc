@@ -39,8 +39,8 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         // the compression method here is planned to use snappy: github.com/google/snappy
         // current_buffer = buff_compr_
         char* const current_buffer = buffer_ + payload_position + 4;
-        size_t current_position = 0;
         const size_t current_limit = payload_size - 4;
+        size_t current_position = 0;
         // process data in current_buffer
         for (size_t i = 0; i < image_counts; i++) {
             if (current_limit - current_position <= 4) {

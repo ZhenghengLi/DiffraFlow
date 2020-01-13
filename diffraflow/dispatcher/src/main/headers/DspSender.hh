@@ -41,7 +41,8 @@ namespace diffraflow {
         // send buffer_B over TCP
         void send_();
         // help function
-        void send_buffer_(const char* buffer, const size_t limit, const size_t num_of_imgs);
+        void send_buffer_(const char* buffer, const size_t limit,
+            const size_t num_of_imgs, const bool compress_flag = false);
 
     private:
         // socket

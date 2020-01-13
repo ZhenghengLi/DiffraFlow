@@ -145,7 +145,7 @@ void diffraflow::DspSender::send_() {
     // send all data in buffer_B_
     lock_guard<mutex> lk_send(mtx_send_);
     if (buffer_B_limit_ > 0) {
-        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_);
+        send_buffer_(buffer_B_, buffer_B_limit_, buffer_B_imgct_, false);
         buffer_B_limit_ = 0;
         buffer_B_imgct_ = 0;
     }
@@ -157,13 +157,14 @@ void diffraflow::DspSender::send_remaining() {
     lock_guard<mutex> lk(mtx_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {
-        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_);
+        send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_, false);
         buffer_A_limit_ = 0;
         buffer_A_imgct_ = 0;
     }
 }
 
-void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit, const size_t imgct) {
+void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
+    const size_t imgct, const bool compress_flag) {
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
@@ -175,21 +176,25 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     }
     // packet format: packet_head(4) | packet_size(4) | image_seq_head(4) | image_count(4) | image_seq_data
 
-    // - send compressed data
-    // std::string compressed_str;
-    // snappy::Compress(buffer, limit, &compressed_str);
-    // const char* current_buffer = compressed_str.data();
-    // const size_t current_limit = compressed_str.size();
-
     // - send uncompressed data
+    uint32_t payload_type = 0xABCDFF00;
     const char* current_buffer = buffer;
     size_t current_limit = limit;
+
+    // - send compressed data if compress_flag is true
+    std::string compressed_str;
+    if (compress_flag) {
+        payload_type = 0xABCDFF01;
+        snappy::Compress(buffer, limit, &compressed_str);
+        current_buffer = compressed_str.data();
+        current_limit = compressed_str.size();
+    }
 
     // send head
     char head_buffer[16];
     gPS.serializeValue<uint32_t>(0xDDD22CCC, head_buffer, 4);
     gPS.serializeValue<uint32_t>(8 + current_limit, head_buffer + 4, 4);
-    gPS.serializeValue<uint32_t>(0xABCDFF00, head_buffer + 8, 4);
+    gPS.serializeValue<uint32_t>(payload_type, head_buffer + 8, 4);
     gPS.serializeValue<uint32_t>(imgct, head_buffer + 12, 4);
     for (size_t pos = 0; pos < 16;) {
         int count = write(client_sock_fd_, head_buffer + pos, 16 - pos);

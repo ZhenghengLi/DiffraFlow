@@ -12,11 +12,13 @@
 3. definition for different payload types
     (1) 0xABCDFFFF: single raw image frame data
         - format: [key(8)|data(size-8)]
-    (2) 0xABCDFF00: uncompressed byte sequence of raw image frame data
-        - format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
     (2) 0xABCDEEEE: single merged full image data
         - note: serialized ImageData object
     (3) 0xAABB1111: 8 bytes time
+    (4) 0xABCDFF00: uncompressed byte sequence of raw image frame data
+        - format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
+    (5) 0xABCDFF01: snappy compressed byte sequence of raw image frame data
+        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
 
 4. specific protocol between different endpoints:
     (1) TCP: source -> dispatcher (push)

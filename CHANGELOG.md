@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+(empty)
+
+## [0.0.3] - 2020-01-14
+
 ### Added
 
-- The code (using [Snappy](https://github.com/google/snappy)) to compress the data transferred from 'dispatcher' to 'combiner' is added.
+- The code (using [Snappy](https://github.com/google/snappy)) to compress the data transferred from **dispatcher** to **combiner** is added.
+- Data compression between **dispatcher** and **combiner** can be switched on or off by **dispatcher**'s configuration file using *compress_flag*.
+
+### Changed
+
+- Serialization: use try-catch clause to check exceptions instead of using lots of if-else.
 
 ## [0.0.2] - 2020-01-08
 

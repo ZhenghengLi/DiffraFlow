@@ -1,6 +1,8 @@
 # Contributing guidelines
 
-## Coding style
+## Style guidelines
+
+### Coding style
 
 C++ and Java coding style should follow the way of  
 
@@ -17,7 +19,7 @@ astyle --style=attach --indent=spaces=4 --indent-namespaces --pad-oper --pad-hea
 
 for details of the rules, see the document of [astyle](http://astyle.sourceforge.net/astyle.html).
 
-## Naming style
+### Naming style
 
 1. File name:
    * One file one class, and use the class name as file name.

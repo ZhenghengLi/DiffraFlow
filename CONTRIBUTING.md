@@ -1,6 +1,6 @@
 # Contributing guidelines
 
-## Style guidelines
+## Style rules
 
 ### Coding style
 

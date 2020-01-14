@@ -1,6 +1,7 @@
 #include "ImageFrame.hh"
 #include <algorithm>
 #include <cassert>
+#include <stdexcept>
 
 using std::copy;
 using std::cout;
@@ -84,95 +85,76 @@ void diffraflow::ImageFrame::print() const {
 }
 
 size_t diffraflow::ImageFrame::serialize(char* const data, size_t len) {
-    size_t gOffset = 0, offset = 0;
+    // note: this function may throw exceptions
+    size_t offset = 0;
     // type
-    offset = gPS.serializeValue<int32_t>(object_type(), data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<int32_t>(object_type(), data + offset, len - offset);
     // data
     // - img_rawsize_
-    offset = gPS.serializeValue<uint32_t>(img_rawsize_, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<uint32_t>(img_rawsize_, data + offset, len - offset);
     // - img_rawdata_
-    if (img_rawsize_ > len - gOffset) return 0;
     for (size_t i = 0; i < img_rawsize_; i++) {
-        (data + gOffset)[i] = img_rawdata_[i];
+        offset += gPS.serializeValue<char>(img_rawdata_[i], data + offset, len - offset);
     }
-    gOffset += img_rawsize_;
     // - img_key
-    offset = gPS.serializeValue<int64_t>(img_key, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<int64_t>(img_key, data + offset, len - offset);
     // - img_time
-    offset = gPS.serializeValue<double>(img_time, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<double>(img_time, data + offset, len - offset);
     // - det_id
-    offset = gPS.serializeValue<uint32_t>(det_id, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<uint32_t>(det_id, data + offset, len - offset);
     // - img_width
-    offset = gPS.serializeValue<uint32_t>(img_width, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<uint32_t>(img_width, data + offset, len - offset);
     // - img_height
-    offset = gPS.serializeValue<uint32_t>(img_height, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.serializeValue<uint32_t>(img_height, data + offset, len - offset);
     // - img_frame
     size_t frm_size = img_width * img_height;
-    if (frm_size * sizeof(float) > len - gOffset) return 0;
     for (size_t i = 0; i < frm_size; i++) {
-        gOffset += gPS.serializeValue<float>(img_frame[i], data + gOffset, len - gOffset);
+        offset += gPS.serializeValue<float>(img_frame[i], data + offset, len - offset);
     }
     // return
-    return gOffset;
+    return offset;
 }
 
 size_t diffraflow::ImageFrame::deserialize(const char* const data, size_t len) {
+    // note: this function may throw exceptions
     clear_data();
-    size_t gOffset = 0, offset = 0;
+    size_t offset = 0;
     // check type
     int objType = 0;
-    offset = gPS.deserializeValue<int32_t>(&objType, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<int32_t>(&objType, data + offset, len - offset);
     if (objType != object_type()) {
-        cerr << "WARNING: the type of object to deserialize does not match." << endl;
-        return 0;
+        throw std::invalid_argument("the type of object to deserialize does not match.");
     }
     // read data
     // - img_rawsize_
-    offset = gPS.deserializeValue<uint32_t>(&img_rawsize_, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<uint32_t>(&img_rawsize_, data + offset, len - offset);
     // - img_rawdata_
     if (img_rawsize_ > 0) {
-        if (img_rawsize_ > len - gOffset) return 0;
         img_rawdata_ = new char[img_rawsize_];
         for (size_t i = 0; i < img_rawsize_; i++) {
-            img_rawdata_[i] = (data + gOffset)[i];
+            offset += gPS.deserializeValue<char>(&img_rawdata_[i], data + offset, len - offset);
         }
     }
-    gOffset += img_rawsize_;
     // - img_key
-    offset = gPS.deserializeValue<int64_t>(&img_key, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<int64_t>(&img_key, data + offset, len - offset);
     // - img_time
-    offset = gPS.deserializeValue<double>(&img_time, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<double>(&img_time, data + offset, len - offset);
     // - det_id
-    offset = gPS.deserializeValue<uint32_t>(&det_id, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<uint32_t>(&det_id, data + offset, len - offset);
     // img_width
-    offset = gPS.deserializeValue<uint32_t>(&img_width, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<uint32_t>(&img_width, data + offset, len - offset);
     // img_height
-    offset = gPS.deserializeValue<uint32_t>(&img_height, data + gOffset, len - gOffset);
-    if (offset > 0) gOffset += offset; else return 0;
+    offset += gPS.deserializeValue<uint32_t>(&img_height, data + offset, len - offset);
     // img_frame
     size_t frm_size = img_width * img_height;
     if (frm_size> 0) {
-        if (frm_size * sizeof(float) > len - gOffset) return 0;
         img_frame = new float[frm_size];
         for (size_t i = 0; i < frm_size; i++) {
-            gOffset += gPS.deserializeValue<float>(&img_frame[i], data + gOffset, len - gOffset);
+            offset += gPS.deserializeValue<float>(&img_frame[i], data + offset, len - offset);
         }
     }
     // return
-    return gOffset;
+    return offset;
 }
 
 size_t diffraflow::ImageFrame::object_size() {

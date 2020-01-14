@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
-#include <iostream>
+#include <stdexcept>
 
 namespace diffraflow {
     class PrimitiveSerializer {
@@ -28,11 +28,12 @@ namespace diffraflow {
 template <class T>
 size_t diffraflow::PrimitiveSerializer::serializeValue(T value, char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
-        std::cerr << "WARNING: cannnot serialize data of non-fundamental types." << std::endl;
-        return 0;
+        throw std::invalid_argument("cannnot serialize data of non-fundamental types.");
     }
     size_t byte_l = sizeof(T);
-    if (byte_l < buffer_l) return 0;
+    if (byte_l < buffer_l) {
+        throw std::out_of_range("there is no enough space in buffer to hold the value data.");
+    }
     char* const byte_p = reinterpret_cast<char*>(&value);
     if (isLittleEndian_) {
         for (size_t i = 0; i < byte_l; i++) {
@@ -49,11 +50,12 @@ size_t diffraflow::PrimitiveSerializer::serializeValue(T value, char* const buff
 template <class T>
 size_t diffraflow::PrimitiveSerializer::deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l) {
     if (!std::is_fundamental<T>::value) {
-        std::cerr << "WARNING: cannnot deserialize data of non-fundamental types." << std::endl;
-        return 0;
+        throw std::invalid_argument("cannnot deserialize data of non-fundamental types.");
     }
     size_t byte_l = sizeof(T);
-    if (byte_l < buffer_l) return 0;
+    if (byte_l < buffer_l) {
+        throw std::out_of_range("length of the buffer is shorter than that of the value type.");
+    }
     char* byte_p = reinterpret_cast<char*>(value_p);
     if (isLittleEndian_) {
         for (size_t i = 0; i < byte_l; i++) {

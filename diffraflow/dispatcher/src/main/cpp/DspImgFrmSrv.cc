@@ -2,8 +2,8 @@
 #include "DspSender.hh"
 #include "DspImgFrmConn.hh"
 
-diffraflow::DspImgFrmSrv::DspImgFrmSrv(int port,
-    DspSender** sender_arr, size_t sender_cnt): GenericServer(port) {
+diffraflow::DspImgFrmSrv::DspImgFrmSrv(string host, int port,
+    DspSender** sender_arr, size_t sender_cnt): GenericServer(host, port) {
     sender_array_ = sender_arr;
     sender_count_ = sender_cnt;
 }

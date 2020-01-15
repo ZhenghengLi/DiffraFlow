@@ -7,12 +7,12 @@ import java.util.*;
 public class DispatcherConsoleTest {
     public static void main(String[] args) throws IOException{
         if (args.length < 1) {
-            System.out.println("please input the port.");
+            System.out.println("please input the host and port.");
             return;
         }
-        System.out.println("Start test on port " + args[0] + " ...");
+        System.out.println("Start test on " + args[0] + ":" + args[1] + " ...");
 
-        Socket sock = new Socket("localhost", Integer.parseInt(args[0]));
+        Socket sock = new Socket(args[0], Integer.parseInt(args[1]));
         DataInputStream in = new DataInputStream(sock.getInputStream());
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());
         int packet_head = 0xFFDD1234;

@@ -27,7 +27,8 @@ namespace diffraflow {
 
     private:
         bool is_ipc_;
-        int server_sock_port_;
+        string server_sock_host_;
+        int    server_sock_port_;
         string server_sock_path_;
         int server_sock_fd_;
         atomic<bool> server_run_;
@@ -52,7 +53,7 @@ namespace diffraflow {
         virtual GenericConnection* new_connection_(int client_sock_fd) = 0;
 
     public:
-        explicit GenericServer(int port);
+        explicit GenericServer(string host, int port);
         explicit GenericServer(string sock_path);
         virtual ~GenericServer();
 

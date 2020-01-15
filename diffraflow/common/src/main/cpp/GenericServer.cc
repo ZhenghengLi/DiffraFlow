@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <iostream>
 #include <cassert>
@@ -16,9 +18,10 @@ using std::lock_guard;
 using std::unique_lock;
 using std::make_pair;
 
-diffraflow::GenericServer::GenericServer(int port) {
+diffraflow::GenericServer::GenericServer(string host, int port) {
     server_sock_fd_ = -1;
     server_run_ = false;
+    server_sock_host_ = host;
     server_sock_port_ = port;
     server_sock_path_ = "";
     is_ipc_ = false;
@@ -27,6 +30,7 @@ diffraflow::GenericServer::GenericServer(int port) {
 diffraflow::GenericServer::GenericServer(string sock_path) {
     server_sock_fd_ = -1;
     server_run_ = false;
+    server_sock_host_ = "";
     server_sock_port_ = 0;
     server_sock_path_ = sock_path;
     is_ipc_ = true;
@@ -54,19 +58,28 @@ void diffraflow::GenericServer::stop_cleaner_() {
 }
 
 bool diffraflow::GenericServer::create_tcp_sock_() {
-    sockaddr_in server_addr;
-    server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_sock_fd_ < 0) {
+    // prepare address
+    addrinfo hints, *infoptr;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    int result = getaddrinfo(server_sock_host_.c_str(), NULL, &hints, &infoptr);
+    if (result) {
+        BOOST_LOG_TRIVIAL(error) << "getaddrinfo: " << gai_strerror(result);
         return false;
     }
-    bzero(&server_addr, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(server_sock_port_);
-    if (bind(server_sock_fd_, (sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+    ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(server_sock_port_);
+    // create socket
+    server_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_sock_fd_ < 0) {
+        freeaddrinfo(infoptr);
+        return false;
+    }
+    if (bind(server_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen) < 0) {
+        freeaddrinfo(infoptr);
         return false;
     }
     listen(server_sock_fd_, 5);
+    freeaddrinfo(infoptr);
     return true;
 }
 
@@ -101,27 +114,23 @@ void diffraflow::GenericServer::serve() {
             BOOST_LOG_TRIVIAL(info)
                 << "Successfully created socket on unix socket file "
                 << server_sock_path_
-                << " with server_sock_fd "
-                << server_sock_fd_;
+                << " with server_sock_fd " << server_sock_fd_ << ".";
         } else {
             BOOST_LOG_TRIVIAL(error)
                 << "Failed to create server socket on unix socket file "
-                << server_sock_path_
-                << ".";
+                << server_sock_path_ << ".";
             return;
         }
     } else {
         if (create_tcp_sock_()) {
             BOOST_LOG_TRIVIAL(info)
-                << "Successfully created socket on port "
-                << server_sock_port_
-                << " with server_sock_fd "
-                << server_sock_fd_;
+                << "Successfully created socket on "
+                << server_sock_host_ << ":" << server_sock_port_
+                << " with server_sock_fd " << server_sock_fd_ << ".";
         } else {
             BOOST_LOG_TRIVIAL(error)
-                << "Failed to create server socket on port "
-                << server_sock_port_
-                << ".";
+                << "Failed to create server socket on "
+                << server_sock_host_ << ":" << server_sock_port_ << ".";
             return;
         }
     }

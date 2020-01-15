@@ -16,7 +16,7 @@ namespace diffraflow {
         GenericConnection* new_connection_(int client_sock_fd);
 
     public:
-        CmbImgFrmSrv(int port, CmbImgCache* img_cache);
+        CmbImgFrmSrv(string host, int port, CmbImgCache* img_cache);
         ~CmbImgFrmSrv();
 
     };

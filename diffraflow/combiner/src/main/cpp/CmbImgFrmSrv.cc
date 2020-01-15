@@ -6,8 +6,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-diffraflow::CmbImgFrmSrv::CmbImgFrmSrv(
-    int port, CmbImgCache* img_cache): GenericServer(port) {
+diffraflow::CmbImgFrmSrv::CmbImgFrmSrv(string host, int port,
+    CmbImgCache* img_cache): GenericServer(host, port) {
     image_cache_ = img_cache;
 }
 

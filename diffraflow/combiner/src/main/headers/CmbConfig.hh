@@ -10,14 +10,16 @@ using std::string;
 
 namespace diffraflow {
     class CmbConfig: public GenericConfiguration {
-        public:
-            int port;
+    public:
+       CmbConfig();
+       ~CmbConfig();
+       bool load(const char* filename);
+       void print();
 
-        public:
-            CmbConfig();
-            ~CmbConfig();
-            bool load(const char* filename);
-            void print();
+    public:
+        string listen_host;
+        int    listen_port;
+
     };
 }
 

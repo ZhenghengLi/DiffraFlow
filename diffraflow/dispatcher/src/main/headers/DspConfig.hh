@@ -18,7 +18,8 @@ namespace diffraflow {
 
     public:
         int dispatcher_id;
-        int listen_port;
+        string listen_host;
+        int    listen_port;
         bool compress_flag;
         string combiner_address_file;
 

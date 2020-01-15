@@ -27,16 +27,28 @@ bool diffraflow::CmbConfig::load(const char* filename) {
     for (size_t i = 0; i < conf_KV_vec.size(); i++) {
         string key = conf_KV_vec[i].first;
         string value = conf_KV_vec[i].second;
-        if (key == "port") {
-            port = atoi(value.c_str());
+        if (key == "listen_host") {
+            listen_host = value;
+        } else if (key == "listen_port") {
+            listen_port = atoi(value.c_str());
+        } else {
+            BOOST_LOG_TRIVIAL(warning) << "Found unknown configuration which is ignored: "
+                << key << " = " << value << " in " << filename;
         }
     }
-    return true;
+    // check
+    bool succ_flag = true;
+    if (listen_port < 0) {
+        BOOST_LOG_TRIVIAL(error) << "invalid listen_port: " << listen_port;
+        succ_flag = false;
+    }
+    return succ_flag;
 }
 
 void diffraflow::CmbConfig::print() {
     cout << " = Configuration Dump Begin =" << endl;
-    cout << "  port = " << port << endl;
+    cout << "  listen_host = " << listen_host << endl;
+    cout << "  listen_port = " << listen_port << endl;
     cout << " = Configuration Dump End =" << endl;
 
 }

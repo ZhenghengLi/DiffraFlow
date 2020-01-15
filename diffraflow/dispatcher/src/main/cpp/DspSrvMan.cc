@@ -36,7 +36,8 @@ void diffraflow::DspSrvMan::start_run() {
     // start senders
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->start();
     // create receiving server
-    imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_port, sender_arr_, sender_cnt_);
+    imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_host,
+        config_obj_->listen_port, sender_arr_, sender_cnt_);
     // start to serve and block
     running_flag_ = true;
     imgfrm_srv_->serve();

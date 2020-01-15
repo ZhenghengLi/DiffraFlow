@@ -5,5 +5,4 @@ gradlew.bat
 .project
 .settings
 **/bin/*
-install/*
 .vscode/*

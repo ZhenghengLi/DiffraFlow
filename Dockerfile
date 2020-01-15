@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
 # set buildtime variables
 ARG source_dir=/opt/diffraflow_src

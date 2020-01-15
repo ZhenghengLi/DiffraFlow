@@ -7,7 +7,7 @@ ARG source_dir=/opt/diffraflow_src
 ARG install_dir=/opt/diffraflow
 
 # install dependencies
-RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+# RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk build-essential libboost-all-dev libsnappy-dev
 

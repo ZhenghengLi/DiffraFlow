@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 (empty)
 
+## [0.0.4] - 2020-01-15
+
+### Added
+
+- GenericServer now can listen on a specific host.
+- Add Dockerfile and start to use Docker for automated building.
+
 ## [0.0.3] - 2020-01-14
 
 ### Added

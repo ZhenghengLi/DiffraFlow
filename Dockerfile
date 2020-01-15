@@ -1,17 +1,30 @@
 FROM ubuntu:18.04
 
+# set buildtime variables
+ARG source_dir=/opt/diffraflow_src
+ARG install_dir=/opt/diffraflow
+
 # install dependencies
+RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk build-essential libboost-all-dev libsnappy-dev
 
-ADD $PWD /diffraflow_src
-WORKDIR /diffraflow_src
+# build and install
+ADD $PWD $source_dir
+WORKDIR $source_dir
 RUN ./gradlew packageRelease
-RUN mkdir /opt/diffraflow
-RUN cp -r build/package_release/* /opt/diffraflow
+RUN mkdir $install_dir
+RUN cp -r build/package_release/* $install_dir
 
+# remove source code
 WORKDIR /
-RUN rm -r /diffraflow_src
+RUN rm -r $source_dir
+VOLUME ["/workspace"]
+
+# set environment variables for runtime
+ENV CLASSPATH=$install_dir/jar/*
+ENV PATH=$install_dir/bin:$PATH
+ENV LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH
 
 CMD ["/bin/bash"]
 

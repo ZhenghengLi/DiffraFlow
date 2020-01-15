@@ -1,5 +1,7 @@
 FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
+LABEL description="High volume data acquisition and online data analysis for area detectors."
+
 # set buildtime variables
 ARG source_dir=/opt/diffraflow_src
 ARG install_dir=/opt/diffraflow

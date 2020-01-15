@@ -75,6 +75,7 @@ bool diffraflow::GenericServer::create_tcp_sock_() {
         return false;
     }
     if (bind(server_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen) < 0) {
+        BOOST_LOG_TRIVIAL(error) << "bind: " << strerror(errno);
         freeaddrinfo(infoptr);
         return false;
     }

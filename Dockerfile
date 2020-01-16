@@ -1,7 +1,7 @@
 FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
-LABEL description="High volume data acquisition and online data analysis for area detectors."
-LABEL maintainer="Zhengheng Li <zhenghenge@gmail.com>"
+LABEL description="High volume data acquisition and online data analysis for area detectors." \
+maintainer="Zhengheng Li <zhenghenge@gmail.com>"
 
 # set buildtime variables
 ARG source_dir=/opt/diffraflow_src
@@ -14,7 +14,8 @@ apt-get install -y --no-install-recommends \
 openjdk-8-jdk build-essential \
 libboost-system-dev libboost-log-dev \
 libsnappy-dev && \
-apt-get clean
+apt-get clean && \
+rm -rf /var/lib/apt/lists/*
 
 # build and install
 ADD $PWD $source_dir
@@ -27,9 +28,9 @@ cd / && \
 rm -r $source_dir
 
 # set runtime environment variables
-ENV CLASSPATH=$install_dir/jar/*
-ENV PATH=$install_dir/bin:$PATH
-ENV LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH
+ENV CLASSPATH=$install_dir/jar/* \
+PATH=$install_dir/bin:$PATH \
+LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH
 VOLUME ["/workspace"]
 
 CMD ["/bin/bash"]

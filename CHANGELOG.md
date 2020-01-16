@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 (empty)
 
+## [0.0.5] - 2020-01-16
+
+### Changed
+
+- The Dockerfile is optimized, and the CI workflow is setup.
+
 ## [0.0.4] - 2020-01-15
 
 ### Added

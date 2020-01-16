@@ -18,11 +18,11 @@ rm -rf /var/lib/apt/lists/*
 ADD $PWD $source_dir
 RUN cd $source_dir && \
 ./gradlew --no-daemon packageRelease && \
-rm -r $HOME/.gradle && \
+rm -rf $HOME/.gradle && \
 mkdir $install_dir && \
 cp -r build/package_release/* $install_dir && \
 cd / && \
-rm -r $source_dir
+rm -rf $source_dir
 
 ## deploy ####
 FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04

@@ -2,7 +2,7 @@
 # maintainer: Zhengheng Li <zhenghenge@gmail.com>
 
 ## build ####
-FROM ubuntu:18.04
+FROM ubuntu:18.04 AS builder
 # FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS builder
 ARG source_dir=/opt/diffraflow_src
 ARG install_dir=/opt/diffraflow

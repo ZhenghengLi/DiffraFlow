@@ -2,7 +2,8 @@
 # maintainer: Zhengheng Li <zhenghenge@gmail.com>
 
 ## build ####
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS builder
+FROM ubuntu:18.04
+# FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS builder
 ARG source_dir=/opt/diffraflow_src
 ARG install_dir=/opt/diffraflow
 # install dependencies
@@ -25,7 +26,8 @@ cd / && \
 rm -rf $source_dir
 
 ## deploy ####
-FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+FROM ubuntu:18.04
+# FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 ARG install_dir=/opt/diffraflow
 LABEL description="High volume data acquisition and online data analysis for area detectors." \
 maintainer="Zhengheng Li <zhenghenge@gmail.com>"

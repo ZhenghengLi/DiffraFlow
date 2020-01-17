@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-(empty)
+### TODO
+
+- [ ] switch to use log4cxx from boost.log
 
 ## [0.0.5] - 2020-01-16
 

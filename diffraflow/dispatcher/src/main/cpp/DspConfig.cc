@@ -38,10 +38,10 @@ bool diffraflow::DspConfig::load(const char* filename) {
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
         } else if (key == "combiner_address_file") {
-            if (value[0] == '/') {
+            size_t found = string(filename).find_last_of('/');
+            if (found == string::npos || value[0] == '/') {
                 combiner_address_file = value;
             } else {
-                size_t found = string(filename).find_last_of('/');
                 combiner_address_file = string(filename).substr(0, found + 1) + value;
             }
         } else if (key == "compress_flag") {

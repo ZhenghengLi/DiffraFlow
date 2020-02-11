@@ -2,9 +2,8 @@
 #include <cstdlib>
 #include <csignal>
 #include <cstring>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/propertyconfigurator.h>
 
 #include "CmbConfig.hh"
 #include "CmbSrvMan.hh"
@@ -32,10 +31,6 @@ void clean(int signum) {
 }
 
 void init(CmbConfig* config_obj) {
-    // set log level
-    boost::log::core::get()->set_filter(
-        boost::log::trivial::severity >= boost::log::trivial::info
-    );
     // register signal action
     struct sigaction action;
     // for Ctrl-C
@@ -61,6 +56,9 @@ int main(int argc, char** argv) {
         return 2;
     }
     string config_fn = argv[1];
+
+    log4cxx::BasicConfigurator::configure();
+    // TODO: log4cxx::PropertyConfigurator::configure(filename)
 
     gConfiguration = new CmbConfig();
     if (!gConfiguration->load(config_fn.c_str())) {

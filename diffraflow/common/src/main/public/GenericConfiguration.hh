@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <log4cxx/logger.h>
 
 using std::vector;
 using std::pair;
@@ -21,6 +22,9 @@ namespace diffraflow {
     protected:
         bool read_conf_KV_vec_(const char* filename,
             vector< pair<string, string> >& conf_KV_vec);
+
+    private:
+        log4cxx::LoggerPtr logger_;
 
     };
 }

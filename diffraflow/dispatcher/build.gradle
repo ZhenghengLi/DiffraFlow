@@ -6,6 +6,7 @@ application {
         compileTask.get().compilerArgs.add('-DBOOST_ALL_DYN_LINK')
         // linkTask.get().linkerArgs.add('-lrdkafka++')
         linkTask.get().linkerArgs.add('-lsnappy')
+        linkTask.get().linkerArgs.add('-llog4cxx')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
             linkTask.get().linkerArgs.add('-lboost_log-mt')
             linkTask.get().linkerArgs.add('-lboost_system-mt')

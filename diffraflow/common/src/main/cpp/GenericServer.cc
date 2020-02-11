@@ -12,7 +12,8 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <cassert>
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 
 using std::lock_guard;
 using std::unique_lock;
@@ -25,6 +26,7 @@ diffraflow::GenericServer::GenericServer(string host, int port) {
     server_sock_port_ = port;
     server_sock_path_ = "";
     is_ipc_ = false;
+    logger_ = log4cxx::Logger::getLogger("GenericServer");
 }
 
 diffraflow::GenericServer::GenericServer(string sock_path) {
@@ -34,10 +36,12 @@ diffraflow::GenericServer::GenericServer(string sock_path) {
     server_sock_port_ = 0;
     server_sock_path_ = sock_path;
     is_ipc_ = true;
+    logger_ = log4cxx::Logger::getLogger("GenericServer");
 }
 
 diffraflow::GenericServer::~GenericServer() {
     stop();
+    log4cxx::NDC::remove();
 }
 
 void diffraflow::GenericServer::start_cleaner_() {
@@ -64,7 +68,7 @@ bool diffraflow::GenericServer::create_tcp_sock_() {
     hints.ai_family = AF_INET;
     int result = getaddrinfo(server_sock_host_.c_str(), NULL, &hints, &infoptr);
     if (result) {
-        BOOST_LOG_TRIVIAL(error) << "getaddrinfo: " << gai_strerror(result);
+        LOG4CXX_ERROR(logger_, "getaddrinfo: " << gai_strerror(result));
         return false;
     }
     ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(server_sock_port_);
@@ -75,7 +79,7 @@ bool diffraflow::GenericServer::create_tcp_sock_() {
         return false;
     }
     if (bind(server_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen) < 0) {
-        BOOST_LOG_TRIVIAL(error) << "bind: " << strerror(errno);
+        LOG4CXX_ERROR(logger_, "bind: " << strerror(errno));
         freeaddrinfo(infoptr);
         return false;
     }
@@ -112,26 +116,26 @@ void diffraflow::GenericServer::serve() {
     if (server_run_) return;
     if (is_ipc_) {
         if (create_ipc_sock_()) {
-            BOOST_LOG_TRIVIAL(info)
-                << "Successfully created socket on unix socket file "
+            LOG4CXX_INFO(logger_,
+                "Successfully created socket on unix socket file "
                 << server_sock_path_
-                << " with server_sock_fd " << server_sock_fd_ << ".";
+                << " with server_sock_fd " << server_sock_fd_ << ".");
         } else {
-            BOOST_LOG_TRIVIAL(error)
-                << "Failed to create server socket on unix socket file "
-                << server_sock_path_ << ".";
+            LOG4CXX_ERROR(logger_,
+                "Failed to create server socket on unix socket file "
+                << server_sock_path_ << ".");
             return;
         }
     } else {
         if (create_tcp_sock_()) {
-            BOOST_LOG_TRIVIAL(info)
-                << "Successfully created socket on "
+            LOG4CXX_INFO(logger_,
+                "Successfully created socket on "
                 << server_sock_host_ << ":" << server_sock_port_
-                << " with server_sock_fd " << server_sock_fd_ << ".";
+                << " with server_sock_fd " << server_sock_fd_ << ".");
         } else {
-            BOOST_LOG_TRIVIAL(error)
-                << "Failed to create server socket on "
-                << server_sock_host_ << ":" << server_sock_port_ << ".";
+            LOG4CXX_ERROR(logger_,
+                "Failed to create server socket on "
+                << server_sock_host_ << ":" << server_sock_port_ << ".");
             return;
         }
     }
@@ -141,13 +145,13 @@ void diffraflow::GenericServer::serve() {
     start_cleaner_();
     // start accepting clients
     while (server_run_) {
-        BOOST_LOG_TRIVIAL(info) << "Waitting for connection ...";
+        LOG4CXX_INFO(logger_, "Waitting for connection ...");
         int client_sock_fd = accept_client_();
         if (client_sock_fd < 0) {
-            if (server_run_) BOOST_LOG_TRIVIAL(error) << "got wrong client_sock_fd when server is running.";
+            if (server_run_) LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
             return;
         }
-        BOOST_LOG_TRIVIAL(info) << "One connection is established with client_sock_fd " << client_sock_fd;
+        LOG4CXX_INFO(logger_, "One connection is established with client_sock_fd " << client_sock_fd);
         if (!server_run_) {
             shutdown(client_sock_fd, SHUT_RDWR);
             close(client_sock_fd);
@@ -187,7 +191,7 @@ void diffraflow::GenericServer::clean_() {
             delete iter->first;
             iter = connections_.erase(iter);
             dead_counts_--;
-            BOOST_LOG_TRIVIAL(info) << "delete one connection";
+            LOG4CXX_INFO(logger_, "delete one connection");
         } else {
             ++iter;
         }
@@ -220,5 +224,5 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
-    BOOST_LOG_TRIVIAL(info) << "server is closed.";
+    LOG4CXX_INFO(logger_, "server is closed.");
 }

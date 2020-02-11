@@ -1,18 +1,18 @@
 #include "GenericConfiguration.hh"
 #include <iostream>
 #include <fstream>
-
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 #include <boost/algorithm/string.hpp>
 
 using std::ifstream;
 
 diffraflow::GenericConfiguration::GenericConfiguration() {
-
+    logger_ = log4cxx::Logger::getLogger("GenericConfiguration");
 }
 
 diffraflow::GenericConfiguration::~GenericConfiguration() {
-
+    log4cxx::NDC::remove();
 }
 
 bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
@@ -21,7 +21,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
     ifstream conf_file;
     conf_file.open(filename);
     if (!conf_file.is_open()) {
-        BOOST_LOG_TRIVIAL(error) << "configuration file open failed.";
+        LOG4CXX_ERROR(logger_, "configuration file open failed.");
         return false;
     }
     string oneline;
@@ -36,7 +36,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
         vector<string> key_value;
         boost::split(key_value, oneline, boost::is_any_of("="));
         if (key_value.size() < 2) {
-            BOOST_LOG_TRIVIAL(error) << "found unknown configuration: " << oneline;
+            LOG4CXX_ERROR(logger_, "found unknown configuration: " << oneline);
             return false;
         }
         boost::trim(key_value[0]);
@@ -48,7 +48,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
     if (conf_KV_vec.size() > 0) {
         return true;
     } else {
-        BOOST_LOG_TRIVIAL(warning) << "there is no valid configurations in file: " << filename;
+        LOG4CXX_WARN(logger_, "there is no valid configurations in file: " << filename);
         return false;
     }
 }

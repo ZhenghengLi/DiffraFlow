@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <algorithm>
-#include <boost/log/trivial.hpp>
+#include <string.h>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 
 using std::copy;
 
@@ -24,10 +26,12 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     slice_begin_ = 0;
     done_flag_ = false;
     connection_id_ = -1;
+    logger_ = log4cxx::Logger::getLogger("GenericConnection");
 }
 
 diffraflow::GenericConnection::~GenericConnection() {
     delete [] buffer_;
+    log4cxx::NDC::remove();
 }
 
 void diffraflow::GenericConnection::run() {
@@ -61,7 +65,7 @@ bool diffraflow::GenericConnection::start_connection_() {
     while (true) {
         const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
         if (slice_length == 0) {
-            BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";
+            LOG4CXX_INFO(logger_, "socket " << client_sock_fd_ << " is closed.");
             return false;
         }
         if (slice_begin_ + slice_length < 12) {
@@ -74,13 +78,13 @@ bool diffraflow::GenericConnection::start_connection_() {
     uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
     connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
     if (head != greeting_head_ || size != 4) {
-        BOOST_LOG_TRIVIAL(info) << "got wrong greeting message, close the connection.";
+        LOG4CXX_INFO(logger_, "got wrong greeting message, close the connection.");
         // send failure code which is 4321
         gPS.serializeValue<uint32_t>(4321, buffer_, 4);
         for (size_t pos = 0; pos < 4;) {
             int count = write(client_sock_fd_, buffer_ + pos, 4 - pos);
             if (count < 0) {
-                BOOST_LOG_TRIVIAL(warning) << "error found when sending failure code: " << strerror(errno);
+                LOG4CXX_WARN(logger_, "error found when sending failure code: " << strerror(errno));
                 break;
             } else {
                 pos += count;
@@ -94,7 +98,7 @@ bool diffraflow::GenericConnection::start_connection_() {
     for (size_t pos = 0; pos < 4;) {
         int count = write(client_sock_fd_, buffer_ + pos, 4 - pos);
         if (count < 0) {
-            BOOST_LOG_TRIVIAL(warning) << "error found when sending success code: " << strerror(errno);
+            LOG4CXX_WARN(logger_, "error found when sending success code: " << strerror(errno));
             done_flag_ = false;
             return false;
         } else {
@@ -107,13 +111,13 @@ bool diffraflow::GenericConnection::start_connection_() {
 }
 
 void diffraflow::GenericConnection::before_transferring_() {
-    BOOST_LOG_TRIVIAL(info) << "connection ID: " << connection_id_;
+    LOG4CXX_INFO(logger_, "connection ID: " << connection_id_);
 }
 
 bool diffraflow::GenericConnection::do_transferring_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
-        BOOST_LOG_TRIVIAL(info) << "socket " << client_sock_fd_ << " is closed.";
+        LOG4CXX_INFO(logger_, "socket " << client_sock_fd_ << " is closed.");
         return false;
     }
     const size_t limit = slice_begin_ + slice_length;
@@ -133,15 +137,15 @@ bool diffraflow::GenericConnection::do_transferring_() {
         position += 8;
         // head and size check for packet
         if (packet_head != receiving_head_) {
-            BOOST_LOG_TRIVIAL(info) << "got wrong packet, close the connection.";
+            LOG4CXX_INFO(logger_, "got wrong packet, close the connection.");
             return false;
         }
         if (packet_size > pkt_maxlen_) {
-            BOOST_LOG_TRIVIAL(info) << "got too long packet, close the connection.";
+            LOG4CXX_INFO(logger_, "got too long packet, close the connection.");
             return false;
         }
         if (packet_size < 4) {
-            BOOST_LOG_TRIVIAL(info) << "got too short packet, close the connection.";
+            LOG4CXX_INFO(logger_, "got too short packet, close the connection.");
             return false;
         }
         // continue to receive more data if reach half packet
@@ -177,6 +181,6 @@ bool diffraflow::GenericConnection::do_transferring_() {
 
 diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process_payload_(
     const size_t payload_position, const uint32_t payload_size, const uint32_t payload_type) {
-    BOOST_LOG_TRIVIAL(warning) << "function process_payload_() is used, but it is not implemented by subclass.";
+    LOG4CXX_WARN(logger_, "function process_payload_() is used, but it is not implemented by subclass.");
     return kStop;
 }

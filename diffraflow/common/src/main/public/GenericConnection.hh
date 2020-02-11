@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <atomic>
+#include <log4cxx/logger.h>
 
 using std::atomic;
 
@@ -45,6 +46,9 @@ namespace diffraflow {
 
     private:
         bool start_connection_();
+
+    private:
+        log4cxx::LoggerPtr logger_;
 
     };
 }

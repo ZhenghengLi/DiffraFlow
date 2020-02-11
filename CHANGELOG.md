@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TODO
 
 - [x] switch to use log4cxx from boost.log
+- [ ] resolve the path of combiner_addr_list.txt
+- [ ] OptionManager for parsing command line parameters
 
 ## [0.0.5] - 2020-01-16
 

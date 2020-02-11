@@ -38,6 +38,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
         } else if (key == "combiner_address_file") {
+            // TODO: if the file is not absolute, prepend the path of the config file
             combiner_address_file = value;
         } else if (key == "compress_flag") {
             std::istringstream(value) >> std::boolalpha >> compress_flag;

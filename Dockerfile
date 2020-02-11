@@ -12,8 +12,7 @@ RUN apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jdk build-essential \
 libboost-system-dev libboost-log-dev \
-libsnappy-dev && \
-liblog4cxx-dev && \
+libsnappy-dev liblog4cxx-dev && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 # build and install
@@ -38,8 +37,7 @@ RUN apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jre \
 libboost-system-dev libboost-log-dev \
-libsnappy-dev && \
-liblog4cxx-dev && \
+libsnappy-dev liblog4cxx-dev && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 # copy from builder

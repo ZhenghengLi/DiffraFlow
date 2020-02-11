@@ -2,6 +2,7 @@
 #define CmbImgDataConn_H
 
 #include "GenericConnection.hh"
+#include <log4cxx/logger.h>
 
 namespace diffraflow {
 
@@ -10,6 +11,7 @@ namespace diffraflow {
     class CmbImgDataConn: public GenericConnection {
     private:
         CmbImgCache* image_cache_;
+        log4cxx::LoggerPtr logger_;
 
     protected:
         void before_transferring_();

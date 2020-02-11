@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <string>
 
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 #include <snappy.h>
 
 using std::copy;
@@ -17,10 +18,11 @@ diffraflow::CmbImgFrmConn::CmbImgFrmConn(
     int sock_fd, CmbImgCache* img_cache_):
     GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 100 * 1024 * 1024, 4 * 1024 * 1024) {
     image_cache_ = img_cache_;
+    logger_ = log4cxx::Logger::getLogger("CmbImgFrmConn");
 }
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
-
+    log4cxx::NDC::remove();
 }
 
 diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
@@ -28,19 +30,19 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
 
     // payload type check
     if (payload_type != 0xABCDFF00 && payload_type != 0xABCDFF01) {
-        BOOST_LOG_TRIVIAL(info) << "got unknown payload, do nothing and jump it.";
+        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
         return kContinue;
     }
     // payload size check
     if (payload_size < 4) {
-        BOOST_LOG_TRIVIAL(warning) << "got wrong image frame sequence data, close the connection.";
+        LOG4CXX_WARN(logger_, "got wrong image frame sequence data, close the connection.");
         return kStop;
     }
 
     // extract image counts
     uint32_t image_counts = gDC.decode_byte<uint32_t>(buffer_ + payload_position, 0, 3);
     if (image_counts == 0) {
-        BOOST_LOG_TRIVIAL(warning) << "got unexpected zero number_of_images, close the connection.";
+        LOG4CXX_WARN(logger_, "got unexpected zero number_of_images, close the connection.");
         return kStop;
 
     }
@@ -57,18 +59,18 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         current_limit = uncompressed_str.size();
     }
 
-    BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << payload_size - 4 << ", processed size = " << current_limit;
+    LOG4CXX_INFO(logger_, "debug: " << "raw size = " << payload_size - 4 << ", processed size = " << current_limit);
 
     // process data in current_buffer
     size_t current_position = 0;
     for (size_t i = 0; i < image_counts; i++) {
         if (current_limit - current_position <= 4) {
-            BOOST_LOG_TRIVIAL(warning) << "unexpectedly reach the end of image frame sequence data, close the connection.";
+            LOG4CXX_WARN(logger_, "unexpectedly reach the end of image frame sequence data, close the connection.");
             return kStop;
         }
         size_t current_size = gDC.decode_byte<uint32_t>(current_buffer + current_position, 0, 3);
         if (current_size == 0) {
-            BOOST_LOG_TRIVIAL(warning) << "got zero image frame size, close the connection.";
+            LOG4CXX_WARN(logger_, "got zero image frame size, close the connection.");
             return kStop;
         }
         current_position += 4;
@@ -80,7 +82,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
 
     // size validation
     if (current_position != current_limit) {
-        BOOST_LOG_TRIVIAL(warning) << "got abnormal image frame sequence data, close the connection.";
+        LOG4CXX_WARN(logger_, "got abnormal image frame sequence data, close the connection.");
         return kStop;
     }
 

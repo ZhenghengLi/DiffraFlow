@@ -2,28 +2,30 @@
 #include "ImageFrame.hh"
 #include "ImageData.hh"
 
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new queue<ImageFrame>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(100);
+    logger_ = log4cxx::Logger::getLogger("CmbImgCache");
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
-
+    log4cxx::NDC::remove();
 }
 
 void diffraflow::CmbImgCache::put_frame(const ImageFrame& image_frame) {
     // in this function, put image from into priority queue, then try to do time alignment
     if (image_frame.det_id > imgfrm_queues_len_) {
-        BOOST_LOG_TRIVIAL(warning) << "Detector ID is out of range: " << image_frame.det_id;
+        LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame.det_id);
         return;
     }
     imgfrm_queues_arr_[image_frame.det_id].push(image_frame);
     if (do_alignment()) {
         // for debug only
-        BOOST_LOG_TRIVIAL(info) << "Successfully do one alignment.";
+        LOG4CXX_INFO(logger_, "Successfully do one alignment.");
     }
 }
 

@@ -2,6 +2,7 @@
 #define CmbImgFrmConn_H
 
 #include "GenericConnection.hh"
+#include <log4cxx/logger.h>
 
 namespace diffraflow {
 
@@ -18,7 +19,7 @@ namespace diffraflow {
 
     private:
         CmbImgCache* image_cache_;
-
+        log4cxx::LoggerPtr logger_;
 
     };
 }

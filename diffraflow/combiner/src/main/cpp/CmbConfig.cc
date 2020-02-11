@@ -2,7 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 
 using std::ifstream;
 using std::stringstream;
@@ -11,17 +12,17 @@ using std::cerr;
 using std::endl;
 
 diffraflow::CmbConfig::CmbConfig() {
-
+    logger_ = log4cxx::Logger::getLogger("CmbConfig");
 }
 
 diffraflow::CmbConfig::~CmbConfig() {
-
+    log4cxx::NDC::remove();
 }
 
 bool diffraflow::CmbConfig::load(const char* filename) {
     vector< pair<string, string> > conf_KV_vec;
     if (!read_conf_KV_vec_(filename, conf_KV_vec)) {
-        BOOST_LOG_TRIVIAL(error) << "Failed to read configuration file: " << filename;
+        LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
     for (size_t i = 0; i < conf_KV_vec.size(); i++) {
@@ -32,14 +33,14 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         } else if (key == "listen_port") {
             listen_port = atoi(value.c_str());
         } else {
-            BOOST_LOG_TRIVIAL(warning) << "Found unknown configuration which is ignored: "
-                << key << " = " << value << " in " << filename;
+            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
+                << key << " = " << value << " in " << filename);
         }
     }
     // check
     bool succ_flag = true;
     if (listen_port < 0) {
-        BOOST_LOG_TRIVIAL(error) << "invalid listen_port: " << listen_port;
+        LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
     return succ_flag;

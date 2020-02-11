@@ -2,6 +2,7 @@
 #define CmbConfig_H
 
 #include "GenericConfiguration.hh"
+#include <log4cxx/logger.h>
 
 #include <map>
 
@@ -19,6 +20,9 @@ namespace diffraflow {
     public:
         string listen_host;
         int    listen_port;
+
+    private:
+        log4cxx::LoggerPtr logger_;
 
     };
 }

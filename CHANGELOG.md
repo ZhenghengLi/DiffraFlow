@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TODO
 
 - [x] switch to use log4cxx from boost.log
-- [ ] use a specific logger for each method of each class, and plan to use NDC for debug only.
 
 ## [0.0.5] - 2020-01-16
 

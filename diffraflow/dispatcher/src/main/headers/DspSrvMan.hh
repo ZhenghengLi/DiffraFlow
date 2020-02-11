@@ -39,7 +39,8 @@ namespace diffraflow {
         DspImgFrmSrv* imgfrm_srv_;
         atomic_bool running_flag_;
 
-        log4cxx::LoggerPtr logger_;
+    private:
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

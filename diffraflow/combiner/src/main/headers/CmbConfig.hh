@@ -22,7 +22,7 @@ namespace diffraflow {
         int    listen_port;
 
     private:
-        log4cxx::LoggerPtr logger_;
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

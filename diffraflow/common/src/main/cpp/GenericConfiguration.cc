@@ -7,12 +7,15 @@
 
 using std::ifstream;
 
+log4cxx::LoggerPtr diffraflow::GenericConfiguration::logger_
+    = log4cxx::Logger::getLogger("GenericConfiguration");
+
 diffraflow::GenericConfiguration::GenericConfiguration() {
-    logger_ = log4cxx::Logger::getLogger("GenericConfiguration");
+
 }
 
 diffraflow::GenericConfiguration::~GenericConfiguration() {
-    log4cxx::NDC::remove();
+
 }
 
 bool diffraflow::GenericConfiguration::read_conf_KV_vec_(

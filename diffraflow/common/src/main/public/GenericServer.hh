@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <log4cxx/logger.h>
 
 using std::string;
 using std::thread;
@@ -39,6 +40,9 @@ namespace diffraflow {
         thread* cleaner_;
         atomic<bool> cleaner_run_;
         atomic<int> dead_counts_;
+
+    private:
+        static log4cxx::LoggerPtr logger_;
 
     private:
         bool create_tcp_sock_();

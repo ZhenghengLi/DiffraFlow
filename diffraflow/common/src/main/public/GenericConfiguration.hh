@@ -24,7 +24,7 @@ namespace diffraflow {
             vector< pair<string, string> >& conf_KV_vec);
 
     private:
-        log4cxx::LoggerPtr logger_;
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

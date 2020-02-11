@@ -27,7 +27,9 @@ namespace diffraflow {
         DspSender** sender_array_;
         size_t      sender_count_;
 
-        log4cxx::LoggerPtr logger_;
+    private:
+        static log4cxx::LoggerPtr logger_;
+
     };
 }
 

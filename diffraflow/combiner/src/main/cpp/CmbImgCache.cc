@@ -5,15 +5,17 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
+log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
+    = log4cxx::Logger::getLogger("CmbImgCache");
+
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new queue<ImageFrame>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(100);
-    logger_ = log4cxx::Logger::getLogger("CmbImgCache");
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
-    log4cxx::NDC::remove();
+
 }
 
 void diffraflow::CmbImgCache::put_frame(const ImageFrame& image_frame) {

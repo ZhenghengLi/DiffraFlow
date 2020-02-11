@@ -11,15 +11,17 @@
 
 using std::copy;
 
+log4cxx::LoggerPtr diffraflow::CmbImgDataConn::logger_
+    = log4cxx::Logger::getLogger("CmbImgDataConn");
+
 diffraflow::CmbImgDataConn::CmbImgDataConn(
     int sock_fd, CmbImgCache* img_cache_):
     GenericConnection(sock_fd, 0xBBBBCCCC, 0x0, 0x0, 100 * 1024 * 1024, 10 * 1024 * 1024) {
     image_cache_ = img_cache_;
-    logger_ = log4cxx::Logger::getLogger("CmbImgDataConn");
 }
 
 diffraflow::CmbImgDataConn::~CmbImgDataConn() {
-    log4cxx::NDC::remove();
+
 }
 
 void diffraflow::CmbImgDataConn::before_transferring_() {

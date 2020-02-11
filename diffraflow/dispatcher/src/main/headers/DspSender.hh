@@ -68,8 +68,10 @@ namespace diffraflow {
         condition_variable cv_swap_;
         atomic_bool run_flag_;
         bool compress_flag_;
-        // logger
-        log4cxx::LoggerPtr logger_;
+
+    private:
+        static log4cxx::LoggerPtr logger_;
+
     };
 }
 

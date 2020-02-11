@@ -11,7 +11,9 @@ namespace diffraflow {
     class CmbImgDataConn: public GenericConnection {
     private:
         CmbImgCache* image_cache_;
-        log4cxx::LoggerPtr logger_;
+
+    private:
+        static log4cxx::LoggerPtr logger_;
 
     protected:
         void before_transferring_();

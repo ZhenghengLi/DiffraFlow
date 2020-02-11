@@ -19,7 +19,9 @@ namespace diffraflow {
 
     private:
         CmbImgCache* image_cache_;
-        log4cxx::LoggerPtr logger_;
+    
+    private:
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

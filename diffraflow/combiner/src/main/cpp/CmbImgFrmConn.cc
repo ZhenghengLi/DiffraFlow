@@ -14,15 +14,17 @@
 
 using std::copy;
 
+log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_
+    = log4cxx::Logger::getLogger("CmbImgFrmConn");
+
 diffraflow::CmbImgFrmConn::CmbImgFrmConn(
     int sock_fd, CmbImgCache* img_cache_):
     GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 100 * 1024 * 1024, 4 * 1024 * 1024) {
     image_cache_ = img_cache_;
-    logger_ = log4cxx::Logger::getLogger("CmbImgFrmConn");
 }
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
-    log4cxx::NDC::remove();
+
 }
 
 diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
@@ -59,7 +61,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         current_limit = uncompressed_str.size();
     }
 
-    LOG4CXX_INFO(logger_, "debug: " << "raw size = " << payload_size - 4 << ", processed size = " << current_limit);
+    LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 4 << ", processed size = " << current_limit);
 
     // process data in current_buffer
     size_t current_position = 0;

@@ -7,16 +7,18 @@
 using std::cout;
 using std::endl;
 
+log4cxx::LoggerPtr diffraflow::DspConfig::logger_
+    = log4cxx::Logger::getLogger("DspConfig");
+
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = -1;
     listen_port = -1;
     combiner_address_file = "";
     compress_flag = false;
-    logger_ = log4cxx::Logger::getLogger("DspConfig");
 }
 
 diffraflow::DspConfig::~DspConfig() {
-    log4cxx::NDC::remove();
+
 }
 
 bool diffraflow::DspConfig::load(const char* filename) {

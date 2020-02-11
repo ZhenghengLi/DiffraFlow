@@ -48,7 +48,7 @@ namespace diffraflow {
         bool start_connection_();
 
     private:
-        log4cxx::LoggerPtr logger_;
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

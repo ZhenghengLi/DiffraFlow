@@ -5,16 +5,18 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
+log4cxx::LoggerPtr diffraflow::DspImgFrmConn::logger_
+    = log4cxx::Logger::getLogger("DspImgFrmConn");
+
 diffraflow::DspImgFrmConn::DspImgFrmConn(int sock_fd,
     DspSender** sender_arr, size_t sender_cnt):
     GenericConnection(sock_fd, 0xFFDD1234, 0xFFF22DDD, 0xDDD22FFF, 100 * 1024 * 1024, 1024 * 1024) {
     sender_array_ = sender_arr;
     sender_count_ = sender_cnt;
-    logger_ = log4cxx::Logger::getLogger("DspImgFrmConn");
 }
 
 diffraflow::DspImgFrmConn::~DspImgFrmConn() {
-    log4cxx::NDC::remove();
+
 }
 
 diffraflow::DspImgFrmConn::ProcessRes diffraflow::DspImgFrmConn::process_payload_(

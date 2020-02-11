@@ -14,6 +14,9 @@
 #include <log4cxx/ndc.h>
 #include <snappy.h>
 
+log4cxx::LoggerPtr diffraflow::DspSender::logger_
+    = log4cxx::Logger::getLogger("DspSender");
+
 diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_flag) {
     dest_host_ = hostname;
     dest_port_ = port;
@@ -31,13 +34,11 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_f
     sending_thread_ = nullptr;
     run_flag_ = false;
     compress_flag_ = compr_flag;
-    logger_ = log4cxx::Logger::getLogger("DspSender");
 }
 
 diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
-    log4cxx::NDC::remove();
 }
 
 bool diffraflow::DspSender::connect_to_combiner() {

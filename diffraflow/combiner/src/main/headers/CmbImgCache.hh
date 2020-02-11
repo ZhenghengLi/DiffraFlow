@@ -27,7 +27,9 @@ namespace diffraflow {
         size_t              imgfrm_queues_len_;
         queue<ImageFrame>*  imgfrm_queues_arr_;
         BlockingQueue<ImageData> imgdat_queue_;
-        log4cxx::LoggerPtr logger_;
+
+    private:
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

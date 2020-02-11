@@ -11,12 +11,15 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+log4cxx::LoggerPtr diffraflow::CmbConfig::logger_
+    = log4cxx::Logger::getLogger("CmbConfig");
+
 diffraflow::CmbConfig::CmbConfig() {
-    logger_ = log4cxx::Logger::getLogger("CmbConfig");
+
 }
 
 diffraflow::CmbConfig::~CmbConfig() {
-    log4cxx::NDC::remove();
+
 }
 
 bool diffraflow::CmbConfig::load(const char* filename) {

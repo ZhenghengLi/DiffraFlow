@@ -24,7 +24,7 @@ namespace diffraflow {
         string combiner_address_file;
 
     private:
-        log4cxx::LoggerPtr logger_;
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

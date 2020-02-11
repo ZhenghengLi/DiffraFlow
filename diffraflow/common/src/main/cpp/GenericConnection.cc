@@ -12,6 +12,9 @@
 
 using std::copy;
 
+log4cxx::LoggerPtr diffraflow::GenericConnection::logger_
+    = log4cxx::Logger::getLogger("GenericConnection");
+
 diffraflow::GenericConnection::GenericConnection(int sock_fd,
     uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
     size_t buff_sz, size_t pkt_ml) {
@@ -26,12 +29,10 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     slice_begin_ = 0;
     done_flag_ = false;
     connection_id_ = -1;
-    logger_ = log4cxx::Logger::getLogger("GenericConnection");
 }
 
 diffraflow::GenericConnection::~GenericConnection() {
     delete [] buffer_;
-    log4cxx::NDC::remove();
 }
 
 void diffraflow::GenericConnection::run() {

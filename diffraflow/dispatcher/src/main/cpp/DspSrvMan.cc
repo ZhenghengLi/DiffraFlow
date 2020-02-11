@@ -12,17 +12,19 @@
 using std::ifstream;
 using std::make_pair;
 
+log4cxx::LoggerPtr diffraflow::DspSrvMan::logger_
+    = log4cxx::Logger::getLogger("DspSrvMan");
+
 diffraflow::DspSrvMan::DspSrvMan(DspConfig* config) {
     config_obj_ = config;
     sender_arr_ = nullptr;
     sender_cnt_ = 0;
     imgfrm_srv_ = nullptr;
     running_flag_ = false;
-    logger_ = log4cxx::Logger::getLogger("DspSrvMan");
 }
 
 diffraflow::DspSrvMan::~DspSrvMan() {
-    log4cxx::NDC::remove();
+
 }
 
 void diffraflow::DspSrvMan::start_run() {

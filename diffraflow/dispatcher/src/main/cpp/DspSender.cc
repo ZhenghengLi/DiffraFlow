@@ -10,7 +10,8 @@
 #include <chrono>
 #include <string>
 
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 #include <snappy.h>
 
 diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_flag) {
@@ -30,11 +31,13 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_f
     sending_thread_ = nullptr;
     run_flag_ = false;
     compress_flag_ = compr_flag;
+    logger_ = log4cxx::Logger::getLogger("DspSender");
 }
 
 diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
+    log4cxx::NDC::remove();
 }
 
 bool diffraflow::DspSender::connect_to_combiner() {
@@ -43,18 +46,18 @@ bool diffraflow::DspSender::connect_to_combiner() {
     hints.ai_family = AF_INET;
     int result = getaddrinfo(dest_host_.c_str(), NULL, &hints, &infoptr);
     if (result) {
-        BOOST_LOG_TRIVIAL(error) << "getaddrinfo: " << gai_strerror(result);
+        LOG4CXX_ERROR(logger_, "getaddrinfo: " << gai_strerror(result));
         return false;
     }
     client_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (client_sock_fd_ < 0) {
-        BOOST_LOG_TRIVIAL(error) << "Socket creationg error";
+        LOG4CXX_ERROR(logger_, "Socket creationg error");
         return false;
     }
     ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(dest_port_);
     if (connect(client_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen)) {
         close_connection();
-        BOOST_LOG_TRIVIAL(error) << "Connection to " << dest_host_ << ":" << dest_port_ << " failed.";
+        LOG4CXX_ERROR(logger_, "Connection to " << dest_host_ << ":" << dest_port_ << " failed.");
         return false;
     }
     freeaddrinfo(infoptr);
@@ -69,7 +72,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
             pos += count;
         } else {
             close_connection();
-            BOOST_LOG_TRIVIAL(error) << "error found when doing the first write.";
+            LOG4CXX_ERROR(logger_, "error found when doing the first write.");
             return false;
         }
     }
@@ -79,7 +82,7 @@ bool diffraflow::DspSender::connect_to_combiner() {
             pos += count;
         } else {
             close_connection();
-            BOOST_LOG_TRIVIAL(error) << "error found when doing the first read.";
+            LOG4CXX_ERROR(logger_, "error found when doing the first read.");
             return false;
         }
     }
@@ -87,10 +90,10 @@ bool diffraflow::DspSender::connect_to_combiner() {
     gPS.deserializeValue<int32_t>(&response_code, buffer, 4);
     if (response_code != 1234) {
         close_connection();
-        BOOST_LOG_TRIVIAL(error) << "Got wrong response code, close the connection.";
+        LOG4CXX_ERROR(logger_, "Got wrong response code, close the connection.");
         return false;
     } else {
-        BOOST_LOG_TRIVIAL(info) << "Successfully connected to combiner running on " << dest_host_ << ":" << dest_port_;
+        LOG4CXX_INFO(logger_, "Successfully connected to combiner running on " << dest_host_ << ":" << dest_port_);
         return true;
     }
 }
@@ -168,9 +171,9 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     // try to connect if lose connection
     if (client_sock_fd_ < 0) {
         if (connect_to_combiner()) {
-            BOOST_LOG_TRIVIAL(info) << "reconnected to combiner.";
+            LOG4CXX_INFO(logger_, "reconnected to combiner.");
         } else {
-            BOOST_LOG_TRIVIAL(warning) << "failed to reconnect to combiner, discard data in buffer.";
+            LOG4CXX_WARN(logger_, "failed to reconnect to combiner, discard data in buffer.");
             return;
         }
     }
@@ -190,7 +193,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         current_limit = compressed_str.size();
     }
 
-    BOOST_LOG_TRIVIAL(info) << "debug: " << "raw size = " << limit << ", sent size = " << current_limit;
+    LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << current_limit);
 
     // send head
     char head_buffer[16];
@@ -201,27 +204,27 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     for (size_t pos = 0; pos < 16;) {
         int count = write(client_sock_fd_, head_buffer + pos, 16 - pos);
         if (count < 0) {
-            BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            LOG4CXX_WARN(logger_, "error found when sending data: " << strerror(errno));
             close_connection();
             return;
         } else {
             pos += count;
         }
     }
-    BOOST_LOG_TRIVIAL(info) << "done a write for head.";
+    LOG4CXX_INFO(logger_, "done a write for head.");
 
     // send data in current_buffer
     for (size_t pos = 0; pos < current_limit;) {
         int count = write(client_sock_fd_, current_buffer + pos, current_limit - pos);
         if (count < 0) {
-            BOOST_LOG_TRIVIAL(warning) << "error found when sending data: " << strerror(errno);
+            LOG4CXX_WARN(logger_, "error found when sending data: " << strerror(errno));
             close_connection();
             return;
         } else {
             pos += count;
         }
     }
-    BOOST_LOG_TRIVIAL(info) << "done a write for data.";
+    LOG4CXX_INFO(logger_, "done a write for data.");
 }
 
 void diffraflow::DspSender::start() {

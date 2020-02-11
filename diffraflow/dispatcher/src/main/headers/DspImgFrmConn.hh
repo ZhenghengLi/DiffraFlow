@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "GenericConnection.hh"
+#include <log4cxx/logger.h>
 
 namespace diffraflow {
 
@@ -25,6 +26,8 @@ namespace diffraflow {
     private:
         DspSender** sender_array_;
         size_t      sender_count_;
+
+        log4cxx::LoggerPtr logger_;
     };
 }
 

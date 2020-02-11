@@ -5,7 +5,8 @@
 
 #include <fstream>
 
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 #include <boost/algorithm/string.hpp>
 
 using std::ifstream;
@@ -17,10 +18,11 @@ diffraflow::DspSrvMan::DspSrvMan(DspConfig* config) {
     sender_cnt_ = 0;
     imgfrm_srv_ = nullptr;
     running_flag_ = false;
+    logger_ = log4cxx::Logger::getLogger("DspSrvMan");
 }
 
 diffraflow::DspSrvMan::~DspSrvMan() {
-
+    log4cxx::NDC::remove();
 }
 
 void diffraflow::DspSrvMan::start_run() {
@@ -28,9 +30,9 @@ void diffraflow::DspSrvMan::start_run() {
     // create senders
     if (create_senders_(config_obj_->combiner_address_file.c_str(),
         config_obj_->dispatcher_id, config_obj_->compress_flag)) {
-        BOOST_LOG_TRIVIAL(info) << sender_cnt_ << " senders are created.";
+        LOG4CXX_INFO(logger_, sender_cnt_ << " senders are created.");
     } else {
-        BOOST_LOG_TRIVIAL(error) << "Failed to create senders.";
+        LOG4CXX_ERROR(logger_, "Failed to create senders.");
         return;
     }
     // start senders
@@ -61,7 +63,7 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     // note: do this before staring DspImgFrmSrv
     vector< pair<string, int> > addr_vec;
     if (!read_address_list_(address_list_fn, addr_vec)) {
-        BOOST_LOG_TRIVIAL(error) << "Failed to read combiner address list.";
+        LOG4CXX_ERROR(logger_, "Failed to read combiner address list.");
         return false;
     }
     sender_cnt_ = addr_vec.size();
@@ -69,13 +71,11 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     for (size_t i = 0; i < addr_vec.size(); i++) {
         sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id, compress_flag);
         if (sender_arr_[i]->connect_to_combiner()) {
-            BOOST_LOG_TRIVIAL(info) << "Successfully connected to combiner "
-                                    << addr_vec[i].first.c_str()
-                                    << ":" << addr_vec[i].second;
+            LOG4CXX_INFO(logger_, "Successfully connected to combiner "
+                << addr_vec[i].first.c_str() << ":" << addr_vec[i].second);
         } else {
-            BOOST_LOG_TRIVIAL(warning) << "Failed to do the first connection to combiner "
-                                       << addr_vec[i].first.c_str()
-                                       << ":" << addr_vec[i].second;
+            LOG4CXX_WARN(logger_, "Failed to do the first connection to combiner "
+                << addr_vec[i].first.c_str() << ":" << addr_vec[i].second);
         }
         // sender_arr_[i]->start();
     }
@@ -99,7 +99,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
     ifstream addr_file;
     addr_file.open(filename);
     if (!addr_file.is_open()) {
-        BOOST_LOG_TRIVIAL(error) << "address file open failed.";
+        LOG4CXX_ERROR(logger_, "address file open failed.");
         return false;
     }
     string oneline;
@@ -114,7 +114,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
         vector<string> host_port;
         boost::split(host_port, oneline, boost::is_any_of(":"));
         if (host_port.size() < 2) {
-            BOOST_LOG_TRIVIAL(error) << "found unknown address: " << oneline;
+            LOG4CXX_ERROR(logger_, "found unknown address: " << oneline);
             return false;
         }
         boost::trim(host_port[0]);
@@ -122,7 +122,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
         boost::trim(host_port[1]);
         int    port_num = atoi(host_port[1].c_str());
         if (port_num <= 0) {
-            BOOST_LOG_TRIVIAL(error) << "found unknown address: " << oneline;
+            LOG4CXX_ERROR(logger_, "found unknown address: " << oneline);
             return false;
         }
         addr_vec.push_back(make_pair(host_str, port_num));
@@ -130,7 +130,7 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector< pai
     if (addr_vec.size() > 0) {
         return true;
     } else {
-            BOOST_LOG_TRIVIAL(error) << "empty address file: " << filename;
+            LOG4CXX_ERROR(logger_, "empty address file: " << filename);
         return false;
     }
 }

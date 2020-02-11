@@ -2,7 +2,7 @@
 #define DspConfig_H
 
 #include "GenericConfiguration.hh"
-
+#include <log4cxx/logger.h>
 #include <string>
 
 using std::string;
@@ -22,6 +22,9 @@ namespace diffraflow {
         int    listen_port;
         bool compress_flag;
         string combiner_address_file;
+
+    private:
+        log4cxx::LoggerPtr logger_;
 
     };
 }

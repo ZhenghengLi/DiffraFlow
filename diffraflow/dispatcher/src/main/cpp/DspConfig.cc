@@ -1,5 +1,6 @@
 #include "DspConfig.hh"
-#include <boost/log/trivial.hpp>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 #include <iostream>
 #include <sstream>
 
@@ -11,16 +12,17 @@ diffraflow::DspConfig::DspConfig() {
     listen_port = -1;
     combiner_address_file = "";
     compress_flag = false;
+    logger_ = log4cxx::Logger::getLogger("DspConfig");
 }
 
 diffraflow::DspConfig::~DspConfig() {
-
+    log4cxx::NDC::remove();
 }
 
 bool diffraflow::DspConfig::load(const char* filename) {
     vector< pair<string, string> > conf_KV_vec;
     if (!read_conf_KV_vec_(filename, conf_KV_vec)) {
-        BOOST_LOG_TRIVIAL(error) << "Failed to read configuration file: " << filename;
+        LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
     // parse
@@ -38,22 +40,22 @@ bool diffraflow::DspConfig::load(const char* filename) {
         } else if (key == "compress_flag") {
             std::istringstream(value) >> std::boolalpha >> compress_flag;
         } else {
-            BOOST_LOG_TRIVIAL(warning) << "Found unknown configuration which is ignored: "
-                << key << " = " << value << " in " << filename;
+            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
+                << key << " = " << value << " in " << filename);
         }
     }
     // check
     bool succ_flag = true;
     if (dispatcher_id < 0) {
-        BOOST_LOG_TRIVIAL(error) << "invalid dispatcher_id: " << dispatcher_id;
+        LOG4CXX_ERROR(logger_, "invalid dispatcher_id: " << dispatcher_id);
         succ_flag = false;
     }
     if (listen_port < 0) {
-        BOOST_LOG_TRIVIAL(error) << "invalid listen_port: " << listen_port;
+        LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
     if (combiner_address_file == "") {
-        BOOST_LOG_TRIVIAL(error) << "combiner_address_file is not set";
+        LOG4CXX_ERROR(logger_, "combiner_address_file is not set");
         succ_flag = false;
     }
     return succ_flag;

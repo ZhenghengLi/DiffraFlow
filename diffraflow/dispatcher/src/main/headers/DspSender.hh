@@ -8,6 +8,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <atomic>
+#include <log4cxx/logger.h>
 
 using std::string;
 using std::thread;
@@ -67,7 +68,8 @@ namespace diffraflow {
         condition_variable cv_swap_;
         atomic_bool run_flag_;
         bool compress_flag_;
-
+        // logger
+        log4cxx::LoggerPtr logger_;
     };
 }
 

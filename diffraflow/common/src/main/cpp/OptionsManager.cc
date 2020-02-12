@@ -5,9 +5,8 @@
 using std::cout;
 using std::endl;
 
-diffraflow::OptionsManager::OptionsManager(const char* sw_name, const char* sw_description) {
+diffraflow::OptionsManager::OptionsManager(const char* sw_name) {
     software_name_ = sw_name;
-    software_description_ = sw_description;
     version_flag_ = false;
 }
 

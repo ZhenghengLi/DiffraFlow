@@ -8,7 +8,7 @@ using std::string;
 namespace diffraflow {
     class OptionsManager {
     public:
-        explicit OptionsManager(const char* sw_name, const char* sw_description);
+        explicit OptionsManager(const char* sw_name);
         virtual ~OptionsManager();
 
         virtual bool parse(int argc, char** argv) = 0;
@@ -20,7 +20,6 @@ namespace diffraflow {
 
     protected:
         string software_name_;
-        string software_description_;
         bool version_flag_;
 
     };

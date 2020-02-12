@@ -27,7 +27,7 @@ void diffraflow::OptionsManager::print_version_() {
     cout << "    " << software_name_ << " - " << "DiffraFlow Project" << endl;
     cout << "    " << gReleaseVersion << " (" << gReleaseDate << ", compiled " << __DATE__ << " " << __TIME__ << ")" << endl;
     cout << endl;
-    cout << " " << gCopyrightStatement << endl;
+    cout << gCopyrightStatement << endl;
     // cout << " Source Code: " << gSourceCodeUrl << endl;
     cout << endl;
     cout << " Main Contributors: " << endl;

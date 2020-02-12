@@ -13,7 +13,6 @@ log4cxx::LoggerPtr diffraflow::DspConfig::logger_
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = -1;
     listen_port = -1;
-    combiner_address_file = "";
     compress_flag = false;
 }
 
@@ -37,13 +36,6 @@ bool diffraflow::DspConfig::load(const char* filename) {
             listen_port = atoi(value.c_str());
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
-        } else if (key == "combiner_address_file") {
-            size_t found = string(filename).find_last_of('/');
-            if (found == string::npos || value[0] == '/') {
-                combiner_address_file = value;
-            } else {
-                combiner_address_file = string(filename).substr(0, found + 1) + value;
-            }
         } else if (key == "compress_flag") {
             std::istringstream(value) >> std::boolalpha >> compress_flag;
         } else {
@@ -61,10 +53,6 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
-    if (combiner_address_file == "") {
-        LOG4CXX_ERROR(logger_, "combiner_address_file is not set");
-        succ_flag = false;
-    }
     return succ_flag;
 }
 
@@ -72,6 +60,5 @@ void diffraflow::DspConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
-    cout << "  combiner_address_file = " << combiner_address_file << endl;
     cout << " ---- Configuration Dump End ----" << endl;
 }

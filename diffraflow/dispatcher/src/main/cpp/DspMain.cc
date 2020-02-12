@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     // -----------------------------------------
     init(gConfiguration);
 
-    gServerManager = new DspSrvMan(gConfiguration);
+    gServerManager = new DspSrvMan(gConfiguration, option_man.cmbaddr_file.c_str());
     gServerManager->start_run();
 
     clean(0);

@@ -15,8 +15,9 @@ using std::make_pair;
 log4cxx::LoggerPtr diffraflow::DspSrvMan::logger_
     = log4cxx::Logger::getLogger("DspSrvMan");
 
-diffraflow::DspSrvMan::DspSrvMan(DspConfig* config) {
+diffraflow::DspSrvMan::DspSrvMan(DspConfig* config, const char* cmbaddr_file) {
     config_obj_ = config;
+    combiner_address_file_ = cmbaddr_file;
     sender_arr_ = nullptr;
     sender_cnt_ = 0;
     imgfrm_srv_ = nullptr;
@@ -30,7 +31,7 @@ diffraflow::DspSrvMan::~DspSrvMan() {
 void diffraflow::DspSrvMan::start_run() {
     if (running_flag_) return;
     // create senders
-    if (create_senders_(config_obj_->combiner_address_file.c_str(),
+    if (create_senders_(combiner_address_file_.c_str(),
         config_obj_->dispatcher_id, config_obj_->compress_flag)) {
         LOG4CXX_INFO(logger_, sender_cnt_ << " senders are created.");
     } else {

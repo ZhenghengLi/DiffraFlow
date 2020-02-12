@@ -10,6 +10,7 @@ namespace diffraflow {
         // option varables
         string config_file;       // -c, --config=FILE
         string logconf_file;      // -l, --logconf=FILE
+        string cmbaddr_file;      // -a, --cmbaddr=FILE
 
     public:
         DspOptMan();

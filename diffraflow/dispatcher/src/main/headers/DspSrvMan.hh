@@ -20,7 +20,7 @@ namespace diffraflow {
 
     class DspSrvMan {
     public:
-        explicit DspSrvMan(DspConfig* config);
+        DspSrvMan(DspConfig* config, const char* cmbaddr_file);
         ~DspSrvMan();
 
         void start_run();
@@ -38,6 +38,8 @@ namespace diffraflow {
 
         DspImgFrmSrv* imgfrm_srv_;
         atomic_bool running_flag_;
+
+        string combiner_address_file_;
 
     private:
         static log4cxx::LoggerPtr logger_;

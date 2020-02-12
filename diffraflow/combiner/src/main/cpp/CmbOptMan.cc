@@ -50,7 +50,7 @@ bool diffraflow::CmbOptMan::parse(int argc, char** argv) {
     // validation check
     bool succ_flag = true;
     if (config_file.empty()) {
-        cerr << "configuration file is not specified." << endl;
+        cerr << "configuration file should be set." << endl;
         succ_flag = false;
     }
     // return
@@ -68,9 +68,9 @@ void diffraflow::CmbOptMan::print_help_() {
     cout << endl;
     cout << "Options:" << endl;
     cout << left;
-    cout << setw(30) << "  -c, --config=FILE" << setw(50) << "Configuration file" << endl;
-    cout << setw(30) << "  -l, --logconf=FILE" << setw(50) << "Log configuration file" << endl;
-    cout << setw(30) << "  -v, --version" << setw(50) << "print version and author information" << endl;
+    cout << setw(30) << "  -c, --config=FILE" << setw(50) << "configuration file" << endl;
+    cout << setw(30) << "  -l, --logconf=FILE" << setw(50) << "log configuration file" << endl;
+    cout << setw(30) << "  -v, --version" << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help" << setw(50) << "print this help" << endl;
     cout << endl;
 }

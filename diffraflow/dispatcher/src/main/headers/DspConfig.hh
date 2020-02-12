@@ -21,7 +21,6 @@ namespace diffraflow {
         string listen_host;
         int    listen_port;
         bool compress_flag;
-        string combiner_address_file;
 
     private:
         static log4cxx::LoggerPtr logger_;

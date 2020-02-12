@@ -8,11 +8,12 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::DspOptMan::opt_string_[] = "c:l:vh";
+const char diffraflow::DspOptMan::opt_string_[] = "c:l:a:vh";
 
 const option diffraflow::DspOptMan::long_opts_[] = {
     {"config", required_argument, NULL, 'c'},
     {"logconf", required_argument, NULL, 'l'},
+    {"cmbaddr", required_argument, NULL, 'a'},
     {"help", no_argument, NULL, 'h'},
     {"version", no_argument, NULL, 'v'},
     {NULL, no_argument, NULL, 0}
@@ -21,6 +22,7 @@ const option diffraflow::DspOptMan::long_opts_[] = {
 diffraflow::DspOptMan::DspOptMan(): OptionsManager("dispatcher") {
     config_file.clear();
     logconf_file.clear();
+    cmbaddr_file.clear();
 }
 
 diffraflow::DspOptMan::~DspOptMan() {
@@ -39,6 +41,9 @@ bool diffraflow::DspOptMan::parse(int argc, char** argv) {
         case 'l':
             logconf_file = optarg;
             break;
+        case 'a':
+            cmbaddr_file = optarg;
+            break;
         case 'v':
             version_flag_ = true;
             return false;
@@ -50,7 +55,11 @@ bool diffraflow::DspOptMan::parse(int argc, char** argv) {
     // validation check
     bool succ_flag = true;
     if (config_file.empty()) {
-        cerr << "configuration file is not specified." << endl;
+        cerr << "configuration file should be set." << endl;
+        succ_flag = false;
+    }
+    if (cmbaddr_file.empty()) {
+        cerr << "combiner addresses file should be set." << endl;
         succ_flag = false;
     }
     // return
@@ -68,9 +77,10 @@ void diffraflow::DspOptMan::print_help_() {
     cout << endl;
     cout << "Options:" << endl;
     cout << left;
-    cout << setw(30) << "  -c, --config=FILE" << setw(50) << "Configuration file" << endl;
-    cout << setw(30) << "  -l, --logconf=FILE" << setw(50) << "Log configuration file" << endl;
-    cout << setw(30) << "  -v, --version" << setw(50) << "print version and author information" << endl;
+    cout << setw(30) << "  -c, --config=FILE" << setw(50) << "configuration file" << endl;
+    cout << setw(30) << "  -l, --logconf=FILE" << setw(50) << "log configuration file" << endl;
+    cout << setw(30) << "  -a, --cmbaddr=FILE" << setw(50) << "combiner addresses file" << endl;
+    cout << setw(30) << "  -v, --version" << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help" << setw(50) << "print this help" << endl;
     cout << endl;
 }

@@ -7,9 +7,11 @@
 
    ```bash
     # Boost C++ Library
-    sudo apt install libboost-all-dev
+    sudo apt install libboost-dev
     # Google Snappy
     sudo apt install libsnappy-dev
+    # log4cxx
+    sudo apt install liblog4cxx-dev
    ```
 
    * For Mac OS:  
@@ -19,6 +21,8 @@
     brew install boost
     # Google Snappy
     brew install snappy
+    # log4cxx
+    brew install log4cxx
    ```
 
 2. Compile and install  

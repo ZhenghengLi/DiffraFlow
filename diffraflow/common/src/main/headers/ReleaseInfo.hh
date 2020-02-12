@@ -3,7 +3,7 @@
 
 namespace diffraflow {
 
-    const char* gReleaseVersion = "v0.0.5";
+    const char* gReleaseVersion = "v0.0.6";
 
     const char* gReleaseDate = "2020 Feb 12";
 

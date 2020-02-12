@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### TODO
+(empty)
 
-- [x] switch to use log4cxx from boost.log
-- [x] resolve the path of combiner_addr_list.txt
-- [ ] OptionManager for parsing command line parameters
+## [0.0.6] - 2020-02-12
+
+### Changed
+
+- log library is switched from boost.log to log4cxx.
+- use a specific OptionsManager to parse command line parameters
+- dispatcher: combiner addresses file is now set by a command line option instead of inside configuration file.
 
 ## [0.0.5] - 2020-01-16
 

@@ -7,6 +7,7 @@
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
 
+#include "DspOptMan.hh"
 #include "DspConfig.hh"
 #include "DspSrvMan.hh"
 
@@ -51,19 +52,22 @@ void init(DspConfig* config_obj) {
 }
 
 int main(int argc, char** argv) {
-
-    if (argc < 2) {
-        cout << "Usage: " << "dispatcher" << " <config.conf>" << endl;
+    // process command line parameters
+    DspOptMan option_man;
+    if (!option_man.parse(argc, argv)) {
+        option_man.print();
         return 2;
     }
-    string config_fn = argv[1];
-
-    log4cxx::BasicConfigurator::configure();
-    // TODO: log4cxx::PropertyConfigurator::configure(filename)
-
+    // configure logger
+    if (option_man.logconf_file.empty()) {
+        log4cxx::BasicConfigurator::configure();
+    } else {
+        log4cxx::PropertyConfigurator::configure(option_man.logconf_file);
+    }
+    // parse configuration file
     gConfiguration = new DspConfig();
-    if (!gConfiguration->load(config_fn.c_str())) {
-        cout << "Failed to load configuration file: " << config_fn << endl;
+    if (!gConfiguration->load(option_man.config_file.c_str())) {
+        cout << "Failed to load configuration file: " << option_man.config_file << endl;
         return 1;
     }
     gConfiguration->print();

@@ -1,4 +1,4 @@
-#include "CmbOptMan.hh"
+#include "DspOptMan.hh"
 #include <iostream>
 #include <iomanip>
 
@@ -8,9 +8,9 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::CmbOptMan::opt_string_[] = "c:l:vh";
+const char diffraflow::DspOptMan::opt_string_[] = "c:l:vh";
 
-const option diffraflow::CmbOptMan::long_opts_[] = {
+const option diffraflow::DspOptMan::long_opts_[] = {
     {"config", required_argument, NULL, 'c'},
     {"logconf", required_argument, NULL, 'l'},
     {"help", no_argument, NULL, 'h'},
@@ -18,16 +18,16 @@ const option diffraflow::CmbOptMan::long_opts_[] = {
     {NULL, no_argument, NULL, 0}
 };
 
-diffraflow::CmbOptMan::CmbOptMan(): OptionsManager("combiner") {
+diffraflow::DspOptMan::DspOptMan(): OptionsManager("dispatcher") {
     config_file.clear();
     logconf_file.clear();
 }
 
-diffraflow::CmbOptMan::~CmbOptMan() {
+diffraflow::DspOptMan::~DspOptMan() {
 
 }
 
-bool diffraflow::CmbOptMan::parse(int argc, char** argv) {
+bool diffraflow::DspOptMan::parse(int argc, char** argv) {
     while (true) {
         int opt, idx;
         opt = getopt_long(argc, argv, opt_string_, long_opts_, &idx);
@@ -62,9 +62,9 @@ bool diffraflow::CmbOptMan::parse(int argc, char** argv) {
     }
 }
 
-void diffraflow::CmbOptMan::print_help_() {
+void diffraflow::DspOptMan::print_help_() {
     cout << "Usage:" << endl;
-    cout << "  combiner [OPTION...]" << endl;
+    cout << "  dispatcher [OPTION...]" << endl;
     cout << endl;
     cout << "Options:" << endl;
     cout << left;

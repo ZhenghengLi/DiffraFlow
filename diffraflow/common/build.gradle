@@ -3,6 +3,6 @@ import org.gradle.internal.os.OperatingSystem
 
 library {
     binaries.configureEach {
-
+        linkTask.get().linkerArgs.add('-llog4cxx')
     }
 }

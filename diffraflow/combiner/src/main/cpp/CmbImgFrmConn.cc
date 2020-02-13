@@ -79,7 +79,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         ImageFrame image_frame;
         image_frame.decode(current_buffer + current_position, current_size);
         current_position += current_size;
-        image_cache_->put_frame(image_frame);
+        image_cache_->push_frame(image_frame);
     }
 
     // size validation

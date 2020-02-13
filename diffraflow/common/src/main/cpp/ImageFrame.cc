@@ -67,7 +67,7 @@ void diffraflow::ImageFrame::copyObj_(const ImageFrame& img_frm) {
     }
 }
 
-diffraflow::ImageFrame& diffraflow::ImageFrame::operator=(const ImageFrame& img_frm) {
+diffraflow::ImageFrame& diffraflow::ImageFrame::operator = (const ImageFrame& img_frm) {
     copyObj_(img_frm);
     return *this;
 }

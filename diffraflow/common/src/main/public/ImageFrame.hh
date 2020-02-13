@@ -17,7 +17,7 @@ namespace diffraflow {
         ImageFrame(const ImageFrame& img_frm);
         ~ImageFrame();
 
-        ImageFrame& operator=(const ImageFrame& img_frm);
+        ImageFrame& operator = (const ImageFrame& img_frm);
 
         bool decode(const char* buffer, const size_t size);
         void print() const;

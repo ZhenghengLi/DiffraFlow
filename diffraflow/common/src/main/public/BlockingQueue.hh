@@ -19,15 +19,10 @@ using std::atomic;
 namespace diffraflow {
     template <typename E>
     class BlockingQueue {
-    private:
-        mutex mtx_;
-        condition_variable cv_push_;
-        condition_variable cv_take_;
-        queue<E>* internal_queue_;
-        atomic<bool> stopped_;
-        atomic<size_t> max_size_;
     public:
-        BlockingQueue(size_t ms = 100);
+        explicit BlockingQueue(size_t ms = 100);
+        BlockingQueue(const BlockingQueue<E>& bq);
+        BlockingQueue<E>& operator = (const BlockingQueue<E>& bq);
         ~BlockingQueue();
 
         // synchronized methods
@@ -57,6 +52,19 @@ namespace diffraflow {
         void stop();
         bool stopped();
         void resume();
+
+    private:
+        void copyObj_(const BlockingQueue<E>& bq);
+
+    private:
+        queue<E>* internal_queue_;
+        atomic<bool> stopped_;
+        atomic<size_t> max_size_;
+
+        mutex mtx_;
+        condition_variable cv_push_;
+        condition_variable cv_take_;
+
     };
 
     template <typename E>
@@ -64,6 +72,25 @@ namespace diffraflow {
         max_size_ = ms;
         internal_queue_ = new queue<E>();
         stopped_ = false;
+    }
+
+    template <typename E>
+    BlockingQueue<E>::BlockingQueue(const BlockingQueue<E>& bq) {
+        copyObj_(bq);
+    }
+
+    template <typename E>
+    BlockingQueue<E>& BlockingQueue<E>::operator = (const BlockingQueue<E>& bq) {
+        copyObj_(bq);
+        return *this;
+    }
+
+    template <typename E>
+    void BlockingQueue<E>::copyObj_(const BlockingQueue<E>& bq) {
+        max_size_ = bq.max_size_;
+        internal_queue_ = new queue<E>();
+        *internal_queue_ = *bq.internal_queue_;
+        stopped_ = bq.stopped_;
     }
 
     template <typename E>

@@ -64,9 +64,9 @@ bool diffraflow::CmbImgDataConn::do_transferring_() {
     // send image data from here
     for (int i = 0; i < img_count; i++) {
         ImageData image_data;
-        while (!image_cache_->take_one_image(image_data)) {
+        while (!image_cache_->imgdat_queue.take(image_data)) {
             if (done_flag_) return false;
-            if (image_cache_->img_queue_stopped()) return false;
+            if (image_cache_->imgdat_queue.stopped()) return false;
         }
         // serialize image_data into buffer
         // send the data in buffer

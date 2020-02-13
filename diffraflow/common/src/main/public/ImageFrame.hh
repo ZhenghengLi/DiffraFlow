@@ -2,30 +2,14 @@
 #define ImageFrame_H
 
 #include <iostream>
+#include <log4cxx/logger.h>
+
 #include "Decoder.hh"
 #include "PrimitiveSerializer.hh"
 #include "ObjectSerializer.hh"
 
 namespace diffraflow {
     class ImageFrame: public ObjectSerializer {
-    private:
-        static const int obj_type_ = 1231;
-
-    private:
-        char*    img_rawdata_;
-        uint32_t img_rawsize_;
-
-    public:
-        int64_t img_key;
-        double  img_time;     // unit: second
-        uint32_t det_id;
-        uint32_t img_width;
-        uint32_t img_height;
-        float*  img_frame;    // size = width * height;
-
-    private:
-        void copyObj_(const ImageFrame& img_frm);
-
     public:
         ImageFrame();
         ImageFrame(const char* buffer, const size_t size);
@@ -43,6 +27,27 @@ namespace diffraflow {
         size_t object_size() override;
         int object_type() override;
         void clear_data() override;
+
+    private:
+        // helper methods
+        void initObj_();
+        void copyObj_(const ImageFrame& img_frm);
+
+    public:
+        int64_t  img_key;
+        double   img_time;     // unit: second
+        uint32_t det_id;
+        uint32_t img_width;
+        uint32_t img_height;
+        float*   img_frame;    // size = width * height;
+
+    private:
+        char*    img_rawdata_;
+        uint32_t img_rawsize_;
+
+    private:
+        static const int obj_type_ = 1231;
+        static log4cxx::LoggerPtr logger_;
 
     };
 }

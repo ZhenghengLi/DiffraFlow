@@ -13,13 +13,15 @@
 namespace diffraflow {
     class ObjectSerializer {
     public:
-        static const uint32_t kObjectHead = 0xFEEDBEEF;
-    public:
         virtual size_t serialize(char* const data, size_t len) = 0;
         virtual size_t deserialize(const char* const data, size_t len) = 0;
         virtual size_t object_size() = 0;
         virtual int object_type() = 0;
         virtual void clear_data() = 0;
+
+    public:
+        static const uint32_t kObjectHead = 0xFEEDBEEF;
+
     };
 }
 

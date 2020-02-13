@@ -1,27 +1,25 @@
 #include "ImageFrame.hh"
+
 #include <algorithm>
 #include <cassert>
 #include <stdexcept>
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
 
 using std::copy;
 using std::cout;
 using std::cerr;
 using std::endl;
 
+log4cxx::LoggerPtr diffraflow::ImageFrame::logger_
+    = log4cxx::Logger::getLogger("ImageFrame");
+
 diffraflow::ImageFrame::ImageFrame() {
-    img_frame = nullptr;
-    img_rawdata_ = nullptr;
-    img_rawsize_ = 0;
-    img_width = 0;
-    img_height = 0;
+    initObj_();
 }
 
 diffraflow::ImageFrame::ImageFrame(const char* buffer, const size_t size) {
-    img_frame = nullptr;
-    img_rawdata_ = nullptr;
-    img_rawsize_ = 0;
-    img_width = 0;
-    img_height = 0;
+    initObj_();
     decode(buffer, size);
 }
 
@@ -34,11 +32,24 @@ diffraflow::ImageFrame::~ImageFrame() {
     if (img_rawdata_ != nullptr) delete [] img_rawdata_;
 }
 
+void diffraflow::ImageFrame::initObj_() {
+    img_key = 0;
+    img_time = 0;
+    det_id = 0;
+    img_width = 0;
+    img_height = 0;
+    img_frame = nullptr;
+    img_rawsize_ = 0;
+    img_rawdata_ = nullptr;
+}
+
 void diffraflow::ImageFrame::copyObj_(const ImageFrame& img_frm) {
+    img_key = img_frm.img_key;
+    img_time = img_frm.img_time;
     det_id = img_frm.det_id;
+
     img_width = img_frm.img_width;
     img_height = img_frm.img_height;
-    img_key = img_frm.img_key;
     if (img_frm.img_frame != nullptr) {
         size_t size = img_width * img_height;
         img_frame = new float[size];
@@ -46,6 +57,7 @@ void diffraflow::ImageFrame::copyObj_(const ImageFrame& img_frm) {
     } else {
         img_frame = nullptr;
     }
+
     img_rawsize_ = img_frm.img_rawsize_;
     if (img_frm.img_rawdata_ != nullptr) {
         img_rawdata_ = new char[img_rawsize_];
@@ -61,7 +73,11 @@ diffraflow::ImageFrame& diffraflow::ImageFrame::operator=(const ImageFrame& img_
 }
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
-    clear_data();
+    // should call clear_data() before calling this function.
+    if (img_frame != nullptr || img_rawdata_ != nullptr) {
+        LOG4CXX_WARN(logger_, "The data in current ImageFrame object is not cleared. Decoding is stopped.");
+        return false;
+    }
     if (size < 8) return false;
     img_key = gDC.decode_byte<int64_t>(buffer, 0, 7);
     assert(size > 8);
@@ -85,7 +101,7 @@ void diffraflow::ImageFrame::print() const {
 }
 
 size_t diffraflow::ImageFrame::serialize(char* const data, size_t len) {
-    // note: this function may throw exceptions
+    // notice: this function may throw exceptions
     size_t offset = 0;
     // type
     offset += gPS.serializeValue<int32_t>(object_type(), data + offset, len - offset);
@@ -117,7 +133,10 @@ size_t diffraflow::ImageFrame::serialize(char* const data, size_t len) {
 
 size_t diffraflow::ImageFrame::deserialize(const char* const data, size_t len) {
     // note: this function may throw exceptions
-    clear_data();
+    // should call clear_data() before calling this function.
+    if (img_frame != nullptr || img_rawdata_ != nullptr) {
+        throw std::runtime_error("the data in current ImageFrame object is not cleared.");
+    }
     size_t offset = 0;
     // check type
     int objType = 0;
@@ -187,11 +206,16 @@ int diffraflow::ImageFrame::object_type() {
 }
 
 void diffraflow::ImageFrame::clear_data() {
+    img_key = 0;
+    img_time = 0;
+    det_id = 0;
+
     img_rawsize_ = 0;
     if (img_rawdata_ != nullptr) {
         delete [] img_rawdata_;
     }
     img_rawdata_ = nullptr;
+
     img_width = 0;
     img_height = 0;
     if (img_frame != nullptr) {

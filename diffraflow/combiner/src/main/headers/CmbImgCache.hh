@@ -1,10 +1,11 @@
 #ifndef CmbImgCache_H
 #define CmbImgCache_H
 
-#include <queue>
+#include "BlockingQueue.hh"
+#include "TimeOrderedQueue.hh"
+
 #include <mutex>
 #include <condition_variable>
-#include "BlockingQueue.hh"
 #include <log4cxx/logger.h>
 
 using std::queue;
@@ -30,9 +31,8 @@ namespace diffraflow {
         bool do_alignment_();
 
     private:
-        // TODO: use priority_queue instead
-        size_t              imgfrm_queues_len_;
-        queue<ImageFrame>*  imgfrm_queues_arr_;
+        size_t imgfrm_queues_len_;
+        TimeOrderedQueue<ImageFrame>*  imgfrm_queues_arr_;
 
         mutex mtx_;
 

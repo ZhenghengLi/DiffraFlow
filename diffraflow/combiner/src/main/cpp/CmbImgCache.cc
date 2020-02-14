@@ -10,7 +10,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new queue<ImageFrame>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame>[imgfrm_queues_len_];
     imgdat_queue.set_maxsize(img_q_ms);
 }
 
@@ -28,7 +28,7 @@ void diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
     imgfrm_queues_arr_[image_frame.det_id].push(image_frame);
     if (do_alignment_()) {
         // for debug only
-        LOG4CXX_INFO(logger_, "Successfully do one alignment.");
+        LOG4CXX_DEBUG(logger_, "Successfully do one alignment.");
     }
 }
 
@@ -38,9 +38,9 @@ bool diffraflow::CmbImgCache::do_alignment_() {
         return false;
     }
     ImageData image_data;
-    image_data.put_imgfrm(0, imgfrm_queues_arr_[0].front());
+    image_data.put_imgfrm(0, imgfrm_queues_arr_[0].top());
     imgfrm_queues_arr_[0].pop();
     image_data.print();
-    // imgdat_queue_.push(image_data);
+    // imgdat_queue.push(image_data);
     return true;
 }

@@ -223,3 +223,27 @@ void diffraflow::ImageFrame::clear_data() {
     }
     img_frame = nullptr;
 }
+
+bool diffraflow::ImageFrame::operator<(const diffraflow::ImageFrame& right) const {
+    return img_time < right.img_time;
+}
+
+bool diffraflow::ImageFrame::operator<=(const diffraflow::ImageFrame& right) const {
+    return img_time <= right.img_time;
+}
+
+bool diffraflow::ImageFrame::operator>(const diffraflow::ImageFrame& right) const {
+    return img_time > right.img_time;
+}
+
+bool diffraflow::ImageFrame::operator>=(const diffraflow::ImageFrame& right) const {
+    return img_time >= right.img_time;
+}
+
+bool diffraflow::ImageFrame::operator==(const diffraflow::ImageFrame& right) const {
+    return img_time == right.img_time;
+}
+
+double diffraflow::ImageFrame::operator-(const diffraflow::ImageFrame& right) const {
+    return img_time - right.img_time;
+}

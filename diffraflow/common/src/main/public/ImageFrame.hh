@@ -28,6 +28,13 @@ namespace diffraflow {
         int object_type() override;
         void clear_data() override;
 
+        bool operator<(const ImageFrame& right) const;
+        bool operator<=(const ImageFrame& right) const;
+        bool operator>(const ImageFrame& right) const;
+        bool operator>=(const ImageFrame& right) const;
+        bool operator==(const ImageFrame& right) const;
+        double operator-(const ImageFrame& right) const;
+
     private:
         // helper methods
         void initObj_();

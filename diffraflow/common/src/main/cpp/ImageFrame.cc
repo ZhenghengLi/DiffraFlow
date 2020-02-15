@@ -20,6 +20,7 @@ diffraflow::ImageFrame::ImageFrame() {
     img_time = -1;
     det_id = -1;
     img_width = -1;
+    img_height = -1;
     img_frame.clear();
     img_rawdata_.clear();
 }

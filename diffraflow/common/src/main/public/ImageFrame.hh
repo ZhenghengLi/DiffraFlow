@@ -28,6 +28,7 @@ namespace diffraflow {
         double        img_time;     // unit: second
         int32_t       det_id;
         int32_t       img_width;
+        int32_t       img_height;
         vector<float> img_frame;    // size = width * height;
 
     private:
@@ -40,6 +41,7 @@ namespace diffraflow {
             img_time,
             det_id,
             img_width,
+            img_height,
             img_frame
         );
 

@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-(empty)
+### TODO
+
+- [ ] write time alignment function
+- [ ] write the code to exchange data between combiner and ingester.
+
+### Changed
+
+- use MessagePack library instead self-writting code to serialize ImageFrame and ImageData.
 
 ## [0.0.6] - 2020-02-12
 

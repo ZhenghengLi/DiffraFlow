@@ -6,23 +6,15 @@
    * For Ubuntu:  
 
    ```bash
-    # Boost C++ Library
-    sudo apt install libboost-dev
-    # Google Snappy
-    sudo apt install libsnappy-dev
-    # log4cxx
-    sudo apt install liblog4cxx-dev
+    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack
+    sudo apt install libboost-dev libsnappy-dev liblog4cxx-dev libmsgpack-dev
    ```
 
    * For Mac OS:  
 
    ```bash
-    # Boost C++ Library
-    brew install boost
-    # Google Snappy
-    brew install snappy
-    # log4cxx
-    brew install log4cxx
+    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack
+    brew install boost snappy log4cxx msgpack
    ```
 
 2. Compile and install  

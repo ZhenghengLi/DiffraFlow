@@ -5,8 +5,6 @@
 #include <msgpack.hpp>
 #include <log4cxx/logger.h>
 
-#include "Decoder.hh"
-
 using std::vector;
 
 namespace diffraflow {

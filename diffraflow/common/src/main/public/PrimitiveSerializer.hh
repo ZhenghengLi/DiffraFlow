@@ -31,7 +31,7 @@ size_t diffraflow::PrimitiveSerializer::serializeValue(T value, char* const buff
         throw std::invalid_argument("cannnot serialize data of non-fundamental types.");
     }
     size_t byte_l = sizeof(T);
-    if (byte_l < buffer_l) {
+    if (byte_l > buffer_l) {
         throw std::out_of_range("there is no enough space in buffer to hold the value data.");
     }
     char* const byte_p = reinterpret_cast<char*>(&value);
@@ -53,7 +53,7 @@ size_t diffraflow::PrimitiveSerializer::deserializeValue(T* value_p, const char*
         throw std::invalid_argument("cannnot deserialize data of non-fundamental types.");
     }
     size_t byte_l = sizeof(T);
-    if (byte_l < buffer_l) {
+    if (byte_l > buffer_l) {
         throw std::out_of_range("length of the buffer is shorter than that of the value type.");
     }
     char* byte_p = reinterpret_cast<char*>(value_p);

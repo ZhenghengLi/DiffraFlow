@@ -1,32 +1,22 @@
 #ifndef ImageFrame_H
 #define ImageFrame_H
 
-#include <iostream>
+#include <vector>
+#include <msgpack.hpp>
 #include <log4cxx/logger.h>
 
 #include "Decoder.hh"
-#include "PrimitiveSerializer.hh"
-#include "ObjectSerializer.hh"
+
+using std::vector;
 
 namespace diffraflow {
-    class ImageFrame: public ObjectSerializer {
+    class ImageFrame {
     public:
         ImageFrame();
-        ImageFrame(const char* buffer, const size_t size);
-        // copy constructor
-        ImageFrame(const ImageFrame& img_frm);
         ~ImageFrame();
-
-        ImageFrame& operator = (const ImageFrame& img_frm);
 
         bool decode(const char* buffer, const size_t size);
         void print() const;
-
-        size_t serialize(char* const data, size_t len) override;
-        size_t deserialize(const char* const data, size_t len) override;
-        size_t object_size() override;
-        int object_type() override;
-        void clear_data() override;
 
         bool operator<(const ImageFrame& right) const;
         bool operator<=(const ImageFrame& right) const;
@@ -35,25 +25,27 @@ namespace diffraflow {
         bool operator==(const ImageFrame& right) const;
         double operator-(const ImageFrame& right) const;
 
+    public:
+        int64_t       img_key;
+        double        img_time;     // unit: second
+        int32_t       det_id;
+        int32_t       img_width;
+        vector<float> img_frame;    // size = width * height;
+
     private:
-        // helper methods
-        void initObj_();
-        void copyObj_(const ImageFrame& img_frm);
+        vector<char>  img_rawdata_;
 
     public:
-        int64_t  img_key;
-        double   img_time;     // unit: second
-        uint32_t det_id;
-        uint32_t img_width;
-        uint32_t img_height;
-        float*   img_frame;    // size = width * height;
+        MSGPACK_DEFINE (
+            img_rawdata_,
+            img_key,
+            img_time,
+            det_id,
+            img_width,
+            img_frame
+        );
 
     private:
-        char*    img_rawdata_;
-        uint32_t img_rawsize_;
-
-    private:
-        static const int obj_type_ = 1231;
         static log4cxx::LoggerPtr logger_;
 
     };

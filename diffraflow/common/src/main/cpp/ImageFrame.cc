@@ -29,9 +29,9 @@ diffraflow::ImageFrame::~ImageFrame() {
 }
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
-    if (size < 8) return false;
+    if (size <= 8) return false;
     img_key = gDC.decode_byte<int64_t>(buffer, 0, 7);
-    assert(size > 8);
+    img_rawdata_.resize(size - 8);
     copy(buffer + 8, buffer + size, img_rawdata_.data());
     det_id = 0;
     return true;

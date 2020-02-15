@@ -21,12 +21,14 @@ namespace diffraflow {
     public:
         int64_t            event_key;   // equal to image_key
         double             event_time;  // equal to image_time
+        vector<bool>       status_vec;  // alignment status for each sub-detector
         vector<ImageFrame> imgfrm_vec;  // image data from each sub-detector
 
     public:
         MSGPACK_DEFINE (
             event_key,
             event_time,
+            status_vec,
             imgfrm_vec
         );
     };

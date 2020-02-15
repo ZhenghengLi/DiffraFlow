@@ -18,21 +18,21 @@
    ```
 
 2. Compile and install  
-   * For debug version:
+   * For debug variant:
 
    ```bash
     ./gradlew build
    ```
 
-   then all binaries will be installed in build/package_debug.  
+   then all binaries of debug variant will be compiled and installed in build/package_debug.  
 
-   * For release version:
+   * For release variant:
 
    ```bash
     ./gradlew packageRelease
    ```
 
-   then all binaries will be installed in build/package_release.
+   then all binaries of release variant will be compiled and installed in build/package_release.
 
 ## Architecture
 

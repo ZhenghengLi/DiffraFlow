@@ -41,3 +41,10 @@
    ```
 
    then all binaries will be installed in build/package_release.
+
+## Architecture
+
+This picture shows the architecture designing details of the data flow from source to sink and the strategy for online analysis.
+
+![architecture](images/architecture.png)
+

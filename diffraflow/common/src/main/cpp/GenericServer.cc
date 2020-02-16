@@ -22,22 +22,24 @@ using std::make_pair;
 log4cxx::LoggerPtr diffraflow::GenericServer::logger_
     = log4cxx::Logger::getLogger("GenericServer");
 
-diffraflow::GenericServer::GenericServer(string host, int port) {
+diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn) {
     server_sock_fd_ = -1;
     server_run_ = false;
     server_sock_host_ = host;
     server_sock_port_ = port;
     server_sock_path_ = "";
     is_ipc_ = false;
+    max_conn_counts_ = max_conn;
 }
 
-diffraflow::GenericServer::GenericServer(string sock_path) {
+diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     server_sock_fd_ = -1;
     server_run_ = false;
     server_sock_host_ = "";
     server_sock_port_ = 0;
     server_sock_path_ = sock_path;
     is_ipc_ = true;
+    max_conn_counts_ = max_conn;
 }
 
 diffraflow::GenericServer::~GenericServer() {
@@ -157,16 +159,22 @@ void diffraflow::GenericServer::serve() {
             close(client_sock_fd);
             return;
         }
-        GenericConnection* conn_object = new_connection_(client_sock_fd);
-        thread* conn_thread = new thread(
-            [&, conn_object]() {
-                conn_object->run();
-                dead_counts_++;
-                cv_clean_.notify_one();
-            }
-        );
         {
-            unique_lock<mutex> lk(mtx_);
+            lock_guard<mutex> lk(mtx_);
+            if (connections_.size() >= max_conn_counts_) {
+                LOG4CXX_INFO(logger_, "The allowed number of connections reached maximum which is " << max_conn_counts_);
+                shutdown(client_sock_fd, SHUT_RDWR);
+                close(client_sock_fd);
+                continue;
+            }
+            GenericConnection* conn_object = new_connection_(client_sock_fd);
+            thread* conn_thread = new thread(
+                [&, conn_object]() {
+                    conn_object->run();
+                    dead_counts_++;
+                    cv_clean_.notify_one();
+                }
+            );
             if (server_run_) {
                 connections_.push_back(make_pair(conn_object, conn_thread));
             } else {
@@ -212,7 +220,7 @@ void diffraflow::GenericServer::stop() {
     stop_cleaner_();
     // close and delete all running connections
     {
-        unique_lock<mutex> lk(mtx_);
+        lock_guard<mutex> lk(mtx_);
         for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
             iter->first->stop();
             iter->second->join();

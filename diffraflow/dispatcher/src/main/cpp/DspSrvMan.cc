@@ -73,7 +73,7 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     sender_arr_ = new DspSender*[sender_cnt_];
     for (size_t i = 0; i < addr_vec.size(); i++) {
         sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id, compress_flag);
-        if (sender_arr_[i]->connect_to_combiner()) {
+        if (sender_arr_[i]->connect_to_server()) {
             LOG4CXX_INFO(logger_, "Successfully connected to combiner "
                 << addr_vec[i].first.c_str() << ":" << addr_vec[i].second);
         } else {

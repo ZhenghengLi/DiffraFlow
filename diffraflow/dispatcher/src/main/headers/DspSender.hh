@@ -10,6 +10,8 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "GenericClient.hh"
+
 using std::string;
 using std::thread;
 using std::mutex;
@@ -20,13 +22,10 @@ using std::atomic_bool;
 using std::atomic;
 
 namespace diffraflow {
-    class DspSender {
+    class DspSender: public GenericClient {
     public:
         DspSender(string hostname, int port, int id, bool compr_flag = false);
         ~DspSender();
-
-        bool connect_to_combiner();
-        void close_connection();
 
         // push to buffer_A and block on buffer full
         void push(const char* data, const size_t len);
@@ -45,11 +44,6 @@ namespace diffraflow {
         void send_buffer_(const char* buffer, const size_t limit, const size_t num_of_imgs);
 
     private:
-        // socket
-        string dest_host_;
-        int    dest_port_;
-        int    sender_id_;
-        int    client_sock_fd_;
         // buffer
         size_t buffer_size_;
         char*  buffer_A_;

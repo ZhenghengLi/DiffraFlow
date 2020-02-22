@@ -50,7 +50,7 @@ void diffraflow::DynamicConfiguration::convert() {
 /////////////////////////////////////////////////////////////
 // for ZooKeeper
 /////////////////////////////////////////////////////////////
-diffraflow::DynamicConfiguration* diffraflow::DynamicConfiguration::the_obj_ = nullptr;
+atomic<diffraflow::DynamicConfiguration*> diffraflow::DynamicConfiguration::the_obj_(nullptr);
 atomic_bool diffraflow::DynamicConfiguration::zookeeper_intialized_(false);
 atomic_int diffraflow::DynamicConfiguration::count_down_(0);
 zhandle_t* diffraflow::DynamicConfiguration::zookeeper_handle_(nullptr);
@@ -59,8 +59,9 @@ string diffraflow::DynamicConfiguration::zookeeper_root_node_;
 string diffraflow::DynamicConfiguration::zookeeper_log_level_;
 int diffraflow::DynamicConfiguration::zookeeper_expiration_time_(0);
 string diffraflow::DynamicConfiguration::zookeeper_auth_string_;
+atomic_bool diffraflow::DynamicConfiguration::zookeeper_is_updater_(false);
 
-bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfiguration* obj) {
+void diffraflow::DynamicConfiguration::zookeeper_start(diffraflow::DynamicConfiguration* obj, bool is_upd) {
     if (zookeeper_intialized_) {
         LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
         // close existing zookeeper session
@@ -68,6 +69,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
         zookeeper_intialized_ = false;
         the_obj_ = nullptr;
     }
+    zookeeper_is_updater_ = is_upd;
     // config for a new zookeeper session
     zookeeper_server_.clear();
     zookeeper_root_node_.clear();
@@ -94,19 +96,20 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
         }
     }
     // check
-    bool succ_flag = true;
     if (zookeeper_server_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_server is not set.");
-        succ_flag = false;
+        LOG4CXX_ERROR(logger_, "zookeeper_server is not set, stop connecting zookeeper.");
+        return;
+    }
+    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater, stop connecting to zookeeper.");
+        return;
     }
     if (zookeeper_expiration_time_ < 5000 || zookeeper_expiration_time_ > 15000) {
         zookeeper_expiration_time_ = 10000;
         LOG4CXX_WARN(logger_, "zookeeper_expiration_time is out of range, the default value 10000 is used.");
     }
     // set current object which zookeeper will update
-    if (succ_flag) {
-        the_obj_ = obj;
-    }
+    the_obj_ = obj;
     // set zookeeper log level
     if (zookeeper_log_level_ == "debug") {
         zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
@@ -117,21 +120,24 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
     } else if (zookeeper_log_level_ == "error") {
         zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
     }
-    // return
-    return succ_flag;
+    // start zookeeper session
+    zookeeper_start_session_();
 }
 
-void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
-
+void diffraflow::DynamicConfiguration::zookeeper_start_session_() {
+    string zk_conn_string = (zookeeper_root_node_.empty() ?
+        zookeeper_server_ :
+        zookeeper_server_ + "/" + zookeeper_root_node_);
+    // zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(), ...);
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_bootstrap(string parent_node,
+bool diffraflow::DynamicConfiguration::zookeeper_create_config(string parent_node,
     const map<string, string>& cfg_map) {
 
     return true;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_update_remote(string parent_node,
+bool diffraflow::DynamicConfiguration::zookeeper_change_config(string parent_node,
     const map<string, string>& cfg_map) {
 
     return true;

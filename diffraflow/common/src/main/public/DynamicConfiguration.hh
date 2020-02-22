@@ -13,6 +13,7 @@
 using std::map;
 using std::string;
 using std::mutex;
+using std::atomic;
 using std::atomic_bool;
 using std::atomic_int;
 
@@ -40,15 +41,23 @@ namespace diffraflow {
     // for ZooKeeper
     /////////////////////////////////////////////////////////////
     public:
-        static bool zookeeper_config(DynamicConfiguration* obj);
-        static void zookeeper_start(bool is_upd);
-        static bool zookeeper_bootstrap(string parent_node,
+        static void zookeeper_start(DynamicConfiguration* obj, bool is_upd);
+        static void zookeeper_stop();
+        // create config nodes
+        static bool zookeeper_create_config(string parent_node,
             const map<string, string>& cfg_map);
-        static bool zookeeper_update_remote(string parent_node,
+        // update the data in config nodes
+        static bool zookeeper_change_config(string parent_node,
             const map<string, string>& cfg_map);
 
     private:
-        static DynamicConfiguration* the_obj_;
+        static void zookeeper_start_session_();
+        static void zookeeper_main_watcher_(
+            zhandle_t* zh, int type, int state, const char* path, void* context
+        );
+
+    private:
+        static atomic<DynamicConfiguration*> the_obj_;
         static zhandle_t* zookeeper_handle_;
         static string zookeeper_server_;
         static string zookeeper_root_node_;

@@ -34,40 +34,35 @@ namespace diffraflow {
         map<string, string> conf_map_;
         mutex conf_map_mtx_;
 
-    private:
-        static log4cxx::LoggerPtr logger_;
-
-    /////////////////////////////////////////////////////////////
-    // for ZooKeeper
-    /////////////////////////////////////////////////////////////
     public:
-        static void zookeeper_start(DynamicConfiguration* obj, bool is_upd);
-        static void zookeeper_stop();
-        // create config nodes
-        static bool zookeeper_create_config(string parent_node,
+        // zookeeper operations
+        void zookeeper_start(bool is_upd);
+        void zookeeper_stop();
+        bool zookeeper_create_config(string parent_node,
             const map<string, string>& cfg_map);
-        // update the data in config nodes
-        static bool zookeeper_change_config(string parent_node,
+        bool zookeeper_change_config(string parent_node,
             const map<string, string>& cfg_map);
 
     private:
-        static void zookeeper_start_session_();
+        // zookeeper callbacks
         static void zookeeper_main_watcher_(
             zhandle_t* zh, int type, int state, const char* path, void* context
         );
 
     private:
-        static atomic<DynamicConfiguration*> the_obj_;
-        static zhandle_t* zookeeper_handle_;
-        static string zookeeper_server_;
-        static string zookeeper_root_node_;
-        static string zookeeper_log_level_;
-        static int zookeeper_expiration_time_;
-        static string zookeeper_auth_string_;  // user:password
-        static atomic_bool zookeeper_intialized_;
-        static atomic_bool zookeeper_is_updater_;
-        static atomic_int count_down_;
+        // zookeeper configurations
+        zhandle_t* zookeeper_handle_;
+        string zookeeper_server_;
+        string zookeeper_root_node_;
+        string zookeeper_log_level_;
+        int zookeeper_expiration_time_;
+        string zookeeper_auth_string_;  // user:password
+        atomic_bool zookeeper_intialized_;
+        atomic_bool zookeeper_is_updater_;
+        atomic_int count_down_;
 
+    private:
+        static log4cxx::LoggerPtr logger_;
     };
 
 }

@@ -44,12 +44,15 @@ namespace diffraflow {
         static void zookeeper_start(bool is_upd);
         static bool zookeeper_bootstrap(string parent_node,
             const map<string, string>& cfg_map);
+        static bool zookeeper_update_remote(string parent_node,
+            const map<string, string>& cfg_map);
 
     private:
         static DynamicConfiguration* the_obj_;
         static zhandle_t* zookeeper_handle_;
         static string zookeeper_server_;
         static string zookeeper_root_node_;
+        static string zookeeper_log_level_;
         static int zookeeper_expiration_time_;
         static string zookeeper_auth_string_;  // user:password
         static atomic_bool zookeeper_intialized_;

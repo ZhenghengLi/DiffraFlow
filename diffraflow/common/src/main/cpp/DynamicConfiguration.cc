@@ -56,6 +56,7 @@ atomic_int diffraflow::DynamicConfiguration::count_down_(0);
 zhandle_t* diffraflow::DynamicConfiguration::zookeeper_handle_(nullptr);
 string diffraflow::DynamicConfiguration::zookeeper_server_;
 string diffraflow::DynamicConfiguration::zookeeper_root_node_;
+string diffraflow::DynamicConfiguration::zookeeper_log_level_;
 int diffraflow::DynamicConfiguration::zookeeper_expiration_time_(0);
 string diffraflow::DynamicConfiguration::zookeeper_auth_string_;
 
@@ -65,10 +66,12 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
         // close existing zookeeper session
         zookeeper_close(zookeeper_handle_);
         zookeeper_intialized_ = false;
+        the_obj_ = nullptr;
     }
     // config for a new zookeeper session
     zookeeper_server_.clear();
     zookeeper_root_node_.clear();
+    zookeeper_log_level_ = "info";
     zookeeper_auth_string_.clear();
     zookeeper_expiration_time_ = 10000;  // 10 seconds
     lock_guard<mutex> lk(obj->conf_map_mtx_);
@@ -85,6 +88,9 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
         } else if (iter->first == "zookeeper_root_node") {
             zookeeper_root_node_ = iter->second;
             iter = obj->conf_map_.erase(iter);
+        } else if (iter->first == "zookeeper_log_level") {
+            zookeeper_log_level_ = iter->second;
+            iter = obj->conf_map_.erase(iter);
         }
     }
     // check
@@ -97,11 +103,36 @@ bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfi
         zookeeper_expiration_time_ = 10000;
         LOG4CXX_WARN(logger_, "zookeeper_expiration_time is out of range, the default value 10000 is used.");
     }
+    // set current object which zookeeper will update
     if (succ_flag) {
         the_obj_ = obj;
-        return true;
-    } else {
-        the_obj_ = nullptr;
-        return false;
     }
+    // set zookeeper log level
+    if (zookeeper_log_level_ == "debug") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
+    } else if (zookeeper_log_level_ == "info") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
+    } else if (zookeeper_log_level_ == "warn") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_WARN);
+    } else if (zookeeper_log_level_ == "error") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
+    }
+    // return
+    return succ_flag;
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
+
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_bootstrap(string parent_node,
+    const map<string, string>& cfg_map) {
+
+    return true;
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_update_remote(string parent_node,
+    const map<string, string>& cfg_map) {
+
+    return true;
 }

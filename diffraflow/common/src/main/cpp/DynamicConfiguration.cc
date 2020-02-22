@@ -3,6 +3,7 @@
 #include <log4cxx/ndc.h>
 #include <iostream>
 #include <cstdlib>
+#include <zookeeper/zookeeper.h>
 
 using std::cout;
 using std::endl;
@@ -52,17 +53,22 @@ void diffraflow::DynamicConfiguration::convert() {
 diffraflow::DynamicConfiguration* diffraflow::DynamicConfiguration::the_obj_ = nullptr;
 atomic_bool diffraflow::DynamicConfiguration::zookeeper_intialized_(false);
 atomic_int diffraflow::DynamicConfiguration::count_down_(0);
+zhandle_t* diffraflow::DynamicConfiguration::zookeeper_handle_(nullptr);
 string diffraflow::DynamicConfiguration::zookeeper_server_;
+string diffraflow::DynamicConfiguration::zookeeper_root_node_;
 int diffraflow::DynamicConfiguration::zookeeper_expiration_time_(0);
 string diffraflow::DynamicConfiguration::zookeeper_auth_string_;
 
-bool diffraflow::DynamicConfiguration::config_zookeeper(diffraflow::DynamicConfiguration* obj) {
+bool diffraflow::DynamicConfiguration::zookeeper_config(diffraflow::DynamicConfiguration* obj) {
     if (zookeeper_intialized_) {
         LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
         // close existing zookeeper session
+        zookeeper_close(zookeeper_handle_);
+        zookeeper_intialized_ = false;
     }
     // config for a new zookeeper session
     zookeeper_server_.clear();
+    zookeeper_root_node_.clear();
     zookeeper_auth_string_.clear();
     zookeeper_expiration_time_ = 10000;  // 10 seconds
     lock_guard<mutex> lk(obj->conf_map_mtx_);
@@ -76,6 +82,9 @@ bool diffraflow::DynamicConfiguration::config_zookeeper(diffraflow::DynamicConfi
         } else if (iter->first == "zookeeper_auth_string") {
             zookeeper_auth_string_ = iter->second;
             iter = obj->conf_map_.erase(iter);
+        } else if (iter->first == "zookeeper_root_node") {
+            zookeeper_root_node_ = iter->second;
+            iter = obj->conf_map_.erase(iter);
         }
     }
     // check
@@ -88,7 +97,6 @@ bool diffraflow::DynamicConfiguration::config_zookeeper(diffraflow::DynamicConfi
         zookeeper_expiration_time_ = 10000;
         LOG4CXX_WARN(logger_, "zookeeper_expiration_time is out of range, the default value 10000 is used.");
     }
-    // set the object which this zookeeper session will update and return
     if (succ_flag) {
         the_obj_ = obj;
         return true;

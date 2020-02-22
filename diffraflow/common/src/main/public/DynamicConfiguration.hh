@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <log4cxx/logger.h>
+#include <zookeeper/zookeeper.h>
 
 using std::map;
 using std::string;
@@ -39,14 +40,20 @@ namespace diffraflow {
     // for ZooKeeper
     /////////////////////////////////////////////////////////////
     public:
-        static bool config_zookeeper(DynamicConfiguration* obj);
+        static bool zookeeper_config(DynamicConfiguration* obj);
+        static void zookeeper_start(bool is_upd);
+        static bool zookeeper_bootstrap(string parent_node,
+            const map<string, string>& cfg_map);
 
     private:
         static DynamicConfiguration* the_obj_;
+        static zhandle_t* zookeeper_handle_;
         static string zookeeper_server_;
+        static string zookeeper_root_node_;
         static int zookeeper_expiration_time_;
         static string zookeeper_auth_string_;  // user:password
         static atomic_bool zookeeper_intialized_;
+        static atomic_bool zookeeper_is_updater_;
         static atomic_int count_down_;
 
     };

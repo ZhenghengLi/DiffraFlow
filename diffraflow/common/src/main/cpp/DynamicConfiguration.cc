@@ -13,7 +13,7 @@ log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_
     = log4cxx::Logger::getLogger("DynamicConfiguration");
 
 diffraflow::DynamicConfiguration::DynamicConfiguration() {
-    zookeeper_intialized_ = false;
+    zookeeper_initialized_ = false;
     zookeeper_handle_ = nullptr;
     zookeeper_expiration_time_ = 10000;
     zookeeper_is_updater_ = false;
@@ -49,11 +49,35 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
             conf_map_[key] = value;
         }
     }
+    return true;
+}
+
+void diffraflow::DynamicConfiguration::print() {
+    lock_guard<mutex> lk(conf_map_mtx_);
+    for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
+        cout << "- " << iter->first << " = " << iter->second << endl;
+    }
+}
+
+void diffraflow::DynamicConfiguration::convert_and_check() {
+
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
+    if (zookeeper_initialized_) {
+        LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
+        // close existing zookeeper session
+        zookeeper_close(zookeeper_handle_);
+        zookeeper_initialized_ = false;
+    }
     // check
-    bool succ_flag = true;
     if (zookeeper_server_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_server is not set.");
-        succ_flag = false;
+        LOG4CXX_ERROR(logger_, "zookeeper_server is not set, stop starting zookeeper session.");
+        return;
+    }
+    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater, stop starting zookeeper session.");
+        return;
     }
     if (zookeeper_expiration_time_ < 5000 || zookeeper_expiration_time_ > 15000) {
         zookeeper_expiration_time_ = 10000;
@@ -72,31 +96,6 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
         zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
         LOG4CXX_WARN(logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
     }
-    return succ_flag;
-}
-
-void diffraflow::DynamicConfiguration::print() {
-    lock_guard<mutex> lk(conf_map_mtx_);
-    for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
-        cout << "- " << iter->first << " = " << iter->second << endl;
-    }
-}
-
-void diffraflow::DynamicConfiguration::convert() {
-
-}
-
-void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
-    if (zookeeper_intialized_) {
-        LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
-        // close existing zookeeper session
-        zookeeper_close(zookeeper_handle_);
-        zookeeper_intialized_ = false;
-    }
-    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
-        LOG4CXX_WARN(logger_, "zookeeper_auth_string is not set for updater, stop connecting to zookeeper.");
-        return;
-    }
     string zk_conn_string = (zookeeper_root_node_.empty() ?
         zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_root_node_);
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
@@ -104,22 +103,28 @@ void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_create_config(string parent_node,
-    const map<string, string>& cfg_map) {
+    const map<string, string>& config_map) {
 
     return true;
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(string parent_node,
-    const map<string, string>& cfg_map) {
+    const map<string, string>& config_map) {
 
     return true;
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_watch_config(string parent_node,
+    diffraflow::DynamicConfiguration* config_obj) {
+
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
     DynamicConfiguration* the_object = (DynamicConfiguration*) zoo_get_context(zh);
-    if (!the_object->zookeeper_is_updater_) {
-        // read the latest config and watch
+    if (state == ZOK) {
+        the_object->zookeeper_initialized_ = true;
+        // notify
     }
 
 }

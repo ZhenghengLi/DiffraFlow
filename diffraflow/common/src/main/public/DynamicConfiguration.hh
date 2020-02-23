@@ -28,7 +28,7 @@ namespace diffraflow {
         virtual void print();
 
         // convert the key-values in conf_map_ to the field values of sub-class;
-        virtual void convert();
+        virtual void convert_and_check();
 
     protected:
         map<string, string> conf_map_;
@@ -39,9 +39,11 @@ namespace diffraflow {
         void zookeeper_start(bool is_upd);
         void zookeeper_stop();
         bool zookeeper_create_config(string parent_node,
-            const map<string, string>& cfg_map);
+            const map<string, string>& config_map);
         bool zookeeper_change_config(string parent_node,
-            const map<string, string>& cfg_map);
+            const map<string, string>& config_map);
+        bool zookeeper_watch_config(string parent_node,
+            DynamicConfiguration* config_obj);
 
     private:
         // zookeeper callbacks
@@ -57,7 +59,7 @@ namespace diffraflow {
         string zookeeper_log_level_;
         int zookeeper_expiration_time_;
         string zookeeper_auth_string_;  // user:password
-        atomic_bool zookeeper_intialized_;
+        atomic_bool zookeeper_initialized_;
         atomic_bool zookeeper_is_updater_;
         atomic_int count_down_;
 

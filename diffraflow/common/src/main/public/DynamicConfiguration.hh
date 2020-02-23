@@ -49,7 +49,7 @@ namespace diffraflow {
     private:
         void zookeeper_create_node_(const char* path, const char* value);
         void zookeeper_change_node_(const char* path, const char* value);
-        void zookeeper_get_node_(const char* path);
+        void zookeeper_get_node_(const char* path, bool watch_flag = false);
 
     private:
         // zookeeper callbacks

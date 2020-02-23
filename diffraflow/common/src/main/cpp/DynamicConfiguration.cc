@@ -121,10 +121,15 @@ bool diffraflow::DynamicConfiguration::zookeeper_watch_config(string parent_node
 
 void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
-    DynamicConfiguration* the_object = (DynamicConfiguration*) zoo_get_context(zh);
-    if (state == ZOK) {
-        the_object->zookeeper_initialized_ = true;
-        // notify
+    if (type != ZOO_SESSION_EVENT) return;
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
+    if (state == ZOO_CONNECTED_STATE) {
+        the_obj->zookeeper_initialized_ = true;
+        the_obj->zookeeper_initialized_cv_.notify_all();
+    } else if (state == ZOO_EXPIRED_SESSION_STATE) {
+        LOG4CXX_WARN(logger_, "zookeeper session is expired, try to recreate a session.");
+        zookeeper_close(the_obj->zookeeper_handle_);
+        the_obj->zookeeper_initialized_ = false;
+        the_obj->zookeeper_start(the_obj->zookeeper_is_updater_);
     }
-
 }

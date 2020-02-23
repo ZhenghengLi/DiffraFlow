@@ -13,6 +13,7 @@
 using std::map;
 using std::string;
 using std::mutex;
+using std::condition_variable;
 using std::atomic;
 using std::atomic_bool;
 using std::atomic_int;
@@ -53,15 +54,20 @@ namespace diffraflow {
 
     private:
         // zookeeper configurations
-        zhandle_t* zookeeper_handle_;
-        string zookeeper_server_;
-        string zookeeper_root_node_;
-        string zookeeper_log_level_;
-        int zookeeper_expiration_time_;
-        string zookeeper_auth_string_;  // user:password
-        atomic_bool zookeeper_initialized_;
-        atomic_bool zookeeper_is_updater_;
-        atomic_int count_down_;
+        zhandle_t*           zookeeper_handle_;
+        string               zookeeper_server_;
+        string               zookeeper_root_node_;
+        string               zookeeper_log_level_;
+        int                  zookeeper_expiration_time_;
+        string               zookeeper_auth_string_;  // user:password
+
+        atomic_bool          zookeeper_initialized_;
+        mutex                zookeeper_initialized_mtx_;
+        condition_variable   zookeeper_initialized_cv_;
+
+        atomic_bool          zookeeper_is_updater_;
+
+        atomic_int           count_down_;
 
     private:
         static log4cxx::LoggerPtr logger_;

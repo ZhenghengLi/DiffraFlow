@@ -37,7 +37,7 @@ namespace diffraflow {
 
     public:
         // zookeeper operations
-        void zookeeper_start(bool is_upd);
+        bool zookeeper_start(bool is_upd);
         void zookeeper_stop();
         bool zookeeper_create_config(string parent_node,
             const map<string, string>& config_map);
@@ -48,9 +48,9 @@ namespace diffraflow {
 
     private:
         // zookeeper callbacks
-        static void zookeeper_main_watcher_(
-            zhandle_t* zh, int type, int state, const char* path, void* context
-        );
+        static void zookeeper_main_watcher_(zhandle_t* zh, int type,
+            int state, const char* path, void* context);
+        static void zookeeper_auth_completion_(int rc, const void* data);
 
     private:
         // zookeeper configurations
@@ -59,15 +59,23 @@ namespace diffraflow {
         string               zookeeper_root_node_;
         string               zookeeper_log_level_;
         int                  zookeeper_expiration_time_;
+        int                  zookeeper_connecting_timeout_;
         string               zookeeper_auth_string_;  // user:password
+        atomic_bool          zookeeper_is_updater_;
 
         atomic_bool          zookeeper_initialized_;
         mutex                zookeeper_initialized_mtx_;
         condition_variable   zookeeper_initialized_cv_;
 
-        atomic_bool          zookeeper_is_updater_;
+        atomic_bool          zookeeper_connected_;
+        mutex                zookeeper_connected_mtx_;
+        condition_variable   zookeeper_connected_cv_;
 
-        atomic_int           count_down_;
+        atomic_bool          zookeeper_authed_;
+        mutex                zookeeper_authed_mtx_;
+        condition_variable   zookeeper_authed_cv_;
+
+        atomic_int           zookeeper_get_count_down_;
 
     private:
         static log4cxx::LoggerPtr logger_;

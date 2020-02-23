@@ -40,9 +40,9 @@ namespace diffraflow {
         bool zookeeper_start(bool is_upd);
         void zookeeper_stop();
         bool zookeeper_create_config(string parent_node,
-            const map<string, string>& config_map);
+            const map<string, string>& config_map, bool timeout_flag = true);
         bool zookeeper_change_config(string parent_node,
-            const map<string, string>& config_map);
+            const map<string, string>& config_map, bool timeout_flag = true);
         bool zookeeper_watch_config(string parent_node,
             DynamicConfiguration* config_obj);
 
@@ -59,7 +59,7 @@ namespace diffraflow {
         string               zookeeper_root_node_;
         string               zookeeper_log_level_;
         int                  zookeeper_expiration_time_;
-        int                  zookeeper_connecting_timeout_;
+        int                  zookeeper_operation_timeout_;
         string               zookeeper_auth_string_;  // user:password
         atomic_bool          zookeeper_is_updater_;
 
@@ -71,9 +71,9 @@ namespace diffraflow {
         mutex                zookeeper_connected_mtx_;
         condition_variable   zookeeper_connected_cv_;
 
-        atomic_bool          zookeeper_authed_;
-        mutex                zookeeper_authed_mtx_;
-        condition_variable   zookeeper_authed_cv_;
+        atomic_bool          zookeeper_authorized_;
+        mutex                zookeeper_authorized_mtx_;
+        condition_variable   zookeeper_authorized_cv_;
 
         atomic_int           zookeeper_get_count_down_;
 

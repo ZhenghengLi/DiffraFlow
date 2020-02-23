@@ -63,10 +63,6 @@ namespace diffraflow {
         string               zookeeper_auth_string_;  // user:password
         atomic_bool          zookeeper_is_updater_;
 
-        atomic_bool          zookeeper_initialized_;
-        mutex                zookeeper_initialized_mtx_;
-        condition_variable   zookeeper_initialized_cv_;
-
         atomic_bool          zookeeper_connected_;
         mutex                zookeeper_connected_mtx_;
         condition_variable   zookeeper_connected_cv_;

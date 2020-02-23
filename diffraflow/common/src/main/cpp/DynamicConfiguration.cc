@@ -123,7 +123,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
             std::chrono::milliseconds(zookeeper_operation_timeout_),
             [this]() {return zookeeper_connected_.load();});
         if (zookeeper_connected_) {
-            LOG4CXX_INFO(logger_, "zookeeper session is initialized.");
+            LOG4CXX_INFO(logger_, "zookeeper session is set up.");
         } else {
             LOG4CXX_WARN(logger_, "zookeeper connection timeout.");
             return false;
@@ -148,7 +148,6 @@ bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
             }
         }
     }
-    zookeeper_initialized_ = true;
     return true;
 }
 
@@ -158,7 +157,6 @@ void diffraflow::DynamicConfiguration::zookeeper_stop() {
     }
     zookeeper_connected_ = false;
     zookeeper_authorized_ = false;
-    zookeeper_initialized_ = false;
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_create_config(string parent_node,

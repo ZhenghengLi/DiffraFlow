@@ -47,6 +47,11 @@ namespace diffraflow {
             DynamicConfiguration* config_obj);
 
     private:
+        void zookeeper_create_node_(const char* path, const char* value);
+        void zookeeper_change_node_(const char* path, const char* value);
+        void zookeeper_get_node_(const char* path);
+
+    private:
         // zookeeper callbacks
         static void zookeeper_main_watcher_(zhandle_t* zh, int type,
             int state, const char* path, void* context);
@@ -71,6 +76,8 @@ namespace diffraflow {
         mutex                zookeeper_authorized_mtx_;
         condition_variable   zookeeper_authorized_cv_;
 
+        atomic_int           zookeeper_create_count_down_;
+        atomic_int           zookeeper_change_count_down_;
         atomic_int           zookeeper_get_count_down_;
 
     private:

@@ -21,6 +21,8 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_operation_timeout_ = 5000;
     zookeeper_is_updater_ = false;
     zookeeper_log_level_ = "info";
+    zookeeper_create_count_down_ = 0;
+    zookeeper_change_count_down_ = 0;
     zookeeper_get_count_down_ = 0;
 }
 

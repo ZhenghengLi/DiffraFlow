@@ -226,12 +226,12 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     if (state == ZOO_CONNECTED_STATE) {
         the_obj->zookeeper_connected_ = true;
         the_obj->zookeeper_connected_cv_.notify_all();
+    } else if (state == ZOO_CONNECTING_STATE) {
+        the_obj->zookeeper_connected_ = false;
     } else if (state == ZOO_EXPIRED_SESSION_STATE) {
         LOG4CXX_WARN(logger_, "zookeeper session is expired, try to recreate a session.");
         the_obj->zookeeper_stop();
         the_obj->zookeeper_start(the_obj->zookeeper_is_updater_);
-    } else if (state == ZOO_CONNECTING_STATE) {
-        the_obj->zookeeper_connected_ = false;
     } else {
         LOG4CXX_WARN(logger_, "zookeeper session state with error code: " << state);
     }

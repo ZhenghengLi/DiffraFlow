@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include <thread>
 #include <condition_variable>
 #include <atomic>
 #include <log4cxx/logger.h>
@@ -14,6 +15,7 @@ using std::map;
 using std::string;
 using std::mutex;
 using std::condition_variable;
+using std::thread;
 using std::atomic;
 using std::atomic_bool;
 using std::atomic_int;
@@ -37,19 +39,16 @@ namespace diffraflow {
 
     public:
         // zookeeper operations
-        bool zookeeper_start(bool is_upd);
+        void zookeeper_start(bool is_upd);
         void zookeeper_stop();
-        bool zookeeper_create_config(string parent_node,
-            const map<string, string>& config_map, bool timeout_flag = true);
-        bool zookeeper_change_config(string parent_node,
-            const map<string, string>& config_map, bool timeout_flag = true);
-        bool zookeeper_watch_config(string parent_node,
-            DynamicConfiguration* config_obj);
-
-    private:
-        void zookeeper_create_node_(const char* path, const char* value);
-        void zookeeper_change_node_(const char* path, const char* value);
-        void zookeeper_get_node_(const char* path, bool watch_flag = false);
+        // for updater
+        bool zookeeper_create_config(string config_node,
+            const map<string, string>& config_map);
+        bool zookeeper_change_config(string config_node,
+            const map<string, string>& config_map);
+        // for reader
+        bool zookeeper_watch_config(string config_node,
+            DynamicConfiguration* config_obj = nullptr);
 
     private:
         // zookeeper callbacks
@@ -58,27 +57,26 @@ namespace diffraflow {
         static void zookeeper_auth_completion_(int rc, const void* data);
 
     private:
+        enum CallbackRes_ {kUnknown, kSucc, kFail};
+
         // zookeeper configurations
-        zhandle_t*           zookeeper_handle_;
-        string               zookeeper_server_;
-        string               zookeeper_root_node_;
-        string               zookeeper_log_level_;
-        int                  zookeeper_expiration_time_;
-        int                  zookeeper_operation_timeout_;
-        string               zookeeper_auth_string_;  // user:password
-        atomic_bool          zookeeper_is_updater_;
+        zhandle_t*          zookeeper_handle_;
+        string              zookeeper_server_;
+        string              zookeeper_root_node_;
+        string              zookeeper_log_level_;
+        int                 zookeeper_expiration_time_;
+        string              zookeeper_auth_string_;  // user:password
+        atomic_bool         zookeeper_is_updater_;
 
-        atomic_bool          zookeeper_connected_;
-        mutex                zookeeper_connected_mtx_;
-        condition_variable   zookeeper_connected_cv_;
+        // zookeeper connectiong status
+        bool                zookeeper_connected_;
+        mutex               zookeeper_connected_mtx_;
+        condition_variable  zookeeper_connected_cv_;
 
-        atomic_bool          zookeeper_authorized_;
-        mutex                zookeeper_authorized_mtx_;
-        condition_variable   zookeeper_authorized_cv_;
-
-        atomic_int           zookeeper_create_count_down_;
-        atomic_int           zookeeper_change_count_down_;
-        atomic_int           zookeeper_get_count_down_;
+        // zookeeper operation results
+        CallbackRes_        zookeeper_auth_res_;
+        mutex               zookeeper_auth_res_mtx_;
+        condition_variable  zookeeper_auth_res_cv_;
 
     private:
         static log4cxx::LoggerPtr logger_;

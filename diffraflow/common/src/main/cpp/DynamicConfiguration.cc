@@ -22,6 +22,7 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_is_updater_ = false;
     zookeeper_log_level_ = "info";
     zookeeper_config_path_ = "/myconfig";
+    zookeeper_data_mtime_ = 0;
 }
 
 diffraflow::DynamicConfiguration::~DynamicConfiguration() {
@@ -269,6 +270,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
     switch (rc) {
     case ZOK:
         the_obj->zookeeper_data_string_.assign(value, value_len);
+        the_obj->zookeeper_data_mtime_ = stat->mtime;
         the_obj->zookeeper_data_res_ = kSucc;
         the_obj->zookeeper_data_res_cv_.notify_all();
     case ZCONNECTIONLOSS:

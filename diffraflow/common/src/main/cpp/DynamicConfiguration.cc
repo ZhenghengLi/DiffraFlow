@@ -15,11 +15,13 @@ log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_
     = log4cxx::Logger::getLogger("DynamicConfiguration");
 
 diffraflow::DynamicConfiguration::DynamicConfiguration() {
-    zookeeper_connected_ = false;
     zookeeper_handle_ = nullptr;
+    zookeeper_connected_ = false;
+    zookeeper_auth_res_ = kUnknown;
     zookeeper_expiration_time_ = 10000;
     zookeeper_is_updater_ = false;
     zookeeper_log_level_ = "info";
+    zookeeper_config_path_ = "/myconfig";
 }
 
 diffraflow::DynamicConfiguration::~DynamicConfiguration() {
@@ -45,8 +47,8 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
             zookeeper_expiration_time_ = atoi(value.c_str());
         } else if (key == "zookeeper_auth_string") {
             zookeeper_auth_string_ = value;
-        } else if (key == "zookeeper_root_node") {
-            zookeeper_root_node_ = value;
+        } else if (key == "zookeeper_root_path") {
+            zookeeper_root_path_ = value;
         } else if (key == "zookeeper_log_level") {
             zookeeper_log_level_ = value;
         } else {
@@ -104,8 +106,8 @@ void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
         zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
         LOG4CXX_WARN(logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
     }
-    string zk_conn_string = (zookeeper_root_node_.empty() ?
-        zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_root_node_);
+    string zk_conn_string = (zookeeper_root_path_.empty() ?
+        zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_root_path_);
     // init zookeeper session
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
         zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
@@ -138,13 +140,18 @@ void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
 void diffraflow::DynamicConfiguration::zookeeper_stop() {
     if (zookeeper_handle_ != nullptr) {
         zookeeper_close(zookeeper_handle_);
+        zookeeper_handle_ = nullptr;
     }
     zookeeper_connected_ = false;
     zookeeper_auth_res_ = kUnknown;
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_create_config(
-    string config_node, const map<string, string>& config_map) {
+    const char* config_path, const map<string, string>& config_map) {
+    if (!zookeeper_is_updater_) {
+        LOG4CXX_ERROR(logger_, "current object is not an updater");
+        return false;
+    }
     // wait for authorized
     {
         unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
@@ -161,7 +168,11 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(
-    string config_node, const map<string, string>& config_map) {
+    const char* config_path, const map<string, string>& config_map) {
+    if (!zookeeper_is_updater_) {
+        LOG4CXX_ERROR(logger_, "current object is not an updater");
+        return false;
+    }
     // wait for authorized
     {
         unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
@@ -177,18 +188,31 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     return true;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_watch_config(
-    string config_node, diffraflow::DynamicConfiguration* config_obj) {
-    if (config_obj == nullptr) config_obj = this;
+bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
     // wait for connected
     {
         unique_lock<mutex> lk(zookeeper_connected_mtx_);
         zookeeper_connected_cv_.wait(lk,
             [this]() {return zookeeper_connected_;});
     }
-    // (1) awget(config_node, watch_fn)
-    // (2) wait for completion
-    // (3) deserialize node data into conf_map_
+    zookeeper_data_res_ = kUnknown;
+    zoo_awget(zookeeper_handle_, zookeeper_config_path_.c_str(),
+        zookeeper_config_watcher_, this,
+        zookeeper_data_completion_, this);
+    // wait for completion
+    {
+        unique_lock<mutex> lk(zookeeper_data_res_mtx_);
+        zookeeper_data_res_cv_.wait(lk,
+            [this]() {return zookeeper_data_res_ != kUnknown;});
+        if (zookeeper_data_res_ == kFail) {
+            LOG4CXX_ERROR(logger_, "failed to read data from path " << zookeeper_config_path_);
+            return false;
+        }
+    }
+    // deserialization: zookeeper_data_string_ -> conf_map_
+
+    // call convert_and_check
+    convert_and_check();
 
     return true;
 }
@@ -213,6 +237,14 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     }
 }
 
+void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
+    zhandle_t* zh, int type, int state, const char* path, void* context) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
+    if (type == ZOO_CHANGED_EVENT) {
+        the_obj->zookeeper_sync_config();
+    }
+}
+
 void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const void* data) {
     DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
     switch (rc) {
@@ -228,5 +260,23 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
         LOG4CXX_WARN(logger_, "error found when authing with error code: " << rc);
         the_obj->zookeeper_auth_res_ = kFail;
         the_obj->zookeeper_auth_res_cv_.notify_all();
+    }
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const char *value,
+    int value_len, const struct Stat *stat, const void *data) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
+    switch (rc) {
+    case ZOK:
+        the_obj->zookeeper_data_string_.assign(value, value_len);
+        the_obj->zookeeper_data_res_ = kSucc;
+        the_obj->zookeeper_data_res_cv_.notify_all();
+    case ZCONNECTIONLOSS:
+        the_obj->zookeeper_sync_config();
+    default:
+        LOG4CXX_WARN(logger_, "error found when reading path "
+            << the_obj->zookeeper_config_path_ << " with error code: " << rc);
+        the_obj->zookeeper_data_res_ = kFail;
+        the_obj->zookeeper_data_res_cv_.notify_all();
     }
 }

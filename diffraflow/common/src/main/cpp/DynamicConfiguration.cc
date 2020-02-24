@@ -254,9 +254,11 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
         the_obj->zookeeper_auth_res_cv_.notify_all();
         break;
     case ZCONNECTIONLOSS:
+    case ZOPERATIONTIMEOUT:
         zoo_add_auth(the_obj->zookeeper_handle_, "digest",
             the_obj->zookeeper_auth_string_.c_str(), the_obj->zookeeper_auth_string_.length(),
             zookeeper_auth_completion_, the_obj);
+        break;
     default:
         LOG4CXX_WARN(logger_, "error found when authing with error code: " << rc);
         the_obj->zookeeper_auth_res_ = kFail;
@@ -273,8 +275,11 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
         the_obj->zookeeper_data_mtime_ = stat->mtime;
         the_obj->zookeeper_data_res_ = kSucc;
         the_obj->zookeeper_data_res_cv_.notify_all();
+        break;
     case ZCONNECTIONLOSS:
+    case ZOPERATIONTIMEOUT:
         the_obj->zookeeper_sync_config();
+        break;
     default:
         LOG4CXX_WARN(logger_, "error found when reading path "
             << the_obj->zookeeper_config_path_ << " with error code: " << rc);

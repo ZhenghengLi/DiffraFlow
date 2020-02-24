@@ -6,15 +6,15 @@
    * For Ubuntu:  
 
    ```bash
-    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack
-    sudo apt install libboost-dev libsnappy-dev liblog4cxx-dev libmsgpack-dev
+    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack, ZooKeeper
+    sudo apt install libboost-dev libsnappy-dev liblog4cxx-dev libmsgpack-dev libzookeeper-mt-dev
    ```
 
    * For Mac OS:  
 
    ```bash
-    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack
-    brew install boost snappy log4cxx msgpack
+    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack, ZooKeeper
+    brew install boost snappy log4cxx msgpack zookeeper
    ```
 
 2. Compile and install  

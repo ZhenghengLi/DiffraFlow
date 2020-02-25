@@ -10,6 +10,7 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 #include <zookeeper/zookeeper.h>
+#include <ctime>
 
 using std::map;
 using std::string;
@@ -95,7 +96,7 @@ namespace diffraflow {
         mutex                   zookeeper_data_res_mtx_;
         condition_variable      zookeeper_data_res_cv_;
         string                  zookeeper_data_string_;
-        int64_t                 zookeeper_data_mtime_;
+        time_t                  zookeeper_data_mtime_;
 
     private:
         static log4cxx::LoggerPtr logger_;

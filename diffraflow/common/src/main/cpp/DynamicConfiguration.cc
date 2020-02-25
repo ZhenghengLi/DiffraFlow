@@ -368,7 +368,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
     switch (rc) {
     case ZOK:
         the_obj->zookeeper_data_string_.assign(value, value_len);
-        the_obj->zookeeper_data_mtime_ = stat->mtime;
+        the_obj->zookeeper_data_mtime_ = stat->mtime / 1000;
         the_obj->zookeeper_data_res_ = kSucc;
         the_obj->zookeeper_data_res_cv_.notify_all();
         break;

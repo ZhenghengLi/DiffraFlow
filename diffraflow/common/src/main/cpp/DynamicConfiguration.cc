@@ -78,7 +78,7 @@ void diffraflow::DynamicConfiguration::convert_and_check() {
 
 // zookeeper operations =====================
 
-void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
+bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
     if (zookeeper_connected_) {
         LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
         // close existing zookeeper session
@@ -88,11 +88,11 @@ void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
     // check
     if (zookeeper_server_.empty()) {
         LOG4CXX_ERROR(logger_, "zookeeper_server is not set, stop starting zookeeper session.");
-        return;
+        return false;
     }
     if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
         LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater, stop starting zookeeper session.");
-        return;
+        return false;
     }
     // set zookeeper log level
     if (zookeeper_log_level_ == "debug") {
@@ -113,29 +113,16 @@ void diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
         zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
     // wait for session ready
-    {
-        unique_lock<mutex> lk(zookeeper_connected_mtx_);
-        zookeeper_connected_cv_.wait(lk,
-            [this]() {return zookeeper_connected_;});
-        LOG4CXX_INFO(logger_, "zookeeper session is set up.");
-    }
+    zookeeper_connection_wait_();
     if (zookeeper_is_updater_) {
         // add auth for updater
         zoo_add_auth(zookeeper_handle_, "digest",
             zookeeper_auth_string_.c_str(), zookeeper_auth_string_.length(),
             zookeeper_auth_completion_, this);
         // wait for auth completion
-        {
-            unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
-            zookeeper_auth_res_cv_.wait(lk,
-                [this]() {return zookeeper_auth_res_ != kUnknown;});
-            if (zookeeper_auth_res_ == kSucc) {
-                LOG4CXX_INFO(logger_, "Successfully add digest auth: " << zookeeper_auth_string_);
-            } else {
-                LOG4CXX_ERROR(logger_, "Failed to add digest auth: " << zookeeper_auth_string_);
-            }
-        }
+        return zookeeper_authadding_wait_();
     }
+    return true;
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_stop() {
@@ -149,53 +136,52 @@ void diffraflow::DynamicConfiguration::zookeeper_stop() {
 
 bool diffraflow::DynamicConfiguration::zookeeper_create_config(
     const char* config_path, const map<string, string>& config_map) {
-    if (!zookeeper_is_updater_) {
-        LOG4CXX_ERROR(logger_, "current object is not an updater");
-        return false;
-    }
-    // wait for authorized
-    {
-        unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
-        zookeeper_auth_res_cv_.wait(lk,
-            [this]() {return zookeeper_auth_res_ != kUnknown;});
-        if (zookeeper_auth_res_ == kFail) {
-            LOG4CXX_ERROR(logger_, "zookeeper session is not authorized for updater.");
-            return false;
-        }
-    }
+    // wait for re-reconnecting
+    zookeeper_connection_wait_();
+    // wait for adding auth
+    if (!zookeeper_authadding_wait_()) return false;
+
     // create config from here.
+    static char zkacl_world[] = "world", zkacl_anyone[] = "anyone";
+    static char zkacl_auth[] = "auth", zkacl_empty[] = "";
+    ACL my_acl[] = {
+        {ZOO_PERM_READ, {zkacl_world, zkacl_anyone}},
+        {ZOO_PERM_ALL, {zkacl_auth, zkacl_empty}}
+    };
+    ACL_vector my_acl_vec = {2, my_acl};
+    // serialize config_map
+
+    return true;
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path) {
+    // wait for re-reconnecting
+    zookeeper_connection_wait_();
+    // wait for adding auth
+    if (!zookeeper_authadding_wait_()) return false;
+
+    // delete config from here
 
     return true;
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     const char* config_path, const map<string, string>& config_map) {
-    if (!zookeeper_is_updater_) {
-        LOG4CXX_ERROR(logger_, "current object is not an updater");
-        return false;
-    }
-    // wait for authorized
-    {
-        unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
-        zookeeper_auth_res_cv_.wait(lk,
-            [this]() {return zookeeper_auth_res_ != kUnknown;});
-        if (zookeeper_auth_res_ == kFail) {
-            LOG4CXX_ERROR(logger_, "zookeeper session is not authorized for updater.");
-            return false;
-        }
-    }
+    // wait for re-reconnecting
+    zookeeper_connection_wait_();
+    // wait for adding auth
+    if (!zookeeper_authadding_wait_()) return false;
+
     // change config from here.
 
     return true;
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
-    // wait for connected
-    {
-        unique_lock<mutex> lk(zookeeper_connected_mtx_);
-        zookeeper_connected_cv_.wait(lk,
-            [this]() {return zookeeper_connected_;});
-    }
+    // wait for re-connected
+    zookeeper_connection_wait_();
+
+    // getdata and watch config_path
     zookeeper_data_res_ = kUnknown;
     zoo_awget(zookeeper_handle_, zookeeper_config_path_.c_str(),
         zookeeper_config_watcher_, this,
@@ -216,6 +202,38 @@ bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
     convert_and_check();
 
     return true;
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_connection_wait_() {
+    unique_lock<mutex> lk(zookeeper_connected_mtx_);
+    bool log_flag = (!zookeeper_connected_);
+    zookeeper_connected_cv_.wait(lk,
+        [this]() {return zookeeper_connected_;});
+    if (log_flag) {
+        LOG4CXX_INFO(logger_, "zookeeper session is set up.");
+    }
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_authadding_wait_() {
+    if (zookeeper_is_updater_) {
+        LOG4CXX_ERROR(logger_, "Current object is not an updater");
+        return false;
+    }
+    unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
+    bool log_flag = (zookeeper_auth_res_ == kUnknown);
+    zookeeper_auth_res_cv_.wait(lk,
+        [this]() {return zookeeper_auth_res_ != kUnknown;});
+    if (zookeeper_auth_res_ == kSucc) {
+        if (log_flag) {
+            LOG4CXX_INFO(logger_, "Successfully add digest auth: " << zookeeper_auth_string_);
+        }
+        return true;
+    } else {
+        if (log_flag) {
+            LOG4CXX_ERROR(logger_, "Failed to add digest auth: " << zookeeper_auth_string_);
+        }
+        return false;
+    }
 }
 
 // zookeeper callbacks =====================
@@ -279,6 +297,12 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
     case ZCONNECTIONLOSS:
     case ZOPERATIONTIMEOUT:
         the_obj->zookeeper_sync_config();
+        break;
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "there is no node with path: "
+            << the_obj->zookeeper_config_path_ << ".");
+        the_obj->zookeeper_data_res_ = kFail;
+        the_obj->zookeeper_data_res_cv_.notify_all();
         break;
     default:
         LOG4CXX_WARN(logger_, "error found when reading path "

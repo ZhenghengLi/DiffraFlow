@@ -39,15 +39,20 @@ namespace diffraflow {
 
     public:
         // zookeeper operations
-        void zookeeper_start(bool is_upd);
+        bool zookeeper_start(bool is_upd);
         void zookeeper_stop();
         // for updater
         bool zookeeper_create_config(const char* config_path,
             const map<string, string>& config_map);
+        bool zookeeper_delete_config(const char* config_path);
         bool zookeeper_change_config(const char* config_path,
             const map<string, string>& config_map);
         // for reader
         bool zookeeper_sync_config();
+
+    private:
+        void zookeeper_connection_wait_();
+        bool zookeeper_authadding_wait_();
 
     private:
         // zookeeper callbacks

@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <chrono>
 #include <zookeeper/zookeeper.h>
+#include <msgpack.hpp>
+#include <ctime>
 
 using std::cout;
 using std::endl;
@@ -149,10 +151,30 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
         {ZOO_PERM_READ, {zkacl_world, zkacl_anyone}},
         {ZOO_PERM_ALL, {zkacl_auth, zkacl_empty}}
     };
-    ACL_vector my_acl_vec = {2, my_acl};
+    ACL_vector zkacl_vec = {2, my_acl};
     // serialize config_map
-
-    return true;
+    msgpack::sbuffer config_sbuf;
+    msgpack::pack(config_sbuf, config_map);
+    int rc = zoo_create(zookeeper_handle_,
+        config_path, config_sbuf.data(), config_sbuf.size(),
+        &zkacl_vec, 0, nullptr, 0);
+    switch (rc) {
+    case ZOK:
+        LOG4CXX_INFO(logger_, "Successfully created config path " << config_path << ".");
+        return true;
+    case ZNODEEXISTS:
+        LOG4CXX_WARN(logger_, "the config path " << config_path << " already exists.");
+        return false;
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "the parent node of config path " << config_path << " does not exist.");
+        return false;
+    case ZNOAUTH:
+        LOG4CXX_WARN(logger_, "the client does not have permission to create config path " << config_path << ".");
+        return false;
+    default:
+        LOG4CXX_WARN(logger_, "failed to create config path " << config_path << " with error code: " << rc << ".");
+        return false;
+    }
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path) {
@@ -162,8 +184,24 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
     if (!zookeeper_authadding_wait_()) return false;
 
     // delete config from here
-
-    return true;
+    int rc = zoo_delete(zookeeper_handle_, config_path, -1);
+    switch(rc) {
+    case ZOK:
+        LOG4CXX_INFO(logger_, "Sucessfully deleted config path " << config_path << ".");
+        return true;
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
+        return false;
+    case ZNOAUTH:
+        LOG4CXX_WARN(logger_, "the client does not have permissioin to delete config path " << config_path << ".");
+        return false;
+    case ZNOTEMPTY:
+        LOG4CXX_WARN(logger_, "the config path " << config_path << " has children, it cannot be deleted.");
+        return false;
+    default:
+        LOG4CXX_WARN(logger_, "failed to delete config path " << config_path << " with error code: " << rc << ".");
+        return false;
+    }
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(
@@ -174,8 +212,24 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     if (!zookeeper_authadding_wait_()) return false;
 
     // change config from here.
-
-    return true;
+    msgpack::sbuffer config_sbuf;
+    msgpack::pack(config_sbuf, config_map);
+    int rc = zoo_set(zookeeper_handle_,
+        config_path, config_sbuf.data(), config_sbuf.size(), -1);
+    switch (rc) {
+    case ZOK:
+        LOG4CXX_INFO(logger_, "Sucessfully changed the data of config path " << config_path << ".");
+        return true;
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
+        return false;
+    case ZNOAUTH:
+        LOG4CXX_WARN(logger_, "the client does not have permissioin to change the data of config path " << config_path << ".");
+        return false;
+    default:
+        LOG4CXX_WARN(logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
+        return false;
+    }
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
@@ -197,11 +251,13 @@ bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
             return false;
         }
     }
-    // deserialization: zookeeper_data_string_ -> conf_map_
-
-    // call convert_and_check
+    LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
+        << ctime(&zookeeper_data_mtime_));
+    // zookeeper_data_string_ -> conf_map_
+    msgpack::unpack(zookeeper_data_string_.c_str(),
+        zookeeper_data_string_.size()).get().convert(conf_map_);
+    // conf_map_ -> config fields with proper types and units
     convert_and_check();
-
     return true;
 }
 
@@ -257,14 +313,6 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     }
 }
 
-void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
-    zhandle_t* zh, int type, int state, const char* path, void* context) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
-    if (type == ZOO_CHANGED_EVENT) {
-        the_obj->zookeeper_sync_config();
-    }
-}
-
 void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const void* data) {
     DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
     switch (rc) {
@@ -282,6 +330,14 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
         LOG4CXX_WARN(logger_, "error found when authing with error code: " << rc);
         the_obj->zookeeper_auth_res_ = kFail;
         the_obj->zookeeper_auth_res_cv_.notify_all();
+    }
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
+    zhandle_t* zh, int type, int state, const char* path, void* context) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
+    if (type == ZOO_CHANGED_EVENT) {
+        the_obj->zookeeper_sync_config();
     }
 }
 

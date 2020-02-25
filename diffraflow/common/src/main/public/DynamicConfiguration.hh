@@ -41,6 +41,7 @@ namespace diffraflow {
     public:
         // zookeeper operations
         bool zookeeper_start(bool is_upd);
+        bool zookeeper_start();
         void zookeeper_stop();
         // for updater
         bool zookeeper_create_config(const char* config_path,

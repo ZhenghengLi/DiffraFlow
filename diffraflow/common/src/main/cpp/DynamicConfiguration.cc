@@ -118,12 +118,16 @@ void diffraflow::DynamicConfiguration::convert_and_check() {
 // zookeeper operations =====================
 
 bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
+    zookeeper_is_updater_ = is_upd;
+    zookeeper_start();
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_start() {
     if (zookeeper_connected_) {
         LOG4CXX_WARN(logger_, "Close the existing zookeeper session.");
         // close existing zookeeper session
         zookeeper_stop();
     }
-    zookeeper_is_updater_ = is_upd;
     string zk_conn_string = (zookeeper_chroot_.empty() ?
         zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_chroot_);
     // init zookeeper session
@@ -324,7 +328,7 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     } else if (state == ZOO_EXPIRED_SESSION_STATE) {
         LOG4CXX_WARN(logger_, "zookeeper session is expired, try to recreate a session.");
         the_obj->zookeeper_stop();
-        the_obj->zookeeper_start(the_obj->zookeeper_is_updater_);
+        the_obj->zookeeper_start();
     } else {
         LOG4CXX_WARN(logger_, "zookeeper session state with error code: " << state);
     }

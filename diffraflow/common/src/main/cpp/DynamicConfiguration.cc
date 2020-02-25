@@ -23,7 +23,6 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_expiration_time_ = 10000;
     zookeeper_is_updater_ = false;
     zookeeper_log_level_ = "info";
-    zookeeper_config_path_ = "/myconfig";
     zookeeper_data_mtime_ = 0;
 }
 
@@ -46,14 +45,16 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
         string value = conf_KV_vec[i].second;
         if (key == "zookeeper_server") {
             zookeeper_server_ = value;
+        } else if (key == "zookeeper_chroot") {
+            zookeeper_chroot_ = value;
         } else if (key == "zookeeper_expiration_time") {
             zookeeper_expiration_time_ = atoi(value.c_str());
         } else if (key == "zookeeper_auth_string") {
             zookeeper_auth_string_ = value;
-        } else if (key == "zookeeper_chroot") {
-            zookeeper_chroot_ = value;
         } else if (key == "zookeeper_log_level") {
             zookeeper_log_level_ = value;
+        } else if (key == "zookeeper_config_path") {
+            zookeeper_config_path_ = value;
         } else {
             conf_map_[key] = value;
         }
@@ -65,6 +66,10 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
     }
     if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
         LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater.");
+        return false;
+    }
+    if (!zookeeper_is_updater_ && zookeeper_config_path_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_config_path is not set for reader.");
         return false;
     }
     // set zookeeper log level
@@ -96,8 +101,18 @@ void diffraflow::DynamicConfiguration::print() {
     }
 }
 
-void diffraflow::DynamicConfiguration::convert_and_check() {
+void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
+    cout << "zookeeper setting:" << endl;
+    cout << "- zookeeper_server = " << zookeeper_server_ << endl;
+    cout << "- zookeeper_chroot = " << zookeeper_chroot_ << endl;
+    cout << "- zookeeper_expiration_time = " << zookeeper_expiration_time_ << endl;
+    cout << "- zookeeper_auth_string = " << zookeeper_auth_string_ << endl;
+    cout << "- zookeeper_log_level = " << zookeeper_log_level_ << endl;
+    cout << "- zookeeper_config_path = " << zookeeper_config_path_ << endl;
+}
 
+void diffraflow::DynamicConfiguration::convert_and_check() {
+    LOG4CXX_WARN(logger_, "convert_and_check() is not implemented.")
 }
 
 // zookeeper operations =====================
@@ -254,8 +269,10 @@ bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
     LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
         << ctime(&zookeeper_data_mtime_));
     // zookeeper_data_string_ -> conf_map_
+    lock_guard<mutex> lk(conf_map_mtx_);
     msgpack::unpack(zookeeper_data_string_.c_str(),
         zookeeper_data_string_.size()).get().convert(conf_map_);
+    conf_map_mtime_ = zookeeper_data_mtime_;
     // conf_map_ -> config fields with proper types and units
     convert_and_check();
     return true;

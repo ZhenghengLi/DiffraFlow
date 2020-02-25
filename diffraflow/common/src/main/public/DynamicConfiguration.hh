@@ -35,6 +35,7 @@ namespace diffraflow {
 
     protected:
         map<string, string> conf_map_;
+        int64_t conf_map_mtime_;
         mutex conf_map_mtx_;
 
     public:
@@ -49,6 +50,8 @@ namespace diffraflow {
             const map<string, string>& config_map);
         // for reader
         bool zookeeper_sync_config();
+        // print setting
+        void zookeeper_print_setting();
 
     private:
         void zookeeper_connection_wait_();

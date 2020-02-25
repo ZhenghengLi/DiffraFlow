@@ -261,8 +261,6 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     const char* config_path, map<string, string>& config_map, time_t& config_mtime) {
     // wait for re-reconnecting
     zookeeper_connection_wait_();
-    // wait for adding auth
-    if (!zookeeper_authadding_wait_()) return false;
 
     // fetch config from here.
     lock_guard<mutex> lk(zookeeper_znode_mtx_);

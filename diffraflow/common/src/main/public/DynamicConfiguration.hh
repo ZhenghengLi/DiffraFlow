@@ -50,6 +50,8 @@ namespace diffraflow {
         bool zookeeper_delete_config(const char* config_path);
         bool zookeeper_change_config(const char* config_path,
             const map<string, string>& config_map);
+        bool zookeeper_fetch_config(const char* config_path,
+            map<string, string>& config_map, time_t& config_mtime);
         // for reader
         bool zookeeper_sync_config();
         // print setting
@@ -76,11 +78,18 @@ namespace diffraflow {
         zhandle_t*              zookeeper_handle_;
         string                  zookeeper_server_;
         string                  zookeeper_chroot_;
-        string                  zookeeper_config_path_;
         string                  zookeeper_log_level_;
         int                     zookeeper_expiration_time_;
         string                  zookeeper_auth_string_;  // user:password
+        string                  zookeeper_config_path_;
         atomic_bool             zookeeper_is_updater_;
+
+        // znode buffer for fetching
+        mutex                   zookeeper_znode_mtx_;
+        char*                   zookeeper_znode_buffer_;
+        int                     zookeeper_znode_buffer_cap_;
+        int                     zookeeper_znode_buffer_len_;
+        Stat                    zookeeper_znode_stat_;
 
         // zookeeper connectiong status
         bool                    zookeeper_connected_;

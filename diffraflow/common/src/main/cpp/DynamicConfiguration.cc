@@ -27,6 +27,7 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_znode_buffer_cap_ = 1024 * 1024;
     zookeeper_znode_buffer_ = new char[zookeeper_znode_buffer_cap_];
     zookeeper_znode_buffer_len_ = 0;
+    zookeeper_config_path_ = "/myconfig";
 }
 
 diffraflow::DynamicConfiguration::~DynamicConfiguration() {
@@ -66,14 +67,6 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
     // check
     if (zookeeper_server_.empty()) {
         LOG4CXX_ERROR(logger_, "zookeeper_server is not set.");
-        return false;
-    }
-    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater.");
-        return false;
-    }
-    if (!zookeeper_is_updater_ && zookeeper_config_path_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_config_path is not set for reader.");
         return false;
     }
     // set zookeeper log level
@@ -123,6 +116,10 @@ void diffraflow::DynamicConfiguration::convert_and_check() {
 
 bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
     zookeeper_is_updater_ = is_upd;
+    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater.");
+        return false;
+    }
     zookeeper_start();
 }
 
@@ -133,7 +130,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_start() {
         zookeeper_stop();
     }
     string zk_conn_string = (zookeeper_chroot_.empty() ?
-        zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_chroot_);
+        zookeeper_server_ : zookeeper_server_ + zookeeper_chroot_);
     // init zookeeper session
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
         zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
@@ -342,7 +339,7 @@ void diffraflow::DynamicConfiguration::zookeeper_connection_wait_() {
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_authadding_wait_() {
-    if (zookeeper_is_updater_) {
+    if (!zookeeper_is_updater_) {
         LOG4CXX_ERROR(logger_, "Current object is not an updater");
         return false;
     }

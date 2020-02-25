@@ -48,13 +48,35 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
             zookeeper_expiration_time_ = atoi(value.c_str());
         } else if (key == "zookeeper_auth_string") {
             zookeeper_auth_string_ = value;
-        } else if (key == "zookeeper_root_path") {
-            zookeeper_root_path_ = value;
+        } else if (key == "zookeeper_chroot") {
+            zookeeper_chroot_ = value;
         } else if (key == "zookeeper_log_level") {
             zookeeper_log_level_ = value;
         } else {
             conf_map_[key] = value;
         }
+    }
+    // check
+    if (zookeeper_server_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_server is not set.");
+        return false;
+    }
+    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
+        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater.");
+        return false;
+    }
+    // set zookeeper log level
+    if (zookeeper_log_level_ == "debug") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
+    } else if (zookeeper_log_level_ == "info") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
+    } else if (zookeeper_log_level_ == "warn") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_WARN);
+    } else if (zookeeper_log_level_ == "error") {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
+    } else {
+        zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
+        LOG4CXX_WARN(logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
     }
     // correction
     if (zookeeper_expiration_time_ < 5000 || zookeeper_expiration_time_ > 15000) {
@@ -85,30 +107,8 @@ bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
         zookeeper_stop();
     }
     zookeeper_is_updater_ = is_upd;
-    // check
-    if (zookeeper_server_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_server is not set, stop starting zookeeper session.");
-        return false;
-    }
-    if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater, stop starting zookeeper session.");
-        return false;
-    }
-    // set zookeeper log level
-    if (zookeeper_log_level_ == "debug") {
-        zoo_set_debug_level(ZOO_LOG_LEVEL_DEBUG);
-    } else if (zookeeper_log_level_ == "info") {
-        zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
-    } else if (zookeeper_log_level_ == "warn") {
-        zoo_set_debug_level(ZOO_LOG_LEVEL_WARN);
-    } else if (zookeeper_log_level_ == "error") {
-        zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
-    } else {
-        zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
-        LOG4CXX_WARN(logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
-    }
-    string zk_conn_string = (zookeeper_root_path_.empty() ?
-        zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_root_path_);
+    string zk_conn_string = (zookeeper_chroot_.empty() ?
+        zookeeper_server_ : zookeeper_server_ + "/" + zookeeper_chroot_);
     // init zookeeper session
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
         zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
@@ -121,8 +121,9 @@ bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
             zookeeper_auth_completion_, this);
         // wait for auth completion
         return zookeeper_authadding_wait_();
+    } else {
+        return true;
     }
-    return true;
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_stop() {

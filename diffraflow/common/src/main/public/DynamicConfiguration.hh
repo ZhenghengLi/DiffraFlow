@@ -70,7 +70,7 @@ namespace diffraflow {
         // zookeeper configurations
         zhandle_t*              zookeeper_handle_;
         string                  zookeeper_server_;
-        string                  zookeeper_root_path_;
+        string                  zookeeper_chroot_;
         string                  zookeeper_config_path_;
         string                  zookeeper_log_level_;
         int                     zookeeper_expiration_time_;

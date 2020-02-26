@@ -393,7 +393,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_check_path_(const char* path) {
 void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
     if (type != ZOO_SESSION_EVENT) return;
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) context;
     unique_lock<mutex> lk(the_obj->zookeeper_connected_mtx_);
     if (state == ZOO_CONNECTED_STATE) {
         the_obj->zookeeper_connected_ = true;
@@ -432,7 +432,7 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
 
 void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) context;
     if (type == ZOO_CHANGED_EVENT || type == ZOO_CREATED_EVENT || type == ZOO_DELETED_EVENT) {
         the_obj->zookeeper_sync_config();
     }

@@ -38,7 +38,7 @@ namespace diffraflow {
 
     protected:
         map<string, string> conf_map_;
-        int64_t conf_map_mtime_;
+        time_t conf_map_mtime_;
         mutex conf_map_mtx_;
 
     public:

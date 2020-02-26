@@ -32,6 +32,7 @@ diffraflow::CtrOptMan::~CtrOptMan() {
 }
 
 bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
+    zk_actions.clear();
     while (true) {
         int opt, idx;
         opt = getopt_long(argc, argv, opt_string_, long_opts_, &idx);
@@ -47,16 +48,16 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
             logconf_file = optarg;
             break;
         case 'C':
-            zk_create = optarg;
+            zk_actions.push_back(string("C#") + optarg);
             break;
         case 'D':
-            zk_delete = optarg;
+            zk_actions.push_back(string("D#") + optarg);
             break;
         case 'U':
-            zk_update = optarg;
+            zk_actions.push_back(string("U#") + optarg);
             break;
         case 'R':
-            zk_read = optarg;
+            zk_actions.push_back(string("R#") + optarg);
             break;
         case 'v':
             version_flag_ = true;

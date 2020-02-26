@@ -4,17 +4,22 @@
 #include "OptionsManager.hh"
 #include <getopt.h>
 
+#include <vector>
+
+using std::vector;
+
 namespace diffraflow {
     class CtrOptMan: public OptionsManager {
     public:
         // option varables
-        string config_file;       // -c, --config=FILE
-        string zk_conf_file;      // -z, --zkconfig=FILE
-        string logconf_file;      // -l, --logconf=FILE
-        string zk_create;         // -C, --zkcreate=ZNODE:FILE
-        string zk_delete;         // -D, --zkdelete=ZNODE
-        string zk_update;         // -U, --zkupdate=ZNODE:FILE
-        string zk_read;           // -R, --zkread=ZNODE
+        string config_file;             // -c, --config=FILE
+        string zk_conf_file;            // -z, --zkconfig=FILE
+        string logconf_file;            // -l, --logconf=FILE
+
+        vector<string> zk_actions;      // -C, --zkcreate=ZNODE:FILE
+                                        // -D, --zkdelete=ZNODE
+                                        // -U, --zkupdate=ZNODE:FILE
+                                        // -R, --zkread=ZNODE
 
     public:
         CtrOptMan();

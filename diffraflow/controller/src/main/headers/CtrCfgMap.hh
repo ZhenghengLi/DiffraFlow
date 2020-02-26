@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <log4cxx/logger.h>
+#include <ctime>
 
 #include "GenericConfiguration.hh"
 
@@ -21,6 +22,7 @@ namespace diffraflow {
 
     public:
         map<string, string> data;
+        time_t              mtime;
 
     private:
         static log4cxx::LoggerPtr logger_;

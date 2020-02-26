@@ -5,8 +5,9 @@
 #include <log4cxx/logmanager.h>
 #include <log4cxx/logstring.h>
 
-#include "CtrOptMan.hh"
 #include "DynamicConfiguration.hh"
+#include "CtrOptMan.hh"
+#include "CtrCfgMap.hh"
 
 using namespace std;
 using namespace diffraflow;
@@ -41,7 +42,66 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-
+    for (size_t i = 0; i < option_man.zk_actions.size(); i++) {
+        string action = option_man.zk_actions[i];
+        size_t sepidx = action.find("#");
+        string op = action.substr(0, sepidx);
+        string oprnd = action.substr(sepidx + 1);
+        string znode, conf_map_file;
+        CtrCfgMap conf_map;
+        if (op == "C" || op == "U") {
+            size_t colon = oprnd.find(":");
+            if (colon == string::npos || colon == 0 || colon == oprnd.length() - 1) {
+                cerr << "operator '" << op << "' with wrong operand '" << oprnd << "'." << endl;
+                return 1;
+            }
+            znode = oprnd.substr(0, colon);
+            conf_map_file = oprnd.substr(colon + 1);
+            if (conf_map.load(conf_map_file.c_str())) {
+                cout << "successfully loaded config map file: " << conf_map_file << endl;
+            } else {
+                cout << "failed to load config map file: " << conf_map_file << endl;
+                return 1;
+            }
+        } else {
+            znode = oprnd;
+        }
+        // run the action
+        if (op == "C") {
+            if (zk_conf_client->zookeeper_create_config(znode.c_str(), conf_map.data)) {
+                cout << "successfully created znode " << znode
+                     << " with config map file " << conf_map_file << "." << endl;
+            } else {
+                cout << "failed to create znode " << znode
+                     << " with config map file " << conf_map_file << "." << endl;
+                return 1;
+            }
+        } else if (op == "U") {
+            if (zk_conf_client->zookeeper_change_config(znode.c_str(), conf_map.data)) {
+                cout << "successfully updated znode " << znode
+                     << " with config map file " << conf_map_file << "." << endl;
+            } else {
+                cout << "failed to update znode " << znode
+                     << " with config map file " << conf_map_file << "." << endl;
+                return 1;
+            }
+        } else if (op == "R") {
+            if (zk_conf_client->zookeeper_fetch_config(znode.c_str(), conf_map.data, conf_map.mtime)) {
+                cout << "znode: " << znode << endl;
+                conf_map.print();
+            } else {
+                cout << "failed to read the data of znode " << znode << "." << endl;
+                return 1;
+            }
+        } else if (op == "D") {
+            if (zk_conf_client->zookeeper_delete_config(znode.c_str())) {
+                cout << "successfully deleted znode " << znode << "." << endl;;
+            } else {
+                cout << "failed to delete znode " << znode << "." << endl;
+                return 1;
+            }
+        }
+    }
 
     delete zk_conf_client;
     zk_conf_client = nullptr;

@@ -26,7 +26,6 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_expiration_time_ = 10000;
     zookeeper_is_updater_ = false;
     zookeeper_log_level_ = "info";
-    zookeeper_data_mtime_ = 0;
     zookeeper_znode_buffer_cap_ = 1024 * 1024;
     zookeeper_znode_buffer_ = new char[zookeeper_znode_buffer_cap_];
     zookeeper_znode_buffer_len_ = zookeeper_znode_buffer_cap_;
@@ -132,10 +131,10 @@ void diffraflow::DynamicConfiguration::convert_and_check() {
 bool diffraflow::DynamicConfiguration::zookeeper_start(bool is_upd) {
     zookeeper_is_updater_ = is_upd;
     if (zookeeper_is_updater_ && zookeeper_auth_string_.empty()) {
-        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater.");
+        LOG4CXX_ERROR(logger_, "zookeeper_auth_string is not set for updater, zookeeper session does not start.");
         return false;
     }
-    zookeeper_start();
+    return zookeeper_start();
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_start() {
@@ -149,16 +148,12 @@ bool diffraflow::DynamicConfiguration::zookeeper_start() {
     // init zookeeper session
     zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
         zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
-    // wait for session ready
-    zookeeper_connection_wait_();
+
     if (zookeeper_is_updater_) {
-        // add auth for updater
-        zoo_add_auth(zookeeper_handle_, "digest",
-            zookeeper_auth_string_.c_str(), zookeeper_auth_string_.length(),
-            zookeeper_auth_completion_, this);
-        // wait for auth completion
+        zookeeper_add_auth_();
         return zookeeper_authadding_wait_();
     } else {
+        zookeeper_connection_wait_();
         return true;
     }
 }
@@ -325,39 +320,30 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     }
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_sync_config() {
+void diffraflow::DynamicConfiguration::zookeeper_sync_config() {
     // wait for re-connected
     zookeeper_connection_wait_();
-
-    // getdata and watch config_path
-    zookeeper_data_res_ = kUnknown;
-    zoo_awget(zookeeper_handle_, zookeeper_config_path_.c_str(),
+    // check existence and watch
+    zoo_awexists(zookeeper_handle_, zookeeper_config_path_.c_str(),
         zookeeper_config_watcher_, this,
+        zookeeper_stat_completion_, this);
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_add_auth_() {
+    // wait for connected
+    zookeeper_connection_wait_();
+    // add auth
+    zoo_add_auth(zookeeper_handle_, "digest",
+        zookeeper_auth_string_.c_str(), zookeeper_auth_string_.length(),
+        zookeeper_auth_completion_, this);
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_get_config_() {
+    // wait for re-connected
+    zookeeper_connection_wait_();
+    // get znode data
+    zoo_aget(zookeeper_handle_, zookeeper_config_path_.c_str(), 0,
         zookeeper_data_completion_, this);
-    // wait for completion
-    unique_lock<mutex> lk1(zookeeper_data_res_mtx_);
-    zookeeper_data_res_cv_.wait(lk1,
-        [this]() {return zookeeper_data_res_ != kUnknown;});
-    if (zookeeper_data_res_ == kFail) {
-        LOG4CXX_ERROR(logger_, "failed to read data from path " << zookeeper_config_path_);
-        return false;
-    }
-    LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
-        << ctime(&zookeeper_data_mtime_));
-    // zookeeper_data_string_ -> conf_map_
-    lock_guard<mutex> lk2(conf_map_mtx_);
-    try {
-        msgpack::unpack(zookeeper_data_string_.c_str(),
-            zookeeper_data_string_.size()).get().convert(conf_map_);
-    } catch (const std::exception& e) {
-        LOG4CXX_ERROR(logger_, "failed to deserialize the data of config_path "
-            << zookeeper_config_path_ << " with exception" << e.what());
-        return false;
-    }
-    conf_map_mtime_ = zookeeper_data_mtime_;
-    // conf_map_ -> config fields with proper types and units
-    convert_and_check();
-    return true;
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_connection_wait_() {
@@ -435,10 +421,7 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
     case ZCONNECTIONLOSS:
     case ZOPERATIONTIMEOUT:
         lk.unlock();
-        the_obj->zookeeper_connection_wait_();
-        zoo_add_auth(the_obj->zookeeper_handle_, "digest",
-            the_obj->zookeeper_auth_string_.c_str(), the_obj->zookeeper_auth_string_.length(),
-            zookeeper_auth_completion_, the_obj);
+        the_obj->zookeeper_add_auth_();
         break;
     default:
         LOG4CXX_WARN(logger_, "error found when authing with error code: " << rc);
@@ -450,43 +433,64 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
 void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
     DynamicConfiguration* the_obj = (DynamicConfiguration*) zoo_get_context(zh);
-    if (type == ZOO_CHANGED_EVENT) {
+    if (type == ZOO_CHANGED_EVENT || type == ZOO_CREATED_EVENT || type == ZOO_DELETED_EVENT) {
         the_obj->zookeeper_sync_config();
+    }
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc,
+    const struct Stat* stat, const void* data) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
+    switch (rc) {
+    case ZOK:
+        the_obj->zookeeper_get_config_();
+    case ZCONNECTIONLOSS:
+    case ZOPERATIONTIMEOUT:
+        the_obj->zookeeper_sync_config();
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "the config znode of path " << the_obj->zookeeper_config_path_
+            << "does not exist or it is deleted.");
+        break;
+    default:
+        LOG4CXX_WARN(logger_, "error found when checking existence of path "
+            << the_obj->zookeeper_config_path_ << " with error code: " << rc);
     }
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const char *value,
     int value_len, const struct Stat *stat, const void *data) {
     DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
-    unique_lock<mutex> lk(the_obj->zookeeper_data_res_mtx_);
     switch (rc) {
     case ZOK:
         if (value_len <= 0) {
             LOG4CXX_WARN(logger_, "there is no data in znode of path " << the_obj->zookeeper_config_path_ << ".");
-            the_obj->zookeeper_data_res_ = kFail;
-            the_obj->zookeeper_data_res_cv_.notify_all();
         } else {
-            the_obj->zookeeper_data_string_.assign(value, value_len);
-            the_obj->zookeeper_data_mtime_ = stat->mtime / 1000;
-            the_obj->zookeeper_data_res_ = kSucc;
-            the_obj->zookeeper_data_res_cv_.notify_all();
+            lock_guard<mutex> lk(the_obj->conf_map_mtx_);
+            // znode data -> conf_map_
+            try {
+                msgpack::unpack(value, value_len).get().convert(the_obj->conf_map_);
+            } catch (const std::exception& e) {
+                LOG4CXX_ERROR(logger_, "failed to deserialize the data of config_path "
+                    << the_obj->zookeeper_config_path_ << " with exception" << e.what());
+                return;
+            }
+            the_obj->conf_map_mtime_ = stat->mtime / 1000;
+            // conf_map_ -> config fields with proper types and units
+            the_obj->convert_and_check();
+            LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
+                << ctime(&the_obj->conf_map_mtime_));
         }
         break;
     case ZCONNECTIONLOSS:
     case ZOPERATIONTIMEOUT:
-        lk.unlock();
-        the_obj->zookeeper_sync_config();
+        the_obj->zookeeper_get_config_();
         break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "there is no znode of path: "
             << the_obj->zookeeper_config_path_ << ".");
-        the_obj->zookeeper_data_res_ = kFail;
-        the_obj->zookeeper_data_res_cv_.notify_all();
         break;
     default:
         LOG4CXX_WARN(logger_, "error found when reading path "
             << the_obj->zookeeper_config_path_ << " with error code: " << rc);
-        the_obj->zookeeper_data_res_ = kFail;
-        the_obj->zookeeper_data_res_cv_.notify_all();
     }
 }

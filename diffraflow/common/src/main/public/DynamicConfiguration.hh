@@ -3,6 +3,7 @@
 
 #include "GenericConfiguration.hh"
 #include <map>
+#include <vector>
 #include <string>
 #include <mutex>
 #include <thread>
@@ -13,6 +14,7 @@
 #include <ctime>
 
 using std::map;
+using std::vector;
 using std::string;
 using std::mutex;
 using std::condition_variable;
@@ -52,14 +54,18 @@ namespace diffraflow {
             const map<string, string>& config_map);
         bool zookeeper_fetch_config(const char* config_path,
             map<string, string>& config_map, time_t& config_mtime);
+        bool zookeeper_get_children(const char* config_path,
+            vector<string>& children_list);
         // for reader
-        bool zookeeper_sync_config();
+        void zookeeper_sync_config();
         // print setting
         void zookeeper_print_setting();
 
     private:
         void zookeeper_connection_wait_();
         bool zookeeper_authadding_wait_();
+        void zookeeper_add_auth_();
+        void zookeeper_get_config_();
         bool zookeeper_check_path_(const char* path);
 
     private:
@@ -69,8 +75,10 @@ namespace diffraflow {
         static void zookeeper_config_watcher_(zhandle_t* zh, int type,
             int state, const char* path, void* context);
         static void zookeeper_auth_completion_(int rc, const void* data);
-        static void zookeeper_data_completion_(int rc, const char *value,
-            int value_len, const struct Stat *stat, const void *data);
+        static void zookeeper_data_completion_(int rc, const char* value,
+            int value_len, const struct Stat* stat, const void* data);
+        static void zookeeper_stat_completion_(int rc,
+            const struct Stat* stat, const void* data);
 
     private:
         enum CallbackRes_ {kUnknown, kSucc, kFail};
@@ -101,12 +109,6 @@ namespace diffraflow {
         CallbackRes_            zookeeper_auth_res_;
         mutex                   zookeeper_auth_res_mtx_;
         condition_variable      zookeeper_auth_res_cv_;
-
-        CallbackRes_            zookeeper_data_res_;
-        mutex                   zookeeper_data_res_mtx_;
-        condition_variable      zookeeper_data_res_cv_;
-        string                  zookeeper_data_string_;
-        time_t                  zookeeper_data_mtime_;
 
     private:
         static log4cxx::LoggerPtr logger_;

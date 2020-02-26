@@ -60,6 +60,7 @@ namespace diffraflow {
     private:
         void zookeeper_connection_wait_();
         bool zookeeper_authadding_wait_();
+        bool zookeeper_check_path_(const char* path);
 
     private:
         // zookeeper callbacks

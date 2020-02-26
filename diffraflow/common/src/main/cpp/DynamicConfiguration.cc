@@ -7,11 +7,14 @@
 #include <zookeeper/zookeeper.h>
 #include <msgpack.hpp>
 #include <ctime>
+#include <regex>
 
 using std::cout;
 using std::endl;
 using std::lock_guard;
 using std::unique_lock;
+using std::regex;
+using std::regex_match;
 
 log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_
     = log4cxx::Logger::getLogger("DynamicConfiguration");
@@ -68,6 +71,18 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
     if (zookeeper_server_.empty()) {
         LOG4CXX_ERROR(logger_, "zookeeper_server is not set.");
         return false;
+    }
+    if (!zookeeper_chroot_.empty()) {
+        if (!zookeeper_check_path_(zookeeper_chroot_.c_str())) {
+            LOG4CXX_ERROR(logger_, "zookeeper_chroot has invalid path, it must start with / and not end with /.")
+            return false;
+        }
+    }
+    if (!zookeeper_config_path_.empty()) {
+        if (!zookeeper_check_path_(zookeeper_config_path_.c_str())) {
+            LOG4CXX_ERROR(logger_, "zookeeper_config_path has invalid path, it must start with / and not end with /.")
+            return false;
+        }
     }
     // set zookeeper log level
     if (zookeeper_log_level_ == "debug") {
@@ -161,6 +176,10 @@ void diffraflow::DynamicConfiguration::zookeeper_stop() {
 
 bool diffraflow::DynamicConfiguration::zookeeper_create_config(
     const char* config_path, const map<string, string>& config_map) {
+    if (!zookeeper_check_path_(config_path)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        return false;
+    }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
@@ -200,6 +219,10 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path) {
+    if (!zookeeper_check_path_(config_path)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        return false;
+    }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
@@ -228,6 +251,10 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     const char* config_path, const map<string, string>& config_map) {
+    if (!zookeeper_check_path_(config_path)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        return false;
+    }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
@@ -256,6 +283,10 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
 
 bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     const char* config_path, map<string, string>& config_map, time_t& config_mtime) {
+    if (!zookeeper_check_path_(config_path)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        return false;
+    }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
 
@@ -357,6 +388,16 @@ bool diffraflow::DynamicConfiguration::zookeeper_authadding_wait_() {
         if (log_flag) {
             LOG4CXX_ERROR(logger_, "Failed to add digest auth: " << zookeeper_auth_string_);
         }
+        return false;
+    }
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_check_path_(const char* path) {
+    regex start_with_slash("^\\s*/.*");
+    regex end_with_slash(".*/\\s*$");
+    if (regex_match(path, start_with_slash) && !regex_match(path, end_with_slash)) {
+        return true;
+    } else {
         return false;
     }
 }

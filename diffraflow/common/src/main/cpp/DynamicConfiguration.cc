@@ -322,10 +322,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
 
 bool diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_path,
     vector<string>& children_list) {
-    if (!zookeeper_check_path_(config_path)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
-        return false;
-    }
+
     // wait for re-reconnecting
     zookeeper_connection_wait_();
 
@@ -398,7 +395,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_authadding_wait_() {
         [this]() {return zookeeper_auth_res_ != kUnknown;});
     if (zookeeper_auth_res_ == kSucc) {
         if (log_flag) {
-            LOG4CXX_INFO(logger_, "Successfully add digest auth: " << zookeeper_auth_string_);
+            LOG4CXX_INFO(logger_, "Successfully added digest auth: " << zookeeper_auth_string_);
         }
         return true;
     } else {

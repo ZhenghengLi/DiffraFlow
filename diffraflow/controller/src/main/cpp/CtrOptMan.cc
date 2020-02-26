@@ -8,7 +8,7 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::CtrOptMan::opt_string_[] = "c:z:l:C:D:U:R:vh";
+const char diffraflow::CtrOptMan::opt_string_[] = "c:z:l:C:D:U:R:L:vh";
 
 const option diffraflow::CtrOptMan::long_opts_[] = {
     {"config",      required_argument,  NULL, 'c'},
@@ -18,6 +18,7 @@ const option diffraflow::CtrOptMan::long_opts_[] = {
     {"zkdelete",    required_argument,  NULL, 'D'},
     {"zkupdate",    required_argument,  NULL, 'U'},
     {"zkread",      required_argument,  NULL, 'R'},
+    {"zklist",      required_argument,  NULL, 'L'},
     {"help",        no_argument,        NULL, 'h'},
     {"version",     no_argument,        NULL, 'v'},
     {NULL,          no_argument,        NULL, 0}
@@ -59,6 +60,9 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
         case 'R':
             zk_actions.push_back(string("R#") + optarg);
             break;
+        case 'L':
+            zk_actions.push_back(string("L#") + optarg);
+            break;
         case 'v':
             version_flag_ = true;
             return false;
@@ -98,6 +102,7 @@ void diffraflow::CtrOptMan::print_help_() {
     cout << setw(30) << "  -C, --zkcreate=ZNODE:FILE"   << setw(50) << "create a znode with confmap file" << endl;
     cout << setw(30) << "  -U, --zkupdate=ZNODE:FILE"   << setw(50) << "update a znode with confmap file" << endl;
     cout << setw(30) << "  -R, --zkread=ZNODE"          << setw(50) << "read and print a znode" << endl;
+    cout << setw(30) << "  -L, --zklist=ZNODE"          << setw(50) << "list the children of a znode" << endl;
     cout << setw(30) << "  -D, --zkdelete=ZNODE"        << setw(50) << "delete a znode" << endl;
     cout << setw(30) << "  -v, --version"               << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help"                  << setw(50) << "print this help" << endl;

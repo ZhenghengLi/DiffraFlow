@@ -93,6 +93,21 @@ int main(int argc, char** argv) {
                 cout << "failed to read the data of znode " << znode << "." << endl;
                 return 1;
             }
+        } else if (op == "L") {
+            vector<string> children_list;
+            if (zk_conf_client->zookeeper_get_children(znode.c_str(), children_list)) {
+                if (children_list.empty()) {
+                    cout << "znode " << znode << " has no children." << endl;
+                } else {
+                    cout << "znode: " << znode << endl;
+                    for (size_t i = 0; i < children_list.size(); i++) {
+                        cout << " | - " << children_list[i] << endl;
+                    }
+                }
+            } else {
+                cout << "failed to get the children of znode " << znode << "." << endl;
+                return 1;
+            }
         } else if (op == "D") {
             if (zk_conf_client->zookeeper_delete_config(znode.c_str())) {
                 cout << "successfully deleted znode " << znode << "." << endl;;

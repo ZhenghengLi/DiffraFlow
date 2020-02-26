@@ -20,6 +20,7 @@ namespace diffraflow {
                                         // -D, --zkdelete=ZNODE
                                         // -U, --zkupdate=ZNODE:FILE
                                         // -R, --zkread=ZNODE
+                                        // -L, --zklist=ZNODE
 
     public:
         CtrOptMan();

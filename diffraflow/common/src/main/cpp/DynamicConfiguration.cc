@@ -26,7 +26,7 @@ diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_data_mtime_ = 0;
     zookeeper_znode_buffer_cap_ = 1024 * 1024;
     zookeeper_znode_buffer_ = new char[zookeeper_znode_buffer_cap_];
-    zookeeper_znode_buffer_len_ = 0;
+    zookeeper_znode_buffer_len_ = zookeeper_znode_buffer_cap_;
     zookeeper_config_path_ = "/myconfig";
 }
 
@@ -261,6 +261,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
 
     // fetch config from here.
     lock_guard<mutex> lk(zookeeper_znode_mtx_);
+    zookeeper_znode_buffer_len_ = zookeeper_znode_buffer_cap_;
     int rc = zoo_get(zookeeper_handle_, config_path, 0,
         zookeeper_znode_buffer_, &zookeeper_znode_buffer_len_, &zookeeper_znode_stat_);
     switch (rc) {

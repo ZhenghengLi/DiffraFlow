@@ -233,7 +233,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         return false;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permissioin to delete config path " << config_path << ".");
+        LOG4CXX_WARN(logger_, "the client does not have permission to delete config path " << config_path << ".");
         return false;
     case ZNOTEMPTY:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " has children, it cannot be deleted.");
@@ -268,7 +268,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         return false;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permissioin to change the data of config path " << config_path << ".");
+        LOG4CXX_WARN(logger_, "the client does not have permission to change the data of config path " << config_path << ".");
         return false;
     default:
         LOG4CXX_WARN(logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
@@ -312,10 +312,41 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         return false;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permissioin to fetch the data of config path " << config_path << ".");
+        LOG4CXX_WARN(logger_, "the client does not have permission to fetch the data of config path " << config_path << ".");
         return false;
     default:
         LOG4CXX_WARN(logger_, "failed to fetch the data of config path " << config_path << " with error code: " << rc << ".");
+        return false;
+    }
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_path,
+    vector<string>& children_list) {
+    if (!zookeeper_check_path_(config_path)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        return false;
+    }
+    // wait for re-reconnecting
+    zookeeper_connection_wait_();
+
+    // get children from here.
+    String_vector string_vec;
+    int rc = zoo_get_children(zookeeper_handle_, config_path, 0, &string_vec);
+    switch (rc) {
+    case ZOK:
+        children_list.clear();
+        for (int i = 0; i < string_vec.count; i++) {
+            children_list.push_back(string_vec.data[i]);
+        }
+        return true;
+    case ZNONODE:
+        LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
+        return false;
+    case ZNOAUTH:
+        LOG4CXX_WARN(logger_, "the client does not have permission to get the children of config path " << config_path << ".");
+        return false;
+    default:
+        LOG4CXX_WARN(logger_, "failed to get the children of config path " << config_path << " with error code: " << rc << ".");
         return false;
     }
 }

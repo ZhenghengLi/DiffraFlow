@@ -33,8 +33,9 @@ namespace diffraflow {
         virtual bool load(const char* filename);
         virtual void print();
 
+    protected:
         // convert the key-values in conf_map_ to the field values of sub-class;
-        virtual void convert_and_check();
+        virtual void convert_and_check_();
 
     protected:
         map<string, string> conf_map_;

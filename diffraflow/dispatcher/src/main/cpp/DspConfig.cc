@@ -12,6 +12,7 @@ log4cxx::LoggerPtr diffraflow::DspConfig::logger_
 
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = -1;
+    listen_host = "0.0.0.0";
     listen_port = -1;
     compress_flag = false;
 }

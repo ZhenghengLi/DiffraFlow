@@ -122,7 +122,7 @@ void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
     cout << "- zookeeper_config_path = " << zookeeper_config_path_ << endl;
 }
 
-void diffraflow::DynamicConfiguration::convert_and_check() {
+void diffraflow::DynamicConfiguration::convert_and_check_() {
     LOG4CXX_WARN(logger_, "convert_and_check() is not implemented.")
 }
 
@@ -499,6 +499,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
         } else {
             lock_guard<mutex> lk(the_obj->conf_map_mtx_);
             // znode data -> conf_map_
+            the_obj->conf_map_.clear();
             try {
                 msgpack::unpack(value, value_len).get().convert(the_obj->conf_map_);
             } catch (const std::exception& e) {
@@ -508,7 +509,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             }
             the_obj->conf_map_mtime_ = stat->mtime / 1000;
             // conf_map_ -> config fields with proper types and units
-            the_obj->convert_and_check();
+            the_obj->convert_and_check_();
             LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
                 << ctime(&the_obj->conf_map_mtime_));
         }

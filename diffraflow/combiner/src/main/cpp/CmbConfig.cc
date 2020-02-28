@@ -15,6 +15,7 @@ log4cxx::LoggerPtr diffraflow::CmbConfig::logger_
     = log4cxx::Logger::getLogger("CmbConfig");
 
 diffraflow::CmbConfig::CmbConfig() {
+    listen_host = "0.0.0.0";
 
 }
 

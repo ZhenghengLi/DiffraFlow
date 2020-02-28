@@ -322,7 +322,11 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
 
 bool diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_path,
     vector<string>& children_list) {
-
+    regex start_with_slash("^\\s*/.*");
+    if (!regex_match(config_path, start_with_slash)) {
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with /.")
+        return false;
+    }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
 

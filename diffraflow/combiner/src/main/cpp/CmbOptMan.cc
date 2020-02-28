@@ -64,7 +64,7 @@ bool diffraflow::CmbOptMan::parse(int argc, char** argv) {
 
 void diffraflow::CmbOptMan::print_help_() {
     cout << "Usage:" << endl;
-    cout << "  combiner [OPTION...]" << endl;
+    cout << "  " << software_name_ << " [OPTION...]" << endl;
     cout << endl;
     cout << "Options:" << endl;
     cout << left;

@@ -92,7 +92,7 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
 
 void diffraflow::CtrOptMan::print_help_() {
     cout << "Usage:" << endl;
-    cout << "  controller [OPTION...]" << endl;
+    cout << "  " << software_name_ << " [OPTION...]" << endl;
     cout << endl;
     cout << "Options:" << endl;
     cout << left;

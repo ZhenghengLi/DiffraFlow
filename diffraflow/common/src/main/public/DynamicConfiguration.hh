@@ -28,7 +28,7 @@ namespace diffraflow {
     class DynamicConfiguration: public GenericConfiguration {
     public:
         DynamicConfiguration();
-        ~DynamicConfiguration();
+        virtual ~DynamicConfiguration();
 
         virtual bool load(const char* filename);
         virtual void print();

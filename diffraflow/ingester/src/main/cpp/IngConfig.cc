@@ -1,6 +1,7 @@
 #include "IngConfig.hh"
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <ctime>
 #include <thread>
@@ -86,10 +87,8 @@ void diffraflow::IngConfig::print() {
 
 void diffraflow::IngConfig::convert_and_check_() {
     time_t now_time = time(NULL);
-    string now_time_string(ctime(&now_time));
-    now_time_string = now_time_string.substr(0, now_time_string.length() - 1);
-    string mtime_string = string(ctime(&conf_map_mtime_));
-    mtime_string = mtime_string.substr(0, mtime_string.length() - 1);
+    string now_time_string = boost::trim_copy(string(ctime(&now_time)));
+    string mtime_string = boost::trim_copy(string(ctime(&conf_map_mtime_)));
     cout << "configuration updating (" << now_time_string
          << "): received new config map with mtime " << mtime_string << endl;
     for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {

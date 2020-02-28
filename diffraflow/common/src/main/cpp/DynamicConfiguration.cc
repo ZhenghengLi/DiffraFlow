@@ -8,6 +8,7 @@
 #include <msgpack.hpp>
 #include <ctime>
 #include <regex>
+#include <boost/algorithm/string.hpp>
 
 using std::cout;
 using std::endl;
@@ -513,7 +514,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             // conf_map_ -> config fields with proper types and units
             the_obj->convert_and_check_();
             LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
-                << ctime(&the_obj->conf_map_mtime_));
+                << boost::trim_copy(string(ctime(&the_obj->conf_map_mtime_))));
         }
         break;
     case ZCONNECTIONLOSS:

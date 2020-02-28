@@ -76,9 +76,15 @@ int main(int argc, char** argv) {
     cout << "start to sync configurations with zookeeper ..." << endl;
     gConfiguration->zookeeper_sync_config();
 
+    // ------------------------------------------------------
+    init(gConfiguration);
+
     cout << "continue to do other things ..." << endl;
     string pause;
     cin >> pause;
+
+    clean(0);
+    // ------------------------------------------------------
 
     return 0;
 }

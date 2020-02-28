@@ -476,12 +476,14 @@ void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc,
     switch (rc) {
     case ZOK:
         the_obj->zookeeper_get_config_();
+        break;
     case ZCONNECTIONLOSS:
     case ZOPERATIONTIMEOUT:
         the_obj->zookeeper_sync_config();
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the config znode of path " << the_obj->zookeeper_config_path_
-            << "does not exist or it is deleted.");
+            << " does not exist or it is deleted.");
         break;
     default:
         LOG4CXX_WARN(logger_, "error found when checking existence of path "

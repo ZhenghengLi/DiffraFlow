@@ -35,6 +35,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
         // skip comments
         boost::trim(oneline);
         if (oneline[0] == '#') continue;
+        if (oneline.length() == 0) continue;
         // extract host and port
         vector<string> key_value;
         boost::split(key_value, oneline, boost::is_any_of("="));

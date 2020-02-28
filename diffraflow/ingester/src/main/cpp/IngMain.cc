@@ -51,7 +51,6 @@ int main(int argc, char** argv) {
         option_man.print();
         return 2;
     }
-
     // configure logger
     if (option_man.logconf_file.empty()) {
         log4cxx::LogManager::getLoggerRepository()->setConfigured(true);
@@ -63,17 +62,23 @@ int main(int argc, char** argv) {
     } else {
         log4cxx::PropertyConfigurator::configure(option_man.logconf_file);
     }
+
     // parse configuration file
     gConfiguration = new IngConfig();
     if (!gConfiguration->load(option_man.config_file.c_str())) {
         cout << "Failed to load configuration file: " << option_man.config_file << endl;
         return 1;
     }
+
     gConfiguration->print();
+    cout << "Connectiong to ZooKeeper ..." << endl;
+    gConfiguration->zookeeper_start();
     cout << "start to sync configurations with zookeeper ..." << endl;
     gConfiguration->zookeeper_sync_config();
 
-
+    cout << "continue to do other things ..." << endl;
+    string pause;
+    cin >> pause;
 
     return 0;
 }

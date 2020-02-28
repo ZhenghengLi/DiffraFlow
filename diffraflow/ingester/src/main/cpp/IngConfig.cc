@@ -3,9 +3,11 @@
 #include <log4cxx/ndc.h>
 #include <iostream>
 #include <ctime>
+#include <thread>
 
 using std::cout;
 using std::endl;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::IngConfig::logger_
     = log4cxx::Logger::getLogger("IngConfig");
@@ -27,40 +29,33 @@ bool diffraflow::IngConfig::load(const char* filename) {
     if (!DynamicConfiguration::load(filename)) {
         return true;
     }
-
+    lock_guard<mutex> lk(conf_map_mtx_);
+    // parse
     for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
         // for static parameters
         if (iter->first == "ingester_id") {
             ingester_id = atoi(iter->second.c_str());
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         } else if (iter->first == "combiner_host") {
             combiner_host = iter->second;
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         } else if (iter->first == "combiner_port") {
             combiner_port = atoi(iter->second.c_str());
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         }
         // for dynamic parameters
         if (iter->first == "dy_param_int") {
             dy_param_int = atoi(iter->second.c_str());
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         } else if (iter->first == "dy_param_double") {
             dy_param_double = atof(iter->second.c_str());
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         } else if (iter->first == "dy_param_string") {
             dy_param_string = iter->second;
             conf_map_in_use[iter->first] = iter->second;
-            iter = conf_map_.erase(iter);
         }
     }
-
     // check
-
     bool succ_flag = true;
     if (ingester_id < 0) {
         LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
@@ -91,8 +86,12 @@ void diffraflow::IngConfig::print() {
 
 void diffraflow::IngConfig::convert_and_check_() {
     time_t now_time = time(NULL);
-    cout << "configuration updating (" << ctime(&now_time)
-         << "): received new config map with mtime " << ctime(&conf_map_mtime_) << endl;
+    string now_time_string(ctime(&now_time));
+    now_time_string = now_time_string.substr(0, now_time_string.length() - 1);
+    string mtime_string = string(ctime(&conf_map_mtime_));
+    mtime_string = mtime_string.substr(0, mtime_string.length() - 1);
+    cout << "configuration updating (" << now_time_string
+         << "): received new config map with mtime " << mtime_string << endl;
     for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
         if (iter->first == "dy_param_int") {
             int new_value = atoi(iter->second.c_str());
@@ -100,11 +99,10 @@ void diffraflow::IngConfig::convert_and_check_() {
                 int old_value = dy_param_int;
                 dy_param_int = new_value;
                 conf_map_in_use[iter->first] = iter->second;
-                iter = conf_map_.erase(iter);
-                cout << "configuration updated (" << ctime(&now_time)
+                cout << "configuration updated  (" << now_time_string
                      << "): dy_param_int " << old_value << " -> " << new_value << endl;
             } else {
-                cout << "configuration updating (" << ctime(&now_time)
+                cout << "configuration updating (" << now_time_string
                      << "): dy_param_int " << new_value << " is out of range." << endl;
             }
         } else if (iter->first == "dy_param_double") {
@@ -113,27 +111,25 @@ void diffraflow::IngConfig::convert_and_check_() {
                 double old_value = dy_param_double;
                 dy_param_double = new_value;
                 conf_map_in_use[iter->first] = iter->second;
-                iter = conf_map_.erase(iter);
-                cout << "configuration updated (" << ctime(&now_time)
+                cout << "configuration updated  (" << now_time_string
                      << "): dy_param_double " << old_value << " -> " << new_value << endl;
             } else {
-                cout << "configuration updating (" << ctime(&now_time)
+                cout << "configuration updating (" << now_time_string
                      << "): dy_param_double " << new_value << " is out of range." << endl;
             }
         } else if (iter->first == "dy_param_string") {
             string new_value = iter->second;
-            if (new_value.length() < 3) {
+            if (new_value.length() > 2) {
                 string old_value = dy_param_string;
                 dy_param_string = new_value;
                 conf_map_in_use[iter->first] = iter->second;
-                iter = conf_map_.erase(iter);
-                cout << "configuration updated (" << ctime(&now_time)
+                cout << "configuration updated  (" << now_time_string
                      << "): dy_param_string \"" << old_value << "\" -> \"" << new_value << "\"" << endl;
             } else {
-                cout << "configuration updating (" << ctime(&now_time)
-                     << "): dy_param_string " << new_value << " is too short." << endl;
+                cout << "configuration updating (" << now_time_string
+                     << "): dy_param_string \"" << new_value << "\" is too short." << endl;
             }
         }
     }
-    conf_map_in_use["config_mtime"] = string(ctime(&conf_map_mtime_));
+    conf_map_in_use["config_mtime"] = mtime_string;
 }

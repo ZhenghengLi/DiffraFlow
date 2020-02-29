@@ -12,9 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] write time alignment function
 - [ ] write the code to exchange data between combiner and ingester.
 
+## [0.0.7] - 2020-02-29
+
 ### Changed
 
 - use MessagePack library instead self-writting code to serialize ImageFrame and ImageData.
+
+### Added
+
+- Add class DynamicConfiguration which can dynamically update configurations at runtime. This class works based on ZooKeeper.
+- Add **controller** which is responsible for updating the configurations of **ingester** and **monitor** in ZooKeeper at runtime, and fetching online analysis results from **monitor** in a round-robin way on the request from front-end client.
 
 ## [0.0.6] - 2020-02-12
 

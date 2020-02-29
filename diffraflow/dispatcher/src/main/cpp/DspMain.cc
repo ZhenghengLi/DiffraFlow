@@ -42,14 +42,19 @@ void init(DspConfig* config_obj) {
     memset(&action, 0, sizeof(action));
     action.sa_handler = &clean;
     if (sigaction(SIGINT, &action, nullptr)) {
-        perror("sigaction() failed.");
+        perror("sigaction() failed for SIGINT.");
+        exit(1);
+    }
+    // Kubernetes uses SIGTERM to terminate Pod
+    if (sigaction(SIGTERM, &action, nullptr)) {
+        perror("sigaction() failed for SIGTERM.");
         exit(1);
     }
     // ignore SIGPIPE
     memset(&action, 0, sizeof(action));
     action.sa_handler = SIG_IGN;
     if (sigaction(SIGPIPE, &action, nullptr)) {
-        perror("sigaction() failed.");
+        perror("sigaction() failed for ignoring SIGPIPE.");
         exit(1);
     }
 }

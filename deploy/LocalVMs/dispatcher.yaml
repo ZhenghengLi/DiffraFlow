@@ -7,7 +7,7 @@ data:
   dispatcher.conf: |
     listen_host = 0.0.0.0
     listen_port = 42702
-    dispatcher_id = 1
+    dispatcher_id = 0
     compress_flag = false
   combiner_addresses.txt: |
     kube-worker-4:42701
@@ -49,6 +49,11 @@ spec:
         ports:
         - containerPort: 42702
           hostPort: 42702
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         volumeMounts:
         - name: config-volume
           mountPath: /config

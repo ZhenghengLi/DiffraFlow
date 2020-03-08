@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcher-config
+  namespace: diffraflow
+data:
+  dispatcher.conf: |
+    listen_host = 0.0.0.0
+    listen_port = 42702
+    dispatcher_id = 1
+    compress_flag = false
+  combiner_addresses.txt: |
+    kube-worker-4:42701
+    kube-worker-5:42701
+    kube-worker-6:42701
+    kube-worker-7:42701
+  log4cxx.properties: |
+    log4j.rootLogger = DEBUG, Console
+    log4j.appender.Console = org.apache.log4j.ConsoleAppender
+    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
+    log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dispatcher
+  namespace: diffraflow
+  labels:
+    k8s-app: dispatcher
+spec:
+  selector:
+    matchLabels:
+      name: dispatcher
+  template:
+    metadata:
+      labels:
+        name: dispatcher
+    spec:
+      imagePullSecrets:
+      - name: docker-hub
+      containers:
+      - name: dispatcher
+        image: zhenghengli/diffraflow:latest
+        command:
+        - dispatcher
+        - --config=/config/dispatcher.conf
+        - --cmbaddr=/config/combiner_addresses.txt
+        - --logconf=/config/log4cxx.properties
+        ports:
+        - containerPort: 42702
+          hostPort: 42702
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      nodeSelector:
+        diffraflow/node-type: daq-ana
+      volumes:
+      - name: config-volume
+        configMap:
+          name: dispatcher-config

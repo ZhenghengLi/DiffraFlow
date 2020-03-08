@@ -30,8 +30,12 @@ rm -rf $source_dir
 FROM ubuntu:18.04
 # FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 ARG install_dir=/opt/diffraflow
+ARG SOURCE_COMMIT
+ARG COMMIT_MSG
 LABEL description="High volume data acquisition and online data analysis for area detectors." \
-maintainer="Zhengheng Li <zhenghenge@gmail.com>"
+maintainer="Zhengheng Li <zhenghenge@gmail.com>" \
+source_commit=$SOURCE_COMMIT \
+commit_msg=$COMMIT_MSG
 # install dependencies
 # RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update && \
@@ -46,7 +50,9 @@ COPY --from=builder $install_dir $install_dir
 # set runtime environment variables
 ENV CLASSPATH=$install_dir/jar/* \
 PATH=$install_dir/bin:$PATH \
-LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH \
+SOURCE_COMMIT=$SOURCE_COMMIT \
+COMMIT_MSG=$COMMIT_MSG
 VOLUME ["/workspace"]
 CMD ["/bin/bash"]
 

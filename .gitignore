@@ -6,3 +6,4 @@ gradlew.bat
 .settings
 **/bin/*
 .vscode/*
+**/.DS_Store

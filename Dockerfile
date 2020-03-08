@@ -34,8 +34,8 @@ ARG SOURCE_COMMIT
 ARG COMMIT_MSG
 LABEL description="High volume data acquisition and online data analysis for area detectors." \
 maintainer="Zhengheng Li <zhenghenge@gmail.com>" \
-source_commit=$SOURCE_COMMIT \
-commit_msg=$COMMIT_MSG
+source_commit="$SOURCE_COMMIT" \
+commit_msg="$COMMIT_MSG"
 # install dependencies
 # RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update && \
@@ -51,8 +51,8 @@ COPY --from=builder $install_dir $install_dir
 ENV CLASSPATH=$install_dir/jar/* \
 PATH=$install_dir/bin:$PATH \
 LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH \
-SOURCE_COMMIT=$SOURCE_COMMIT \
-COMMIT_MSG=$COMMIT_MSG
+SOURCE_COMMIT="$SOURCE_COMMIT" \
+COMMIT_MSG="$COMMIT_MSG"
 VOLUME ["/workspace"]
 CMD ["/bin/bash"]
 

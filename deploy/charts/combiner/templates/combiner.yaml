@@ -1,33 +1,18 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: combiner-config
-  namespace: diffraflow
-data:
-  combiner.conf: |
-    listen_host = 0.0.0.0
-    listen_port = 42701
-  log4cxx.properties: |
-    log4j.rootLogger = DEBUG, Console
-    log4j.appender.Console = org.apache.log4j.ConsoleAppender
-    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
-    log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: combiner
+  name: combiner-{{ .Values.nameSuffix }}
   namespace: diffraflow
   labels:
-    k8s-app: combiner
+    k8s-app: combiner-{{ .Values.nameSuffix }}
 spec:
   selector:
     matchLabels:
-      name: combiner
+      name: combiner-{{ .Values.nameSuffix }}
   template:
     metadata:
       labels:
-        name: combiner
+        name: combiner-{{ .Values.nameSuffix }}
     spec:
       imagePullSecrets:
       - name: docker-hub
@@ -39,8 +24,8 @@ spec:
         - --config=/config/combiner.conf
         - --logconf=/config/log4cxx.properties
         ports:
-        - containerPort: 42701
-          hostPort: 42701
+        - containerPort: {{ .Values.listenPort }}
+          hostPort: {{ .Values.listenPort }}
         volumeMounts:
         - name: config-volume
           mountPath: /config
@@ -49,4 +34,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: combiner-config
+          name: combiner-config-{{ .Values.nameSuffix }}

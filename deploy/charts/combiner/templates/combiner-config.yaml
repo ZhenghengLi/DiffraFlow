@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: combiner-config-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+data:
+  combiner.conf: |
+    listen_host = 0.0.0.0
+    listen_port = {{ .Values.listenPort }}
+  log4cxx.properties: |
+    log4j.rootLogger = DEBUG, Console
+    log4j.appender.Console = org.apache.log4j.ConsoleAppender
+    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
+    log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n

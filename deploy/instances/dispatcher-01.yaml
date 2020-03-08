@@ -1,0 +1,7 @@
+nameSuffix: "01"
+listenPort: 42702
+combinerAddresses: |
+  kube-worker-4:42701
+  kube-worker-5:42701
+  kube-worker-6:42701
+  kube-worker-7:42701

@@ -20,7 +20,7 @@ namespace diffraflow {
         void stop();
 
     protected:
-        int32_t connection_id_;
+        uint32_t connection_id_;
         uint32_t greeting_head_;
         uint32_t receiving_head_;
         uint32_t sending_head_;

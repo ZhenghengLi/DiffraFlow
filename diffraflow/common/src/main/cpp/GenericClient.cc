@@ -13,7 +13,7 @@
 log4cxx::LoggerPtr diffraflow::GenericClient::logger_
     = log4cxx::Logger::getLogger("GenericClient");
 
-diffraflow::GenericClient::GenericClient(string hostname, int port, int id,
+diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
     uint32_t greet_hd, uint32_t send_hd) {
     dest_host_ = hostname;
     dest_port_ = port;
@@ -52,7 +52,7 @@ bool diffraflow::GenericClient::connect_to_server() {
     char buffer[12];
     gPS.serializeValue<uint32_t>(greeting_head_, buffer, 4);
     gPS.serializeValue<uint32_t>(4, buffer + 4, 4);
-    gPS.serializeValue<int32_t>(client_id_, buffer + 8, 4);
+    gPS.serializeValue<uint32_t>(client_id_, buffer + 8, 4);
     for (size_t pos = 0; pos < 12;) {
         int count = write(client_sock_fd_, buffer + pos, 12 - pos);
         if (count > 0) {

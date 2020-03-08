@@ -3,6 +3,8 @@
 #include <log4cxx/ndc.h>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
+#include <boost/algorithm/string.hpp>
 
 using std::cout;
 using std::endl;
@@ -11,7 +13,7 @@ log4cxx::LoggerPtr diffraflow::DspConfig::logger_
     = log4cxx::Logger::getLogger("DspConfig");
 
 diffraflow::DspConfig::DspConfig() {
-    dispatcher_id = -1;
+    dispatcher_id = 0;
     listen_host = "0.0.0.0";
     listen_port = -1;
     compress_flag = false;
@@ -44,12 +46,20 @@ bool diffraflow::DspConfig::load(const char* filename) {
                 << key << " = " << value << " in " << filename);
         }
     }
+    // use POD IP as dispatcher_id
+    if (dispatcher_id == 0) {
+        const char* pod_ip = getenv("POD_IP");
+        if (pod_ip != NULL) {
+            vector<string> ip_nums;
+            boost::split(ip_nums, pod_ip, boost::is_any_of("."));
+            for (size_t i = 0; i < ip_nums.size(); i++) {
+                dispatcher_id <<= 8;
+                dispatcher_id += atoi(ip_nums[i].c_str());
+            }
+        }
+    }
     // check
     bool succ_flag = true;
-    if (dispatcher_id < 0) {
-        LOG4CXX_ERROR(logger_, "invalid dispatcher_id: " << dispatcher_id);
-        succ_flag = false;
-    }
     if (listen_port < 0) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;

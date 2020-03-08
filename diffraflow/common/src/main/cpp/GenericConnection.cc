@@ -75,9 +75,9 @@ bool diffraflow::GenericConnection::start_connection_() {
             break;
         }
     }
-    uint32_t head = gDC.decode_byte<int32_t>(buffer_, 0, 3);
-    uint32_t size = gDC.decode_byte<int32_t>(buffer_, 4, 7);
-    connection_id_ = gDC.decode_byte<int32_t>(buffer_, 8, 11);
+    uint32_t head  = gDC.decode_byte<uint32_t>(buffer_, 0, 3);
+    uint32_t size  = gDC.decode_byte<uint32_t>(buffer_, 4, 7);
+    connection_id_ = gDC.decode_byte<uint32_t>(buffer_, 8, 11);
     if (head != greeting_head_ || size != 4) {
         LOG4CXX_INFO(logger_, "got wrong greeting message, close the connection.");
         // send failure code which is 4321

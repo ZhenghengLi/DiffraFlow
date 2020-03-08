@@ -17,10 +17,10 @@ namespace diffraflow {
         void print();
 
     public:
-        int dispatcher_id;
-        string listen_host;
-        int    listen_port;
-        bool compress_flag;
+        uint32_t    dispatcher_id;
+        string      listen_host;
+        int         listen_port;
+        bool        compress_flag;
 
     private:
         static log4cxx::LoggerPtr logger_;

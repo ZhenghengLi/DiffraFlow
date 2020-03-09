@@ -51,7 +51,7 @@ source_commit="$SOURCE_COMMIT" \
 commit_msg="$COMMIT_MSG"
 # set runtime environment variables
 ENV CLASSPATH=$install_dir/jar/* \
-PATH=$install_dir/bin:$PATH \
+PATH=$install_dir/bin:$install_dir/scripts:$PATH \
 LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH \
 SOURCE_COMMIT="$SOURCE_COMMIT" \
 COMMIT_MSG="$COMMIT_MSG"

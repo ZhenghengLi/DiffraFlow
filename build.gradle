@@ -40,13 +40,17 @@ apply plugin: "com.dorongold.task-tree"
 tasks.create(name:'packageRelease', type: Copy) {
     into "$project.buildDir/package_release"
     from("config") { into("conf") }
-    from("scripts/thisenv.sh") { into("bin") }
+    from("scripts/thisenv.sh") { into("scripts") }
+    from("scripts/check_cnxn_address.sh") { into("scripts") }
+    from("scripts/check_cnxn_addrlist.sh") { into("scripts") }
 }
 
 tasks.create(name:'packageDebug', type: Copy) {
     into "$project.buildDir/package_debug"
     from("config") { into("conf") }
-    from("scripts/thisenv.sh") { into("bin") }
+    from("scripts/thisenv.sh") { into("scripts") }
+    from("scripts/check_cnxn_address.sh") { into("scripts") }
+    from("scripts/check_cnxn_addrlist.sh") { into("scripts") }
 }
 
 assemble.dependsOn('packageDebug')

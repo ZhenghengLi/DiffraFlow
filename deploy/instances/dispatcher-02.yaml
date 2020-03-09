@@ -1,5 +1,5 @@
-nameSuffix: "01"
-listenPort: 42721
+nameSuffix: "02"
+listenPort: 42722
 combinerAddresses: |
   kube-worker-4:42711
   kube-worker-5:42711

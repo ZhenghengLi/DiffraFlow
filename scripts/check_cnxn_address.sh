@@ -10,12 +10,12 @@ function check_cnxn_address {
     if [[ -z $host || -z $port ]]; then
         return 1
     fi
-    if ! nc -z -v $host $port; then
+    if ! nc -z -v -w 2 $host $port; then
         return 1
     fi
 }
 
 until check_cnxn_address $1; do
-    sleep ${2:-1}
+    sleep ${2:-2}
     echo "continue checking ..."
 done

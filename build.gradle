@@ -37,20 +37,33 @@ task downloadWrapper(type: Wrapper) {
 apply plugin: "base"
 apply plugin: "com.dorongold.task-tree"
 
+def copyScripts = copySpec {
+    from("config") {
+        into("conf")
+        include "combiner_1.conf"
+        include "dispatcher_1.conf"
+        include "combiner_addr_list.txt"
+        include "ingester.conf"
+        include "ingester.dyconf"
+        include "log4cxx.properties"
+        include "zookeeper_local.conf"
+    }
+    from("scripts") {
+        into("scripts")
+        include "thisenv.sh"
+        include "check_cnxn_address.sh"
+        include "check_cnxn_addrlist.sh"
+    }
+}
+
 tasks.create(name:'packageRelease', type: Copy) {
     into "$project.buildDir/package_release"
-    from("config") { into("conf") }
-    from("scripts/thisenv.sh") { into("scripts") }
-    from("scripts/check_cnxn_address.sh") { into("scripts") }
-    from("scripts/check_cnxn_addrlist.sh") { into("scripts") }
+    with copyScripts
 }
 
 tasks.create(name:'packageDebug', type: Copy) {
     into "$project.buildDir/package_debug"
-    from("config") { into("conf") }
-    from("scripts/thisenv.sh") { into("scripts") }
-    from("scripts/check_cnxn_address.sh") { into("scripts") }
-    from("scripts/check_cnxn_addrlist.sh") { into("scripts") }
+    with copyScripts
 }
 
 assemble.dependsOn('packageDebug')

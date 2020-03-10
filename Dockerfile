@@ -55,5 +55,8 @@ PATH=$install_dir/bin:$install_dir/scripts:$PATH \
 LD_LIBRARY_PATH=$install_dir/lib:$LD_LIBRARY_PATH \
 SOURCE_COMMIT="$SOURCE_COMMIT" \
 COMMIT_MSG="$COMMIT_MSG"
+# use a non-root user
+RUN useradd -m -u 42700 diffraflow
+USER diffraflow
 CMD ["/bin/bash"]
 

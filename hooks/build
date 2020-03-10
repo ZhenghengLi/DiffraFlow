@@ -1,8 +1,11 @@
 #!/bin/bash
 # debug
 echo $SHELL
-echo $COMMIT_MSG
-COMMIT_MSG="${COMMIT_MSG%'\n'}"
-echo $COMMIT_MSG
-docker build --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="${COMMIT_MSG%'\n'}" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
+echo $BASH_VERSION
+printf "[$COMMIT_MSG]"
+val1="${COMMIT_MSG%'\n'}"
+printf "[$val1]"
+val2="${COMMIT_MSG%%*('\n')}"
+printf "[$val2]"
+docker build --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="$val2" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
 echo "done"

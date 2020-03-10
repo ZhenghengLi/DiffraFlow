@@ -7,8 +7,8 @@ FROM ubuntu:18.04 AS builder
 ARG source_dir=/opt/diffraflow_src
 ARG install_dir=/opt/diffraflow
 # install dependencies
-# RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-RUN apt-get update && \
+RUN sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list && \
+apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jdk build-essential \
 libboost-dev \
@@ -29,10 +29,11 @@ rm -rf $source_dir
 ## deploy ####
 FROM ubuntu:18.04
 # FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
-ARG install_dir=/opt/diffraflow
+LABEL description="High volume data acquisition and online data analysis for area detectors." \
+maintainer="Zhengheng Li <zhenghenge@gmail.com>"
 # install dependencies
-# RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-RUN apt-get update && \
+RUN sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list && \
+apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jre \
 libsnappy-dev liblog4cxx-dev \
@@ -41,14 +42,11 @@ netcat-openbsd && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 # copy from builder
+ARG install_dir=/opt/diffraflow
 COPY --from=builder $install_dir $install_dir
 # add labels
 ARG SOURCE_COMMIT
 ARG COMMIT_MSG
-LABEL description="High volume data acquisition and online data analysis for area detectors." \
-maintainer="Zhengheng Li <zhenghenge@gmail.com>" \
-source_commit="$SOURCE_COMMIT" \
-commit_msg="$COMMIT_MSG"
 # set runtime environment variables
 ENV CLASSPATH=$install_dir/jar/* \
 PATH=$install_dir/bin:$install_dir/scripts:$PATH \

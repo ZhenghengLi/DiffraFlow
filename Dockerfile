@@ -55,8 +55,10 @@ PATH=$INSTALL_DIR/bin:$INSTALL_DIR/scripts:$PATH \
 LD_LIBRARY_PATH=$INSTALL_DIR/lib:$LD_LIBRARY_PATH \
 SOURCE_COMMIT="$SOURCE_COMMIT" \
 COMMIT_MSG="$COMMIT_MSG"
-# use a non-root user
-RUN useradd -m -u 42700 diffraflow
+# set root password for runtime debug
+RUN echo "root:20180427" | chpasswd
+# use a non-root user for normal work
+RUN useradd -m -u 42700 diffraflow -s /bin/bash
 USER diffraflow
 CMD ["/bin/bash"]
 

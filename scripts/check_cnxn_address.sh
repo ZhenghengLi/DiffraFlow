@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z $1 ]; then
+if [[ -z $1 ]]; then
     echo "USAGE: check_connection.sh address_list.txt"
     exit 1
 fi
@@ -10,12 +10,12 @@ function check_cnxn_address {
     if [[ -z $host || -z $port ]]; then
         return 1
     fi
-    if ! nc -z -v -w 2 $host $port; then
+    if ! nc -z -v -w 1 $host $port; then
         return 1
     fi
 }
 
 until check_cnxn_address $1; do
-    sleep ${2:-2}
+    sleep ${2:-1}
     echo "continue checking ..."
 done

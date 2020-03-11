@@ -14,13 +14,13 @@ function check_cnxn_addrlist {
         if [[ -z $host || -z $port ]]; then
             return 1
         fi
-        if ! nc -z -v -w 2 $host $port; then
+        if ! nc -z -v -w 1 $host $port; then
             return 1
         fi
-    done < "$1"
+    done < $1
 }
 
 until check_cnxn_addrlist $1; do
-    sleep ${2:-2}
+    sleep ${2:-1}
     echo "continue checking ..."
 done

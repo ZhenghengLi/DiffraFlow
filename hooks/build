@@ -1,14 +1,4 @@
 #!/bin/bash
-# debug
-echo $SHELL
-echo $BASH_VERSION
-echo "test shopt begin"
-shopt
-echo "test shopt end"
-printf "[$COMMIT_MSG]"
-val1="${COMMIT_MSG%'\n'}"
-printf "[$val1]"
-val2="${COMMIT_MSG%%*('\n')}"
-printf "[$val2]"
-docker build --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="$val2" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
-echo "done"
+echo "Start time: $(date)"
+docker build --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="$COMMIT_MSG" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
+echo "Finish time: $(date)"

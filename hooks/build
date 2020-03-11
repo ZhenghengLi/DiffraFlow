@@ -2,6 +2,9 @@
 # debug
 echo $SHELL
 echo $BASH_VERSION
+echo "test shopt begin"
+shopt
+echo "test shopt end"
 printf "[$COMMIT_MSG]"
 val1="${COMMIT_MSG%'\n'}"
 printf "[$val1]"

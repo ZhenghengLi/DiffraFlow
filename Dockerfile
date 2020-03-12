@@ -45,16 +45,19 @@ COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 # add labels
 ARG SOURCE_COMMIT
 ARG COMMIT_MSG
+ARG BUILD_TIME
 LABEL description="High volume data acquisition and online data analysis for area detectors." \
 maintainer="Zhengheng Li <zhenghenge@gmail.com>" \
 source_commit="$SOURCE_COMMIT" \
-commit_msg="$COMMIT_MSG"
+commit_msg="$COMMIT_MSG" \
+build_time="$BUILD_TIME"
 # set runtime environment variables
 ENV CLASSPATH=$INSTALL_DIR/jar/* \
 PATH=$INSTALL_DIR/bin:$INSTALL_DIR/scripts:$PATH \
 LD_LIBRARY_PATH=$INSTALL_DIR/lib:$LD_LIBRARY_PATH \
 SOURCE_COMMIT="$SOURCE_COMMIT" \
-COMMIT_MSG="$COMMIT_MSG"
+COMMIT_MSG="$COMMIT_MSG" \
+BUILD_TIME="$BUILD_TIME"
 # set root password for runtime debug
 RUN echo "root:20180427" | chpasswd
 # use a non-root user for normal work

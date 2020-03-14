@@ -12,6 +12,7 @@
 #include <log4cxx/ndc.h>
 #include <snappy.h>
 #include <lz4.h>
+#include <zstd.h>
 
 using std::copy;
 
@@ -35,7 +36,10 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
     const size_t payload_position, const uint32_t payload_size, const uint32_t payload_type) {
 
     // payload type check
-    if (payload_type != 0xABCDFF00 && payload_type != 0xABCDFF01 && payload_type != 0xABCDFF02) {
+    if (payload_type != 0xABCDFF00
+        && payload_type != 0xABCDFF01
+        && payload_type != 0xABCDFF02
+        && payload_type != 0xABCDFF03) {
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
         return kContinue;
     }
@@ -83,6 +87,16 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         if (!snappy::RawUncompress(buffer_ + payload_position + 4,
             payload_size - 4, buffer_uncompress_)) {
             LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
+            return kContinue;
+        }
+        current_buffer = buffer_uncompress_;
+        current_limit  = buffer_uncompress_limit_;
+    } else if (payload_type == 0xABCDFF03) {
+        buffer_uncompress_limit_ = ZSTD_decompress(buffer_uncompress_, pkt_maxlen_,
+            buffer_ + payload_position + 4, payload_size - 4);
+        if (ZSTD_isError(buffer_uncompress_limit_)) {
+            LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
+                << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
             return kContinue;
         }
         current_buffer = buffer_uncompress_;

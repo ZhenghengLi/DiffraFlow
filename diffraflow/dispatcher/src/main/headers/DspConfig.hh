@@ -23,6 +23,7 @@ namespace diffraflow {
         string                      listen_host;
         int                         listen_port;
         DspSender::CompressMethod   compress_method;
+        int                         compress_level;
 
     private:
         static log4cxx::LoggerPtr logger_;

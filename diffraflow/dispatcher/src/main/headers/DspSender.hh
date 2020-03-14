@@ -24,10 +24,11 @@ using std::atomic;
 namespace diffraflow {
     class DspSender: public GenericClient {
     public:
-        enum CompressMethod {kNone, kLZ4, kSnappy};
+        enum CompressMethod {kNone, kLZ4, kSnappy, kZSTD};
 
     public:
-        DspSender(string hostname, int port, int id, CompressMethod compr_method = kNone);
+        DspSender(string hostname, int port, int id,
+            CompressMethod compr_method = kNone, int compr_level = 1);
         ~DspSender();
 
         // push to buffer_A and block on buffer full
@@ -67,6 +68,7 @@ namespace diffraflow {
         condition_variable cv_swap_;
         atomic_bool run_flag_;
         CompressMethod compress_method_;
+        int compress_level_;
 
     private:
         static log4cxx::LoggerPtr logger_;

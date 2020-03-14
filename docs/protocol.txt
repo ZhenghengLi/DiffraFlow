@@ -21,6 +21,8 @@
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
     (6) 0xABCDFF02: Snappy compressed byte sequence of raw image frame data
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
+    (7) 0xABCDFF03: ZSTD compressed byte sequence of raw image frame data
+        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
 
 4. specific protocol between different endpoints:
     (1) TCP: source -> dispatcher (push)

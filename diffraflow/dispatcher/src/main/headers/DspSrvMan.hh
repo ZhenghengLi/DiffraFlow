@@ -30,7 +30,7 @@ namespace diffraflow {
 
     private:
         bool create_senders_(const char* address_list_fn, int dispatcher_id,
-            DspSender::CompressMethod compress_method = DspSender::kNone);
+            DspSender::CompressMethod compress_method = DspSender::kNone, int compress_level = 1);
         void delete_senders_();
         bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
 

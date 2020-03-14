@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 
 using std::cout;
+using std::flush;
 using std::endl;
 
 log4cxx::LoggerPtr diffraflow::DspConfig::logger_
@@ -39,14 +40,18 @@ bool diffraflow::DspConfig::load(const char* filename) {
             listen_port = atoi(value.c_str());
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
-        } else if (key == "compress_flag") {
+        } else if (key == "compress_method") {
             if (value == "LZ4") {
                 compress_method = DspSender::kLZ4;
             } else if (value == "Snappy") {
                 compress_method = DspSender::kSnappy;
+            } else if (value == "ZSTD") {
+                compress_method = DspSender::kZSTD;
             } else {
                 compress_method = DspSender::kNone;
             }
+        } else if (key == "compress_level") {
+            compress_level = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);
@@ -70,6 +75,10 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
+    if (compress_method == DspSender::kZSTD && (compress_level < 1 || compress_level >= 20)) {
+        LOG4CXX_ERROR(logger_, "compress level for ZSTD compress method is out of range, it should be >= 1 and < 20.");
+        succ_flag = false;
+    }
     return succ_flag;
 }
 
@@ -77,5 +86,19 @@ void diffraflow::DspConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
+    cout << "  compress_method = " << flush;
+    switch (compress_method) {
+    case DspSender::kLZ4:
+        cout << "LZ4" << endl;
+        break;
+    case DspSender::kSnappy:
+        cout << "Snappy" << endl;
+        break;
+    case DspSender::kZSTD:
+        cout << "ZSTD (" << compress_level << ")" << endl;
+        break;
+    default:
+        cout << "None" << endl;
+    }
     cout << " ---- Configuration Dump End ----" << endl;
 }

@@ -14,11 +14,13 @@
 #include <log4cxx/ndc.h>
 #include <snappy.h>
 #include <lz4.h>
+#include <zstd.h>
 
 log4cxx::LoggerPtr diffraflow::DspSender::logger_
     = log4cxx::Logger::getLogger("DspSender");
 
-diffraflow::DspSender::DspSender(string hostname, int port, int id, CompressMethod compr_method):
+diffraflow::DspSender::DspSender(string hostname, int port, int id,
+    CompressMethod compr_method, int compr_level):
     GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC) {
     buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 16 B
     size_threshold_ = 1024 * 1024;  // 1 MiB
@@ -34,6 +36,9 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, CompressMeth
     sending_thread_ = nullptr;
     run_flag_ = false;
     compress_method_ = compr_method;
+    if (compress_method_ == kZSTD) {
+        compress_level_ = ( (compr_level >= 1 && compr_level < 20) ? compr_level : 1);
+    }
 }
 
 diffraflow::DspSender::~DspSender() {
@@ -136,6 +141,17 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     case kSnappy:
         payload_type = 0xABCDFF02;
         snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
+        current_buffer = buffer_compress_;
+        current_limit = buffer_compress_limit_;
+        break;
+    case kZSTD:
+        payload_type = 0xABCDFF03;
+        buffer_compress_limit_ = ZSTD_compress(buffer_compress_, buffer_size_, buffer, limit, compress_level_);
+        if (ZSTD_isError(buffer_compress_limit_)) {
+            LOG4CXX_WARN(logger_, "failed to compress data by ZSTD with error: "
+                << ZSTD_getErrorName(buffer_compress_limit_) << ", discard data in buffer.");
+            return;
+        }
         current_buffer = buffer_compress_;
         current_limit = buffer_compress_limit_;
         break;

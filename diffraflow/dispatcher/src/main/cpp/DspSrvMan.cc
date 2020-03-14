@@ -32,7 +32,7 @@ void diffraflow::DspSrvMan::start_run() {
     if (running_flag_) return;
     // create senders
     if (create_senders_(combiner_address_file_.c_str(),
-        config_obj_->dispatcher_id, config_obj_->compress_flag)) {
+        config_obj_->dispatcher_id, config_obj_->compress_method)) {
         LOG4CXX_INFO(logger_, sender_cnt_ << " senders are created.");
     } else {
         LOG4CXX_ERROR(logger_, "Failed to create senders.");
@@ -62,7 +62,8 @@ void diffraflow::DspSrvMan::terminate() {
     delete_senders_();
 }
 
-bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dispatcher_id, bool compress_flag) {
+bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dispatcher_id,
+    DspSender::CompressMethod compress_method) {
     // note: do this before staring DspImgFrmSrv
     vector< pair<string, int> > addr_vec;
     if (!read_address_list_(address_list_fn, addr_vec)) {
@@ -72,7 +73,7 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     sender_cnt_ = addr_vec.size();
     sender_arr_ = new DspSender*[sender_cnt_];
     for (size_t i = 0; i < addr_vec.size(); i++) {
-        sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id, compress_flag);
+        sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id, compress_method);
         if (sender_arr_[i]->connect_to_server()) {
             LOG4CXX_INFO(logger_, "Successfully connected to combiner "
                 << addr_vec[i].first.c_str() << ":" << addr_vec[i].second);

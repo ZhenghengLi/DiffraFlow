@@ -17,7 +17,7 @@
 log4cxx::LoggerPtr diffraflow::DspSender::logger_
     = log4cxx::Logger::getLogger("DspSender");
 
-diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_flag):
+diffraflow::DspSender::DspSender(string hostname, int port, int id, CompressMethod compr_method):
     GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC) {
     buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 16 B
     size_threshold_ = 1024 * 1024;  // 1 MiB
@@ -32,7 +32,7 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_f
     buffer_compress_limit_ = 0;
     sending_thread_ = nullptr;
     run_flag_ = false;
-    compress_flag_ = compr_flag;
+    compress_method_ = compr_method;
 }
 
 diffraflow::DspSender::~DspSender() {
@@ -120,12 +120,16 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     const char* current_buffer = buffer;
     size_t current_limit = limit;
 
-    // - send compressed data if compress_flag is true
-    if (compress_flag_) {
+    // - send compressed data if compress_method_ is not kNone
+    switch (compress_method_) {
+    case kLZ4:
+        break;
+    case kSnappy:
         payload_type = 0xABCDFF01;
         snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
         current_buffer = buffer_compress_;
         current_limit = buffer_compress_limit_;
+        break;
     }
 
     LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << current_limit);

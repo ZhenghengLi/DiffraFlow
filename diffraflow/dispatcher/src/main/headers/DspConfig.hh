@@ -5,6 +5,8 @@
 #include <log4cxx/logger.h>
 #include <string>
 
+#include "DspSender.hh"
+
 using std::string;
 
 namespace diffraflow {
@@ -17,10 +19,10 @@ namespace diffraflow {
         void print();
 
     public:
-        uint32_t    dispatcher_id;
-        string      listen_host;
-        int         listen_port;
-        bool        compress_flag;
+        uint32_t                    dispatcher_id;
+        string                      listen_host;
+        int                         listen_port;
+        DspSender::CompressMethod   compress_method;
 
     private:
         static log4cxx::LoggerPtr logger_;

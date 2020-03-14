@@ -16,7 +16,7 @@ diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
     listen_host = "0.0.0.0";
     listen_port = -1;
-    compress_flag = false;
+    compress_method = DspSender::kNone;
 }
 
 diffraflow::DspConfig::~DspConfig() {
@@ -40,7 +40,13 @@ bool diffraflow::DspConfig::load(const char* filename) {
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
         } else if (key == "compress_flag") {
-            std::istringstream(value) >> std::boolalpha >> compress_flag;
+            if (value == "LZ4") {
+                compress_method = DspSender::kLZ4;
+            } else if (value == "Snappy") {
+                compress_method = DspSender::kSnappy;
+            } else {
+                compress_method = DspSender::kNone;
+            }
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);

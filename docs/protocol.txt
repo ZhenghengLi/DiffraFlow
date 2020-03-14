@@ -17,7 +17,9 @@
     (3) 0xAABB1111: 8 bytes time
     (4) 0xABCDFF00: uncompressed byte sequence of raw image frame data
         - format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
-    (5) 0xABCDFF01: snappy compressed byte sequence of raw image frame data
+    (5) 0xABCDFF01: LZ4 compressed byte sequence of raw image frame data
+        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
+    (6) 0xABCDFF02: Snappy compressed byte sequence of raw image frame data
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
 
 4. specific protocol between different endpoints:

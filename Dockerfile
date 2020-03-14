@@ -10,7 +10,7 @@ apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jdk build-essential \
 libboost-dev \
-libsnappy-dev liblog4cxx-dev \
+liblz4-dev libsnappy-dev liblog4cxx-dev \
 libmsgpack-dev libzookeeper-mt-dev && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
@@ -34,7 +34,7 @@ RUN sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.lis
 apt-get update && \
 apt-get install -y --no-install-recommends \
 openjdk-8-jre \
-libsnappy-dev liblog4cxx-dev \
+liblz4-dev libsnappy-dev liblog4cxx-dev \
 libmsgpack-dev libzookeeper-mt-dev \
 netcat-openbsd && \
 apt-get clean && \

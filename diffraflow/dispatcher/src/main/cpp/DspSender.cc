@@ -13,6 +13,7 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <snappy.h>
+#include <lz4.h>
 
 log4cxx::LoggerPtr diffraflow::DspSender::logger_
     = log4cxx::Logger::getLogger("DspSender");
@@ -123,9 +124,17 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     // - send compressed data if compress_method_ is not kNone
     switch (compress_method_) {
     case kLZ4:
+        payload_type = 0xABCDFF01;
+        buffer_compress_limit_ = LZ4_compress_default(buffer, buffer_compress_, limit, buffer_size_);
+        if (buffer_compress_limit_ == 0) {
+            LOG4CXX_WARN(logger_, "failed to compress data by LZ4, discard data in buffer.");
+            return;
+        }
+        current_buffer = buffer_compress_;
+        current_limit = buffer_compress_limit_;
         break;
     case kSnappy:
-        payload_type = 0xABCDFF01;
+        payload_type = 0xABCDFF02;
         snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
         current_buffer = buffer_compress_;
         current_limit = buffer_compress_limit_;

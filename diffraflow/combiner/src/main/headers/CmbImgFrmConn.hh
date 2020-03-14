@@ -15,10 +15,12 @@ namespace diffraflow {
 
     protected:
         ProcessRes process_payload_(const size_t payload_position,
-            const uint32_t payload_size, const uint32_t payload_type);
+            const uint32_t payload_size, const uint32_t payload_type) override;
 
     private:
         CmbImgCache* image_cache_;
+        char*  buffer_uncompress_;
+        size_t buffer_uncompress_limit_;
 
     private:
         static log4cxx::LoggerPtr logger_;

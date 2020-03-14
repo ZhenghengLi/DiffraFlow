@@ -52,11 +52,13 @@ namespace diffraflow {
         char*  buffer_B_;
         size_t buffer_B_limit_;
         size_t buffer_B_imgct_;
+        char*  buffer_compress_;
+        size_t buffer_compress_limit_;
         size_t size_threshold_;
         size_t time_threshold_; // ms
         // sending thread
         thread* sending_thread_;
-        mutex mtx_;
+        mutex mtx_swap_;
         mutex mtx_send_;
         condition_variable cv_push_;
         condition_variable cv_swap_;

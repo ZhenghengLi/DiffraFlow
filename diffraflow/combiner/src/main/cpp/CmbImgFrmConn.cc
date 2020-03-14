@@ -21,10 +21,13 @@ diffraflow::CmbImgFrmConn::CmbImgFrmConn(
     int sock_fd, CmbImgCache* img_cache_):
     GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 100 * 1024 * 1024, 4 * 1024 * 1024) {
     image_cache_ = img_cache_;
+    // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
+    buffer_uncompress_ = new char[pkt_maxlen_];
+    buffer_uncompress_limit_ = 0;
 }
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
-
+    delete [] buffer_uncompress_;
 }
 
 diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
@@ -54,11 +57,23 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
     size_t current_limit = payload_size - 4;
 
     // - uncompress and process if the payload is compressed
-    std::string uncompressed_str;
     if (payload_type == 0xABCDFF01) {
-        snappy::Uncompress(buffer_ + payload_position + 4, payload_size - 4, &uncompressed_str);
-        current_buffer = uncompressed_str.data();
-        current_limit = uncompressed_str.size();
+        if (!snappy::GetUncompressedLength(buffer_ + payload_position + 4,
+            payload_size - 4, &buffer_uncompress_limit_)) {
+            LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
+            return kContinue;
+        }
+        if (buffer_uncompress_limit_ > pkt_maxlen_) {
+            LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > pkt_maxlen_, skip the packet.");
+            return kContinue;
+        }
+        if (!snappy::RawUncompress(buffer_ + payload_position + 4,
+            payload_size - 4, buffer_uncompress_)) {
+            LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
+            return kContinue;
+        }
+        current_buffer = buffer_uncompress_;
+        current_limit  = buffer_uncompress_limit_;
     }
 
     LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 4 << ", processed size = " << current_limit);

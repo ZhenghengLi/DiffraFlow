@@ -28,6 +28,8 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_f
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
     buffer_B_imgct_ = 0;
+    buffer_compress_ = new char[buffer_size_];
+    buffer_compress_limit_ = 0;
     sending_thread_ = nullptr;
     run_flag_ = false;
     compress_flag_ = compr_flag;
@@ -36,11 +38,12 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, bool compr_f
 diffraflow::DspSender::~DspSender() {
     delete [] buffer_A_;
     delete [] buffer_B_;
+    delete [] buffer_compress_;
 }
 
 void diffraflow::DspSender::push(const char* data, const size_t len) {
     if (!run_flag_) return;
-    unique_lock<mutex> lk(mtx_);
+    unique_lock<mutex> lk(mtx_swap_);
     // wait when there is no enough space
     cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 4 <= buffer_size_ - buffer_A_limit_);});
     if (!run_flag_) return;
@@ -58,7 +61,7 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
 
 bool diffraflow::DspSender::swap_() {
     // swap buffer_A_ and buffer_B_ for async sending
-    unique_lock<mutex> lk(mtx_);
+    unique_lock<mutex> lk(mtx_swap_);
     if (buffer_A_limit_ < size_threshold_) {
         cv_swap_.wait_for(lk, std::chrono::milliseconds(time_threshold_));
     }
@@ -91,7 +94,7 @@ void diffraflow::DspSender::send_() {
 void diffraflow::DspSender::send_remaining() {
     // do this only after stopping and before deleting
     lock_guard<mutex> lk_send(mtx_send_);
-    lock_guard<mutex> lk(mtx_);
+    lock_guard<mutex> lk(mtx_swap_);
     // send all data in buffer_A
     if (buffer_A_limit_ > 0) {
         send_buffer_(buffer_A_, buffer_A_limit_, buffer_A_imgct_);
@@ -118,12 +121,11 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     size_t current_limit = limit;
 
     // - send compressed data if compress_flag is true
-    std::string compressed_str;
     if (compress_flag_) {
         payload_type = 0xABCDFF01;
-        snappy::Compress(buffer, limit, &compressed_str);
-        current_buffer = compressed_str.data();
-        current_limit = compressed_str.size();
+        snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
+        current_buffer = buffer_compress_;
+        current_limit = buffer_compress_limit_;
     }
 
     LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << current_limit);

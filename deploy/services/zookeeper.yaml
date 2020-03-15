@@ -15,9 +15,10 @@ data:
     maxClientCnxns=100
     standaloneEnabled=false
     admin.enableServer=true
-    server.1=kube-worker-1:2888:3888;2181
-    server.2=kube-worker-2:2888:3888;2181
-    server.3=kube-worker-3:2888:3888;2181
+    clientPort=2181
+    server.1=kube-worker-1:2888:3888
+    server.2=kube-worker-2:2888:3888
+    server.3=kube-worker-3:2888:3888
     quorumListenOnAllIPs=true
 ---
 apiVersion: apps/v1
@@ -42,7 +43,7 @@ spec:
         command:
         - sh
         - -c
-        - |-
+        - >-
           chown -R 42700:42700 /data /datalog /logs &&
           chown 42700:42700 /conf &&
           gosu 42700:42700 zkServer.sh start-foreground

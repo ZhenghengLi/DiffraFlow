@@ -63,3 +63,39 @@ spec:
         - name: http-server
           containerPort: 3180
           hostPort: 3180
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: bookkeeper-autorecovery
+  namespace: diffraflow
+  labels:
+    k8s-app: bookkeeper
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: bookkeeper-autorecovery
+  template:
+    metadata:
+      labels:
+        name: bookkeeper-autorecovery
+    spec:
+      nodeSelector:
+        diffraflow/node-type: service
+      securityContext:
+        runAsUser: 42700
+        runAsGroup: 42700
+        fsGroup: 42700
+      containers:
+      - name: bookkeeper
+        image: zhenghengli/bookkeeper:4.9.2
+        imagePullPolicy: Always
+        args:
+        - bookkeeper
+        - autorecovery
+        env:
+        - name: ZK_SERVERS
+          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
+        - name: ZK_CHROOT
+          value: "bookkeeper"

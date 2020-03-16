@@ -34,6 +34,9 @@ spec:
       - name: zookeeper
         image: zhenghengli/zookeeper:3.6.0
         imagePullPolicy: Always
+        args:
+        - zkServer.sh
+        - start-foreground
         env:
         - name: ZOO_STANDALONE_ENABLED
           value: "false"

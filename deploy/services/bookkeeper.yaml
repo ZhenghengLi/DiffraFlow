@@ -15,7 +15,7 @@ spec:
         name: bookkeeper
     spec:
       nodeSelector:
-        diffraflow/node-type:service
+        diffraflow/node-type: service
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
@@ -35,7 +35,7 @@ spec:
         fsGroup: 42700
       containers:
       - name: bookkeeper
-        image: zhenghengli/bookkeeper:4.10.0
+        image: zhenghengli/bookkeeper:4.9.2
         imagePullPolicy: Always
         args:
         - bookkeeper
@@ -46,7 +46,7 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: ZK_SERVERS
-          value: "kube-worker-1:2181,kube-worker-2:2181,kube-worker-3:2181"
+          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
         - name: ZK_CHROOT
           value: "bookkeeper"
         volumeMounts:
@@ -61,5 +61,5 @@ spec:
           containerPort: 3181
           hostPort: 3181
         - name: http-server
-          containerPort: 8080
+          containerPort: 3180
           hostPort: 3180

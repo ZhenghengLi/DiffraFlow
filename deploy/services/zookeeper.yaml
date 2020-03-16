@@ -32,7 +32,7 @@ spec:
         fsGroup: 42700
       containers:
       - name: zookeeper
-        image: zhenghengli/zookeeper:3.6.0
+        image: zhenghengli/zookeeper:3.5.7
         imagePullPolicy: Always
         args:
         - zkServer.sh
@@ -63,5 +63,5 @@ spec:
           containerPort: 3888
           hostPort: 3888
         - name: admin-server
-          containerPort: 8080
+          containerPort: 2180
           hostPort: 2180

@@ -8,7 +8,7 @@ data:
     listen_host = 0.0.0.0
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
-    compress_flag = false
+    compress_method = None
   combiner_addresses.txt: {{ .Values.combinerAddresses | quote }}
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console

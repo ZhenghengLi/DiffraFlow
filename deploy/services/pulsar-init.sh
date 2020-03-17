@@ -1,0 +1,1 @@
+pulsar initialize-cluster-metadata --cluster pulsar-cluster --zookeeper kube-worker-1:2181/pulsar --configuration-store kube-worker-1:2181/pulsar --webervice-url http://kube-master-0:6680,kube-worker-1:6680,kube-worker-2:6680,kube-worker-3:6680 --broker-service-url pulsar://kube-master-0:6650,kube-worker-1:6650,kube-worker-2:6650,kube-worker-3:6650

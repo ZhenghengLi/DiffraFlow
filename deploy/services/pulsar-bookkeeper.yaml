@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsar-bookkeeper
+  namespace: diffraflow
+  labels:
+    k8s-app: pulsar-bookkeeper
+spec:
+  clusterIP: None
+  selector:
+    name: pulsar-bookkeeper
+  ports:
+  - name: bookie
+    port: 3181
+  - name: http-server
+    port: 3180
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pulsar-bookkeeper
+  namespace: diffraflow
+  labels:
+    k8s-app: pulsar-bookkeeper
+spec:
+  selector:
+    matchLabels:
+      name: pulsar-bookkeeper
+  template:
+    metadata:
+      labels:
+        name: pulsar-bookkeeper
+    spec:
+      nodeSelector:
+        diffraflow/node-type: service
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - name: bookkeeper-data-journal
+        hostPath:
+          path: "/data/pulsar/bkDataJournal"
+      - name: bookkeeper-data-ledger
+        hostPath:
+          path: "/data/pulsar/bkDataLedger"
+      - name: bookkeeper-logs
+        hostPath:
+          path: "/data/pulsar/bkLogs"
+      securityContext:
+        runAsUser: 42700
+        runAsGroup: 42700
+        fsGroup: 42700
+      containers:
+      - name: pulsar-bookkeeper
+        image: zhenghengli/bookkeeper:4.9.2
+        imagePullPolicy: Always
+        args:
+        - bookkeeper
+        - bookie
+        env:
+        - name: BOOKIE_ADVERTISE_ADDRESS
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ZK_SERVERS
+          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
+        - name: ZK_CHROOT
+          value: "pulsar/ledgers"
+        volumeMounts:
+        - name: bookkeeper-data-journal
+          mountPath: "/bookkeeper/dataJournal"
+        - name: bookkeeper-data-ledger
+          mountPath: "/bookkeeper/dataLedger"
+        - name: bookkeeper-logs
+          mountPath: "/bookkeeper/logs"
+        ports:
+        - name: bookie
+          containerPort: 3181
+          hostPort: 3181
+        - name: http-server
+          containerPort: 3180
+          hostPort: 3180
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: pulsar-bk-autorecovery
+  namespace: diffraflow
+  labels:
+    k8s-app: pulsar-bookkeeper
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: pulsar-bk-autorecovery
+  template:
+    metadata:
+      labels:
+        name: pulsar-bk-autorecovery
+    spec:
+      nodeSelector:
+        diffraflow/node-type: service
+      securityContext:
+        runAsUser: 42700
+        runAsGroup: 42700
+        fsGroup: 42700
+      containers:
+      - name: bookkeeper
+        image: zhenghengli/bookkeeper:4.9.2
+        imagePullPolicy: Always
+        args:
+        - bookkeeper
+        - autorecovery
+        env:
+        - name: ZK_SERVERS
+          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
+        - name: ZK_CHROOT
+          value: "pulsar/ledgers"

@@ -52,6 +52,8 @@ spec:
         - pulsar
         - broker
         env:
+        - name: PULSAR_MEM
+          value: "-Xms32m -Xmx256m -XX:MaxDirectMemorySize=512m"
         - name: PULSAR_CLUSTER_NAME
           value: pulsar-cluster
         - name: PULSAR_ADVERTISED_ADDRESS

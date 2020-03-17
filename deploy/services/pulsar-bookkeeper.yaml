@@ -58,6 +58,10 @@ spec:
         - bookkeeper
         - bookie
         env:
+        - name: BOOKIE_MIN_HEAP_MEMORY
+          value: "32m"
+        - name: BOOKIE_MAX_HEAP_MEMORY
+          value: "128m"
         - name: BOOKIE_ADVERTISE_ADDRESS
           valueFrom:
             fieldRef:
@@ -112,6 +116,10 @@ spec:
         - bookkeeper
         - autorecovery
         env:
+        - name: BOOKIE_MIN_HEAP_MEMORY
+          value: "32m"
+        - name: BOOKIE_MAX_HEAP_MEMORY
+          value: "128m"
         - name: ZK_SERVERS
           value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
         - name: ZK_CHROOT

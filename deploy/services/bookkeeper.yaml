@@ -1,3 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookkeeper
+  namespace: diffraflow
+  labels:
+    k8s-app: bookkeeper
+spec:
+  clusterIP: None
+  selector:
+    name: bookkeeper
+  ports:
+  - name: bookie
+    port: 3181
+  - name: http-server
+    port: 3180
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

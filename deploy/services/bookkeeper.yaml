@@ -100,10 +100,6 @@ spec:
     spec:
       nodeSelector:
         diffraflow/node-type: service
-      volumes:
-      - name: bookkeeper-logs
-        hostPath:
-          path: "/data/bookkeeper/logs"
       securityContext:
         runAsUser: 42700
         runAsGroup: 42700
@@ -120,6 +116,3 @@ spec:
           value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
         - name: ZK_CHROOT
           value: "bookkeeper"
-        volumeMounts:
-        - name: bookkeeper-logs
-          mountPath: "/bookkeeper/logs"

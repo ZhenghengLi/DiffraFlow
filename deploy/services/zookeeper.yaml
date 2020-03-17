@@ -59,6 +59,8 @@ spec:
         - zkServer.sh
         - start-foreground
         env:
+        - name: ZK_SERVER_HEAP
+          value: "128"
         - name: ZOO_STANDALONE_ENABLED
           value: "false"
         - name: ZOO_SERVERS

@@ -5,40 +5,43 @@
 FROM ubuntu:18.04 AS builder
 # FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS builder
 # install dependencies
-RUN sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list && \
-apt-get update && \
-apt-get install -y --no-install-recommends \
-openjdk-8-jdk build-essential \
-libboost-dev \
-liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
-libmsgpack-dev libzookeeper-mt-dev && \
-apt-get clean && \
-rm -rf /var/lib/apt/lists/*
+RUN set -x \
+&& sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list \
+&& apt-get update \
+&& apt-get install -y --no-install-recommends \
+    openjdk-8-jdk build-essential \
+    libboost-dev \
+    liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
+    libmsgpack-dev libzookeeper-mt-dev \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
 # build and install
 ARG SOURCE_DIR=/opt/diffraflow_src
 ARG INSTALL_DIR=/opt/diffraflow
 ADD $PWD $SOURCE_DIR
-RUN cd $SOURCE_DIR && \
-./gradlew --no-daemon packageRelease && \
-rm -rf $HOME/.gradle && \
-mkdir $INSTALL_DIR && \
-mv build/package_release/* $INSTALL_DIR && \
-cd / && \
-rm -rf $SOURCE_DIR
+RUN set -x \
+&& cd $SOURCE_DIR \
+&& ./gradlew --no-daemon packageRelease \
+&& rm -rf $HOME/.gradle \
+&& mkdir $INSTALL_DIR \
+&& mv build/package_release/* $INSTALL_DIR \
+&& cd / \
+&& rm -rf $SOURCE_DIR
 
 ## deploy ####
 FROM ubuntu:18.04
 # FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 # install dependencies
-RUN sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list && \
-apt-get update && \
-apt-get install -y --no-install-recommends \
-openjdk-8-jre \
-liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
-libmsgpack-dev libzookeeper-mt-dev \
-netcat-openbsd && \
-apt-get clean && \
-rm -rf /var/lib/apt/lists/*
+RUN set -x \
+&& sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list \
+&& apt-get update \
+&& apt-get install -y --no-install-recommends \
+    openjdk-8-jre \
+    liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
+    libmsgpack-dev libzookeeper-mt-dev \
+    netcat-openbsd \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
 # copy from builder
 ARG INSTALL_DIR=/opt/diffraflow
 COPY --from=builder $INSTALL_DIR $INSTALL_DIR
@@ -61,7 +64,7 @@ BUILD_TIME="$BUILD_TIME"
 # set root password for runtime debug
 RUN echo "root:20180427" | chpasswd
 # use a non-root user for normal work
-RUN useradd -m -u 42700 diffraflow -s /bin/bash
+RUN groupadd diffraflow --gid=42700 \
+&& useradd -m -g diffraflow --uid=42700 diffraflow -s /bin/bash
 USER diffraflow
 CMD ["/bin/bash"]
-

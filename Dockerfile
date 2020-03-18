@@ -110,11 +110,12 @@ SOURCE_COMMIT="$SOURCE_COMMIT" \
 COMMIT_MSG="$COMMIT_MSG" \
 BUILD_TIME="$BUILD_TIME"
 
-# set root password for runtime debug
-RUN echo "root:20180427" | chpasswd
-
-# use a non-root user for normal work
-RUN groupadd diffraflow --gid=42700 \
+# user setting
+RUN set -x \
+## set root password for runtime debug
+&& echo "root:20180427" | chpasswd \
+## use a non-root user for normal work
+&& groupadd diffraflow --gid=42700 \
 && useradd -m -g diffraflow --uid=42700 diffraflow -s /bin/bash
 
 USER diffraflow

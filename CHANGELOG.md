@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] write time alignment function
 - [ ] write the code to exchange data between combiner and ingester.
 
+## [0.0.8] - 2020-03-18
+
+### Added
+
+- Add LZ4 and ZSTD compression support for the data transferring from **dispatcher** to **combiner**.
+- Add deploy folder, which contains the Kuberenetes deployment YAML files for all components and services. The deployment of **dispatcher** and **combiner** on a local vm-built Kubernetes cluster was tested, and also for that of ZooKeeper, BookKeeper and Pulsar.
+- Install Apache Pulsar C++ client in Dockerfile, as Pulsar is planned to be used for system runtime monitoring.
+
 ## [0.0.7] - 2020-02-29
 
 ### Changed

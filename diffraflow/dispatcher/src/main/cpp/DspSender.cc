@@ -57,9 +57,9 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
     gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_, 4);
     // image frame data
     std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 4);
+    // foreward limit and check size threshold
     buffer_A_limit_ += 4 + len;
     buffer_A_imgct_ += 1;
-    // foreward limit and check size threshold
     if (buffer_A_limit_ > size_threshold_) {
         cv_swap_.notify_one();
     }

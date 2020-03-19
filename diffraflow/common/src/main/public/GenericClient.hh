@@ -15,8 +15,15 @@ namespace diffraflow {
 
         bool connect_to_server();
         void close_connection();
-        int send_payload(const char* payload_buffer, const uint32_t payload_type, size_t buffer_size);
-        int recv_payload(char* payload_buffer, uint32_t& payload_type, size_t& buffer_size);
+
+    protected:
+        bool send_one_(
+            const char*    payload_head_buffer,
+            const size_t   payload_head_size,
+            const char*    payload_data_buffer,
+            const size_t   payload_data_size);
+
+        bool receive_one_(char* payload_buffer, size_t& payload_size);
 
     protected:
         string      dest_host_;

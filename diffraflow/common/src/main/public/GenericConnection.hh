@@ -36,6 +36,11 @@ namespace diffraflow {
         enum ProcessRes {kContinue, kBreak, kStop};
 
     protected:
+        bool send_one_(
+            const char*    payload_head_buffer,
+            const size_t   payload_head_size,
+            const char*    payload_data_buffer,
+            const size_t   payload_data_size);
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer,
             const uint32_t payload_size, const uint32_t payload_type);

@@ -123,8 +123,8 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
 
     // - send uncompressed data
     uint32_t payload_type = 0xABCDFF00;
-    const char* current_buffer = buffer;
-    size_t current_limit = limit;
+    const char* payload_data_buffer = buffer;
+    size_t payload_data_size = limit;
 
     // - send compressed data if compress_method_ is not kNone
     switch (compress_method_) {
@@ -135,14 +135,14 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
             LOG4CXX_WARN(logger_, "failed to compress data by LZ4, discard data in buffer.");
             return;
         }
-        current_buffer = buffer_compress_;
-        current_limit = buffer_compress_limit_;
+        payload_data_buffer = buffer_compress_;
+        payload_data_size   = buffer_compress_limit_;
         break;
     case kSnappy:
         payload_type = 0xABCDFF02;
         snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
-        current_buffer = buffer_compress_;
-        current_limit = buffer_compress_limit_;
+        payload_data_buffer = buffer_compress_;
+        payload_data_size   = buffer_compress_limit_;
         break;
     case kZSTD:
         payload_type = 0xABCDFF03;
@@ -152,43 +152,21 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
                 << ZSTD_getErrorName(buffer_compress_limit_) << ", discard data in buffer.");
             return;
         }
-        current_buffer = buffer_compress_;
-        current_limit = buffer_compress_limit_;
+        payload_data_buffer = buffer_compress_;
+        payload_data_size   = buffer_compress_limit_;
         break;
     }
 
-    LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << current_limit);
+    LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << payload_data_size);
 
-    // send head
-    char head_buffer[16];
-    gPS.serializeValue<uint32_t>(sending_head_, head_buffer, 4);
-    gPS.serializeValue<uint32_t>(8 + current_limit, head_buffer + 4, 4);
-    gPS.serializeValue<uint32_t>(payload_type, head_buffer + 8, 4);
-    gPS.serializeValue<uint32_t>(imgct, head_buffer + 12, 4);
-    for (size_t pos = 0; pos < 16;) {
-        int count = write(client_sock_fd_, head_buffer + pos, 16 - pos);
-        if (count < 0) {
-            LOG4CXX_WARN(logger_, "error found when sending data: " << strerror(errno));
-            close_connection();
-            return;
-        } else {
-            pos += count;
-        }
+    // send data
+    char payload_head_buffer[8];
+    gPS.serializeValue<uint32_t>(payload_type, payload_head_buffer, 4);
+    gPS.serializeValue<uint32_t>(imgct, payload_head_buffer + 4, 4);
+    if (!send_one_(payload_head_buffer, 8, payload_data_buffer, payload_data_size)) {
+        close_connection();
     }
-    LOG4CXX_INFO(logger_, "done a write for head.");
 
-    // send data in current_buffer
-    for (size_t pos = 0; pos < current_limit;) {
-        int count = write(client_sock_fd_, current_buffer + pos, current_limit - pos);
-        if (count < 0) {
-            LOG4CXX_WARN(logger_, "error found when sending data: " << strerror(errno));
-            close_connection();
-            return;
-        } else {
-            pos += count;
-        }
-    }
-    LOG4CXX_INFO(logger_, "done a write for data.");
 }
 
 void diffraflow::DspSender::start() {

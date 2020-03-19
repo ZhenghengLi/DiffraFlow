@@ -1,6 +1,7 @@
 #include "GenericConnection.hh"
 #include "Decoder.hh"
 #include "PrimitiveSerializer.hh"
+#include "NetworkUtils.hh"
 
 #include <cassert>
 #include <unistd.h>
@@ -184,4 +185,26 @@ diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process
     const char* payload_buffer, const uint32_t payload_size, const uint32_t payload_type) {
     LOG4CXX_WARN(logger_, "function process_payload_() is used, but it is not implemented by subclass.");
     return kStop;
+}
+
+bool diffraflow::GenericConnection::send_one_(
+    const char*    payload_head_buffer,
+    const size_t   payload_head_size,
+    const char*    payload_data_buffer,
+    const size_t   payload_data_size) {
+
+    if (NetworkUtils::send_packet(
+        client_sock_fd_,
+        sending_head_,
+        payload_head_buffer,
+        payload_head_size,
+        payload_data_buffer,
+        payload_data_size,
+        logger_) ) {
+        // note: here can accumulate metrics
+        return true;
+    } else {
+        return false;
+    }
+
 }

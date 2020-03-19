@@ -1,5 +1,6 @@
 #include "GenericClient.hh"
 #include "PrimitiveSerializer.hh"
+#include "NetworkUtils.hh"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
@@ -90,4 +91,31 @@ void diffraflow::GenericClient::close_connection() {
         close(client_sock_fd_);
         client_sock_fd_ = -1;
     }
+}
+
+bool diffraflow::GenericClient::send_one_(
+    const char*    payload_head_buffer,
+    const size_t   payload_head_size,
+    const char*    payload_data_buffer,
+    const size_t   payload_data_size) {
+
+    if (NetworkUtils::send_packet(
+        client_sock_fd_,
+        sending_head_,
+        payload_head_buffer,
+        payload_head_size,
+        payload_data_buffer,
+        payload_data_size,
+        logger_) ) {
+        // note: here can accumulate metrics
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
+bool diffraflow::GenericClient::receive_one_(char* payload_buffer, size_t& payload_size) {
+
+    return true;
 }

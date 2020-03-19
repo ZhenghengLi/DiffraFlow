@@ -14,7 +14,7 @@ namespace diffraflow {
         ~CmbImgFrmConn();
 
     protected:
-        ProcessRes process_payload_(const size_t payload_position,
+        ProcessRes process_payload_(const char* payload_buffer,
             const uint32_t payload_size, const uint32_t payload_type) override;
 
     private:

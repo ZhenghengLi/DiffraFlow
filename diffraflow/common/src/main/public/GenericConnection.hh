@@ -36,16 +36,15 @@ namespace diffraflow {
         enum ProcessRes {kContinue, kBreak, kStop};
 
     protected:
-        void shift_left_(const size_t position, const size_t limit);
-
         // methods to be implemented
-        virtual void before_transferring_();
-        virtual bool do_transferring_();
-        virtual ProcessRes process_payload_(const size_t payload_position,
+        virtual ProcessRes process_payload_(const char* payload_buffer,
             const uint32_t payload_size, const uint32_t payload_type);
 
     private:
         bool start_connection_();
+        void shift_left_(const size_t position, const size_t limit);
+        void before_receiving_();
+        bool do_receiving_and_processing_();
 
     private:
         static log4cxx::LoggerPtr logger_;

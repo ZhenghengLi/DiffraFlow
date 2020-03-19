@@ -16,8 +16,8 @@ namespace diffraflow {
         static log4cxx::LoggerPtr logger_;
 
     protected:
-        void before_transferring_();
-        bool do_transferring_();
+        // void before_transferring_();
+        // bool do_transferring_();
 
     public:
         CmbImgDataConn(int sock_fd, CmbImgCache* img_cache_);

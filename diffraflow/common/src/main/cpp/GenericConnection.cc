@@ -37,8 +37,8 @@ diffraflow::GenericConnection::~GenericConnection() {
 
 void diffraflow::GenericConnection::run() {
     if (start_connection_()) {
-        before_transferring_();
-        while (!done_flag_ && do_transferring_());
+        before_receiving_();
+        while (!done_flag_ && do_receiving_and_processing_());
     }
     close(client_sock_fd_);
     done_flag_ = true;
@@ -111,11 +111,11 @@ bool diffraflow::GenericConnection::start_connection_() {
     return true;
 }
 
-void diffraflow::GenericConnection::before_transferring_() {
+void diffraflow::GenericConnection::before_receiving_() {
     LOG4CXX_INFO(logger_, "connection ID: " << connection_id_);
 }
 
-bool diffraflow::GenericConnection::do_transferring_() {
+bool diffraflow::GenericConnection::do_receiving_and_processing_() {
     const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
     if (slice_length == 0) {
         LOG4CXX_INFO(logger_, "socket " << client_sock_fd_ << " is closed.");
@@ -162,7 +162,7 @@ bool diffraflow::GenericConnection::do_transferring_() {
         //////////////////////////////////////////////////////////////////
         // payload level process //
         //////////////////////////////////////////////////////////////////
-        ProcessRes result = process_payload_(position, payload_size, payload_type);
+        ProcessRes result = process_payload_(buffer_ + position, payload_size, payload_type);
         position += payload_size;
         switch (result) {
         case kContinue:
@@ -181,7 +181,7 @@ bool diffraflow::GenericConnection::do_transferring_() {
 }
 
 diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process_payload_(
-    const size_t payload_position, const uint32_t payload_size, const uint32_t payload_type) {
+    const char* payload_buffer, const uint32_t payload_size, const uint32_t payload_type) {
     LOG4CXX_WARN(logger_, "function process_payload_() is used, but it is not implemented by subclass.");
     return kStop;
 }

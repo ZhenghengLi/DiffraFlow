@@ -33,7 +33,7 @@ diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
 }
 
 diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
-    const size_t payload_position, const uint32_t payload_size, const uint32_t payload_type) {
+    const char* payload_buffer, const uint32_t payload_size, const uint32_t payload_type) {
 
     // payload type check
     if (payload_type != 0xABCDFF00
@@ -50,7 +50,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
     }
 
     // extract image counts
-    uint32_t image_counts = gDC.decode_byte<uint32_t>(buffer_ + payload_position, 0, 3);
+    uint32_t image_counts = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
     if (image_counts == 0) {
         LOG4CXX_WARN(logger_, "got unexpected zero number_of_images, close the connection.");
         return kStop;
@@ -58,12 +58,12 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
     }
 
     // - directly process without uncompressing
-    const char* current_buffer = buffer_ + payload_position + 4;
+    const char* current_buffer = payload_buffer + 4;
     size_t current_limit = payload_size - 4;
 
     // - uncompress and process if the payload is compressed
     if (payload_type == 0xABCDFF01) {
-        int result = LZ4_decompress_safe(buffer_ + payload_position + 4,
+        int result = LZ4_decompress_safe(payload_buffer + 4,
             buffer_uncompress_, payload_size - 4, pkt_maxlen_);
         if (result < 0) {
             LOG4CXX_WARN(logger_, "Failed to decompress data by LZ4 with error code: "
@@ -75,7 +75,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         current_buffer = buffer_uncompress_;
         current_limit  = buffer_uncompress_limit_;
     } else if (payload_type == 0xABCDFF02) {
-        if (!snappy::GetUncompressedLength(buffer_ + payload_position + 4,
+        if (!snappy::GetUncompressedLength(payload_buffer + 4,
             payload_size - 4, &buffer_uncompress_limit_)) {
             LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
             return kContinue;
@@ -84,7 +84,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
             LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > pkt_maxlen_, skip the packet.");
             return kContinue;
         }
-        if (!snappy::RawUncompress(buffer_ + payload_position + 4,
+        if (!snappy::RawUncompress(payload_buffer + 4,
             payload_size - 4, buffer_uncompress_)) {
             LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
             return kContinue;
@@ -93,7 +93,7 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
         current_limit  = buffer_uncompress_limit_;
     } else if (payload_type == 0xABCDFF03) {
         buffer_uncompress_limit_ = ZSTD_decompress(buffer_uncompress_, pkt_maxlen_,
-            buffer_ + payload_position + 4, payload_size - 4);
+            payload_buffer + 4, payload_size - 4);
         if (ZSTD_isError(buffer_uncompress_limit_)) {
             LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
                 << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");

@@ -19,7 +19,7 @@ diffraflow::DspImgFrmConn::~DspImgFrmConn() {
 
 }
 
-bool diffraflow::DspImgFrmConn::process_payload_(
+diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_payload_(
     const char* payload_buffer, const size_t payload_size) {
     // extract payload type
     uint32_t payload_type = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
@@ -28,17 +28,17 @@ bool diffraflow::DspImgFrmConn::process_payload_(
         {
             if (payload_size <= 8) {
                 LOG4CXX_INFO(logger_, "got wrong image frame, close the connection.");
-                return false;
+                return kFailed;
             }
             int64_t identifier = gDC.decode_byte<int64_t>(payload_buffer, 4, 11);
             int index = hash_long_(identifier) % sender_count_;
             LOG4CXX_INFO(logger_, "Send data with key: " << identifier);
             sender_array_[index]->push(payload_buffer + 4, payload_size - 4);
-            return true;
+            return kProcessed;
         }
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
-        return true;
+        return kSkipped;
     }
 }
 

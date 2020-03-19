@@ -112,17 +112,20 @@ bool diffraflow::GenericConnection::do_receiving_and_processing_() {
         return false;
     }
     // payload level process
-    if (process_payload_(buffer_, buffer_limit_) ) {
+    switch ( process_payload_(buffer_, buffer_limit_) ) {
+    case kProcessed:
         return true;
-    } else {
+    case kSkipped:
+        return true;
+    case kFailed:
         return false;
     }
 }
 
-bool diffraflow::GenericConnection::process_payload_(
+diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process_payload_(
     const char* payload_buffer, const size_t payload_size) {
     LOG4CXX_WARN(logger_, "function process_payload_() is used, but it is not implemented by subclass.");
-    return false;
+    return kFailed;
 }
 
 bool diffraflow::GenericConnection::send_one_(

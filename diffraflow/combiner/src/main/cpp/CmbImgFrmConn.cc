@@ -32,12 +32,13 @@ diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
     delete [] buffer_uncompress_;
 }
 
-bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, const size_t payload_size) {
+diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
+    const char* payload_buffer, const size_t payload_size) {
 
     // payload size check
     if (payload_size < 8) {
         LOG4CXX_WARN(logger_, "got too short image frame sequence data, close the connection.");
-        return false;
+        return kFailed;
     }
     // extract payload type
     uint32_t payload_type = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
@@ -45,7 +46,7 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
     uint32_t image_counts = gDC.decode_byte<uint32_t>(payload_buffer, 4, 7);
     if (image_counts == 0) {
         LOG4CXX_WARN(logger_, "got unexpected zero number_of_images, close the connection.");
-        return false;
+        return kFailed;
     }
 
     const char* current_buffer = nullptr;
@@ -65,7 +66,7 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
             if (result < 0) {
                 LOG4CXX_WARN(logger_, "Failed to decompress data by LZ4 with error code: "
                     << result << ", skip the packet.");
-                return true;
+                return kSkipped;
             } else {
                 buffer_uncompress_limit_ = result;
             }
@@ -78,16 +79,16 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
             if (!snappy::GetUncompressedLength(payload_buffer + 8,
                 payload_size - 8, &buffer_uncompress_limit_)) {
                 LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
-                return true;
+                return kSkipped;
             }
             if (buffer_uncompress_limit_ > buffer_size_) {
-                LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > pkt_maxlen_, skip the packet.");
-                return true;
+                LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > buffer_size_, skip the packet.");
+                return kSkipped;
             }
             if (!snappy::RawUncompress(payload_buffer + 8,
                 payload_size - 8, buffer_uncompress_)) {
                 LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
-                return true;
+                return kSkipped;
             }
             current_buffer = buffer_uncompress_;
             current_limit  = buffer_uncompress_limit_;
@@ -100,7 +101,7 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
             if (ZSTD_isError(buffer_uncompress_limit_)) {
                 LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
                     << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
-                return true;
+                return kSkipped;
             }
             current_buffer = buffer_uncompress_;
             current_limit  = buffer_uncompress_limit_;
@@ -108,7 +109,7 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
         break;
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
-        return true;
+        return kSkipped;
     }
 
     LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 8 << ", processed size = " << current_limit);
@@ -118,12 +119,12 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
     for (size_t i = 0; i < image_counts; i++) {
         if (current_limit - current_position <= 4) {
             LOG4CXX_WARN(logger_, "unexpectedly reach the end of image frame sequence data, close the connection.");
-            return false;
+            return kFailed;
         }
         size_t current_size = gDC.decode_byte<uint32_t>(current_buffer + current_position, 0, 3);
         if (current_size == 0) {
             LOG4CXX_WARN(logger_, "got zero image frame size, close the connection.");
-            return false;
+            return kFailed;
         }
         current_position += 4;
         ImageFrame image_frame;
@@ -135,8 +136,8 @@ bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, con
     // size validation
     if (current_position != current_limit) {
         LOG4CXX_WARN(logger_, "got abnormal image frame sequence data, close the connection.");
-        return false;
+        return kFailed;
     }
 
-    return true;
+    return kProcessed;
 }

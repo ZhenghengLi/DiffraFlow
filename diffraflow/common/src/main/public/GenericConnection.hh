@@ -33,6 +33,9 @@ namespace diffraflow {
         atomic<bool> done_flag_;
 
     protected:
+        enum ProcessRes {kProcessed, kSkipped, kFailed};
+
+    protected:
         bool send_one_(
             const char*    payload_head_buffer,
             const size_t   payload_head_size,
@@ -40,7 +43,7 @@ namespace diffraflow {
             const size_t   payload_data_size);
 
         // methods to be implemented
-        virtual bool process_payload_(
+        virtual ProcessRes process_payload_(
             const char*  payload_buffer,
             const size_t payload_size);
 

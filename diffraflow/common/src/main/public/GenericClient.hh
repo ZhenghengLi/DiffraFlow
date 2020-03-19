@@ -2,9 +2,13 @@
 #define GenericClient_H
 
 #include <string>
+#include <atomic>
 #include <log4cxx/logger.h>
 
 using std::string;
+using std::atomic_bool;
+using std::atomic_uint;
+using std::atomic_ulong;
 
 namespace diffraflow {
     class GenericClient {
@@ -15,6 +19,14 @@ namespace diffraflow {
 
         bool connect_to_server();
         void close_connection();
+
+    public:
+        struct {
+            atomic_bool  connected;
+            atomic_uint  connecting_action_counts;
+            atomic_ulong total_sent_size;
+            atomic_ulong total_received_size;
+        } metrics;
 
     protected:
         bool send_one_(

@@ -21,10 +21,10 @@ log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_
 
 diffraflow::CmbImgFrmConn::CmbImgFrmConn(
     int sock_fd, CmbImgCache* img_cache_):
-    GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 100 * 1024 * 1024, 4 * 1024 * 1024) {
+    GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 4 * 1024 * 1024) {
     image_cache_ = img_cache_;
     // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
-    buffer_uncompress_ = new char[pkt_maxlen_];
+    buffer_uncompress_ = new char[buffer_size_];
     buffer_uncompress_limit_ = 0;
 }
 
@@ -32,90 +32,98 @@ diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
     delete [] buffer_uncompress_;
 }
 
-diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
-    const char* payload_buffer, const uint32_t payload_size, const uint32_t payload_type) {
+bool diffraflow::CmbImgFrmConn::process_payload_(const char* payload_buffer, const size_t payload_size) {
 
-    // payload type check
-    if (payload_type != 0xABCDFF00
-        && payload_type != 0xABCDFF01
-        && payload_type != 0xABCDFF02
-        && payload_type != 0xABCDFF03) {
-        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
-        return kContinue;
-    }
     // payload size check
-    if (payload_size < 4) {
-        LOG4CXX_WARN(logger_, "got wrong image frame sequence data, close the connection.");
-        return kStop;
+    if (payload_size < 8) {
+        LOG4CXX_WARN(logger_, "got too short image frame sequence data, close the connection.");
+        return false;
     }
-
+    // extract payload type
+    uint32_t payload_type = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
     // extract image counts
-    uint32_t image_counts = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
+    uint32_t image_counts = gDC.decode_byte<uint32_t>(payload_buffer, 4, 7);
     if (image_counts == 0) {
         LOG4CXX_WARN(logger_, "got unexpected zero number_of_images, close the connection.");
-        return kStop;
-
+        return false;
     }
 
-    // - directly process without uncompressing
-    const char* current_buffer = payload_buffer + 4;
-    size_t current_limit = payload_size - 4;
+    const char* current_buffer = nullptr;
+    size_t current_limit = 0;
 
-    // - uncompress and process if the payload is compressed
-    if (payload_type == 0xABCDFF01) {
-        int result = LZ4_decompress_safe(payload_buffer + 4,
-            buffer_uncompress_, payload_size - 4, pkt_maxlen_);
-        if (result < 0) {
-            LOG4CXX_WARN(logger_, "Failed to decompress data by LZ4 with error code: "
-                << result << ", skip the packet.");
-            return kContinue;
-        } else {
-            buffer_uncompress_limit_ = result;
+    switch (payload_type) {
+    case 0xABCDFF00: // Non-Compress, use the raw data
+        {
+            current_buffer = payload_buffer + 8;
+            current_limit = payload_size - 8;
         }
-        current_buffer = buffer_uncompress_;
-        current_limit  = buffer_uncompress_limit_;
-    } else if (payload_type == 0xABCDFF02) {
-        if (!snappy::GetUncompressedLength(payload_buffer + 4,
-            payload_size - 4, &buffer_uncompress_limit_)) {
-            LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
-            return kContinue;
+        break;
+    case 0xABCDFF01: // Compressed by LZ4, decompress
+        {
+            int result = LZ4_decompress_safe(payload_buffer + 8,
+                buffer_uncompress_, payload_size - 8, buffer_size_);
+            if (result < 0) {
+                LOG4CXX_WARN(logger_, "Failed to decompress data by LZ4 with error code: "
+                    << result << ", skip the packet.");
+                return true;
+            } else {
+                buffer_uncompress_limit_ = result;
+            }
+            current_buffer = buffer_uncompress_;
+            current_limit  = buffer_uncompress_limit_;
         }
-        if (buffer_uncompress_limit_ > pkt_maxlen_) {
-            LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > pkt_maxlen_, skip the packet.");
-            return kContinue;
+        break;
+    case 0xABCDFF02: // Compressed by Snappy, decompress
+        {
+            if (!snappy::GetUncompressedLength(payload_buffer + 8,
+                payload_size - 8, &buffer_uncompress_limit_)) {
+                LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
+                return true;
+            }
+            if (buffer_uncompress_limit_ > buffer_size_) {
+                LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > pkt_maxlen_, skip the packet.");
+                return true;
+            }
+            if (!snappy::RawUncompress(payload_buffer + 8,
+                payload_size - 8, buffer_uncompress_)) {
+                LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
+                return true;
+            }
+            current_buffer = buffer_uncompress_;
+            current_limit  = buffer_uncompress_limit_;
         }
-        if (!snappy::RawUncompress(payload_buffer + 4,
-            payload_size - 4, buffer_uncompress_)) {
-            LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
-            return kContinue;
+        break;
+    case 0xABCDFF03: // Compressed by ZSTD, decompress
+        {
+            buffer_uncompress_limit_ = ZSTD_decompress(buffer_uncompress_, buffer_size_,
+                payload_buffer + 8, payload_size - 8);
+            if (ZSTD_isError(buffer_uncompress_limit_)) {
+                LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
+                    << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
+                return true;
+            }
+            current_buffer = buffer_uncompress_;
+            current_limit  = buffer_uncompress_limit_;
         }
-        current_buffer = buffer_uncompress_;
-        current_limit  = buffer_uncompress_limit_;
-    } else if (payload_type == 0xABCDFF03) {
-        buffer_uncompress_limit_ = ZSTD_decompress(buffer_uncompress_, pkt_maxlen_,
-            payload_buffer + 4, payload_size - 4);
-        if (ZSTD_isError(buffer_uncompress_limit_)) {
-            LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
-                << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
-            return kContinue;
-        }
-        current_buffer = buffer_uncompress_;
-        current_limit  = buffer_uncompress_limit_;
+        break;
+    default:
+        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
+        return true;
     }
 
-    LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 4 << ", processed size = " << current_limit);
+    LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 8 << ", processed size = " << current_limit);
 
     // process data in current_buffer
     size_t current_position = 0;
     for (size_t i = 0; i < image_counts; i++) {
         if (current_limit - current_position <= 4) {
             LOG4CXX_WARN(logger_, "unexpectedly reach the end of image frame sequence data, close the connection.");
-            return kStop;
+            return false;
         }
         size_t current_size = gDC.decode_byte<uint32_t>(current_buffer + current_position, 0, 3);
         if (current_size == 0) {
             LOG4CXX_WARN(logger_, "got zero image frame size, close the connection.");
-            return kStop;
+            return false;
         }
         current_position += 4;
         ImageFrame image_frame;
@@ -127,8 +135,8 @@ diffraflow::CmbImgFrmConn::ProcessRes diffraflow::CmbImgFrmConn::process_payload
     // size validation
     if (current_position != current_limit) {
         LOG4CXX_WARN(logger_, "got abnormal image frame sequence data, close the connection.");
-        return kStop;
+        return false;
     }
 
-    return kContinue;
+    return true;
 }

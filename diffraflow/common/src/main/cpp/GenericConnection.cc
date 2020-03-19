@@ -18,7 +18,7 @@ log4cxx::LoggerPtr diffraflow::GenericConnection::logger_
 
 diffraflow::GenericConnection::GenericConnection(int sock_fd,
     uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
-    size_t buff_sz, size_t pkt_ml) {
+    size_t buff_sz) {
     assert(sock_fd > 0);
     client_sock_fd_ = sock_fd;
     greeting_head_ = greet_hd;
@@ -26,8 +26,7 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     sending_head_ = send_hd;
     buffer_size_ = buff_sz;
     buffer_ = new char[buffer_size_];
-    pkt_maxlen_ = pkt_ml;
-    slice_begin_ = 0;
+    buffer_limit_ = 0;
     done_flag_ = false;
     connection_id_ = -1;
 }
@@ -55,25 +54,18 @@ void diffraflow::GenericConnection::stop() {
     done_flag_ = true;
 }
 
-void diffraflow::GenericConnection::shift_left_(const size_t position, const size_t limit) {
-    if (position > 0) {
-        copy(buffer_ + position, buffer_ + limit, buffer_);
-    }
-    slice_begin_ = limit - position;
-}
-
 bool diffraflow::GenericConnection::start_connection_() {
-    slice_begin_ = 0;
-    while (true) {
-        const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-        if (slice_length == 0) {
+    // receive greeting
+    for (size_t pos = 0; pos < 12;) {
+        int count = read(client_sock_fd_, buffer_ + pos, 12 - pos);
+        if (count < 0) {
+            LOG4CXX_WARN(logger_, "error found when receiving data: " << strerror(errno));
+            return false;
+        } else if (count == 0) {
             LOG4CXX_INFO(logger_, "socket " << client_sock_fd_ << " is closed.");
             return false;
-        }
-        if (slice_begin_ + slice_length < 12) {
-            slice_begin_ += slice_length;
         } else {
-            break;
+            pos += count;
         }
     }
     uint32_t head  = gDC.decode_byte<uint32_t>(buffer_, 0, 3);
@@ -107,8 +99,6 @@ bool diffraflow::GenericConnection::start_connection_() {
             pos += count;
         }
     }
-    // ready for transferring data
-    slice_begin_ = 0;
     return true;
 }
 
@@ -117,74 +107,22 @@ void diffraflow::GenericConnection::before_receiving_() {
 }
 
 bool diffraflow::GenericConnection::do_receiving_and_processing_() {
-    const int slice_length = read(client_sock_fd_, buffer_ + slice_begin_, buffer_size_ - slice_begin_);
-    if (slice_length == 0) {
-        LOG4CXX_INFO(logger_, "socket " << client_sock_fd_ << " is closed.");
+    if (!NetworkUtils::receive_packet(client_sock_fd_, receiving_head_,
+        buffer_, buffer_size_, buffer_limit_, logger_)) {
         return false;
     }
-    const size_t limit = slice_begin_ + slice_length;
-    size_t position = 0;
-    while (true) {
-        /////////////////////////////////////////////////////////////////
-        // packet level process //
-        /////////////////////////////////////////////////////////////////
-        // continue to receive the data of head and size
-        if (limit - position < 8) {
-            shift_left_(position, limit);
-            break;
-        }
-        // extract packet head and packet size
-        uint32_t packet_head = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
-        uint32_t packet_size = gDC.decode_byte<uint32_t>(buffer_ + position, 4, 7);
-        position += 8;
-        // head and size check for packet
-        if (packet_head != receiving_head_) {
-            LOG4CXX_INFO(logger_, "got wrong packet, close the connection.");
-            return false;
-        }
-        if (packet_size > pkt_maxlen_) {
-            LOG4CXX_INFO(logger_, "got too long packet, close the connection.");
-            return false;
-        }
-        if (packet_size < 4) {
-            LOG4CXX_INFO(logger_, "got too short packet, close the connection.");
-            return false;
-        }
-        // continue to receive more data if reach half packet
-        if (limit - position < packet_size) {
-            position -= 8;
-            shift_left_(position, limit);
-            break;
-        }
-        // now have the whole packet from position, extract type and size of payload
-        uint32_t payload_type = gDC.decode_byte<uint32_t>(buffer_ + position, 0, 3);
-        const uint32_t payload_size = packet_size - 4;
-        position += 4;
-        //////////////////////////////////////////////////////////////////
-        // payload level process //
-        //////////////////////////////////////////////////////////////////
-        ProcessRes result = process_payload_(buffer_ + position, payload_size, payload_type);
-        position += payload_size;
-        switch (result) {
-        case kContinue:
-            // continue receiving data from current position
-            continue;
-        case kBreak:
-            // slice_begin_ is reset, and should restart
-            break;
-        case kStop:
-            // error found when processing payload, close the connection
-            return false;
-        }
-        ///////////////////////////////////////////////////////////////////
+    // payload level process
+    if (process_payload_(buffer_, buffer_limit_) ) {
+        return true;
+    } else {
+        return false;
     }
-    return true;
 }
 
-diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process_payload_(
-    const char* payload_buffer, const uint32_t payload_size, const uint32_t payload_type) {
+bool diffraflow::GenericConnection::process_payload_(
+    const char* payload_buffer, const size_t payload_size) {
     LOG4CXX_WARN(logger_, "function process_payload_() is used, but it is not implemented by subclass.");
-    return kStop;
+    return false;
 }
 
 bool diffraflow::GenericConnection::send_one_(

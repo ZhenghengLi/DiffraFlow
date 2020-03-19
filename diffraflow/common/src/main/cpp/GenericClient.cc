@@ -22,6 +22,10 @@ diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
     greeting_head_ = greet_hd;
     sending_head_ = send_hd;
     client_sock_fd_ = -1;
+    metrics.connected = false;
+    metrics.connecting_action_counts = 0;
+    metrics.total_sent_size = 0;
+    metrics.total_received_size = 0;
 }
 
 diffraflow::GenericClient::~GenericClient() {
@@ -29,6 +33,7 @@ diffraflow::GenericClient::~GenericClient() {
 }
 
 bool diffraflow::GenericClient::connect_to_server() {
+    metrics.connecting_action_counts++;
     addrinfo hints, *infoptr;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -82,6 +87,7 @@ bool diffraflow::GenericClient::connect_to_server() {
         return false;
     } else {
         LOG4CXX_INFO(logger_, "Successfully connected to server running on " << dest_host_ << ":" << dest_port_);
+        metrics.connected = true;
         return true;
     }
 }
@@ -91,6 +97,7 @@ void diffraflow::GenericClient::close_connection() {
         close(client_sock_fd_);
         client_sock_fd_ = -1;
     }
+    metrics.connected = false;
 }
 
 bool diffraflow::GenericClient::send_one_(
@@ -107,7 +114,9 @@ bool diffraflow::GenericClient::send_one_(
         payload_data_buffer,
         payload_data_size,
         logger_) ) {
-        // note: here can accumulate metrics
+
+        metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
+
         return true;
     } else {
         return false;

@@ -16,7 +16,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgDataConn::logger_
 
 diffraflow::CmbImgDataConn::CmbImgDataConn(
     int sock_fd, CmbImgCache* img_cache_):
-    GenericConnection(sock_fd, 0xBBBBCCCC, 0x0, 0x0, 100 * 1024 * 1024, 10 * 1024 * 1024) {
+    GenericConnection(sock_fd, 0xBBBBCCCC, 0x0, 0x0, 10 * 1024 * 1024) {
     image_cache_ = img_cache_;
 }
 

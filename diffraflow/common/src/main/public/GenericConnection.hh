@@ -6,6 +6,9 @@
 #include <log4cxx/logger.h>
 
 using std::atomic;
+using std::atomic_bool;
+using std::atomic_uint;
+using std::atomic_ulong;
 
 namespace diffraflow {
     class GenericConnection {
@@ -18,6 +21,16 @@ namespace diffraflow {
         void run();
         bool done();
         void stop();
+
+    public:
+        struct {
+            atomic_ulong total_sent_size;
+            atomic_ulong total_sent_counts;
+            atomic_ulong total_received_size;
+            atomic_ulong total_received_counts;
+            atomic_ulong total_processed_counts;
+            atomic_ulong total_skipped_counts;
+        } network_metrics;
 
     protected:
         uint32_t connection_id_;

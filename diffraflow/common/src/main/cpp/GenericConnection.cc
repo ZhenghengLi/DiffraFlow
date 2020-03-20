@@ -29,6 +29,14 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     buffer_limit_ = 0;
     done_flag_ = false;
     connection_id_ = -1;
+
+    network_metrics.total_sent_size = 0;
+    network_metrics.total_sent_counts = 0;
+    network_metrics.total_received_size = 0;
+    network_metrics.total_received_counts = 0;
+    network_metrics.total_processed_counts = 0;
+    network_metrics.total_skipped_counts = 0;
+
 }
 
 diffraflow::GenericConnection::~GenericConnection() {
@@ -111,11 +119,17 @@ bool diffraflow::GenericConnection::do_receiving_and_processing_() {
         buffer_, buffer_size_, buffer_limit_, logger_)) {
         return false;
     }
+
+    network_metrics.total_received_size += buffer_limit_;
+    network_metrics.total_received_counts += 1;
+
     // payload level process
     switch ( process_payload_(buffer_, buffer_limit_) ) {
     case kProcessed:
+        network_metrics.total_processed_counts += 1;
         return true;
     case kSkipped:
+        network_metrics.total_skipped_counts += 1;
         return true;
     case kFailed:
         return false;
@@ -142,7 +156,10 @@ bool diffraflow::GenericConnection::send_one_(
         payload_data_buffer,
         payload_data_size,
         logger_) ) {
-        // note: here can accumulate metrics
+
+        network_metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
+        network_metrics.total_sent_counts += 1;
+
         return true;
     } else {
         return false;

@@ -34,7 +34,7 @@ namespace diffraflow {
         void stop();
 
     public:
-        Json::Value collect_metrics() override;
+        virtual Json::Value collect_metrics() override;
 
     protected:
         // methods to be implemented

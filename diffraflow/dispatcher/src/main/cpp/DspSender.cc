@@ -212,3 +212,22 @@ void diffraflow::DspSender::stop() {
     }
     cv_push_.notify_one();
 }
+
+Json::Value diffraflow::DspSender::collect_metrics() {
+
+    Json::Value root_json = GenericClient::collect_metrics();
+
+    Json::Value sender_metrics_json;
+    sender_metrics_json["total_pushed_frame_size"] = (Json::UInt64) sender_metrics.total_pushed_frame_size.load();
+    sender_metrics_json["total_pushed_frame_counts"] = (Json::UInt64) sender_metrics.total_pushed_frame_counts.load();
+
+    Json::Value compression_metrics_json;
+    compression_metrics_json["total_uncompressed_size"] = (Json::UInt64) compression_metrics.total_uncompressed_size.load();
+    compression_metrics_json["total_compressed_size"] = (Json::UInt64) compression_metrics.total_compressed_size.load();
+
+    root_json["sender_stats"] = sender_metrics_json;
+    root_json["compression_stats"] = compression_metrics_json;
+
+    return root_json;
+
+}

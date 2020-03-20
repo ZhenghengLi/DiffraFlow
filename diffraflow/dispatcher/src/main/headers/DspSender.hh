@@ -53,6 +53,8 @@ namespace diffraflow {
             atomic_ulong total_compressed_size;
         } compression_metrics;
 
+        Json::Value collect_metrics() override;
+
     private:
         // swap buffer_A and buffer_B with lock
         bool swap_();

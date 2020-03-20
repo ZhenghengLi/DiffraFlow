@@ -9,15 +9,18 @@ namespace diffraflow {
     class CmbImgCache;
 
     class CmbImgFrmSrv: public GenericServer {
-    private:
-        CmbImgCache* image_cache_;
+    public:
+        CmbImgFrmSrv(string host, int port, CmbImgCache* img_cache);
+        ~CmbImgFrmSrv();
+
+    public:
+        Json::Value collect_metrics() override;
 
     protected:
         GenericConnection* new_connection_(int client_sock_fd);
 
-    public:
-        CmbImgFrmSrv(string host, int port, CmbImgCache* img_cache);
-        ~CmbImgFrmSrv();
+    private:
+        CmbImgCache* image_cache_;
 
     };
 }

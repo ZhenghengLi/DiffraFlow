@@ -40,7 +40,7 @@ namespace diffraflow {
         // methods to be implemented
         virtual GenericConnection* new_connection_(int client_sock_fd) = 0;
 
-    private:
+    protected:
         bool create_tcp_sock_();
         bool create_ipc_sock_();
         int accept_client_();
@@ -48,10 +48,10 @@ namespace diffraflow {
         void start_cleaner_();
         void stop_cleaner_();
 
-    private:
+    protected:
         typedef list< pair<GenericConnection*, thread*> > connListT_;
 
-    private:
+    protected:
         bool is_ipc_;
         string server_sock_host_;
         int    server_sock_port_;

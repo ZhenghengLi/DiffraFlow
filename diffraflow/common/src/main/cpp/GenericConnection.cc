@@ -170,12 +170,12 @@ bool diffraflow::GenericConnection::send_one_(
 Json::Value diffraflow::GenericConnection::collect_metrics() {
 
     Json::Value network_metrics_json;
-    network_metrics_json["total_sent_size"] = (Json::UInt64) network_metrics.total_sent_size;
-    network_metrics_json["total_sent_counts"] = (Json::UInt64) network_metrics.total_sent_counts;
-    network_metrics_json["total_received_size"] = (Json::UInt64) network_metrics.total_received_size;
-    network_metrics_json["total_received_counts"] = (Json::UInt64) network_metrics.total_received_counts;
-    network_metrics_json["total_processed_counts"] = (Json::UInt64) network_metrics.total_processed_counts;
-    network_metrics_json["total_skipped_counts"] = (Json::UInt64) network_metrics.total_skipped_counts;
+    network_metrics_json["total_sent_size"] = (Json::UInt64) network_metrics.total_sent_size.load();
+    network_metrics_json["total_sent_counts"] = (Json::UInt64) network_metrics.total_sent_counts.load();
+    network_metrics_json["total_received_size"] = (Json::UInt64) network_metrics.total_received_size.load();
+    network_metrics_json["total_received_counts"] = (Json::UInt64) network_metrics.total_received_counts.load();
+    network_metrics_json["total_processed_counts"] = (Json::UInt64) network_metrics.total_processed_counts.load();
+    network_metrics_json["total_skipped_counts"] = (Json::UInt64) network_metrics.total_skipped_counts.load();
 
     Json::Value root_json;
     root_json["network_stats"] = network_metrics_json;

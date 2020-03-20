@@ -155,3 +155,22 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
     return kProcessed;
 }
+
+Json::Value diffraflow::CmbImgFrmConn::collect_metrics() {
+
+    Json::Value root_json = GenericConnection::collect_metrics();
+
+    Json::Value frame_metrics_json;
+    frame_metrics_json["total_processed_frame_size"] = (Json::UInt64) frame_metrics.total_processed_frame_size.load();
+    frame_metrics_json["total_processed_frame_counts"] = (Json::UInt64) frame_metrics.total_processed_frame_counts.load();
+
+    Json::Value compression_metrics_json;
+    compression_metrics_json["total_compressed_size"] = (Json::UInt64) compression_metrics.total_compressed_size.load();
+    compression_metrics_json["total_uncompressed_size"] = (Json::UInt64) compression_metrics.total_uncompressed_size.load();
+
+    root_json["frame_stats"] = frame_metrics_json;
+    root_json["compression_stats"] = compression_metrics_json;
+
+    return root_json;
+
+}

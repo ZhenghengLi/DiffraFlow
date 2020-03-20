@@ -18,8 +18,10 @@ using std::mutex;
 using std::lock_guard;
 using std::unique_lock;
 using std::condition_variable;
-using std::atomic_bool;
 using std::atomic;
+using std::atomic_bool;
+using std::atomic_uint;
+using std::atomic_ulong;
 
 namespace diffraflow {
     class DspSender: public GenericClient {
@@ -38,6 +40,12 @@ namespace diffraflow {
         // use a background thread sending data
         void start();
         void stop();
+
+    public:
+        struct {
+            atomic_ulong total_frame_size;
+            atomic_ulong total_frame_counts;
+        } sender_metrics;
 
     private:
         // swap buffer_A and buffer_B with lock

@@ -28,7 +28,7 @@ namespace diffraflow {
             atomic_ulong total_sent_counts;
             atomic_ulong total_received_size;
             atomic_ulong total_received_counts;
-        } metrics;
+        } network_metrics;
 
     protected:
         bool send_one_(

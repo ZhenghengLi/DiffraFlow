@@ -39,6 +39,10 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id,
     if (compress_method_ == kZSTD) {
         compress_level_ = ( (compr_level >= 1 && compr_level < 20) ? compr_level : 1);
     }
+
+    sender_metrics.total_frame_size = 0;
+    sender_metrics.total_frame_counts = 0;
+
 }
 
 diffraflow::DspSender::~DspSender() {
@@ -49,14 +53,21 @@ diffraflow::DspSender::~DspSender() {
 
 void diffraflow::DspSender::push(const char* data, const size_t len) {
     if (!run_flag_) return;
+
     unique_lock<mutex> lk(mtx_swap_);
+
     // wait when there is no enough space
     cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 4 <= buffer_size_ - buffer_A_limit_);});
     if (!run_flag_) return;
+
     // image frame size
     gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_, 4);
     // image frame data
     std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 4);
+
+    sender_metrics.total_frame_size += len;
+    sender_metrics.total_frame_counts += 1;
+
     // foreward limit and check size threshold
     buffer_A_limit_ += 4 + len;
     buffer_A_imgct_ += 1;

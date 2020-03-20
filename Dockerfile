@@ -19,7 +19,7 @@ RUN set -x \
     openjdk-8-jdk build-essential \
     libboost-dev \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
-    libmsgpack-dev libzookeeper-mt-dev \
+    libmsgpack-dev libzookeeper-mt-dev libjsoncpp-dev \
     wget \
 ## install pulsar c++ client
 && mkdir -pv /tmp/pulsar/DEB \
@@ -71,7 +71,7 @@ RUN set -x \
     ca-certificates \
     openjdk-8-jre \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
-    libmsgpack-dev libzookeeper-mt-dev \
+    libmsgpack-dev libzookeeper-mt-dev libjsoncpp-dev \
     netcat-openbsd \
     wget \
 ## install pulsar c++ client

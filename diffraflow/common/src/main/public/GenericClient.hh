@@ -5,13 +5,15 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using std::atomic_bool;
 using std::atomic_uint;
 using std::atomic_ulong;
 
 namespace diffraflow {
-    class GenericClient {
+    class GenericClient: public MetricsProvider {
     public:
         GenericClient(string hostname, int port, uint32_t id,
             uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
@@ -29,6 +31,8 @@ namespace diffraflow {
             atomic_ulong total_received_size;
             atomic_ulong total_received_counts;
         } network_metrics;
+
+        virtual Json::Value collect() override;
 
     protected:
         bool send_one_(

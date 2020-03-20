@@ -5,13 +5,15 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::atomic;
 using std::atomic_bool;
 using std::atomic_uint;
 using std::atomic_ulong;
 
 namespace diffraflow {
-    class GenericConnection {
+    class GenericConnection: public MetricsProvider {
     public:
         GenericConnection(int sock_fd,
             uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
@@ -31,6 +33,8 @@ namespace diffraflow {
             atomic_ulong total_processed_counts;
             atomic_ulong total_skipped_counts;
         } network_metrics;
+
+        virtual Json::Value collect() override;
 
     protected:
         uint32_t connection_id_;

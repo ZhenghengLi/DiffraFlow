@@ -166,3 +166,19 @@ bool diffraflow::GenericConnection::send_one_(
     }
 
 }
+
+Json::Value diffraflow::GenericConnection::collect() {
+
+    Json::Value network_metrics_json;
+    network_metrics_json["total_sent_size"] = (Json::UInt64) network_metrics.total_sent_size;
+    network_metrics_json["total_sent_counts"] = (Json::UInt64) network_metrics.total_sent_counts;
+    network_metrics_json["total_received_size"] = (Json::UInt64) network_metrics.total_received_size;
+    network_metrics_json["total_received_counts"] = (Json::UInt64) network_metrics.total_received_counts;
+    network_metrics_json["total_processed_counts"] = (Json::UInt64) network_metrics.total_processed_counts;
+    network_metrics_json["total_skipped_counts"] = (Json::UInt64) network_metrics.total_skipped_counts;
+
+    Json::Value root_json;
+    root_json["network_metrics"] = network_metrics_json;
+
+    return root_json;
+}

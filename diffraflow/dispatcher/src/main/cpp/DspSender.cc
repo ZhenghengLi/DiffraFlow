@@ -40,8 +40,11 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id,
         compress_level_ = ( (compr_level >= 1 && compr_level < 20) ? compr_level : 1);
     }
 
-    sender_metrics.total_frame_size = 0;
-    sender_metrics.total_frame_counts = 0;
+    sender_metrics.total_pushed_frame_size = 0;
+    sender_metrics.total_pushed_frame_counts = 0;
+
+    compression_metrics.total_uncompressed_size = 0;
+    compression_metrics.total_compressed_size = 0;
 
 }
 
@@ -65,8 +68,8 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
     // image frame data
     std::copy(data, data + len, buffer_A_ + buffer_A_limit_ + 4);
 
-    sender_metrics.total_frame_size += len;
-    sender_metrics.total_frame_counts += 1;
+    sender_metrics.total_pushed_frame_size += len;
+    sender_metrics.total_pushed_frame_counts += 1;
 
     // foreward limit and check size threshold
     buffer_A_limit_ += 4 + len;
@@ -130,16 +133,15 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
             return;
         }
     }
+
     // packet format: packet_head(4) | packet_size(4) | image_seq_head(4) | image_count(4) | image_seq_data
 
-    // - send uncompressed data
-    uint32_t payload_type = 0xABCDFF00;
-    const char* payload_data_buffer = buffer;
-    size_t payload_data_size = limit;
+    uint32_t payload_type = 0;
+    const char* payload_data_buffer = nullptr;
+    size_t payload_data_size = 0;
 
-    // - send compressed data if compress_method_ is not kNone
     switch (compress_method_) {
-    case kLZ4:
+    case kLZ4: // Compress by LZ4
         payload_type = 0xABCDFF01;
         buffer_compress_limit_ = LZ4_compress_default(buffer, buffer_compress_, limit, buffer_size_);
         if (buffer_compress_limit_ == 0) {
@@ -149,13 +151,13 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         payload_data_buffer = buffer_compress_;
         payload_data_size   = buffer_compress_limit_;
         break;
-    case kSnappy:
+    case kSnappy: // Compress by Snappy
         payload_type = 0xABCDFF02;
         snappy::RawCompress(buffer, limit, buffer_compress_, &buffer_compress_limit_);
         payload_data_buffer = buffer_compress_;
         payload_data_size   = buffer_compress_limit_;
         break;
-    case kZSTD:
+    case kZSTD: // Compress by ZSTD
         payload_type = 0xABCDFF03;
         buffer_compress_limit_ = ZSTD_compress(buffer_compress_, buffer_size_, buffer, limit, compress_level_);
         if (ZSTD_isError(buffer_compress_limit_)) {
@@ -166,9 +168,16 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         payload_data_buffer = buffer_compress_;
         payload_data_size   = buffer_compress_limit_;
         break;
+    default: // Non-Compress, use the raw data
+        payload_type = 0xABCDFF00;
+        payload_data_buffer = buffer;
+        payload_data_size = limit;
     }
 
     LOG4CXX_DEBUG(logger_, "raw size = " << limit << ", sent size = " << payload_data_size);
+
+    compression_metrics.total_uncompressed_size += limit;
+    compression_metrics.total_compressed_size += payload_data_size;
 
     // send data
     char payload_head_buffer[8];

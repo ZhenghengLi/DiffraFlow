@@ -3,6 +3,12 @@
 
 #include "GenericConnection.hh"
 #include <log4cxx/logger.h>
+#include <atomic>
+
+using std::atomic;
+using std::atomic_bool;
+using std::atomic_uint;
+using std::atomic_ulong;
 
 namespace diffraflow {
 
@@ -12,6 +18,18 @@ namespace diffraflow {
     public:
         CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_);
         ~CmbImgFrmConn();
+
+    public:
+        struct {
+            atomic_ulong total_processed_frame_size;
+            atomic_ulong total_processed_frame_counts;
+        } frame_metrics;
+
+        struct {
+            // for calculating compression ratio
+            atomic_ulong total_compressed_size;
+            atomic_ulong total_uncompressed_size;
+        } compression_metrics;
 
     protected:
         ProcessRes process_payload_(const char* payload_buffer,

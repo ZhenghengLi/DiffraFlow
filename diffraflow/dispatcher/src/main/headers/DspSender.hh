@@ -43,9 +43,15 @@ namespace diffraflow {
 
     public:
         struct {
-            atomic_ulong total_frame_size;
-            atomic_ulong total_frame_counts;
+            atomic_ulong total_pushed_frame_size;
+            atomic_ulong total_pushed_frame_counts;
         } sender_metrics;
+
+        struct {
+            // for calculating compression ratio
+            atomic_ulong total_uncompressed_size;
+            atomic_ulong total_compressed_size;
+        } compression_metrics;
 
     private:
         // swap buffer_A and buffer_B with lock

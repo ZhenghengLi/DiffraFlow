@@ -26,6 +26,13 @@ diffraflow::CmbImgFrmConn::CmbImgFrmConn(
     // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
     buffer_uncompress_ = new char[buffer_size_];
     buffer_uncompress_limit_ = 0;
+
+    frame_metrics.total_processed_frame_size = 0;
+    frame_metrics.total_processed_frame_counts = 0;
+
+    compression_metrics.total_compressed_size = 0;
+    compression_metrics.total_uncompressed_size = 0;
+
 }
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
@@ -114,6 +121,9 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
     LOG4CXX_DEBUG(logger_, "raw size = " << payload_size - 8 << ", processed size = " << current_limit);
 
+    compression_metrics.total_compressed_size += payload_size - 8;
+    compression_metrics.total_uncompressed_size += current_limit;
+
     // process data in current_buffer
     size_t current_position = 0;
     for (size_t i = 0; i < image_counts; i++) {
@@ -131,6 +141,10 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
         image_frame.decode(current_buffer + current_position, current_size);
         current_position += current_size;
         image_cache_->push_frame(image_frame);
+
+        frame_metrics.total_processed_frame_size += current_size;
+        frame_metrics.total_processed_frame_counts += 1;
+
     }
 
     // size validation

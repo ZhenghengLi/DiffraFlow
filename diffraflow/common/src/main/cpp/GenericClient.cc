@@ -23,10 +23,14 @@ diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
     sending_head_ = send_hd;
     receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
+
     metrics.connected = false;
     metrics.connecting_action_counts = 0;
     metrics.total_sent_size = 0;
+    metrics.total_sent_counts = 0;
     metrics.total_received_size = 0;
+    metrics.total_received_counts = 0;
+
 }
 
 diffraflow::GenericClient::~GenericClient() {
@@ -117,6 +121,8 @@ bool diffraflow::GenericClient::send_one_(
         logger_) ) {
 
         metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
+        // 8 is the size of packet head
+        metrics.total_sent_counts += 1;
 
         return true;
     } else {
@@ -125,7 +131,25 @@ bool diffraflow::GenericClient::send_one_(
 
 }
 
-bool diffraflow::GenericClient::receive_one_(char* payload_buffer, size_t& payload_size) {
+bool diffraflow::GenericClient::receive_one_(
+    char*          buffer,
+    const size_t   buffer_size,
+    size_t&        payload_size) {
 
-    return true;
+    if (NetworkUtils::receive_packet(
+        client_sock_fd_,
+        receiving_head_,
+        buffer,
+        buffer_size,
+        payload_size,
+        logger_) ) {
+
+        metrics.total_received_size += 8 + payload_size;
+        // 8 is the size of packet head
+        metrics.total_received_counts += 1;
+
+        return true;
+    } else {
+        return false;
+    }
 }

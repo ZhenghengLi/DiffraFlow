@@ -25,7 +25,9 @@ namespace diffraflow {
             atomic_bool  connected;
             atomic_uint  connecting_action_counts;
             atomic_ulong total_sent_size;
+            atomic_ulong total_sent_counts;
             atomic_ulong total_received_size;
+            atomic_ulong total_received_counts;
         } metrics;
 
     protected:
@@ -35,7 +37,10 @@ namespace diffraflow {
             const char*    payload_data_buffer,
             const size_t   payload_data_size);
 
-        bool receive_one_(char* payload_buffer, size_t& payload_size);
+        bool receive_one_(
+            char*          buffer,
+            const size_t   buffer_size,
+            size_t&        payload_size);
 
     protected:
         string      dest_host_;

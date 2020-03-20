@@ -156,7 +156,7 @@ bool diffraflow::GenericClient::receive_one_(
     }
 }
 
-Json::Value diffraflow::GenericClient::collect() {
+Json::Value diffraflow::GenericClient::collect_metrics() {
 
     Json::Value network_metrics_json;
     network_metrics_json["connected"] = (bool) network_metrics.connected;
@@ -167,7 +167,7 @@ Json::Value diffraflow::GenericClient::collect() {
     network_metrics_json["total_received_counts"] = (Json::UInt64) network_metrics.total_received_counts;
 
     Json::Value root_json;
-    root_json["network_metrics"] = network_metrics_json;
+    root_json["network_stats"] = network_metrics_json;
 
     return root_json;
 }

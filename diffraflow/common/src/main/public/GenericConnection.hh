@@ -34,7 +34,7 @@ namespace diffraflow {
             atomic_ulong total_skipped_counts;
         } network_metrics;
 
-        virtual Json::Value collect() override;
+        virtual Json::Value collect_metrics() override;
 
     protected:
         uint32_t connection_id_;

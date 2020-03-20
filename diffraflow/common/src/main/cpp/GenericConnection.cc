@@ -167,7 +167,7 @@ bool diffraflow::GenericConnection::send_one_(
 
 }
 
-Json::Value diffraflow::GenericConnection::collect() {
+Json::Value diffraflow::GenericConnection::collect_metrics() {
 
     Json::Value network_metrics_json;
     network_metrics_json["total_sent_size"] = (Json::UInt64) network_metrics.total_sent_size;
@@ -178,7 +178,8 @@ Json::Value diffraflow::GenericConnection::collect() {
     network_metrics_json["total_skipped_counts"] = (Json::UInt64) network_metrics.total_skipped_counts;
 
     Json::Value root_json;
-    root_json["network_metrics"] = network_metrics_json;
+    root_json["network_stats"] = network_metrics_json;
+    root_json["connection_id"] = (Json::UInt) connection_id_;
 
     return root_json;
 }

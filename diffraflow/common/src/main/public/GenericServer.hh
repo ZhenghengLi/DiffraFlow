@@ -9,6 +9,8 @@
 #include <condition_variable>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using std::thread;
 using std::vector;
@@ -22,7 +24,7 @@ namespace diffraflow {
 
     class GenericConnection;
 
-    class GenericServer {
+    class GenericServer: public MetricsProvider {
     public:
         explicit GenericServer(string host, int port, size_t max_conn = 100);
         explicit GenericServer(string sock_path, size_t max_conn = 100);
@@ -30,6 +32,9 @@ namespace diffraflow {
 
         void serve();
         void stop();
+
+    public:
+        Json::Value collect_metrics() override;
 
     protected:
         // methods to be implemented

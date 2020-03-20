@@ -5,7 +5,7 @@
 
 namespace diffraflow {
     struct MetricsProvider {
-        virtual Json::Value collect() = 0;
+        virtual Json::Value collect_metrics() = 0;
     };
 }
 

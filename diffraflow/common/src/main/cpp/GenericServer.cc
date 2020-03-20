@@ -234,3 +234,15 @@ void diffraflow::GenericServer::stop() {
     close(server_sock_fd_);
     LOG4CXX_INFO(logger_, "server is closed.");
 }
+
+Json::Value diffraflow::GenericServer::collect_metrics() {
+    lock_guard<mutex> lk(mtx_);
+    Json::Value connection_metrics_json;
+    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
+        if (!iter->first->done()) {
+            connection_metrics_json.append(
+                iter->first->collect_metrics()
+            );
+        }
+    }
+}

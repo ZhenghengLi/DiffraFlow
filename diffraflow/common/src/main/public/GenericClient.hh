@@ -32,7 +32,7 @@ namespace diffraflow {
             atomic_ulong total_received_counts;
         } network_metrics;
 
-        virtual Json::Value collect() override;
+        virtual Json::Value collect_metrics() override;
 
     protected:
         bool send_one_(

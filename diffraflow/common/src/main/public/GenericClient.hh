@@ -14,7 +14,7 @@ namespace diffraflow {
     class GenericClient {
     public:
         GenericClient(string hostname, int port, uint32_t id,
-            uint32_t greet_hd, uint32_t send_hd);
+            uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
         ~GenericClient();
 
         bool connect_to_server();
@@ -45,6 +45,7 @@ namespace diffraflow {
 
         uint32_t    greeting_head_;
         uint32_t    sending_head_;
+        uint32_t    receiving_head_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -21,7 +21,7 @@ log4cxx::LoggerPtr diffraflow::DspSender::logger_
 
 diffraflow::DspSender::DspSender(string hostname, int port, int id,
     CompressMethod compr_method, int compr_level):
-    GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC) {
+    GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD) {
     buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 16 B
     size_threshold_ = 1024 * 1024;  // 1 MiB
     time_threshold_ = 100; // 0.1 second

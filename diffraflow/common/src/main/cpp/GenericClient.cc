@@ -15,12 +15,13 @@ log4cxx::LoggerPtr diffraflow::GenericClient::logger_
     = log4cxx::Logger::getLogger("GenericClient");
 
 diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
-    uint32_t greet_hd, uint32_t send_hd) {
+    uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd) {
     dest_host_ = hostname;
     dest_port_ = port;
     client_id_ = id;
     greeting_head_ = greet_hd;
     sending_head_ = send_hd;
+    receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
     metrics.connected = false;
     metrics.connecting_action_counts = 0;

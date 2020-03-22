@@ -25,7 +25,7 @@ namespace diffraflow {
         vector<ImageFrame> imgfrm_vec;  // image data from each sub-detector
 
     public:
-        MSGPACK_DEFINE (
+        MSGPACK_DEFINE_MAP (
             event_key,
             event_time,
             status_vec,

@@ -35,7 +35,7 @@ namespace diffraflow {
         vector<char>  img_rawdata_;
 
     public:
-        MSGPACK_DEFINE (
+        MSGPACK_DEFINE_MAP (
             img_rawdata_,
             img_key,
             img_time,

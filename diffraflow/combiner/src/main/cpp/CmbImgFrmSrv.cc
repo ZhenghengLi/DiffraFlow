@@ -19,15 +19,14 @@ diffraflow::GenericConnection* diffraflow::CmbImgFrmSrv::new_connection_(int cli
     return new CmbImgFrmConn(client_sock_fd, image_cache_);
 }
 
-Json::Value diffraflow::CmbImgFrmSrv::collect_metrics() {
+json::value diffraflow::CmbImgFrmSrv::collect_metrics() {
     lock_guard<mutex> lk(mtx_);
-    Json::Value connection_metrics_json;
+    json::value connection_metrics_json;
+    int array_index = 0;
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
         CmbImgFrmConn* current_connection = dynamic_cast<CmbImgFrmConn*>(iter->first);
         if (!current_connection->done()) {
-            connection_metrics_json.append(
-                current_connection->collect_metrics()
-            );
+            connection_metrics_json[array_index++] = current_connection->collect_metrics();
         }
     }
 }

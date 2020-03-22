@@ -14,7 +14,7 @@ namespace diffraflow {
         ~CmbImgFrmSrv();
 
     public:
-        Json::Value collect_metrics() override;
+        json::value collect_metrics() override;
 
     protected:
         GenericConnection* new_connection_(int client_sock_fd);

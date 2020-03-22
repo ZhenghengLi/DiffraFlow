@@ -31,7 +31,7 @@ namespace diffraflow {
             atomic_ulong total_uncompressed_size;
         } compression_metrics;
 
-        Json::Value collect_metrics() override;
+        json::value collect_metrics() override;
 
     protected:
         ProcessRes process_payload_(const char* payload_buffer,

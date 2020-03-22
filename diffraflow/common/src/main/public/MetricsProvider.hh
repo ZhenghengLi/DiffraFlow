@@ -1,11 +1,13 @@
 #ifndef __MetricsProvider_H__
 #define __MetricsProvider_H__
 
-#include <jsoncpp/json/json.h>
+#include <cpprest/json.h>
+
+using namespace web;
 
 namespace diffraflow {
     struct MetricsProvider {
-        virtual Json::Value collect_metrics() = 0;
+        virtual json::value collect_metrics() = 0;
     };
 }
 

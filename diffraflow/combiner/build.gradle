@@ -8,11 +8,13 @@ application {
         linkTask.get().linkerArgs.add('-llz4')
         linkTask.get().linkerArgs.add('-lzstd')
         linkTask.get().linkerArgs.add('-llog4cxx')
-        linkTask.get().linkerArgs.add('-ljsoncpp')
+        linkTask.get().linkerArgs.add('-lcpprest')
+        linkTask.get().linkerArgs.add('-lssl')
+        linkTask.get().linkerArgs.add('-lcrypto')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
-            // linkTask.get().linkerArgs.add('-lboost_system-mt')
+            linkTask.get().linkerArgs.add('-lboost_system-mt')
         } else {
-            // linkTask.get().linkerArgs.add('-lboost_system')
+            linkTask.get().linkerArgs.add('-lboost_system')
         }
     }
     dependencies {

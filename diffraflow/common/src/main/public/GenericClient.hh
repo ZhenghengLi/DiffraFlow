@@ -8,9 +8,7 @@
 #include "MetricsProvider.hh"
 
 using std::string;
-using std::atomic_bool;
-using std::atomic_uint;
-using std::atomic_ulong;
+using std::atomic;
 
 namespace diffraflow {
     class GenericClient: public MetricsProvider {
@@ -24,12 +22,12 @@ namespace diffraflow {
 
     public:
         struct {
-            atomic_bool  connected;
-            atomic_uint  connecting_action_counts;
-            atomic_ulong total_sent_size;
-            atomic_ulong total_sent_counts;
-            atomic_ulong total_received_size;
-            atomic_ulong total_received_counts;
+            atomic<bool>     connected;
+            atomic<uint32_t> connecting_action_counts;
+            atomic<uint64_t> total_sent_size;
+            atomic<uint64_t> total_sent_counts;
+            atomic<uint64_t> total_received_size;
+            atomic<uint64_t> total_received_counts;
         } network_metrics;
 
         virtual json::value collect_metrics() override;

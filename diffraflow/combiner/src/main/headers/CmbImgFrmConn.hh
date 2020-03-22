@@ -6,9 +6,6 @@
 #include <atomic>
 
 using std::atomic;
-using std::atomic_bool;
-using std::atomic_uint;
-using std::atomic_ulong;
 
 namespace diffraflow {
 
@@ -21,14 +18,14 @@ namespace diffraflow {
 
     public:
         struct {
-            atomic_ulong total_processed_frame_size;
-            atomic_ulong total_processed_frame_counts;
+            atomic<uint64_t> total_processed_frame_size;
+            atomic<uint64_t> total_processed_frame_counts;
         } frame_metrics;
 
         struct {
             // for calculating compression ratio
-            atomic_ulong total_compressed_size;
-            atomic_ulong total_uncompressed_size;
+            atomic<uint64_t> total_compressed_size;
+            atomic<uint64_t> total_uncompressed_size;
         } compression_metrics;
 
         json::value collect_metrics() override;

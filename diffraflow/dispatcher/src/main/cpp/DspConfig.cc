@@ -102,3 +102,25 @@ void diffraflow::DspConfig::print() {
     }
     cout << " ---- Configuration Dump End ----" << endl;
 }
+
+json::value diffraflow::DspConfig::collect_metrics() {
+    json::value config_json;
+    config_json["dispatcher_id"] = json::value::number(dispatcher_id);
+    config_json["listen_host"] = json::value::string(listen_host);
+    config_json["listen_port"] = json::value::number(listen_port);
+    switch (compress_method) {
+    case DspSender::kLZ4:
+        config_json["compress_method"] = json::value::string("LZ4");
+        break;
+    case DspSender::kSnappy:
+        config_json["compress_method"] = json::value::string("Snappy");
+        break;
+    case DspSender::kZSTD:
+        config_json["compress_method"] = json::value::string("ZSTD");
+        break;
+    default:
+        config_json["compress_method"] = json::value::string("None");
+    }
+    config_json["compress_level"] = json::value::number(compress_level);
+    return config_json;
+}

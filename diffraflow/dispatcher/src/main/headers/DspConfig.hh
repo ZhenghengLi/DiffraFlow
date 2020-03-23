@@ -6,17 +6,21 @@
 #include <string>
 
 #include "DspSender.hh"
+#include "MetricsProvider.hh"
 
 using std::string;
 
 namespace diffraflow {
-    class DspConfig: public GenericConfiguration {
+    class DspConfig: public GenericConfiguration, public MetricsProvider {
     public:
         DspConfig();
         ~DspConfig();
 
         bool load(const char* filename);
         void print();
+
+    public:
+        json::value collect_metrics() override;
 
     public:
         uint32_t                    dispatcher_id;

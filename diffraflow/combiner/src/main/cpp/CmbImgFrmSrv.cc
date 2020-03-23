@@ -29,4 +29,5 @@ json::value diffraflow::CmbImgFrmSrv::collect_metrics() {
             connection_metrics_json[array_index++] = current_connection->collect_metrics();
         }
     }
+    return connection_metrics_json;
 }

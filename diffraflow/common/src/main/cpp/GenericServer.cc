@@ -244,4 +244,5 @@ json::value diffraflow::GenericServer::collect_metrics() {
             connection_metrics_json[array_index++] = iter->first->collect_metrics();
         }
     }
+    return connection_metrics_json;
 }

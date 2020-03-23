@@ -17,8 +17,9 @@ namespace diffraflow {
         ~MetricsReporter();
 
         void add(string name, MetricsProvider* mp_obj);
-        void add(string name, vector<MetricsProvider*> mp_obj_vec);
+        void add(string name, vector<MetricsProvider*>& mp_obj_vec);
         void add(string name, MetricsProvider** mp_obj_arr, size_t len);
+        void clear();
 
     private:
         map<string, MetricsProvider*> metrics_scalar_;

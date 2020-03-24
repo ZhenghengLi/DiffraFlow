@@ -51,7 +51,7 @@ json::value diffraflow::MetricsReporter::aggregate_metrics_() {
     json::value root_json;
 
     duration<double, milli> current_time = system_clock::now().time_since_epoch();
-    root_json["timestamp"] = json::value::number( (uint64_t) current_time.count() );
+    root_json["timestamp"] = json::value::number(current_time.count());
     root_json["timestamp_unit"] = json::value::string("milliseconds");
 
     for (map<string, MetricsProvider*>::iterator iter = metrics_scalar_.begin();

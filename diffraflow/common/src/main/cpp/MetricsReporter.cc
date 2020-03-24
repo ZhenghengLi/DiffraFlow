@@ -3,9 +3,23 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+
 using namespace web;
 using namespace http;
 using namespace experimental::listener;
+using std::thread;
+using std::mutex;
+using std::condition_variable;
+using std::lock_guard;
+using std::unique_lock;
+using std::chrono::duration;
+using std::chrono::milliseconds;
+using std::chrono::system_clock;
+using std::milli;
 
 log4cxx::LoggerPtr diffraflow::MetricsReporter::logger_
     = log4cxx::Logger::getLogger("MetricsReporter");
@@ -38,6 +52,11 @@ void diffraflow::MetricsReporter::clear() {
 
 json::value diffraflow::MetricsReporter::aggregate_metrics_() {
     json::value root_json;
+
+    duration<double, milli> current_time = system_clock::now().time_since_epoch();
+    root_json["timestamp"] = json::value::number( (uint64_t) current_time.count() );
+    root_json["timestamp_unit"] = json::value::string("milliseconds");
+
     for (map<string, MetricsProvider*>::iterator iter = metrics_scalar_.begin();
         iter != metrics_scalar_.end(); ++iter) {
         root_json[iter->first] = iter->second->collect_metrics();
@@ -49,6 +68,7 @@ json::value diffraflow::MetricsReporter::aggregate_metrics_() {
         }
     }
 
+    return root_json;
 }
 
 bool diffraflow::MetricsReporter::start_msg_producer(const char* broker_address, const char* topic) {
@@ -82,7 +102,19 @@ bool diffraflow::MetricsReporter::start_http_server(const char* host, int port) 
 }
 
 void diffraflow::MetricsReporter::handleGet_(http_request message) {
-
+    http_response response;
+    utility::string_t relative_path = uri::decode(message.relative_uri().path());
+    if (relative_path == "/") {
+        json::value paths_json;
+        paths_json[0] = json::value::string("/stat");
+        json::value root_json;
+        root_json["paths"] = paths_json;
+        message.reply(status_codes::OK, root_json);
+    } else if (relative_path == "/stat") {
+        message.reply(status_codes::OK, aggregate_metrics_());
+    } else {
+        message.reply(status_codes::NotFound);
+    }
 }
 
 void diffraflow::MetricsReporter::stop_http_server() {

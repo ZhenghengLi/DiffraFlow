@@ -1,5 +1,15 @@
 #include "MetricsReporter.hh"
 
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
+
+using namespace web;
+using namespace http;
+using namespace experimental::listener;
+
+log4cxx::LoggerPtr diffraflow::MetricsReporter::logger_
+    = log4cxx::Logger::getLogger("MetricsReporter");
+
 diffraflow::MetricsReporter::MetricsReporter() {
 
 }
@@ -46,7 +56,41 @@ bool diffraflow::MetricsReporter::start_msg_producer(const char* broker_address,
     return true;
 }
 
-bool diffraflow::MetricsReporter::start_http_server(const char* host, int port) {
+void diffraflow::MetricsReporter::stop_msg_producer() {
 
-    return true;
+}
+
+bool diffraflow::MetricsReporter::start_http_server(const char* host, int port) {
+    uri_builder uri_b;
+    uri_b.set_scheme("http");
+    uri_b.set_host(host);
+    uri_b.set_port(port);
+    listener_ = http_listener(uri_b.to_uri());
+    listener_.support(methods::GET, std::bind(&MetricsReporter::handleGet_, this, std::placeholders::_1));
+
+    try {
+        listener_.open().wait();
+        return true;
+    } catch (std::exception& e) {
+        LOG4CXX_ERROR(logger_, "failed to start http server: " << e.what());
+        return false;
+    } catch(...) {
+        LOG4CXX_ERROR(logger_, "failed to start http server with unknown error.");
+        return false;
+    }
+
+}
+
+void diffraflow::MetricsReporter::handleGet_(http_request message) {
+
+}
+
+void diffraflow::MetricsReporter::stop_http_server() {
+    try {
+        listener_.close().wait();
+    } catch (std::exception& e) {
+        LOG4CXX_WARN(logger_, "exception found when closing http listener: " << e.what());
+    } catch (...) {
+        LOG4CXX_WARN(logger_, "an unknown exception found when closing http listener.");
+    }
 }

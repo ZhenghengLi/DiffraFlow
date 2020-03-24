@@ -11,6 +11,7 @@ application {
         linkTask.get().linkerArgs.add('-lcpprest')
         linkTask.get().linkerArgs.add('-lssl')
         linkTask.get().linkerArgs.add('-lcrypto')
+        linkTask.get().linkerArgs.add('-lpulsar')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
             linkTask.get().linkerArgs.add('-lboost_system-mt')
         } else {

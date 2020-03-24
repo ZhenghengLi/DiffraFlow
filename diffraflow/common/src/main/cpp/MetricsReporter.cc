@@ -25,12 +25,8 @@ diffraflow::MetricsReporter::MetricsReporter() {
 }
 
 diffraflow::MetricsReporter::~MetricsReporter() {
-    if (listener_ != nullptr) {
-        stop_http_server();
-    }
-    if (pulsar_client_ != nullptr) {
-        stop_msg_producer();
-    }
+    stop_http_server();
+    stop_msg_producer();
 }
 
 void diffraflow::MetricsReporter::add(string name, MetricsProvider* mp_obj) {
@@ -119,15 +115,14 @@ bool diffraflow::MetricsReporter::start_msg_producer(
 }
 
 void diffraflow::MetricsReporter::stop_msg_producer() {
-    if (pulsar_client_ == nullptr) {
-        LOG4CXX_WARN(logger_, "pulsar client has already been stopped.");
-        return;
-    }
+    if (pulsar_client_ == nullptr) return;
+
     {   // make sure stop the thread when it is in wait state
         lock_guard<mutex> lg(wait_mtx_);
         sender_is_running_ = false;
         wait_cv_.notify_all();
     }
+
     sender_thread_->join();
     delete sender_thread_;
     sender_thread_ = nullptr;
@@ -183,10 +178,8 @@ void diffraflow::MetricsReporter::handleGet_(http_request message) {
 }
 
 void diffraflow::MetricsReporter::stop_http_server() {
-    if (listener_ == nullptr) {
-        LOG4CXX_WARN(logger_, "http server has already been stopped.");
-        return;
-    }
+    if (listener_ == nullptr) return;
+
     try {
         listener_->close().wait();
     } catch (std::exception& e) {
@@ -194,6 +187,7 @@ void diffraflow::MetricsReporter::stop_http_server() {
     } catch (...) {
         LOG4CXX_WARN(logger_, "an unknown exception found when closing http listener.");
     }
+
     delete listener_;
     listener_ = nullptr;
 }

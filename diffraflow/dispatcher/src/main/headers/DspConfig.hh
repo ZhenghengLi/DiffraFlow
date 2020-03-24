@@ -16,8 +16,12 @@ namespace diffraflow {
         DspConfig();
         ~DspConfig();
 
-        bool load(const char* filename);
-        void print();
+        bool load(const char* filename) override;
+        void print() override;
+
+    public:
+        bool pulsar_params_are_set();
+        bool http_server_params_are_set();
 
     public:
         json::value collect_metrics() override;
@@ -28,6 +32,12 @@ namespace diffraflow {
         int                         listen_port;
         DspSender::CompressMethod   compress_method;
         int                         compress_level;
+        string                      pulsar_broker_address;
+        string                      pulsar_topic_name;
+        string                      pulsar_message_key;
+        size_t                      pulsar_report_period;
+        string                      http_server_host;
+        int                         http_server_port;
 
     private:
         static log4cxx::LoggerPtr logger_;

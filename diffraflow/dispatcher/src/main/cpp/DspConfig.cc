@@ -18,6 +18,8 @@ diffraflow::DspConfig::DspConfig() {
     listen_host = "0.0.0.0";
     listen_port = -1;
     compress_method = DspSender::kNone;
+    pulsar_report_period = 1000;
+    http_server_port = -1;
 }
 
 diffraflow::DspConfig::~DspConfig() {
@@ -52,6 +54,18 @@ bool diffraflow::DspConfig::load(const char* filename) {
             }
         } else if (key == "compress_level") {
             compress_level = atoi(value.c_str());
+        } else if (key == "pulsar_broker_address") {
+            pulsar_broker_address = value;
+        } else if (key == "pulsar_topic_name") {
+            pulsar_topic_name = value;
+        } else if (key == "pulsar_message_key") {
+            pulsar_message_key = value;
+        } else if (key == "pulsar_report_period") {
+            pulsar_report_period = atoi(value.c_str());
+        } else if (key == "http_server_host") {
+            http_server_host = value;
+        } else if (key == "http_server_port") {
+            http_server_port = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);
@@ -68,6 +82,11 @@ bool diffraflow::DspConfig::load(const char* filename) {
                 dispatcher_id += atoi(ip_nums[i].c_str());
             }
         }
+    }
+    // correction
+    if (pulsar_report_period < 500) {
+        LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
+        pulsar_report_period = 500;
     }
     // check
     bool succ_flag = true;
@@ -100,6 +119,13 @@ void diffraflow::DspConfig::print() {
     default:
         cout << "None" << endl;
     }
+    cout << "  compress_level = " << compress_level << endl;
+    cout << "  pulsar_broker_address = " << pulsar_broker_address << endl;
+    cout << "  pulsar_topic_name = " << pulsar_topic_name << endl;
+    cout << "  pulsar_message_key = " << pulsar_message_key << endl;
+    cout << "  pulsar_report_period = " << pulsar_report_period << endl;
+    cout << "  http_server_host = " << http_server_host << endl;
+    cout << "  http_server_port = " << http_server_port << endl;
     cout << " ---- Configuration Dump End ----" << endl;
 }
 
@@ -123,4 +149,19 @@ json::value diffraflow::DspConfig::collect_metrics() {
     }
     config_json["compress_level"] = json::value::number(compress_level);
     return config_json;
+}
+
+bool diffraflow::DspConfig::pulsar_params_are_set() {
+    return (
+        !pulsar_broker_address.empty() &&
+        !pulsar_topic_name.empty() &&
+        !pulsar_message_key.empty()
+    );
+}
+
+bool diffraflow::DspConfig::http_server_params_are_set() {
+    return (
+        !http_server_host.empty() &&
+        http_server_port > 0
+    );
 }

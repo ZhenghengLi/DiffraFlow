@@ -7,6 +7,7 @@ using namespace web;
 using namespace http;
 using namespace experimental::listener;
 using std::unique_lock;
+using std::lock_guard;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 using std::chrono::system_clock;
@@ -24,7 +25,12 @@ diffraflow::MetricsReporter::MetricsReporter() {
 }
 
 diffraflow::MetricsReporter::~MetricsReporter() {
-
+    if (listener_ != nullptr) {
+        stop_http_server();
+    }
+    if (pulsar_client_ != nullptr) {
+        stop_msg_producer();
+    }
 }
 
 void diffraflow::MetricsReporter::add(string name, MetricsProvider* mp_obj) {
@@ -89,6 +95,9 @@ bool diffraflow::MetricsReporter::start_msg_producer(
     sender_thread_ = new thread(
         [this] () {
             while (sender_is_running_) {
+                unique_lock<mutex> ulk(wait_mtx_);
+                if (!sender_is_running_) break;
+
                 json::value metrics_json = aggregate_metrics_();
                 pulsar::Message message = pulsar::MessageBuilder().
                     setPartitionKey(message_key_).
@@ -100,7 +109,7 @@ bool diffraflow::MetricsReporter::start_msg_producer(
                 } else {
                     LOG4CXX_DEBUG(logger_, "failed to send metrics with timestamp: " << metrics_json["timestamp"]);
                 }
-                unique_lock<mutex> ulk(wait_mtx_);
+
                 wait_cv_.wait_for(ulk, milliseconds(report_period_));
             }
         }
@@ -114,8 +123,11 @@ void diffraflow::MetricsReporter::stop_msg_producer() {
         LOG4CXX_WARN(logger_, "pulsar client has already been stopped.");
         return;
     }
-    sender_is_running_ = false;
-    wait_cv_.notify_all();
+    {   // make sure stop the thread when it is in wait state
+        lock_guard<mutex> lg(wait_mtx_);
+        sender_is_running_ = false;
+        wait_cv_.notify_all();
+    }
     sender_thread_->join();
     delete sender_thread_;
     sender_thread_ = nullptr;

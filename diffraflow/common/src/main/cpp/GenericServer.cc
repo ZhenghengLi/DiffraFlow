@@ -239,7 +239,7 @@ json::value diffraflow::GenericServer::collect_metrics() {
     lock_guard<mutex> lk(mtx_);
     json::value connection_metrics_json;
     int array_index = 0;
-    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
+    for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); ++iter) {
         if (!iter->first->done()) {
             connection_metrics_json[array_index++] = iter->first->collect_metrics();
         }

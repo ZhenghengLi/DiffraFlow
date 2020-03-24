@@ -8,6 +8,7 @@
 #include <log4cxx/logger.h>
 
 #include "DspSender.hh"
+#include "MetricsReporter.hh"
 
 using std::pair;
 using std::string;
@@ -43,6 +44,8 @@ namespace diffraflow {
         atomic_bool running_flag_;
 
         string combiner_address_file_;
+
+        MetricsReporter metrics_reporter_;
 
     private:
         static log4cxx::LoggerPtr logger_;

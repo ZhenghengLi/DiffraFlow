@@ -1,6 +1,6 @@
 # DiffraFlow
 
-**Diffra**ction image data **Flow**, aiming at the high volume data acquisition and online data analysis for area detectors.
+**Diffra**ction image data **Flow**, aiming at the high volume streaming data acquisition and online analysis for area detectors.
 
 Started on 12th September 2019 by Zhengheng Li after he joined BE-SHINE, this project is proposed to develop an optimized distributed software system (after FPGA) for streaming the data from area detectors (source) to distributed file system (sink) at very high overall input rate (e.g. >100GiB/s).
 

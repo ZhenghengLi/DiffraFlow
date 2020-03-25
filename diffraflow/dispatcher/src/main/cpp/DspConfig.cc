@@ -58,6 +58,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             pulsar_broker_address = value;
         } else if (key == "pulsar_topic_name") {
             pulsar_topic_name = value;
+        } else if (key == "pulsar_message_key") {
+            pulsar_message_key = value;
         } else if (key == "pulsar_report_period") {
             pulsar_report_period = atoi(value.c_str());
         } else if (key == "http_server_host") {
@@ -69,6 +71,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
                 << key << " = " << value << " in " << filename);
         }
     }
+
     // use POD IP as dispatcher_id
     if (dispatcher_id == 0) {
         const char* pod_ip = getenv("POD_IP");
@@ -81,6 +84,14 @@ bool diffraflow::DspConfig::load(const char* filename) {
             }
         }
     }
+    // if NODE_NAME is defined, use it as the suffix of pulsar_message_key
+    if (!pulsar_message_key.empty()) {
+        const char* node_name = getenv("NODE_NAME");
+        if (node_name != NULL) {
+            pulsar_message_key += string(".") + string(node_name);
+        }
+    }
+
     // correction
     if (pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
@@ -120,6 +131,7 @@ void diffraflow::DspConfig::print() {
     cout << "  compress_level = " << compress_level << endl;
     cout << "  pulsar_broker_address = " << pulsar_broker_address << endl;
     cout << "  pulsar_topic_name = " << pulsar_topic_name << endl;
+    cout << "  pulsar_message_key = " << pulsar_message_key << endl;
     cout << "  pulsar_report_period = " << pulsar_report_period << endl;
     cout << "  http_server_host = " << http_server_host << endl;
     cout << "  http_server_port = " << http_server_port << endl;
@@ -151,7 +163,8 @@ json::value diffraflow::DspConfig::collect_metrics() {
 bool diffraflow::DspConfig::pulsar_params_are_set() {
     return (
         !pulsar_broker_address.empty() &&
-        !pulsar_topic_name.empty()
+        !pulsar_topic_name.empty() &&
+        !pulsar_message_key.empty()
     );
 }
 

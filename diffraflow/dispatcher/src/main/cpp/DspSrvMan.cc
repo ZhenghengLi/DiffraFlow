@@ -52,7 +52,7 @@ void diffraflow::DspSrvMan::start_run() {
         if (metrics_reporter_.start_msg_producer(
             config_obj_->pulsar_broker_address,
             config_obj_->pulsar_topic_name,
-            std::to_string(config_obj_->dispatcher_id),
+            config_obj_->pulsar_message_key,
             config_obj_->pulsar_report_period)) {
             LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
         } else {

@@ -85,6 +85,8 @@ bool diffraflow::MetricsReporter::start_msg_producer(
 
     pulsar::ProducerConfiguration producer_config;
     producer_config.setPartitionsRoutingMode(pulsar::ProducerConfiguration::RoundRobinDistribution);
+
+    pulsar_producer_ = new pulsar::Producer();
     pulsar::Result result = pulsar_client_->createProducer(topic, producer_config, *pulsar_producer_);
     if (result != pulsar::ResultOk) {
         LOG4CXX_ERROR(logger_, "Error found when creating producer: " << result);

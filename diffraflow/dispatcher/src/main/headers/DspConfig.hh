@@ -35,7 +35,7 @@ namespace diffraflow {
         string                      pulsar_broker_address;
         string                      pulsar_topic_name;
         string                      pulsar_message_key;
-        size_t                      pulsar_report_period;
+        int                         pulsar_report_period;
         string                      http_server_host;
         int                         http_server_port;
 

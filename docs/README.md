@@ -6,15 +6,20 @@
    * For Ubuntu:  
 
    ```bash
-    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack, ZooKeeper
-    sudo apt install libboost-dev libsnappy-dev liblog4cxx-dev libmsgpack-dev libzookeeper-mt-dev
+    # Boost C++ Library, Google Snappy, LZ4, ZSTD, Apache log4cxx, MessagePack, ZooKeeper, C++ Rest SDK
+    sudo apt install libboost-dev libsnappy-dev liblz4-dev libzstd-dev liblog4cxx-dev libmsgpack-dev libzookeeper-mt-dev libcpprest-dev
+    # Pulsar Client
+    wget https://archive.apache.org/dist/pulsar/pulsar-2.5.0/DEB/apache-pulsar-client.deb
+    sudo dpkg -i apache-pulsar-client.deb
+    wget https://archive.apache.org/dist/pulsar/pulsar-2.5.0/DEB/apache-pulsar-client-dev.deb
+    sudo dpkg -i apache-pulsar-client-dev.deb
    ```
 
    * For Mac OS:  
 
    ```bash
-    # Boost C++ Library, Google Snappy, Apache log4cxx, MessagePack, ZooKeeper
-    brew install boost snappy log4cxx msgpack zookeeper
+    # Boost C++ Library, Google Snappy, LZ4, ZSTD, Apache log4cxx, MessagePack, ZooKeeper, C++ Rest SDK, Pulsar Client
+    brew install boost snappy lz4 zstd log4cxx msgpack zookeeper cpprestsdk libpulsar
    ```
 
 2. Compile and install  

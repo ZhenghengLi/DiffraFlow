@@ -75,7 +75,7 @@ json::value diffraflow::MetricsReporter::aggregate_metrics_() {
 }
 
 bool diffraflow::MetricsReporter::start_msg_producer(
-    const char* broker_address, const char* topic, const char* msg_key, size_t report_period) {
+    string broker_address, string topic, string msg_key, size_t report_period) {
     if (pulsar_client_ != nullptr) {
         LOG4CXX_WARN(logger_, "pulsar client has already been started.");
         return false;
@@ -142,7 +142,7 @@ void diffraflow::MetricsReporter::stop_msg_producer() {
     pulsar_producer_ = nullptr;
 }
 
-bool diffraflow::MetricsReporter::start_http_server(const char* host, int port) {
+bool diffraflow::MetricsReporter::start_http_server(string host, int port) {
     if (listener_ != nullptr) {
         LOG4CXX_WARN(logger_, "http server has already been started.");
         return false;

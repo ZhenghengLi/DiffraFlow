@@ -39,14 +39,14 @@ namespace diffraflow {
         ~MetricsReporter();
 
         bool start_msg_producer(
-            const char* broker_address,
-            const char* topic,
-            const char* msg_key,
+            string broker_address,
+            string topic,
+            string msg_key,
             size_t report_period  /* milliseconds */
         );
         void stop_msg_producer();
 
-        bool start_http_server(const char* host, int port);
+        bool start_http_server(string host, int port);
         void stop_http_server();
 
         void add(string name, MetricsProvider* mp_obj);

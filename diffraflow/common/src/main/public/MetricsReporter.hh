@@ -71,6 +71,7 @@ namespace diffraflow {
         atomic_bool sender_is_running_;
         mutex wait_mtx_;
         condition_variable wait_cv_;
+        mutex read_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

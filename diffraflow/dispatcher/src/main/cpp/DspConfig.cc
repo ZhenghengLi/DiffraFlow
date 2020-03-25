@@ -157,6 +157,12 @@ json::value diffraflow::DspConfig::collect_metrics() {
         config_json["compress_method"] = json::value::string("None");
     }
     config_json["compress_level"] = json::value::number(compress_level);
+    config_json["pulsar_broker_address"] = json::value::string(pulsar_broker_address);
+    config_json["pulsar_topic_name"] = json::value::string(pulsar_topic_name);
+    config_json["pulsar_message_key"] = json::value::string(pulsar_message_key);
+    config_json["pulsar_report_period"] = json::value::number(pulsar_report_period);
+    config_json["http_server_host"] = json::value::string(http_server_host);
+    config_json["http_server_port"] = json::value::number(http_server_port);
     return config_json;
 }
 

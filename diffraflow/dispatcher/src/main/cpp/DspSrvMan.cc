@@ -46,6 +46,7 @@ void diffraflow::DspSrvMan::start_run() {
         config_obj_->listen_port, sender_arr_, sender_cnt_);
 
     // start metrics reporter
+    metrics_reporter_.add("configuration", config_obj_);
     metrics_reporter_.add("image_frame_server", imgfrm_srv_);
     metrics_reporter_.add("image_frame_senders", (MetricsProvider**) sender_arr_, sender_cnt_);
     if (config_obj_->pulsar_params_are_set()) {

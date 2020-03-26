@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add LZ4 and ZSTD compression support for the data transferring from **dispatcher** to **combiner**.
+- Add [LZ4](https://github.com/lz4/lz4) and [ZSTD](https://github.com/facebook/zstd) compression support for the data transferring from **dispatcher** to **combiner**.
 - Add deploy folder, which contains the Kuberenetes deployment YAML files for all components and services. The deployment of **dispatcher** and **combiner** on a local vm-built Kubernetes cluster was tested, and also for that of ZooKeeper, BookKeeper and Pulsar.
 - Install Apache Pulsar C++ client in Dockerfile, as Pulsar is planned to be used for system runtime monitoring.
 

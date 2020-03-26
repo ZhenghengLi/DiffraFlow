@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] write time alignment function
 - [ ] write the code to exchange data between combiner and ingester.
 
+## [0.0.9] - 2020-03-26
+
+### Changed
+
+- Data transerring code using socket is optimized. The related classes include GenericClient, GenericConnection and DspSender.
+- Use MSGPACK_DEFINE_MAP to do serialization using MessagePack, which will serialize C++ object into JSON object and keep the variable name in the serialized data.
+
+### Added
+
+- Add code to report runtime metrics. Two methods are applied. One is using Pulsar C++ client to periodically send runtime metrics to a Pulsar message queue cluster. The other one is using [C++ REST SDK](https://github.com/microsoft/cpprestsdk) to start a http server, which can reply the latest runtime metrics on the GET request from client. The data of runtime metrics is aggregated and serialized by JSON.
+
 ## [0.0.8] - 2020-03-18
 
 ### Added

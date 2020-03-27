@@ -7,6 +7,8 @@
 #include <limits>
 
 using std::numeric_limits;
+using std::lock_guard;
+using std::unique_lock;
 
 log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
     = log4cxx::Logger::getLogger("CmbImgCache");
@@ -14,12 +16,13 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame>[imgfrm_queues_len_];
-    imgdat_queue.set_maxsize(img_q_ms);
+    imgdat_queue_.set_maxsize(img_q_ms);
     // wait forever
     wait_threshold_ = numeric_limits<uint64_t>::max();
     image_time_min_ = numeric_limits<uint64_t>::max();
     num_of_empty_ = imgfrm_queues_len_;
     distance_max_ = 0;
+    stopped_ = false;
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
@@ -27,8 +30,9 @@ diffraflow::CmbImgCache::~CmbImgCache() {
 }
 
 void diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
+    if (stopped_) return;
     // in this function, put image from into priority queue, then try to do time alignment
-    lock_guard<mutex> lk(mtx_);
+    lock_guard<mutex> lk(data_mtx_);
 
     if (image_frame.detector_id >= imgfrm_queues_len_) {
         LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame.detector_id);
@@ -47,9 +51,7 @@ void diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
         distance_max_ = distance_current;
     }
 
-    while (do_alignment_()) {
-        LOG4CXX_DEBUG(logger_, "Successfully do one alignment.");
-    }
+    while (do_alignment_(false));
 
 }
 
@@ -86,9 +88,30 @@ bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
             }
         }
         // push image_data into blocking queue
-        // imgdat_queue.push(image_data);
+        imgdat_queue_.push(image_data);
         return true;
     } else {
         return false;
     }
+}
+
+bool diffraflow::CmbImgCache::take_image(ImageData& image_data) {
+    bool result = imgdat_queue_.take(image_data);
+    if (stopped_ && imgdat_queue_.empty()) {
+        stop_cv_.notify_all();
+    }
+    return result;
+}
+
+void diffraflow::CmbImgCache::stop(int wait_time) {
+    stopped_ = true;
+    lock_guard<mutex> lk(data_mtx_);
+    while (do_alignment_(true));
+    if (wait_time > 0) {
+        unique_lock<mutex> ulk(stop_mtx_);
+        stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time),
+            [this]() {return imgdat_queue_.empty();}
+        );
+    }
+    imgdat_queue_.stop();
 }

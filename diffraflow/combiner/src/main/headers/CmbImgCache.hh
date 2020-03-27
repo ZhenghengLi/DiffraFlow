@@ -6,11 +6,14 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
+#include <condition_variable>
 #include <log4cxx/logger.h>
 
 using std::queue;
 using std::mutex;
-using std::lock_guard;
+using std::condition_variable;
+using std::atomic_bool;
 
 namespace diffraflow {
 
@@ -23,9 +26,8 @@ namespace diffraflow {
         ~CmbImgCache();
 
         void push_frame(const ImageFrame& image_frame);
-
-    public:
-        BlockingQueue<ImageData> imgdat_queue;
+        bool take_image(ImageData& image_data);
+        void stop(int wait_time  /* millisecond */);
 
     private:
         bool do_alignment_(bool force_flag = false);
@@ -33,8 +35,13 @@ namespace diffraflow {
     private:
         size_t                          imgfrm_queues_len_;
         TimeOrderedQueue<ImageFrame>*   imgfrm_queues_arr_;
+        BlockingQueue<ImageData>        imgdat_queue_;
 
-        mutex mtx_;
+        mutex data_mtx_;
+
+        atomic_bool stopped_;
+        mutex stop_mtx_;
+        condition_variable stop_cv_;
 
         uint64_t wait_threshold_;   // nanoseconds
         uint64_t image_time_min_;

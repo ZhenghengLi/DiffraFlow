@@ -28,13 +28,18 @@ namespace diffraflow {
         BlockingQueue<ImageData> imgdat_queue;
 
     private:
-        bool do_alignment_();
+        bool do_alignment_(bool force_flag = false);
 
     private:
-        size_t imgfrm_queues_len_;
-        TimeOrderedQueue<ImageFrame>*  imgfrm_queues_arr_;
+        size_t                          imgfrm_queues_len_;
+        TimeOrderedQueue<ImageFrame>*   imgfrm_queues_arr_;
 
         mutex mtx_;
+
+        uint64_t wait_threshold_;   // nanoseconds
+        uint64_t image_time_min_;
+        size_t   num_of_empty_;
+        uint64_t distance_max_;
 
     private:
         static log4cxx::LoggerPtr logger_;

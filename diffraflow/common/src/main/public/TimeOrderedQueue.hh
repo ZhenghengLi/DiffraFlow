@@ -11,7 +11,7 @@ namespace diffraflow {
         T tail;
     public:
         void push(const T& value);
-        double distance() const;
+        uint64_t distance() const;
     };
 
     template <typename T, typename Container, typename Compare>
@@ -28,10 +28,9 @@ namespace diffraflow {
     }
 
     template <typename T, typename Container, typename Compare>
-    double TimeOrderedQueue<T, Container, Compare>::distance() const {
+    uint64_t TimeOrderedQueue<T, Container, Compare>::distance() const {
         return tail - std::priority_queue<T, Container, Compare>::top();
     }
-
 
 }
 

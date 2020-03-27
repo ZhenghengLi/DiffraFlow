@@ -15,7 +15,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame, uint64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
     // wait forever
     wait_threshold_ = numeric_limits<uint64_t>::max();

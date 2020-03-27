@@ -33,9 +33,9 @@ namespace diffraflow {
         bool do_alignment_(bool force_flag = false);
 
     private:
-        size_t                          imgfrm_queues_len_;
-        TimeOrderedQueue<ImageFrame>*   imgfrm_queues_arr_;
-        BlockingQueue<ImageData>        imgdat_queue_;
+        size_t                                   imgfrm_queues_len_;
+        TimeOrderedQueue<ImageFrame, uint64_t>*  imgfrm_queues_arr_;
+        BlockingQueue<ImageData>                 imgdat_queue_;
 
         mutex data_mtx_;
 

@@ -5,31 +5,31 @@
 
 namespace diffraflow {
 
-    template <typename T, typename Container = std::vector<T>, typename Compare = std::greater<typename Container::value_type> >
-    class TimeOrderedQueue: public std::priority_queue<T, Container, Compare> {
+    template <typename ET, typename DT, typename Container = std::vector<ET>, typename Compare = std::greater<typename Container::value_type> >
+    class TimeOrderedQueue: public std::priority_queue<ET, Container, Compare> {
     private:
-        T tail;
+        ET tail;
     public:
-        void push(const T& value);
-        uint64_t distance() const;
+        void push(const ET& value);
+        DT distance() const;
     };
 
-    template <typename T, typename Container, typename Compare>
-    void TimeOrderedQueue<T, Container, Compare>::push(const T& value) {
-        if (std::priority_queue<T, Container, Compare>::empty()) {
+    template <typename ET, typename DT, typename Container, typename Compare>
+    void TimeOrderedQueue<ET, DT, Container, Compare>::push(const ET& value) {
+        if (std::priority_queue<ET, Container, Compare>::empty()) {
             tail = value;
-            std::priority_queue<T, Container, Compare>::push(value);
+            std::priority_queue<ET, Container, Compare>::push(value);
         } else {
-            if (std::priority_queue<T, Container, Compare>::comp(value, tail)) {
+            if (std::priority_queue<ET, Container, Compare>::comp(value, tail)) {
                 tail = value;
             }
-            std::priority_queue<T, Container, Compare>::push(value);
+            std::priority_queue<ET, Container, Compare>::push(value);
         }
     }
 
-    template <typename T, typename Container, typename Compare>
-    uint64_t TimeOrderedQueue<T, Container, Compare>::distance() const {
-        return tail - std::priority_queue<T, Container, Compare>::top();
+    template <typename ET, typename DT, typename Container, typename Compare>
+    DT TimeOrderedQueue<ET, DT, Container, Compare>::distance() const {
+        return tail - std::priority_queue<ET, Container, Compare>::top();
     }
 
 }

@@ -21,11 +21,11 @@ diffraflow::CmbImgCache::~CmbImgCache() {
 void diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
     // in this function, put image from into priority queue, then try to do time alignment
     lock_guard<mutex> lk(mtx_);
-    if (image_frame.det_id > imgfrm_queues_len_) {
-        LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame.det_id);
+    if (image_frame.detector_id > imgfrm_queues_len_) {
+        LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame.detector_id);
         return;
     }
-    imgfrm_queues_arr_[image_frame.det_id].push(image_frame);
+    imgfrm_queues_arr_[image_frame.detector_id].push(image_frame);
     if (do_alignment_()) {
         // for debug only
         LOG4CXX_DEBUG(logger_, "Successfully do one alignment.");

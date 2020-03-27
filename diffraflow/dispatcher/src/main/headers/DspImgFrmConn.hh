@@ -22,7 +22,7 @@ namespace diffraflow {
             const size_t payload_size) override;
 
     private:
-        int hash_long_(int64_t value);
+        uint32_t hash_long_(uint64_t value);
 
     private:
         DspSender** sender_array_;

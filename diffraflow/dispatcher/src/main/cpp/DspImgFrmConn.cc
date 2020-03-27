@@ -30,8 +30,8 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
                 LOG4CXX_INFO(logger_, "got wrong image frame, close the connection.");
                 return kFailed;
             }
-            int64_t identifier = gDC.decode_byte<int64_t>(payload_buffer, 4, 11);
-            int index = hash_long_(identifier) % sender_count_;
+            uint64_t identifier = gDC.decode_byte<uint64_t>(payload_buffer, 4, 11);
+            size_t index = hash_long_(identifier) % sender_count_;
             LOG4CXX_INFO(logger_, "Send data with key: " << identifier);
             sender_array_[index]->push(payload_buffer + 4, payload_size - 4);
             return kProcessed;
@@ -42,6 +42,6 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
     }
 }
 
-int diffraflow::DspImgFrmConn::hash_long_(int64_t value) {
-    return (int) (value ^ (value >> 32));
+uint32_t diffraflow::DspImgFrmConn::hash_long_(uint64_t value) {
+    return (uint32_t) (value ^ (value >> 32));
 }

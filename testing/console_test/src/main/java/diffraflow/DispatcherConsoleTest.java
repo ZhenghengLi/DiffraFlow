@@ -41,6 +41,9 @@ public class DispatcherConsoleTest {
             out.writeInt(data.length + 4 + 8);
             out.writeInt(payload_type);
             long identifier = rand.nextLong();
+            if (identifier < 0) {
+                identifier += Long.MAX_VALUE;
+            }
             System.out.println("identifier: " + identifier);
             out.writeLong(identifier);
             out.write(data);

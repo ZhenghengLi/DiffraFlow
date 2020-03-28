@@ -11,10 +11,11 @@ using std::cerr;
 using std::copy;
 
 diffraflow::ImageData::ImageData(uint32_t numOfDet) {
-    event_key = 0;
     event_time = 0;
     status_vec.resize(numOfDet, false);
     imgfrm_vec.resize(numOfDet);
+    late_arrived = false;
+    wait_threshold = 0;
 }
 
 diffraflow::ImageData::~ImageData() {

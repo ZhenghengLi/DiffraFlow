@@ -20,6 +20,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     // wait forever
     wait_threshold_ = numeric_limits<uint64_t>::max();
     image_time_min_ = numeric_limits<uint64_t>::max();
+    image_time_last_ = 0;
     num_of_empty_ = imgfrm_queues_len_;
     distance_max_ = 0;
     stopped_ = false;
@@ -88,7 +89,16 @@ bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
             }
         }
         // push image_data into blocking queue
-        imgdat_queue_.push(image_data);
+        image_data.event_time = image_time_target;
+        image_data.wait_threshold = wait_threshold_;
+        if (image_time_target > image_time_last_) {
+            image_data.late_arrived = false;
+            imgdat_queue_.push(image_data);
+            image_time_last_ = image_time_target;
+        } else {
+            image_data.late_arrived = true;
+            imgdat_queue_late_.push(image_data);
+        }
         return true;
     } else {
         return false;
@@ -96,8 +106,13 @@ bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
 }
 
 bool diffraflow::CmbImgCache::take_image(ImageData& image_data) {
-    bool result = imgdat_queue_.take(image_data);
-    if (stopped_ && imgdat_queue_.empty()) {
+    bool result = false;
+    if (imgdat_queue_late_.empty()) {
+        result = imgdat_queue_.take(image_data);
+    } else {
+        result = imgdat_queue_late_.take(image_data);
+    }
+    if (stopped_ && imgdat_queue_late_.empty() && imgdat_queue_.empty()) {
         stop_cv_.notify_all();
     }
     return result;
@@ -110,8 +125,9 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
     if (wait_time > 0) {
         unique_lock<mutex> ulk(stop_mtx_);
         stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time),
-            [this]() {return imgdat_queue_.empty();}
+            [this]() {return imgdat_queue_late_.empty() && imgdat_queue_.empty();}
         );
     }
+    imgdat_queue_late_.stop();
     imgdat_queue_.stop();
 }

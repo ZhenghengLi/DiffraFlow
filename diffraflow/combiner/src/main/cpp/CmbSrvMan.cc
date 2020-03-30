@@ -23,14 +23,29 @@ void diffraflow::CmbSrvMan::start_run() {
     imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->listen_host,
         config_obj_->listen_port, image_cache_);
     running_flag_ = true;
+
+    // multiple servers start from here
     imgfrm_srv_->start();
-    imgfrm_srv_->wait();
+
+    // then wait for finishing
+    async([this]() {
+        imgfrm_srv_->wait();
+    }).wait();
+
 }
 
 void diffraflow::CmbSrvMan::terminate() {
     if (!running_flag_) return;
 
     imgfrm_srv_->stop();
+    int result = imgfrm_srv_->get();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "image frame server is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "image frame server is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "image frame server has not yet been started.");
+    }
     delete imgfrm_srv_;
     imgfrm_srv_ = nullptr;
 

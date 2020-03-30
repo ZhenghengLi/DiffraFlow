@@ -25,7 +25,6 @@ log4cxx::LoggerPtr diffraflow::GenericServer::logger_
 diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn) {
     server_sock_fd_ = -1;
     server_run_ = false;
-    server_finished_ = false;
     server_sock_host_ = host;
     server_sock_port_ = port;
     server_sock_path_ = "";
@@ -143,7 +142,6 @@ int diffraflow::GenericServer::serve_() {
         }
     }
     server_run_ = true;
-    server_finished_ = false;
     dead_counts_ = 0;
     int result = 0;
     // start cleaner only when server socket is successfully opened and is accepting connections.
@@ -153,8 +151,10 @@ int diffraflow::GenericServer::serve_() {
         LOG4CXX_INFO(logger_, "Waitting for connection ...");
         int client_sock_fd = accept_client_();
         if (client_sock_fd < 0) {
-            if (server_run_) LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
-            result = 21;
+            if (server_run_) {
+                LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
+                result = 21;
+            }
             break;
         }
         LOG4CXX_INFO(logger_, "One connection is established with client_sock_fd " << client_sock_fd);
@@ -189,8 +189,7 @@ int diffraflow::GenericServer::serve_() {
             }
         }
     }
-    server_finished_ = true;
-    cv_finish_.notify_all();
+    // return
     return result;
 }
 
@@ -257,14 +256,8 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
-    {
-        unique_lock<mutex> ulk(mtx_finish_);
-        cv_finish_.wait(ulk,
-            [this] () {
-                return server_finished_.load();
-            }
-        );
-    }
+    // wait server_() to finish
+    wait();
 
     LOG4CXX_INFO(logger_, "server is closed.");
 }

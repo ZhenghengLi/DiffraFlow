@@ -21,6 +21,7 @@ using std::atomic;
 using std::mutex;
 using std::condition_variable;
 using std::future;
+using std::shared_future;
 using std::async;
 
 namespace diffraflow {
@@ -40,7 +41,7 @@ namespace diffraflow {
 
     private:
         int serve_();
-        future<int> worker_;
+        shared_future<int> worker_;
 
     public:
         virtual json::value collect_metrics() override;
@@ -75,10 +76,6 @@ namespace diffraflow {
         thread* cleaner_;
         atomic<bool> cleaner_run_;
         atomic<int> dead_counts_;
-
-        atomic<bool> server_finished_;
-        mutex mtx_finish_;
-        condition_variable cv_finish_;
 
     private:
         static log4cxx::LoggerPtr logger_;

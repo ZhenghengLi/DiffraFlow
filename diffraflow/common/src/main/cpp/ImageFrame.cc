@@ -41,8 +41,8 @@ void diffraflow::ImageFrame::print() const {
     if (image_rawdata_.empty()) {
         cout << "there is no data to print" << endl;
     }
-    cout << "image_time: " << image_time << endl;
-    cout << "image_data: [";
+    cout << "- image_time: " << image_time << endl;
+    cout << "- image_data: [";
     for (size_t i = 0; i < image_rawdata_.size(); i++) {
         cout << image_rawdata_[i];
     }

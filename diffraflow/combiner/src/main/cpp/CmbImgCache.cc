@@ -93,12 +93,14 @@ bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
         image_data.wait_threshold = wait_threshold_;
         if (image_time_target > image_time_last_) {
             image_data.late_arrived = false;
-            imgdat_queue_.push(image_data);
+            // imgdat_queue_.push(image_data);
             image_time_last_ = image_time_target;
         } else {
             image_data.late_arrived = true;
-            imgdat_queue_late_.push(image_data);
+            // imgdat_queue_late_.push(image_data);
         }
+        // for debug
+        image_data.print();
         return true;
     } else {
         return false;

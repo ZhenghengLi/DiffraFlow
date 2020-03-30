@@ -30,6 +30,8 @@ bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
 }
 
 void diffraflow::ImageData::print() {
-    cout << "ImageData[0]:" << endl;
-    imgfrm_vec[0].print();
+    for (size_t i = 0; i < imgfrm_vec.size(); i++) {
+        cout << "ImageData[" << i << "]:" << endl;
+        imgfrm_vec[i].print();
+    }
 }

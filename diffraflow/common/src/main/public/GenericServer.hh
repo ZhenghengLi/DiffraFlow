@@ -6,6 +6,7 @@
 #include <list>
 #include <atomic>
 #include <mutex>
+#include <future>
 #include <condition_variable>
 #include <log4cxx/logger.h>
 
@@ -19,6 +20,8 @@ using std::pair;
 using std::atomic;
 using std::mutex;
 using std::condition_variable;
+using std::future;
+using std::async;
 
 namespace diffraflow {
 
@@ -30,8 +33,14 @@ namespace diffraflow {
         explicit GenericServer(string sock_path, size_t max_conn = 100);
         virtual ~GenericServer();
 
-        void serve();
+        void start();
         void stop();
+        void wait();
+        int  get();
+
+    private:
+        int serve_();
+        future<int> worker_;
 
     public:
         virtual json::value collect_metrics() override;
@@ -61,11 +70,15 @@ namespace diffraflow {
         connListT_ connections_;
         size_t max_conn_counts_;
 
-        mutex mtx_;
+        mutex mtx_conn_;
         condition_variable cv_clean_;
         thread* cleaner_;
         atomic<bool> cleaner_run_;
         atomic<int> dead_counts_;
+
+        atomic<bool> server_finished_;
+        mutex mtx_finish_;
+        condition_variable cv_finish_;
 
     private:
         static log4cxx::LoggerPtr logger_;

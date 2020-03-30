@@ -73,7 +73,8 @@ void diffraflow::DspSrvMan::start_run() {
 
     // start to serve and block
     running_flag_ = true;
-    imgfrm_srv_->serve();
+    imgfrm_srv_->start();
+    imgfrm_srv_->wait();
 }
 
 void diffraflow::DspSrvMan::terminate() {
@@ -87,10 +88,12 @@ void diffraflow::DspSrvMan::terminate() {
     // stop senders
     if (sender_arr_ == nullptr) return;
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->stop();
+
     // stop and delete receiving server
     imgfrm_srv_->stop();
     delete imgfrm_srv_;
     imgfrm_srv_ = nullptr;
+
     // delete senders
     delete_senders_();
 

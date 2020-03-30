@@ -20,7 +20,7 @@ diffraflow::GenericConnection* diffraflow::CmbImgFrmSrv::new_connection_(int cli
 }
 
 json::value diffraflow::CmbImgFrmSrv::collect_metrics() {
-    lock_guard<mutex> lk(mtx_);
+    lock_guard<mutex> lk(mtx_conn_);
     json::value connection_metrics_json;
     int array_index = 0;
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); ++iter) {

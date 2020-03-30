@@ -25,6 +25,7 @@ log4cxx::LoggerPtr diffraflow::GenericServer::logger_
 diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn) {
     server_sock_fd_ = -1;
     server_run_ = false;
+    server_finished_ = false;
     server_sock_host_ = host;
     server_sock_port_ = port;
     server_sock_path_ = "";
@@ -114,8 +115,8 @@ int diffraflow::GenericServer::accept_client_() {
     return client_sock_fd;
 }
 
-void diffraflow::GenericServer::serve() {
-    if (server_run_) return;
+int diffraflow::GenericServer::serve_() {
+    if (server_run_) return 10;
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             LOG4CXX_INFO(logger_,
@@ -126,7 +127,7 @@ void diffraflow::GenericServer::serve() {
             LOG4CXX_ERROR(logger_,
                 "Failed to create server socket on unix socket file "
                 << server_sock_path_ << ".");
-            return;
+            return 11;
         }
     } else {
         if (create_tcp_sock_()) {
@@ -138,11 +139,13 @@ void diffraflow::GenericServer::serve() {
             LOG4CXX_ERROR(logger_,
                 "Failed to create server socket on "
                 << server_sock_host_ << ":" << server_sock_port_ << ".");
-            return;
+            return 12;
         }
     }
     server_run_ = true;
+    server_finished_ = false;
     dead_counts_ = 0;
+    int result = 0;
     // start cleaner only when server socket is successfully opened and is accepting connections.
     start_cleaner_();
     // start accepting clients
@@ -151,16 +154,17 @@ void diffraflow::GenericServer::serve() {
         int client_sock_fd = accept_client_();
         if (client_sock_fd < 0) {
             if (server_run_) LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
-            return;
+            result = 21;
+            break;
         }
         LOG4CXX_INFO(logger_, "One connection is established with client_sock_fd " << client_sock_fd);
         if (!server_run_) {
             shutdown(client_sock_fd, SHUT_RDWR);
             close(client_sock_fd);
-            return;
+            break;
         }
         {
-            lock_guard<mutex> lk(mtx_);
+            lock_guard<mutex> lk(mtx_conn_);
             if (connections_.size() >= max_conn_counts_) {
                 LOG4CXX_INFO(logger_, "The allowed number of connections reached maximum which is " << max_conn_counts_);
                 shutdown(client_sock_fd, SHUT_RDWR);
@@ -185,11 +189,14 @@ void diffraflow::GenericServer::serve() {
             }
         }
     }
+    server_finished_ = true;
+    cv_finish_.notify_all();
+    return result;
 }
 
 void diffraflow::GenericServer::clean_() {
     if (!cleaner_run_) return;
-    unique_lock<mutex> lk(mtx_);
+    unique_lock<mutex> lk(mtx_conn_);
     cv_clean_.wait(lk, [&]() {return (!cleaner_run_ || dead_counts_ > 0);});
     if (!cleaner_run_) return;
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
@@ -203,6 +210,24 @@ void diffraflow::GenericServer::clean_() {
         } else {
             ++iter;
         }
+    }
+}
+
+void diffraflow::GenericServer::start() {
+    worker_ = async(&GenericServer::serve_, this);
+}
+
+void diffraflow::GenericServer::wait() {
+    if (worker_.valid()) {
+        worker_.wait();
+    }
+}
+
+int diffraflow::GenericServer::get() {
+    if (worker_.valid()) {
+        return worker_.get();
+    } else {
+        return -1;
     }
 }
 
@@ -220,7 +245,7 @@ void diffraflow::GenericServer::stop() {
     stop_cleaner_();
     // close and delete all running connections
     {
-        lock_guard<mutex> lk(mtx_);
+        lock_guard<mutex> lg(mtx_conn_);
         for (connListT_::iterator iter = connections_.begin(); iter != connections_.end();) {
             iter->first->stop();
             iter->second->join();
@@ -232,11 +257,20 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
+    {
+        unique_lock<mutex> ulk(mtx_finish_);
+        cv_finish_.wait(ulk,
+            [this] () {
+                return server_finished_.load();
+            }
+        );
+    }
+
     LOG4CXX_INFO(logger_, "server is closed.");
 }
 
 json::value diffraflow::GenericServer::collect_metrics() {
-    lock_guard<mutex> lk(mtx_);
+    lock_guard<mutex> lk(mtx_conn_);
     json::value connection_metrics_json;
     int array_index = 0;
     for (connListT_::iterator iter = connections_.begin(); iter != connections_.end(); ++iter) {

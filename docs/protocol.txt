@@ -9,18 +9,20 @@
 
 3. definition for different payload types
     (1) 0xABCDFFFF: single raw image frame data
-        - format: [key(8)|data(size-8)]
+        - payload format: [key(8)|data(size-8)]
 
     (2) 0xABCDFF00: uncompressed byte sequence of raw image frame data
-        - format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
+        - payload format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
     (3) 0xABCDFF01: LZ4 compressed byte sequence of raw image frame data
-        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
+        - payload format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
     (4) 0xABCDFF02: Snappy compressed byte sequence of raw image frame data
-        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
+        - payload format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
     (5) 0xABCDFF03: ZSTD compressed byte sequence of raw image frame data
-        - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
+        - payload format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
 
-    (6) 0xABCDEEEE: single merged full image data
+    (6) 0xEEEEABCD: request for image data
+        - payload format: [imgct(4)]
+    (7) 0xABCDEEEE: single merged full image data
         - note: MassagePack serialized ImageData object
 
 4. binary protocol between different endpoints:
@@ -37,7 +39,7 @@
     (3) TCP: ingester -> combiner (pull)
         greeting:    0xEECC1234    (int)4      | (int)id
         return code: succ(1234)    fail(4321)
-        request:     0xEEE22CCC    (int)size   | (int)1
+        request:     0xEEE22CCC    (int)size   | (uint)type   (uint)imgct
         response:    0xCCC22EEE    (int)size   | (uint)type   (char[])payload
 
 5. REST API

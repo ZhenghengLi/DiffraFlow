@@ -114,13 +114,10 @@ bool diffraflow::GenericClient::send_one_(
     const size_t   payload_data_size) {
 
     if (NetworkUtils::send_packet(
-        client_sock_fd_,
-        sending_head_,
-        payload_head_buffer,
-        payload_head_size,
-        payload_data_buffer,
-        payload_data_size,
-        logger_) ) {
+            client_sock_fd_, sending_head_,
+            payload_head_buffer, payload_head_size,
+            payload_data_buffer, payload_data_size,
+            logger_) ) {
 
         network_metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
         // 8 is the size of packet head
@@ -139,11 +136,8 @@ bool diffraflow::GenericClient::receive_one_(
     size_t&        payload_size) {
 
     if (NetworkUtils::receive_packet(
-        client_sock_fd_,
-        receiving_head_,
-        buffer,
-        buffer_size,
-        payload_size,
+        client_sock_fd_, receiving_head_,
+        buffer, buffer_size, payload_size,
         logger_) ) {
 
         network_metrics.total_received_size += 8 + payload_size;

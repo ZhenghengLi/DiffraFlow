@@ -16,10 +16,29 @@ bool diffraflow::NetworkUtils::send_packet(
     const size_t   payload_data_size,
     log4cxx::LoggerPtr logger) {
 
-    // send packet head
+    if (client_sock_fd < 0) {
+        LOG4CXX_ERROR(logger, "invalid client_sock_fd");
+        return false;
+    }
+
+    if (payload_head_buffer == nullptr && payload_data_buffer == nullptr) {
+        LOG4CXX_ERROR(logger, "cannot only send head without payload.");
+        return false;
+    }
+
+    // serialize packet head
     char head_buffer[8];
     gPS.serializeValue<uint32_t>(packet_head, head_buffer, 4);
-    gPS.serializeValue<uint32_t>(payload_head_size + payload_data_size, head_buffer + 4, 4);
+    uint32_t packet_size = 0;
+    if (payload_head_buffer != nullptr) {
+        packet_size += payload_head_size;
+    }
+    if (payload_data_buffer != nullptr) {
+        packet_size += payload_data_size;
+    }
+    gPS.serializeValue<uint32_t>(packet_size, head_buffer + 4, 4);
+
+    // send packet head
     for (size_t pos = 0; pos < 8;) {
         int count = write(client_sock_fd, head_buffer + pos, 8 - pos);
         if (count < 0) {
@@ -32,28 +51,32 @@ bool diffraflow::NetworkUtils::send_packet(
     LOG4CXX_DEBUG(logger, "done a write for packet head.");
 
     // send payload head
-    for (size_t pos = 0; pos < payload_head_size;) {
-        int count = write(client_sock_fd, payload_head_buffer + pos, payload_head_size - pos);
-        if (count < 0) {
-            LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
-            return false;
-        } else {
-            pos += count;
+    if (payload_head_buffer != nullptr) {
+        for (size_t pos = 0; pos < payload_head_size;) {
+            int count = write(client_sock_fd, payload_head_buffer + pos, payload_head_size - pos);
+            if (count < 0) {
+                LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
+                return false;
+            } else {
+                pos += count;
+            }
         }
+        LOG4CXX_DEBUG(logger, "done a write for payload head.");
     }
-    LOG4CXX_DEBUG(logger, "done a write for payload head.");
 
     // send payload data
-    for (size_t pos = 0; pos < payload_data_size;) {
-        int count = write(client_sock_fd, payload_data_buffer + pos, payload_data_size - pos);
-        if (count < 0) {
-            LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
-            return false;
-        } else {
-            pos += count;
+    if (payload_data_buffer != nullptr) {
+        for (size_t pos = 0; pos < payload_data_size;) {
+            int count = write(client_sock_fd, payload_data_buffer + pos, payload_data_size - pos);
+            if (count < 0) {
+                LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
+                return false;
+            } else {
+                pos += count;
+            }
         }
+        LOG4CXX_DEBUG(logger, "done a write for payload data.");
     }
-    LOG4CXX_DEBUG(logger, "done a write for payload data.");
 
     return true;
 }
@@ -65,6 +88,11 @@ bool diffraflow::NetworkUtils::receive_packet(
     const size_t       buffer_size,
     size_t&            packet_size,
     log4cxx::LoggerPtr logger) {
+
+    if (client_sock_fd < 0) {
+        LOG4CXX_ERROR(logger, "invalid client_sock_fd");
+        return false;
+    }
 
     // read packet head and size
     char head_size_buffer[8];

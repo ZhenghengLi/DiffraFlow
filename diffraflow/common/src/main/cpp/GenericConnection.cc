@@ -149,13 +149,10 @@ bool diffraflow::GenericConnection::send_one_(
     const size_t   payload_data_size) {
 
     if (NetworkUtils::send_packet(
-        client_sock_fd_,
-        sending_head_,
-        payload_head_buffer,
-        payload_head_size,
-        payload_data_buffer,
-        payload_data_size,
-        logger_) ) {
+            client_sock_fd_, sending_head_,
+            payload_head_buffer, payload_head_size,
+            payload_data_buffer, payload_data_size,
+            logger_) ) {
 
         network_metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
         network_metrics.total_sent_counts += 1;

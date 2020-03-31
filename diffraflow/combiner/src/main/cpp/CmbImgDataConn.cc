@@ -30,7 +30,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDataConn::process_pa
     const char* payload_buffer, const size_t payload_size) {
     // payload size check
     if (payload_size < 8) {
-        LOG4CXX_WARN(logger_, "got too short image frame sequence data, close the connection.");
+        LOG4CXX_WARN(logger_, "got too short image request data, close the connection.");
         return kFailed;
     }
     // extract payload type

@@ -136,9 +136,9 @@ bool diffraflow::GenericClient::receive_one_(
     size_t&        payload_size) {
 
     if (NetworkUtils::receive_packet(
-        client_sock_fd_, receiving_head_,
-        buffer, buffer_size, payload_size,
-        logger_) ) {
+            client_sock_fd_, receiving_head_,
+            buffer, buffer_size, payload_size,
+            logger_) ) {
 
         network_metrics.total_received_size += 8 + payload_size;
         // 8 is the size of packet head

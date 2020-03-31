@@ -19,9 +19,9 @@ namespace diffraflow {
         void print();
 
     public:
-        uint64_t           event_time;  // equal to image_time
-        vector<bool>       status_vec;  // alignment status for each sub-detector
-        vector<ImageFrame> imgfrm_vec;  // image data from each sub-detector
+        uint64_t           event_time;            // equal to image_time
+        vector<bool>       status_vec;            // alignment status for each sub-detector
+        vector<ImageFrame> imgfrm_vec;            // image data from each sub-detector
         uint64_t           wait_threshold;
         bool               late_arrived;
 

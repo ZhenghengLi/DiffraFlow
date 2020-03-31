@@ -3,8 +3,6 @@
     dispatcher   -> D
     combiner     -> C
     ingester     -> E
-    monitor      -> B
-    client       -> A
 
 2. common data format for transfering:
     [header(4)|size(4)|type(4)|payload(size-4)]
@@ -12,49 +10,37 @@
 3. definition for different payload types
     (1) 0xABCDFFFF: single raw image frame data
         - format: [key(8)|data(size-8)]
-    (2) 0xABCDEEEE: single merged full image data
-        - note: serialized ImageData object
-    (3) 0xAABB1111: 8 bytes time
-    (4) 0xABCDFF00: uncompressed byte sequence of raw image frame data
+
+    (2) 0xABCDFF00: uncompressed byte sequence of raw image frame data
         - format: [imgct(4)|frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...]
-    (5) 0xABCDFF01: LZ4 compressed byte sequence of raw image frame data
+    (3) 0xABCDFF01: LZ4 compressed byte sequence of raw image frame data
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
-    (6) 0xABCDFF02: Snappy compressed byte sequence of raw image frame data
+    (4) 0xABCDFF02: Snappy compressed byte sequence of raw image frame data
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
-    (7) 0xABCDFF03: ZSTD compressed byte sequence of raw image frame data
+    (5) 0xABCDFF03: ZSTD compressed byte sequence of raw image frame data
         - format: [imgct(4)|compressed(frmsz1(4)|frmdt1(frmsz1)|frmsz2(4)|frmdt2(frmsz2)|...)]
 
-4. specific protocol between different endpoints:
+    (6) 0xABCDEEEE: single merged full image data
+        - note: MassagePack serialized ImageData object
+
+4. binary protocol between different endpoints:
     (1) TCP: source -> dispatcher (push)
-        greeting:    0xFFDD1234    (int)4       (int)id
+        greeting:    0xFFDD1234    (int)4      | (uint)id
         return code: succ(1234)    fail(4321)
-        transfering: 0xFFF22DDD    (int)size    (uint)type   (char[])payload
+        transfering: 0xFFF22DDD    (int)size   | (uint)type   (char[])payload
 
     (2) TCP: dispatcher -> combiner (push)
-        greeting:    0xDDCC1234    (int)4       (int)id
+        greeting:    0xDDCC1234    (int)4      | (uint)id
         return code: succ(1234)    fail(4321)
-        transfering: 0xDDD22CCC    (int)size    (uint)type   (char[])payload
+        transfering: 0xDDD22CCC    (int)size   | (uint)type   (char[])payload
 
     (3) TCP: ingester -> combiner (pull)
-        greeting:    0xEECC1234    (int)4       (int)0
+        greeting:    0xEECC1234    (int)4      | (int)id
         return code: succ(1234)    fail(4321)
-        request:     0xEEE22CCC    (int)size    (int)1
-        response:    0xCCC22EEE    (int)size    (uint)type   (char[])payload
+        request:     0xEEE22CCC    (int)size   | (int)1
+        response:    0xCCC22EEE    (int)size   | (uint)type   (char[])payload
 
-    (4) TCP: ingester -> monitor (push)
-        greeting:    0xEEBB1234    (int)4       (int)0
-        return code: succ(1234)    fail(4321)
-        transfering: 0xEEE22BBB    (int)size    (uint)type   (char[])payload
-        response:    0xBBB22EEE    (int)size    (uint)type   (char[])payload
-
-    (5) TCP: client -> monitor (request in a round-robin way from all monitors)
-        greeting:    0xAABB1234    (int)4       (int)0
-        return code: succ(1234)    fail(4321)
-        request:     0xAAA22BBB    (int)size    (uint)type   (char[])payload
-        response:    0xBBB22AAA    (int)size    (uint)type   (char[])payload
-
-5. data flow among client, monitor and ingester
-    (1) req_time, now_time, hold_flag, ready_flag, tran_flag
-    (2) client -> monitor: if req_time < now_time: set hold_flag = true and ready = false and wait_for, else pass
-    (3) ingester -> monitor: if hold_flag: transfer image data then set ready = true and notify, else update now_time
-    (4) monitor -> client: if ready: transfer image data, else pass
+5. REST API
+    (1) GET: monitor -> ingester (round-robin)
+    (2) GET: controller -> monitor (round-robin)
+    (3) PUT: client -> controller ~> ZooKeeper

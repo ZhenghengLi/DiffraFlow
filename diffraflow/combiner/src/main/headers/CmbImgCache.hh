@@ -27,7 +27,7 @@ namespace diffraflow {
 
         void push_frame(const ImageFrame& image_frame);
         bool take_image(ImageData& image_data);
-        void stop(int wait_time  /* millisecond */);
+        void stop(int wait_time = 0  /* millisecond */);
 
     private:
         bool do_alignment_(bool force_flag = false);

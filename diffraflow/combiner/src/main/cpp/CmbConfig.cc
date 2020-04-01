@@ -15,8 +15,10 @@ log4cxx::LoggerPtr diffraflow::CmbConfig::logger_
     = log4cxx::Logger::getLogger("CmbConfig");
 
 diffraflow::CmbConfig::CmbConfig() {
-    listen_host = "0.0.0.0";
-
+    imgfrm_listen_host = "0.0.0.0";
+    imgfrm_listen_port = -1;
+    imgdat_listen_host = "0.0.0.0";
+    imgdat_listen_port = -1;
 }
 
 diffraflow::CmbConfig::~CmbConfig() {
@@ -32,10 +34,14 @@ bool diffraflow::CmbConfig::load(const char* filename) {
     for (size_t i = 0; i < conf_KV_vec.size(); i++) {
         string key = conf_KV_vec[i].first;
         string value = conf_KV_vec[i].second;
-        if (key == "listen_host") {
-            listen_host = value;
-        } else if (key == "listen_port") {
-            listen_port = atoi(value.c_str());
+        if (key == "imgfrm_listen_host") {
+            imgfrm_listen_host = value;
+        } else if (key == "imgfrm_listen_port") {
+            imgfrm_listen_port = atoi(value.c_str());
+        } else if (key == "imgdat_listen_host") {
+            imgdat_listen_host = value;
+        } else if (key == "imgdat_listen_port") {
+            imgdat_listen_port = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);
@@ -43,8 +49,12 @@ bool diffraflow::CmbConfig::load(const char* filename) {
     }
     // check
     bool succ_flag = true;
-    if (listen_port < 0) {
-        LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
+    if (imgfrm_listen_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid imgfrm_listen_port: " << imgfrm_listen_port);
+        succ_flag = false;
+    }
+    if (imgdat_listen_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid imgdat_listen_port: " << imgdat_listen_port);
         succ_flag = false;
     }
     return succ_flag;
@@ -52,8 +62,10 @@ bool diffraflow::CmbConfig::load(const char* filename) {
 
 void diffraflow::CmbConfig::print() {
     cout << " = Configuration Dump Begin =" << endl;
-    cout << "  listen_host = " << listen_host << endl;
-    cout << "  listen_port = " << listen_port << endl;
+    cout << "  imgfrm_listen_host = " << imgfrm_listen_host << endl;
+    cout << "  imgfrm_listen_port = " << imgfrm_listen_port << endl;
+    cout << "  imgdat_listen_host = " << imgdat_listen_host << endl;
+    cout << "  imgdat_listen_port = " << imgdat_listen_port << endl;
     cout << " = Configuration Dump End =" << endl;
 
 }

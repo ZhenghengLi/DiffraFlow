@@ -11,6 +11,7 @@ namespace diffraflow {
     class CmbConfig;
     class CmbImgCache;
     class CmbImgFrmSrv;
+    class CmbImgDatSrv;
 
     class CmbSrvMan {
     public:
@@ -25,6 +26,7 @@ namespace diffraflow {
         CmbImgCache* image_cache_;
 
         CmbImgFrmSrv* imgfrm_srv_;
+        CmbImgDatSrv* imgdat_srv_;
         atomic_bool running_flag_;
 
     private:

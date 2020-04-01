@@ -18,8 +18,11 @@ namespace diffraflow {
        void print();
 
     public:
-        string listen_host;
-        int    listen_port;
+        string imgfrm_listen_host;
+        int    imgfrm_listen_port;
+
+        string imgdat_listen_host;
+        int    imgdat_listen_port;
 
     private:
         static log4cxx::LoggerPtr logger_;

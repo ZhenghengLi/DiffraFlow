@@ -1,5 +1,5 @@
-#ifndef CmbImgDataConn_H
-#define CmbImgDataConn_H
+#ifndef CmbImgDatConn_H
+#define CmbImgDatConn_H
 
 #include "GenericConnection.hh"
 #include <log4cxx/logger.h>
@@ -9,10 +9,10 @@ namespace diffraflow {
 
     class CmbImgCache;
 
-    class CmbImgDataConn: public GenericConnection {
+    class CmbImgDatConn: public GenericConnection {
     public:
-        CmbImgDataConn(int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct = 10);
-        ~CmbImgDataConn();
+        CmbImgDatConn(int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct = 10);
+        ~CmbImgDatConn();
 
     protected:
         ProcessRes process_payload_(const char* payload_buffer,

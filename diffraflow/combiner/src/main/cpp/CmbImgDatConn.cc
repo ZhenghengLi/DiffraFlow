@@ -1,4 +1,4 @@
-#include "CmbImgDataConn.hh"
+#include "CmbImgDatConn.hh"
 #include "CmbImgCache.hh"
 #include "ImageData.hh"
 #include "Decoder.hh"
@@ -12,21 +12,21 @@
 
 using std::copy;
 
-log4cxx::LoggerPtr diffraflow::CmbImgDataConn::logger_
-    = log4cxx::Logger::getLogger("CmbImgDataConn");
+log4cxx::LoggerPtr diffraflow::CmbImgDatConn::logger_
+    = log4cxx::Logger::getLogger("CmbImgDatConn");
 
-diffraflow::CmbImgDataConn::CmbImgDataConn(
+diffraflow::CmbImgDatConn::CmbImgDatConn(
     int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct):
     GenericConnection(sock_fd, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE, 1024) {
     image_cache_ = image_cache;
     max_req_imgct_ = max_req_imgct;
 }
 
-diffraflow::CmbImgDataConn::~CmbImgDataConn() {
+diffraflow::CmbImgDatConn::~CmbImgDatConn() {
 
 }
 
-diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDataConn::process_payload_(
+diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_payload_(
     const char* payload_buffer, const size_t payload_size) {
     // payload size check
     if (payload_size < 8) {

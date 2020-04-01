@@ -25,12 +25,12 @@ namespace diffraflow {
         explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100);
         ~CmbImgCache();
 
-        void push_frame(const ImageFrame& image_frame);
+        bool push_frame(const ImageFrame& image_frame);
         bool take_image(ImageData& image_data);
         void stop(int wait_time = 0  /* millisecond */);
 
     private:
-        bool do_alignment_(bool force_flag = false);
+        bool do_alignment_(ImageData& image_data, bool force_flag = false);
 
     private:
         size_t                                   imgfrm_queues_len_;

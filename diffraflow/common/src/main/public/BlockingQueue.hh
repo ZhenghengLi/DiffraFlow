@@ -181,7 +181,6 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::offer(const E& el) {
-        if (stopped_) return false;
         lock_guard<mutex> lk(mtx_);
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
@@ -205,7 +204,6 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::try_offer(const E& el) {
-        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->size() < max_size_) {

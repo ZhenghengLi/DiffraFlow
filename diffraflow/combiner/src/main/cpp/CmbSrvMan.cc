@@ -56,6 +56,9 @@ void diffraflow::CmbSrvMan::start_run() {
 void diffraflow::CmbSrvMan::terminate() {
     if (!running_flag_) return;
 
+    // stop image cache
+    image_cache_->stop(/* wait time, default is 0 */);
+
     // stop image frame server
     int result = imgfrm_srv_->stop_and_close();
     if (result == 0) {
@@ -68,9 +71,6 @@ void diffraflow::CmbSrvMan::terminate() {
     // delete image frame server
     delete imgfrm_srv_;
     imgfrm_srv_ = nullptr;
-
-    // stop image cache
-    image_cache_->stop(/* wait time, default is 0 */);
 
     // stop image data server
     result = imgdat_srv_->stop_and_close();

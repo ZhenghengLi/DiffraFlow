@@ -50,7 +50,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDataConn::process_pa
     for (size_t i = 0; i < image_counts; i++) {
         ImageData one_image;
         if (!image_cache_->take_image(one_image)) {
-            LOG4CXX_WARN(logger_, "failed to take image data from queue, close the connection.");
+            LOG4CXX_WARN(logger_, "image data queue is stopped and empty, close the connection.");
             return kFailed;
         }
         // serialize image data

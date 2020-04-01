@@ -19,6 +19,7 @@ diffraflow::CmbConfig::CmbConfig() {
     imgfrm_listen_port = -1;
     imgdat_listen_host = "0.0.0.0";
     imgdat_listen_port = -1;
+    imgdat_queue_capacity = 100;
 }
 
 diffraflow::CmbConfig::~CmbConfig() {
@@ -42,6 +43,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
             imgdat_listen_host = value;
         } else if (key == "imgdat_listen_port") {
             imgdat_listen_port = atoi(value.c_str());
+        } else if (key == "imgdat_queue_capacity") {
+            imgdat_queue_capacity = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);
@@ -57,6 +60,10 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid imgdat_listen_port: " << imgdat_listen_port);
         succ_flag = false;
     }
+    if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
+        succ_flag = false;
+    }
     return succ_flag;
 }
 
@@ -66,6 +73,7 @@ void diffraflow::CmbConfig::print() {
     cout << "  imgfrm_listen_port = " << imgfrm_listen_port << endl;
     cout << "  imgdat_listen_host = " << imgdat_listen_host << endl;
     cout << "  imgdat_listen_port = " << imgdat_listen_port << endl;
+    cout << "  imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
     cout << " = Configuration Dump End =" << endl;
 
 }

@@ -22,7 +22,7 @@ diffraflow::CmbSrvMan::~CmbSrvMan() {
 void diffraflow::CmbSrvMan::start_run() {
     if (running_flag_) return;
 
-    image_cache_ = new CmbImgCache(1);
+    image_cache_ = new CmbImgCache(1, config_obj_->imgdat_queue_capacity);
 
     imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->imgfrm_listen_host,
         config_obj_->imgfrm_listen_port, image_cache_);

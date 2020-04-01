@@ -17,6 +17,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame, uint64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
+    imgdat_queue_late_.set_maxsize(img_q_ms);
     // wait forever
     wait_threshold_ = numeric_limits<uint64_t>::max();
     image_time_min_ = numeric_limits<uint64_t>::max();
@@ -27,7 +28,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
-
+    delete [] imgfrm_queues_arr_;
 }
 
 void diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {

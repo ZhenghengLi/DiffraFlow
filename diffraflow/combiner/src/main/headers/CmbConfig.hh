@@ -24,6 +24,8 @@ namespace diffraflow {
         string imgdat_listen_host;
         int    imgdat_listen_port;
 
+        size_t imgdat_queue_capacity;
+
     private:
         static log4cxx::LoggerPtr logger_;
 

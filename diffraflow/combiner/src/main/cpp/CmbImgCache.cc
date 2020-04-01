@@ -163,6 +163,7 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
                 LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
             } else {
                 LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
+                break;
             }
         } else {
             image_data.late_arrived = true;
@@ -171,6 +172,7 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
                 LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_late_.");
             } else {
                 LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_late_ is full.");
+                break;
             }
         }
     }

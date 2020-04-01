@@ -43,7 +43,7 @@ diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
 }
 
 diffraflow::GenericServer::~GenericServer() {
-    stop();
+    stop_and_close();
 }
 
 void diffraflow::GenericServer::start_cleaner_() {
@@ -248,7 +248,7 @@ void diffraflow::GenericServer::wait() {
     }
 }
 
-int diffraflow::GenericServer::stop() {
+int diffraflow::GenericServer::stop_and_close() {
 
     if (server_status_ == kNotStart) {
         return -1;

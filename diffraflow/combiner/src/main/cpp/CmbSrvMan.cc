@@ -57,7 +57,7 @@ void diffraflow::CmbSrvMan::terminate() {
     if (!running_flag_) return;
 
     // stop image frame server
-    int result = imgfrm_srv_->stop();
+    int result = imgfrm_srv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image frame server is normally terminated.");
     } else if (result > 0) {
@@ -73,7 +73,7 @@ void diffraflow::CmbSrvMan::terminate() {
     image_cache_->stop(/* wait time, default is 0 */);
 
     // stop image data server
-    result = imgdat_srv_->stop();
+    result = imgdat_srv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image data server is normally terminated.");
     } else if (result > 0) {

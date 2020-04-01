@@ -36,7 +36,7 @@ namespace diffraflow {
 
         bool start();
         void wait();
-        int  stop();
+        int  stop_and_close();
 
     private:
         int serve_();

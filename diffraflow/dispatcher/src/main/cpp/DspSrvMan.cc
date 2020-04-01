@@ -101,7 +101,7 @@ void diffraflow::DspSrvMan::terminate() {
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->stop();
 
     // stop and delete receiving server
-    int result = imgfrm_srv_->stop();
+    int result = imgfrm_srv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image frame server is normally terminated.");
     } else if (result > 0) {

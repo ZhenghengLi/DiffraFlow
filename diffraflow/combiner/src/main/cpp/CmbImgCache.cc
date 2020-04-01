@@ -94,11 +94,30 @@ bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
         image_data.wait_threshold = wait_threshold_;
         if (image_time_target > image_time_last_) {
             image_data.late_arrived = false;
-            // imgdat_queue_.push(image_data);
-            image_time_last_ = image_time_target;
+            if (force_flag) {
+                if (imgdat_queue_.offer(image_data)) {
+                    image_time_last_ = image_time_target;
+                } else {
+                    LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is full or stopped.")
+                }
+            } else {
+                if (imgdat_queue_.push(image_data)) {
+                    image_time_last_ = image_time_target;
+                } else {
+                    LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.")
+                }
+            }
         } else {
             image_data.late_arrived = true;
-            // imgdat_queue_late_.push(image_data);
+            if (force_flag) {
+                if (!imgdat_queue_late_.offer(image_data)) {
+                    LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_late_ is full or stopped.")
+                }
+            } else {
+                if (!imgdat_queue_late_.push(image_data)) {
+                    LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_late_ is stopped.")
+                }
+            }
         }
         // for debug
         image_data.print();

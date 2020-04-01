@@ -34,10 +34,9 @@ namespace diffraflow {
         explicit GenericServer(string sock_path, size_t max_conn = 100);
         virtual ~GenericServer();
 
-        void start();
-        void stop();
+        bool start();
         void wait();
-        int  get();
+        int  stop();
 
     private:
         int serve_();
@@ -62,12 +61,19 @@ namespace diffraflow {
         typedef list< pair<GenericConnection*, thread*> > connListT_;
 
     protected:
+        enum ServerStatus {kNotStart, kRunning, kStopped, kClosed};
+
+    protected:
         bool is_ipc_;
         string server_sock_host_;
         int    server_sock_port_;
         string server_sock_path_;
         int server_sock_fd_;
-        atomic<bool> server_run_;
+
+        atomic<ServerStatus> server_status_;
+        mutex mtx_status_;
+        condition_variable cv_status_;
+
         connListT_ connections_;
         size_t max_conn_counts_;
 

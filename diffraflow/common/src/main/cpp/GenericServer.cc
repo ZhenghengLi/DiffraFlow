@@ -24,7 +24,7 @@ log4cxx::LoggerPtr diffraflow::GenericServer::logger_
 
 diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn) {
     server_sock_fd_ = -1;
-    server_run_ = false;
+    server_status_ = kNotStart;
     server_sock_host_ = host;
     server_sock_port_ = port;
     server_sock_path_ = "";
@@ -34,7 +34,7 @@ diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn)
 
 diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     server_sock_fd_ = -1;
-    server_run_ = false;
+    server_status_ = kNotStart;
     server_sock_host_ = "";
     server_sock_port_ = 0;
     server_sock_path_ = sock_path;
@@ -115,7 +115,9 @@ int diffraflow::GenericServer::accept_client_() {
 }
 
 int diffraflow::GenericServer::serve_() {
-    if (server_run_) return 10;
+    if (server_status_ != kNotStart) {
+        return 11;
+    }
     if (is_ipc_) {
         if (create_ipc_sock_()) {
             LOG4CXX_INFO(logger_,
@@ -126,7 +128,9 @@ int diffraflow::GenericServer::serve_() {
             LOG4CXX_ERROR(logger_,
                 "Failed to create server socket on unix socket file "
                 << server_sock_path_ << ".");
-            return 11;
+            server_status_ = kStopped;
+            cv_status_.notify_all();
+            return 21;
         }
     } else {
         if (create_tcp_sock_()) {
@@ -138,27 +142,32 @@ int diffraflow::GenericServer::serve_() {
             LOG4CXX_ERROR(logger_,
                 "Failed to create server socket on "
                 << server_sock_host_ << ":" << server_sock_port_ << ".");
-            return 12;
+            server_status_ = kStopped;
+            cv_status_.notify_all();
+            return 22;
         }
     }
-    server_run_ = true;
     dead_counts_ = 0;
     int result = 0;
     // start cleaner only when server socket is successfully opened and is accepting connections.
     start_cleaner_();
+
+    server_status_ = kRunning;
+    cv_status_.notify_all();
+
     // start accepting clients
-    while (server_run_) {
+    while (server_status_ == kRunning) {
         LOG4CXX_INFO(logger_, "Waitting for connection ...");
         int client_sock_fd = accept_client_();
         if (client_sock_fd < 0) {
-            if (server_run_) {
+            if (server_status_ == kRunning) {
                 LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
-                result = 21;
+                result = 31;
             }
             break;
         }
         LOG4CXX_INFO(logger_, "One connection is established with client_sock_fd " << client_sock_fd);
-        if (!server_run_) {
+        if (server_status_ != kRunning) {
             shutdown(client_sock_fd, SHUT_RDWR);
             close(client_sock_fd);
             break;
@@ -179,7 +188,7 @@ int diffraflow::GenericServer::serve_() {
                     cv_clean_.notify_one();
                 }
             );
-            if (server_run_) {
+            if (server_status_ == kRunning) {
                 connections_.push_back(make_pair(conn_object, conn_thread));
             } else {
                 conn_object->stop();
@@ -189,6 +198,8 @@ int diffraflow::GenericServer::serve_() {
             }
         }
     }
+    server_status_ = kStopped;
+    cv_status_.notify_all();
     // return
     return result;
 }
@@ -212,8 +223,23 @@ void diffraflow::GenericServer::clean_() {
     }
 }
 
-void diffraflow::GenericServer::start() {
+bool diffraflow::GenericServer::start() {
+    if (!(server_status_ == kNotStart || server_status_ == kClosed)) {
+        return false;
+    }
+    server_status_ = kNotStart;
     worker_ = async(&GenericServer::serve_, this);
+    unique_lock<mutex> ulk(mtx_status_);
+    cv_status_.wait(ulk,
+        [this]() {
+            return server_status_ != kNotStart;
+        }
+    );
+    if (server_status_ == kRunning) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void diffraflow::GenericServer::wait() {
@@ -222,17 +248,17 @@ void diffraflow::GenericServer::wait() {
     }
 }
 
-int diffraflow::GenericServer::get() {
-    if (worker_.valid()) {
-        return worker_.get();
-    } else {
+int diffraflow::GenericServer::stop() {
+
+    if (server_status_ == kNotStart) {
         return -1;
     }
-}
+    if (server_status_ == kClosed) {
+        return -2;
+    }
+    server_status_ = kStopped;
+    cv_status_.notify_all();
 
-void diffraflow::GenericServer::stop() {
-    if (!server_run_) return;
-    server_run_ = false;
     // shutdown server socket in case new connection come in.
     // SHUT_RD means further receptions will be disallowed,
     // so here only stop accepting, the opened connections are still alive.
@@ -256,10 +282,16 @@ void diffraflow::GenericServer::stop() {
     }
     // release socket resource
     close(server_sock_fd_);
+    server_sock_fd_ = -1;
     // wait server_() to finish
-    wait();
-
+    int result = -3;
+    if (worker_.valid()) {
+        result = worker_.get();
+    }
+    server_status_ = kClosed;
+    cv_status_.notify_all();
     LOG4CXX_INFO(logger_, "server is closed.");
+    return result;
 }
 
 json::value diffraflow::GenericServer::collect_metrics() {

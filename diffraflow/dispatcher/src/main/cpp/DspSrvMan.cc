@@ -71,13 +71,17 @@ void diffraflow::DspSrvMan::start_run() {
         }
     }
 
-    // start to serve and block
+    // multiple servers start from here
+    if (imgfrm_srv_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started image frame server.")
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start image frame server.")
+        return;
+    }
+
     running_flag_ = true;
 
-    // multiple servers start from here
-    imgfrm_srv_->start();
-
-    // then wait for finishing
+    // wait for finishing
     async([this]() {
         imgfrm_srv_->wait();
     }).wait();
@@ -97,14 +101,13 @@ void diffraflow::DspSrvMan::terminate() {
     for (size_t i = 0; i < sender_cnt_; i++) sender_arr_[i]->stop();
 
     // stop and delete receiving server
-    imgfrm_srv_->stop();
-    int result = imgfrm_srv_->get();
+    int result = imgfrm_srv_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image frame server is normally terminated.");
     } else if (result > 0) {
         LOG4CXX_WARN(logger_, "image frame server is abnormally terminated with error code: " << result);
     } else {
-        LOG4CXX_WARN(logger_, "image frame server has not yet been started.");
+        LOG4CXX_WARN(logger_, "image frame server has not yet been started or already been closed.");
     }
     delete imgfrm_srv_;
     imgfrm_srv_ = nullptr;

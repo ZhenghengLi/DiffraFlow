@@ -151,31 +151,31 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::take(E& el) {
-        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_);
         cv_take_.wait(lk, [&]() {return stopped_ || !internal_queue_->empty();});
-        if (stopped_) return false;
-        el = internal_queue_->front();
-        internal_queue_->pop();
-        cv_push_.notify_one();
-        return true;
-    }
-
-    template <typename E>
-    bool BlockingQueue<E>::take(E& el, int timeout) {
-        if (stopped_) return false;
-        if (timeout < 0) return false;
-        unique_lock<mutex> lk(mtx_);
-        if (cv_take_.wait_for(lk, std::chrono::milliseconds(timeout),
-            [&]() {return stopped_ || !internal_queue_->empty();})) {
-            if (stopped_) return false;
+        if (internal_queue_->empty()) {
+            return false;
+        } else {
             el = internal_queue_->front();
             internal_queue_->pop();
             cv_push_.notify_one();
             return true;
-        } else {
-            // timeout
+        }
+    }
+
+    template <typename E>
+    bool BlockingQueue<E>::take(E& el, int timeout) {
+        if (timeout < 0) return false;
+        unique_lock<mutex> lk(mtx_);
+        cv_take_.wait_for(lk, std::chrono::milliseconds(timeout),
+            [&]() {return stopped_ || !internal_queue_->empty();});
+        if (internal_queue_->empty()) {
             return false;
+        } else {
+            el = internal_queue_->front();
+            internal_queue_->pop();
+            cv_push_.notify_one();
+            return true;
         }
     }
 
@@ -193,7 +193,6 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::get(E& el) {
-        if (stopped_) return false;
         lock_guard<mutex> lk(mtx_);
         if (internal_queue_->empty()) {
             return false;
@@ -219,7 +218,6 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::try_get(E& el) {
-        if (stopped_) return false;
         unique_lock<mutex> lk(mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->empty()) {

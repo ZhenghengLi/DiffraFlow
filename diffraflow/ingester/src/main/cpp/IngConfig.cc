@@ -27,35 +27,48 @@ diffraflow::IngConfig::~IngConfig() {
 }
 
 bool diffraflow::IngConfig::load(const char* filename) {
-    if (!DynamicConfiguration::load(filename)) {
-        return true;
+    list< pair<string, string> > conf_KV_list;
+    if (!read_conf_KV_list_(filename, conf_KV_list)) {
+        LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
+        return false;
     }
+
+    if (zookeeper_parse_setting_(conf_KV_list)) {
+        // zookeeper_setting is ready
+    }
+
     lock_guard<mutex> lk(conf_map_mtx_);
+
     // parse
-    for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
+    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+        string key = iter->first;
+        string value = iter->second;
         // for static parameters
-        if (iter->first == "ingester_id") {
-            ingester_id = atoi(iter->second.c_str());
-            conf_map_in_use[iter->first] = iter->second;
-        } else if (iter->first == "combiner_host") {
-            combiner_host = iter->second;
-            conf_map_in_use[iter->first] = iter->second;
-        } else if (iter->first == "combiner_port") {
-            combiner_port = atoi(iter->second.c_str());
-            conf_map_in_use[iter->first] = iter->second;
-        }
+        if (key == "ingester_id") {
+            ingester_id = atoi(value.c_str());
+            conf_map_in_use[key] = value;
+        } else if (key == "combiner_host") {
+            combiner_host = value;
+            conf_map_in_use[key] = value;
+        } else if (key == "combiner_port") {
+            combiner_port = atoi(value.c_str());
+            conf_map_in_use[key] = value;
         // for dynamic parameters
-        if (iter->first == "dy_param_int") {
-            dy_param_int = atoi(iter->second.c_str());
-            conf_map_in_use[iter->first] = iter->second;
-        } else if (iter->first == "dy_param_double") {
-            dy_param_double = atof(iter->second.c_str());
-            conf_map_in_use[iter->first] = iter->second;
-        } else if (iter->first == "dy_param_string") {
-            dy_param_string = iter->second;
-            conf_map_in_use[iter->first] = iter->second;
+        } else if (key == "dy_param_int") {
+            dy_param_int = atoi(value.c_str());
+            conf_map_in_use[key] = value;
+        } else if (key == "dy_param_double") {
+            dy_param_double = atof(value.c_str());
+            conf_map_in_use[key] = value;
+        } else if (key == "dy_param_string") {
+            dy_param_string = value;
+            conf_map_in_use[key] = value;
+        } else {
+            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
+                << key << " = " << value << " in " << filename);
         }
     }
+
     // check
     bool succ_flag = true;
     if (ingester_id < 0) {

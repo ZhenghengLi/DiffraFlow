@@ -17,17 +17,17 @@ diffraflow::CtrCfgMap::~CtrCfgMap() {
 }
 
 bool diffraflow::CtrCfgMap::load(const char* filename) {
-    vector< pair<string, string> > conf_KV_vec;
-    if (!read_conf_KV_vec_(filename, conf_KV_vec)) {
+    list< pair<string, string> > conf_KV_list;
+    if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
     // parse
     data.clear();
     mtime = time(NULL);
-    for (size_t i = 0; i < conf_KV_vec.size(); i++) {
-        string key = conf_KV_vec[i].first;
-        string value = conf_KV_vec[i].second;
+    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+        string key = iter->first;
+        string value = iter->second;
         data[key] = value;
     }
     return true;

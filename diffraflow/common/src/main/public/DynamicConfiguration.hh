@@ -62,6 +62,10 @@ namespace diffraflow {
         // print setting
         void zookeeper_print_setting();
 
+    protected:
+        // parse setting
+        bool zookeeper_parse_setting_(list< pair<string, string> > conf_KV_list);
+
     private:
         void zookeeper_connection_wait_();
         bool zookeeper_authadding_wait_();

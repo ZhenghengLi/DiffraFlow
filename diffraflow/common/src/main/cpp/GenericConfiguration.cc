@@ -18,9 +18,9 @@ diffraflow::GenericConfiguration::~GenericConfiguration() {
 
 }
 
-bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
-    const char* filename, vector< pair<string, string> >& conf_KV_vec) {
-    conf_KV_vec.clear();
+bool diffraflow::GenericConfiguration::read_conf_KV_list_(
+    const char* filename, list< pair<string, string> >& conf_KV_list) {
+    conf_KV_list.clear();
     ifstream conf_file;
     conf_file.open(filename);
     if (!conf_file.is_open()) {
@@ -46,10 +46,10 @@ bool diffraflow::GenericConfiguration::read_conf_KV_vec_(
         boost::trim(key_value[0]);
         boost::trim(key_value[1]);
         if (key_value[0].size() > 0 && key_value[1].size() > 0) {
-            conf_KV_vec.push_back(make_pair(key_value[0], key_value[1]));
+            conf_KV_list.push_back(make_pair(key_value[0], key_value[1]));
         }
     }
-    if (conf_KV_vec.size() > 0) {
+    if (conf_KV_list.size() > 0) {
         return true;
     } else {
         LOG4CXX_WARN(logger_, "there is no valid configurations in file: " << filename);

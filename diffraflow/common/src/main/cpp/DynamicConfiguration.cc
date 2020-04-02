@@ -43,30 +43,39 @@ diffraflow::DynamicConfiguration::~DynamicConfiguration() {
 }
 
 bool diffraflow::DynamicConfiguration::load(const char* filename) {
-    vector< pair<string, string> > conf_KV_vec;
-    if (!read_conf_KV_vec_(filename, conf_KV_vec)) {
+    list< pair<string, string> > conf_KV_list;
+    if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
-    lock_guard<mutex> lk(conf_map_mtx_);
-    conf_map_.clear();
-    for (size_t i = 0; i < conf_KV_vec.size(); i++) {
-        string key = conf_KV_vec[i].first;
-        string value = conf_KV_vec[i].second;
+    return zookeeper_parse_setting_(conf_KV_list);
+}
+
+bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list< pair<string, string> > conf_KV_list) {
+    // parse settings
+    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end();) {
+        string key = iter->first;
+        string value = iter->second;
         if (key == "zookeeper_server") {
             zookeeper_server_ = value;
+            iter = conf_KV_list.erase(iter);
         } else if (key == "zookeeper_chroot") {
             zookeeper_chroot_ = value;
+            iter = conf_KV_list.erase(iter);
         } else if (key == "zookeeper_expiration_time") {
             zookeeper_expiration_time_ = atoi(value.c_str());
+            iter = conf_KV_list.erase(iter);
         } else if (key == "zookeeper_auth_string") {
             zookeeper_auth_string_ = value;
+            iter = conf_KV_list.erase(iter);
         } else if (key == "zookeeper_log_level") {
             zookeeper_log_level_ = value;
+            iter = conf_KV_list.erase(iter);
         } else if (key == "zookeeper_config_path") {
             zookeeper_config_path_ = value;
+            iter = conf_KV_list.erase(iter);
         } else {
-            conf_map_[key] = value;
+            ++iter;
         }
     }
     // check

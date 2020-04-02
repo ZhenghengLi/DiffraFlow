@@ -1,4 +1,3 @@
-
 rootProject.name = 'DiffraFlow'
 
 new File("$rootDir/diffraflow").eachDir {

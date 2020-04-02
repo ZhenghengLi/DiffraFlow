@@ -315,7 +315,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             error_code json_parse_error;
             string json_string(zookeeper_znode_buffer_, zookeeper_znode_buffer_len_);
             json::value json_value = json::value::parse(json_string, json_parse_error);
-            if (json_parse_error.value()) {
+            if (json_parse_error) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
                     << zookeeper_config_path_ << " with error " << json_parse_error.message());
                 return false;
@@ -531,7 +531,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             error_code json_parse_error;
             string json_string(value, value_len);
             json::value json_value = json::value::parse(json_string, json_parse_error);
-            if (json_parse_error.value()) {
+            if (json_parse_error) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
                     << the_obj->zookeeper_config_path_ << " with error " << json_parse_error.message());
                 return;

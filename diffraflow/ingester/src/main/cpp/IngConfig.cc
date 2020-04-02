@@ -4,6 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <ctime>
+#include <cstdlib>
 #include <thread>
 
 using std::cout;
@@ -58,12 +59,20 @@ bool diffraflow::IngConfig::load(const char* filename) {
             dy_conf_map[key] = value;
         }
     }
+    // use POD IP as ingester_id
+    if (ingester_id == 0) {
+        const char* pod_ip = getenv("POD_IP");
+        if (pod_ip != NULL) {
+            vector<string> ip_nums;
+            boost::split(ip_nums, pod_ip, boost::is_any_of("."));
+            for (size_t i = 0; i < ip_nums.size(); i++) {
+                ingester_id <<= 8;
+                ingester_id += atoi(ip_nums[i].c_str());
+            }
+        }
+    }
     // validation check for static parameters
     bool succ_flag = true;
-    if (ingester_id < 0) {
-        LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
-        succ_flag = false;
-    }
     if (combiner_port < 0) {
         LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
         succ_flag = false;

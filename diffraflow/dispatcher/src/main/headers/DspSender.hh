@@ -32,7 +32,7 @@ namespace diffraflow {
         ~DspSender();
 
         // push to buffer_A and block on buffer full
-        void push(const char* data, const size_t len);
+        bool push(const char* data, const size_t len);
         void send_remaining();
 
         // use a background thread sending data

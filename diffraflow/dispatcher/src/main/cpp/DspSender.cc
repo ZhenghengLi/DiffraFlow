@@ -54,14 +54,14 @@ diffraflow::DspSender::~DspSender() {
     delete [] buffer_compress_;
 }
 
-void diffraflow::DspSender::push(const char* data, const size_t len) {
-    if (!run_flag_) return;
+bool diffraflow::DspSender::push(const char* data, const size_t len) {
+    if (!run_flag_) return false;
 
     unique_lock<mutex> lk(mtx_swap_);
 
     // wait when there is no enough space
     cv_push_.wait(lk, [&]() {return !run_flag_ || (len + 4 <= buffer_size_ - buffer_A_limit_);});
-    if (!run_flag_) return;
+    if (!run_flag_) return false;
 
     // image frame size
     gPS.serializeValue<uint32_t>(len, buffer_A_ + buffer_A_limit_, 4);
@@ -77,6 +77,8 @@ void diffraflow::DspSender::push(const char* data, const size_t len) {
     if (buffer_A_limit_ > size_threshold_) {
         cv_swap_.notify_one();
     }
+
+    return true;
 }
 
 bool diffraflow::DspSender::swap_() {

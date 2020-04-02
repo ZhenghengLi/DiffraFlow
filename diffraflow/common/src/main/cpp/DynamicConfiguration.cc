@@ -475,8 +475,10 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     if (state == ZOO_CONNECTED_STATE) {
         the_obj->zookeeper_connected_ = true;
         the_obj->zookeeper_connected_cv_.notify_all();
+        LOG4CXX_INFO(logger_, "connected to zookeeper server.");
     } else if (state == ZOO_CONNECTING_STATE) {
         the_obj->zookeeper_connected_ = false;
+        LOG4CXX_INFO(logger_, "connecting to zookeeper server.");
     } else if (state == ZOO_EXPIRED_SESSION_STATE) {
         LOG4CXX_WARN(logger_, "zookeeper session is expired, try to recreate a session.");
         lk.unlock();

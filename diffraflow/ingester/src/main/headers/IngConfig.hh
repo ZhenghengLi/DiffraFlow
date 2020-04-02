@@ -21,6 +21,8 @@ namespace diffraflow {
 
         bool zookeeper_setting_is_ready();
 
+        json::value collect_metrics() override;
+
     public:
         int    get_dy_param_int();
         double get_dy_param_double();
@@ -32,9 +34,9 @@ namespace diffraflow {
 
     public:
         // static parameters
-        int     ingester_id;
-        string  combiner_host;
-        int     combiner_port;
+        uint32_t ingester_id;
+        string   combiner_host;
+        int      combiner_port;
 
     private:
         // dynamic parameters
@@ -47,6 +49,9 @@ namespace diffraflow {
         time_t config_mtime_;
 
         bool zookeeper_setting_ready_flag_;
+
+        json::value ingester_config_json_;
+        mutex       ingester_config_json_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

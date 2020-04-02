@@ -14,7 +14,7 @@ log4cxx::LoggerPtr diffraflow::IngConfig::logger_
     = log4cxx::Logger::getLogger("IngConfig");
 
 diffraflow::IngConfig::IngConfig() {
-    ingester_id = -1;
+    ingester_id = 0;
     combiner_port = -1;
     combiner_host = "localhost";
     zookeeper_setting_ready_flag_ = false;
@@ -73,8 +73,24 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "dynamic configurations have invalid values.");
         succ_flag = false;
     }
-    // return
-    return succ_flag;
+    if (succ_flag) {
+        ingester_config_json_["ingester_id"] = json::value::number(ingester_id);
+        ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
+        ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+json::value diffraflow::IngConfig::collect_metrics() {
+    json::value root_json;
+    if (zookeeper_setting_ready_flag_) {
+        root_json = DynamicConfiguration::collect_metrics();
+    }
+    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
+    root_json["ingester_config"] = ingester_config_json_;
+    return root_json;
 }
 
 bool diffraflow::IngConfig::zookeeper_setting_is_ready() {
@@ -83,7 +99,7 @@ bool diffraflow::IngConfig::zookeeper_setting_is_ready() {
 
 void diffraflow::IngConfig::print() {
     // with all locks
-    lock_guard<mutex> lg(dy_param_string_mtx_);
+    lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
 
     if (zookeeper_setting_ready_flag_) {
         zookeeper_print_setting();
@@ -103,7 +119,7 @@ void diffraflow::IngConfig::print() {
 bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
 
     // with all locks
-    lock_guard<mutex> lg(dy_param_string_mtx_);
+    lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
 
     // values before commit
     int tmp_dy_param_int = dy_param_int_.load();
@@ -157,6 +173,12 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     }
 
     config_mtime_ = conf_mtime;
+
+    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
+    ingester_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
+    ingester_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
+    ingester_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
+    ingester_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
 }

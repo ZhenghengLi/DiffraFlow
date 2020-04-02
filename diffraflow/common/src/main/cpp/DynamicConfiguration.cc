@@ -113,8 +113,20 @@ bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list< pair<strin
         zookeeper_expiration_time_ = 10000;
         LOG4CXX_WARN(logger_, "zookeeper_expiration_time is out of range, use the default value 10000.");
     }
+    // collect metrics
+    zookeeper_config_json_["zookeeper_server"] = json::value::string(zookeeper_server_);
+    zookeeper_config_json_["zookeeper_chroot"] = json::value::string(zookeeper_chroot_);
+    zookeeper_config_json_["zookeeper_expiration_time"] = json::value::number(zookeeper_expiration_time_);
+    zookeeper_config_json_["zookeeper_auth_string"] = json::value::string(zookeeper_auth_string_);
+    zookeeper_config_json_["zookeeper_log_level"] = json::value::string(zookeeper_log_level_);
+    zookeeper_config_json_["zookeeper_config_path"] = json::value::string(zookeeper_config_path_);
     // return
     return true;
+}
+
+json::value diffraflow::DynamicConfiguration::collect_metrics() {
+    json::value root_json;
+    root_json["zookeeper_config"] = zookeeper_config_json_;
 }
 
 void diffraflow::DynamicConfiguration::print() {
@@ -132,7 +144,8 @@ void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
 }
 
 bool diffraflow::DynamicConfiguration::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
-    LOG4CXX_WARN(logger_, "convert_and_check() is not implemented.")
+    LOG4CXX_WARN(logger_, "check_and_commit_() is not implemented.")
+    return false;
 }
 
 // zookeeper operations =====================

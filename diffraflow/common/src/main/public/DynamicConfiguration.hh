@@ -2,6 +2,7 @@
 #define __DynamicConfiguration_H__
 
 #include "GenericConfiguration.hh"
+#include "MetricsProvider.hh"
 #include <map>
 #include <vector>
 #include <string>
@@ -25,13 +26,15 @@ using std::atomic_int;
 
 namespace diffraflow {
 
-    class DynamicConfiguration: public GenericConfiguration {
+    class DynamicConfiguration: public GenericConfiguration, public MetricsProvider {
     public:
         DynamicConfiguration();
         virtual ~DynamicConfiguration();
 
         virtual bool load(const char* filename);
         virtual void print();
+
+        json::value collect_metrics() override;
 
     protected:
         // convert the key-values in conf_map to the field values of sub-class;
@@ -109,6 +112,9 @@ namespace diffraflow {
         CallbackRes_            zookeeper_auth_res_;
         mutex                   zookeeper_auth_res_mtx_;
         condition_variable      zookeeper_auth_res_cv_;
+
+        // for metrics
+        json::value             zookeeper_config_json_;
 
     private:
         static log4cxx::LoggerPtr logger_;

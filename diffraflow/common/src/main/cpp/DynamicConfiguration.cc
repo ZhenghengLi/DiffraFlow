@@ -317,7 +317,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             json::value json_value = json::value::parse(json_string, json_parse_error);
             if (json_parse_error.value() > 0) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
-                    << zookeeper_config_path_ << " with error code" << json_parse_error.value());
+                    << zookeeper_config_path_ << " with error " << json_parse_error.message());
                 return false;
             } else if (!json_value.is_object()) {
                 LOG4CXX_ERROR(logger_, "The json value stored in config_path "
@@ -533,7 +533,7 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             json::value json_value = json::value::parse(json_string, json_parse_error);
             if (json_parse_error.value() > 0) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
-                    << the_obj->zookeeper_config_path_ << " with error code" << json_parse_error.value());
+                    << the_obj->zookeeper_config_path_ << " with error " << json_parse_error.message());
                 return;
             } else if (!json_value.is_object()) {
                 LOG4CXX_ERROR(logger_, "The json value stored in config_path "

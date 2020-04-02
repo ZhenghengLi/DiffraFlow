@@ -5,10 +5,10 @@
 #include <cstdlib>
 #include <chrono>
 #include <zookeeper/zookeeper.h>
-#include <msgpack.hpp>
 #include <ctime>
 #include <regex>
 #include <boost/algorithm/string.hpp>
+#include <cpprest/json.h>
 
 using std::cout;
 using std::endl;
@@ -16,6 +16,8 @@ using std::lock_guard;
 using std::unique_lock;
 using std::regex;
 using std::regex_match;
+using std::error_code;
+using namespace web;
 
 log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_
     = log4cxx::Logger::getLogger("DynamicConfiguration");
@@ -189,11 +191,17 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
         {ZOO_PERM_ALL, {zkacl_auth, zkacl_empty}}
     };
     ACL_vector zkacl_vec = {2, my_acl};
+
     // serialize config_map
-    msgpack::sbuffer config_sbuf;
-    msgpack::pack(config_sbuf, config_map);
+    json::value config_json;
+    for (map<string, string>::const_iterator iter = config_map.begin(); iter != config_map.end(); ++iter) {
+        config_json[iter->first] = json::value::string(iter->second);
+    }
+    string config_string = config_json.serialize();
+
+    // creat znode
     int rc = zoo_create(zookeeper_handle_,
-        config_path, config_sbuf.data(), config_sbuf.size(),
+        config_path, config_string.data(), config_string.size(),
         &zkacl_vec, 0, nullptr, 0);
     switch (rc) {
     case ZOK:
@@ -257,10 +265,15 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     if (!zookeeper_authadding_wait_()) return false;
 
     // change config from here.
-    msgpack::sbuffer config_sbuf;
-    msgpack::pack(config_sbuf, config_map);
+    json::value config_json;
+    for (map<string, string>::const_iterator iter = config_map.begin(); iter != config_map.end(); ++iter) {
+        config_json[iter->first] = json::value::string(iter->second);
+    }
+    string config_string = config_json.serialize();
+
+    // update znode
     int rc = zoo_set(zookeeper_handle_,
-        config_path, config_sbuf.data(), config_sbuf.size(), -1);
+        config_path, config_string.data(), config_string.size(), -1);
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully changed the data of config path " << config_path << ".");
@@ -298,14 +311,26 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             return false;
         } else {
             LOG4CXX_INFO(logger_, "Sucessfully fetched the data of config path " << config_path << ".");
-            try {
-                msgpack::unpack(zookeeper_znode_buffer_,
-                    zookeeper_znode_buffer_len_).get().convert(config_map);
-            } catch (std::exception& e) {
+
+            error_code json_parse_error;
+            string json_string(zookeeper_znode_buffer_, zookeeper_znode_buffer_len_);
+            json::value json_value = json::value::parse(json_string, json_parse_error);
+            if (json_parse_error.value() > 0) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
-                    << zookeeper_config_path_ << " with exception" << e.what());
+                    << zookeeper_config_path_ << " with error code" << json_parse_error.value());
                 return false;
+            } else if (!json_value.is_object()) {
+                LOG4CXX_ERROR(logger_, "The json value stored in config_path "
+                    << zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
+                return false;
+            } else {
+                config_map.clear();
+                json::object json_object = json_value.as_object();
+                for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
+                    config_map[iter->first] = iter->second.as_string();
+                }
             }
+
             config_mtime = zookeeper_znode_stat_.mtime / 1000;
             return true;
         }
@@ -501,15 +526,27 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             LOG4CXX_WARN(logger_, "there is no data in znode of path " << the_obj->zookeeper_config_path_ << ".");
         } else {
             lock_guard<mutex> lk(the_obj->conf_map_mtx_);
+
             // znode data -> conf_map_
-            the_obj->conf_map_.clear();
-            try {
-                msgpack::unpack(value, value_len).get().convert(the_obj->conf_map_);
-            } catch (const std::exception& e) {
-                LOG4CXX_ERROR(logger_, "failed to deserialize the data of config_path "
-                    << the_obj->zookeeper_config_path_ << " with exception" << e.what());
+            error_code json_parse_error;
+            string json_string(value, value_len);
+            json::value json_value = json::value::parse(json_string, json_parse_error);
+            if (json_parse_error.value() > 0) {
+                LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
+                    << the_obj->zookeeper_config_path_ << " with error code" << json_parse_error.value());
                 return;
+            } else if (!json_value.is_object()) {
+                LOG4CXX_ERROR(logger_, "The json value stored in config_path "
+                    << the_obj->zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
+                return;
+            } else {
+                the_obj->conf_map_.clear();
+                json::object json_object = json_value.as_object();
+                for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
+                    the_obj->conf_map_[iter->first] = iter->second.as_string();
+                }
             }
+
             the_obj->conf_map_mtime_ = stat->mtime / 1000;
             // conf_map_ -> config fields with proper types and units
             the_obj->convert_and_check_();

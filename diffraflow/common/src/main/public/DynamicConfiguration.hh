@@ -34,13 +34,8 @@ namespace diffraflow {
         virtual void print();
 
     protected:
-        // convert the key-values in conf_map_ to the field values of sub-class;
-        virtual void convert_and_check_();
-
-    protected:
-        map<string, string> conf_map_;
-        time_t conf_map_mtime_;
-        mutex conf_map_mtx_;
+        // convert the key-values in conf_map to the field values of sub-class;
+        virtual bool check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime);
 
     public:
         // zookeeper operations

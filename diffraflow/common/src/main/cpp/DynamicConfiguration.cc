@@ -118,10 +118,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list< pair<strin
 }
 
 void diffraflow::DynamicConfiguration::print() {
-    lock_guard<mutex> lk(conf_map_mtx_);
-    for (map<string, string>::iterator iter = conf_map_.begin(); iter != conf_map_.end(); ++iter) {
-        cout << "- " << iter->first << " = " << iter->second << endl;
-    }
+    zookeeper_print_setting();
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
@@ -134,7 +131,7 @@ void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
     cout << "- zookeeper_config_path = " << zookeeper_config_path_ << endl;
 }
 
-void diffraflow::DynamicConfiguration::convert_and_check_() {
+bool diffraflow::DynamicConfiguration::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
     LOG4CXX_WARN(logger_, "convert_and_check() is not implemented.")
 }
 
@@ -534,9 +531,8 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
         if (value_len <= 0) {
             LOG4CXX_WARN(logger_, "there is no data in znode of path " << the_obj->zookeeper_config_path_ << ".");
         } else {
-            lock_guard<mutex> lk(the_obj->conf_map_mtx_);
-
-            // znode data -> conf_map_
+            map<string, string> conf_map;
+            // znode data -> conf_map
             error_code json_parse_error;
             string json_string(value, value_len);
             json::value json_value = json::value::parse(json_string, json_parse_error);
@@ -549,18 +545,25 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
                     << the_obj->zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
                 return;
             } else {
-                the_obj->conf_map_.clear();
                 json::object json_object = json_value.as_object();
                 for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
-                    the_obj->conf_map_[iter->first] = iter->second.as_string();
+                    conf_map[iter->first] = iter->second.as_string();
                 }
             }
-
-            the_obj->conf_map_mtime_ = stat->mtime / 1000;
-            // conf_map_ -> config fields with proper types and units
-            the_obj->convert_and_check_();
-            LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
-                << boost::trim_copy(string(ctime(&the_obj->conf_map_mtime_))));
+            // conf_map -> config
+            time_t now_time = time(NULL);
+            string now_time_string = boost::trim_copy(string(ctime(&now_time)));
+            time_t conf_mtime = stat->mtime / 1000;
+            string mtime_string = boost::trim_copy(string(ctime(&conf_mtime)));
+            LOG4CXX_INFO(logger_, "Configuration synchronizing (" << now_time_string
+                 << "): received new config data with mtime " << mtime_string);
+            if (the_obj->check_and_commit_(conf_map, conf_mtime)) {
+                LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
+                    << boost::trim_copy(string(ctime(&conf_mtime))));
+            } else {
+                LOG4CXX_INFO(logger_, "Failed to synchronize config data with mtime: "
+                    << boost::trim_copy(string(ctime(&conf_mtime))));
+            }
         }
         break;
     case ZCONNECTIONLOSS:

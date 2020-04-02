@@ -4,6 +4,11 @@
 #include "DynamicConfiguration.hh"
 #include <log4cxx/logger.h>
 #include <string>
+#include <atomic>
+#include <mutex>
+
+using std::atomic;
+using std::mutex;
 
 namespace diffraflow {
     class IngConfig: public DynamicConfiguration {
@@ -14,21 +19,34 @@ namespace diffraflow {
         bool load(const char* filename) override;
         void print() override;
 
-    protected:
-        void convert_and_check_() override;
+        bool zookeeper_setting_is_ready();
 
     public:
-        map<string, string> conf_map_in_use;
+        int    get_dy_param_int();
+        double get_dy_param_double();
+        string get_dy_param_string();
 
+    protected:
+        bool check_and_commit_(const map<string, string>& conf_map,
+            const time_t conf_mtime) override;
+
+    public:
         // static parameters
         int     ingester_id;
         string  combiner_host;
         int     combiner_port;
 
+    private:
         // dynamic parameters
-        int     dy_param_int;
-        double  dy_param_double;
-        string  dy_param_string;
+        atomic<int>     dy_param_int_;
+        atomic<double>  dy_param_double_;
+
+        string  dy_param_string_;
+        mutex   dy_param_string_mtx_;
+
+        time_t config_mtime_;
+
+        bool zookeeper_setting_ready_flag_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -76,10 +76,12 @@ int main(int argc, char** argv) {
     }
 
     gConfiguration->print();
-    cout << "Connectiong to ZooKeeper ..." << endl;
-    gConfiguration->zookeeper_start();
-    cout << "start to sync configurations with zookeeper ..." << endl;
-    gConfiguration->zookeeper_sync_config();
+    if (gConfiguration->zookeeper_setting_is_ready()) {
+        cout << "Connectiong to ZooKeeper ..." << endl;
+        gConfiguration->zookeeper_start();
+        cout << "start to sync configurations with zookeeper ..." << endl;
+        gConfiguration->zookeeper_sync_config();
+    }
 
     // ------------------------------------------------------
     init(gConfiguration);

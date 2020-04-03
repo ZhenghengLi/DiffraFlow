@@ -35,7 +35,6 @@ namespace diffraflow {
         size_t                                   imgfrm_queues_len_;
         TimeOrderedQueue<ImageFrame, uint64_t>*  imgfrm_queues_arr_;
         BlockingQueue<ImageData>                 imgdat_queue_;
-        BlockingQueue<ImageData>                 imgdat_queue_late_;
 
         mutex data_mtx_;
 

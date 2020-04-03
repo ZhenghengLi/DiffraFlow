@@ -17,7 +17,6 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame, uint64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
-    imgdat_queue_late_.set_maxsize(img_q_ms);
     // wait forever
     wait_threshold_ = numeric_limits<uint64_t>::max();
     image_time_min_ = numeric_limits<uint64_t>::max();
@@ -62,26 +61,22 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
         } else {
             break;
         }
-        if (image_data.event_time >= image_time_last_) {
-            image_data.late_arrived = false;
-            LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
-            if (imgdat_queue_.push(image_data)) {
-                image_time_last_ = image_data.event_time;
-                LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
-            } else {
-                LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
-                return false;
-            }
-        } else {
+
+        if (image_data.event_time < image_time_last_) {
             image_data.late_arrived = true;
-            LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_late_.");
-            if (imgdat_queue_late_.push(image_data)) {
-                LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_late_.");
-            } else {
-                LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_late_ is stopped.");
-                return false;
-            }
+        } else {
+            image_data.late_arrived = false;
+            image_time_last_ = image_data.event_time;
         }
+
+        LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
+        if (imgdat_queue_.push(image_data)) {
+            LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
+        } else {
+            LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
+            return false;
+        }
+
     }
 
     return true;
@@ -127,13 +122,8 @@ bool diffraflow::CmbImgCache::do_alignment_(ImageData& image_data, bool force_fl
 }
 
 bool diffraflow::CmbImgCache::take_image(ImageData& image_data) {
-    bool result = false;
-    if (imgdat_queue_late_.empty()) {
-        result = imgdat_queue_.take(image_data);
-    } else {
-        result = imgdat_queue_late_.take(image_data);
-    }
-    if (stopped_ && imgdat_queue_late_.empty() && imgdat_queue_.empty()) {
+    bool result = imgdat_queue_.take(image_data);
+    if (stopped_ && imgdat_queue_.empty()) {
         stop_cv_.notify_all();
     }
     return result;
@@ -142,7 +132,6 @@ bool diffraflow::CmbImgCache::take_image(ImageData& image_data) {
 void diffraflow::CmbImgCache::stop(int wait_time) {
     stopped_ = true;
 
-    imgdat_queue_late_.stop();
     imgdat_queue_.stop();
 
     lock_guard<mutex> lk(data_mtx_);
@@ -156,33 +145,29 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
         } else {
             break;
         }
-        if (image_data.event_time >= image_time_last_) {
-            image_data.late_arrived = false;
-            LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
-            if (imgdat_queue_.offer(image_data)) {
-                image_time_last_ = image_data.event_time;
-                LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
-            } else {
-                LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
-                break;
-            }
-        } else {
+
+        if (image_data.event_time < image_time_last_) {
             image_data.late_arrived = true;
-            LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_late_.");
-            if (imgdat_queue_late_.offer(image_data)) {
-                LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_late_.");
-            } else {
-                LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_late_ is full.");
-                break;
-            }
+        } else {
+            image_data.late_arrived = false;
+            image_time_last_ = image_data.event_time;
         }
+
+        LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
+        if (imgdat_queue_.offer(image_data)) {
+            LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
+        } else {
+            LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
+            break;
+        }
+
     }
 
     // wait ingester to consume image data in queue for wait_time
     if (wait_time > 0) {
         unique_lock<mutex> ulk(stop_mtx_);
         stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time),
-            [this]() {return imgdat_queue_late_.empty() && imgdat_queue_.empty();}
+            [this]() {return imgdat_queue_.empty();}
         );
     }
 

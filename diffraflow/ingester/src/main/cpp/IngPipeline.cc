@@ -26,6 +26,9 @@ void diffraflow::IngPipeline::start_run() {
         config_obj_->combiner_port,
         config_obj_->ingester_id,
         image_data_raw_queue_);
+    image_data_fetcher_->set_recnxn_policy(
+        config_obj_->recnxn_wait_time,
+        config_obj_->recnxn_max_count);
 
     if (image_data_fetcher_->start()) {
         LOG4CXX_INFO(logger_, "successfully started image data fetcher.")

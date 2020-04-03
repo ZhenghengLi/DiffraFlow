@@ -63,7 +63,7 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
         return true;
     } else {
         LOG4CXX_WARN(logger_, "failed to connect to combiner " << dest_host_ << ":" << dest_port_
-            << " after " << recnxn_max_count_ << "retry counts.");
+            << " after " << recnxn_max_count_ << " retry counts.");
         return false;
     }
 }
@@ -125,6 +125,8 @@ int diffraflow::IngImgDatFetcher::run_() {
                 break;
             case kSucc:
                 successive_fail_count_ = 0;
+                // for debug
+                image_data.print();
                 if (imgdat_raw_queue_->push(image_data)) {
                     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
                 } else {

@@ -5,7 +5,6 @@
 #include "TimeOrderedQueue.hh"
 
 #include <mutex>
-#include <condition_variable>
 #include <atomic>
 #include <condition_variable>
 #include <log4cxx/logger.h>

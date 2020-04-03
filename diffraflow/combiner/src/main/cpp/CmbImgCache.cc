@@ -29,6 +29,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
 
 diffraflow::CmbImgCache::~CmbImgCache() {
     delete [] imgfrm_queues_arr_;
+    stop(0);
 }
 
 bool diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {

@@ -10,14 +10,22 @@
 
 #include "IngOptMan.hh"
 #include "IngConfig.hh"
+#include "IngPipeline.hh"
 
 using namespace std;
 using namespace diffraflow;
 
 IngConfig* gConfiguration = nullptr;
+IngPipeline* gPipeline = nullptr;
 
 void clean(int signum) {
     cout << "do cleaning ..." << endl;
+    if (gPipeline != nullptr) {
+        gPipeline->terminate();
+        delete gPipeline;
+        gPipeline = nullptr;
+        cout << "Pipeline is terminated." << endl;
+    }
     if (gConfiguration != nullptr) {
         delete gConfiguration;
         gConfiguration = nullptr;
@@ -86,9 +94,8 @@ int main(int argc, char** argv) {
     // ------------------------------------------------------
     init(gConfiguration);
 
-    cout << "continue to do other things ..." << endl;
-    string pause;
-    cin >> pause;
+    gPipeline = new IngPipeline(gConfiguration);
+    gPipeline->start_run();
 
     clean(0);
     // ------------------------------------------------------

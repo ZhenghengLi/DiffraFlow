@@ -18,6 +18,10 @@ diffraflow::IngConfig::IngConfig() {
     ingester_id = 0;
     combiner_port = -1;
     combiner_host = "localhost";
+    recnxn_wait_time = 0;
+    recnxn_max_count = 0;
+    imgdat_queue_capacity = 100;
+
     zookeeper_setting_ready_flag_ = false;
 
     // initial values of dynamic configurations
@@ -54,6 +58,12 @@ bool diffraflow::IngConfig::load(const char* filename) {
             combiner_host = value;
         } else if (key == "combiner_port") {
             combiner_port = atoi(value.c_str());
+        } else if (key == "recnxn_wait_time") {
+            recnxn_wait_time = atoi(value.c_str());
+        } else if (key == "recnxn_max_count") {
+            recnxn_max_count = atoi(value.c_str());
+        } else if (key == "imgdat_queue_capacity") {
+            imgdat_queue_capacity = atoi(value.c_str());
         // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
@@ -75,6 +85,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
     bool succ_flag = true;
     if (combiner_port < 0) {
         LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
+        succ_flag = false;
+    }
+    if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
     }
     // check and commit for dynamic parameters
@@ -118,6 +132,8 @@ void diffraflow::IngConfig::print() {
     cout << "- ingester_id = " << ingester_id << endl;
     cout << "- combiner_host = " << combiner_host << endl;
     cout << "- combiner_port = " << combiner_port << endl;
+    cout << "- recnxn_wait_time = " << recnxn_wait_time << endl;
+    cout << "- recnxn_max_count = " << recnxn_max_count << endl;
     cout << "dynamic parameters:" << endl;
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;

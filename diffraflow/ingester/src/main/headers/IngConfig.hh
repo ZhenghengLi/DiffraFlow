@@ -37,6 +37,9 @@ namespace diffraflow {
         uint32_t ingester_id;
         string   combiner_host;
         int      combiner_port;
+        size_t   recnxn_wait_time;
+        size_t   recnxn_max_count;
+        size_t   imgdat_queue_capacity;
 
     private:
         // dynamic parameters

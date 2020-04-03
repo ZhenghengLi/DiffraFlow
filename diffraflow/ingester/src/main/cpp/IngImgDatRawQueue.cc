@@ -5,8 +5,9 @@ using std::lock_guard;
 log4cxx::LoggerPtr diffraflow::IngImgDatRawQueue::logger_
     = log4cxx::Logger::getLogger("IngImgDatRawQueue");
 
-diffraflow::IngImgDatRawQueue::IngImgDatRawQueue() {
-
+diffraflow::IngImgDatRawQueue::IngImgDatRawQueue(size_t img_q_ms) {
+    imgdat_queue_.set_maxsize(img_q_ms);
+    imgdat_queue_late_.set_maxsize(img_q_ms);
 }
 
 diffraflow::IngImgDatRawQueue::~IngImgDatRawQueue() {

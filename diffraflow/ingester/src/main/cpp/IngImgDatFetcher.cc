@@ -114,6 +114,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         cv_status_.notify_all();
         size_t successive_fail_count_ = 0;
         for (bool running = true; running;) {
+            if (worker_status_ != kRunning) break;
             ImageData image_data;
             switch (request_one_image(image_data)) {
             case kDisconnected:

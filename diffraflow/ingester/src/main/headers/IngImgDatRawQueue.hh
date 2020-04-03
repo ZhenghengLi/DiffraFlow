@@ -16,7 +16,7 @@ using std::atomic_bool;
 namespace diffraflow {
     class IngImgDatRawQueue {
     public:
-        IngImgDatRawQueue();
+        IngImgDatRawQueue(size_t img_q_ms = 100);
         ~IngImgDatRawQueue();
 
         bool push(const ImageData& image_data);

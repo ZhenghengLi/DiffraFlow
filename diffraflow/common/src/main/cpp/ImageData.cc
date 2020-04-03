@@ -34,4 +34,5 @@ void diffraflow::ImageData::print() {
         cout << "ImageData[" << i << "]:" << endl;
         imgfrm_vec[i].print();
     }
+    cout << "late_arrived: " << late_arrived << endl;
 }

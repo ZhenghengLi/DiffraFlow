@@ -55,20 +55,17 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
 
     while (true) {
         ImageData image_data(imgfrm_queues_len_);
-        if (do_alignment_(image_data, false)) {
-            // for debug
-            image_data.print();
-        } else {
+        if (!do_alignment_(image_data, false)) {
             break;
         }
-
         if (image_data.event_time < image_time_last_) {
             image_data.late_arrived = true;
         } else {
             image_data.late_arrived = false;
             image_time_last_ = image_data.event_time;
         }
-
+        // for debug
+        image_data.print();
         LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
         if (imgdat_queue_.push(image_data)) {
             LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
@@ -76,7 +73,6 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
             LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
             return false;
         }
-
     }
 
     return true;
@@ -139,20 +135,17 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
     // clear all data in imgfrm_queues_arr_
     while (true) {
         ImageData image_data(imgfrm_queues_len_);
-        if (do_alignment_(image_data, true)) {
-            // for debug
-            image_data.print();
-        } else {
+        if (!do_alignment_(image_data, true)) {
             break;
         }
-
         if (image_data.event_time < image_time_last_) {
             image_data.late_arrived = true;
         } else {
             image_data.late_arrived = false;
             image_time_last_ = image_data.event_time;
         }
-
+        // for debug
+        image_data.print();
         LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
         if (imgdat_queue_.offer(image_data)) {
             LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
@@ -160,7 +153,6 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
             LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
             break;
         }
-
     }
 
     // wait ingester to consume image data in queue for wait_time

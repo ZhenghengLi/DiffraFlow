@@ -23,8 +23,19 @@ namespace diffraflow {
     private:
         IngConfig* config_obj_;
 
-        IngImgWthFtrQueue* imgWthFtr_queue_;
         IngImgDatFetcher* image_data_fetcher_;
+        IngImgWthFtrQueue* imgWthFtrQue_raw_;
+
+        // Calibration
+        IngImgWthFtrQueue* imgWthFtrQue_calib_;
+
+        // Feature Extraction
+        IngImgWthFtrQueue* imgWthFtrQue_feature_;
+
+        // Filtering
+        IngImgWthFtrQueue* imgWthFtrQue_write_;
+
+        // Image Writer
 
         atomic_bool running_flag_;
 

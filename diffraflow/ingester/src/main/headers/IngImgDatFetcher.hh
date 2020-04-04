@@ -51,7 +51,7 @@ namespace diffraflow {
         size_t recnxn_max_count_;
         size_t max_successive_fail_count_;
 
-        IngImgWthFtrQueue*  imgWthFtr_queue_;
+        IngImgWthFtrQueue*  imgWthFtrQue_raw_;
 
         char*               imgdat_buffer_;
         size_t              imgdat_buffer_size_;

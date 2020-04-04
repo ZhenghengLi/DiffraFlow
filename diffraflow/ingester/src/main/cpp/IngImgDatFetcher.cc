@@ -9,7 +9,7 @@ log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
     string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue):
     GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
-    imgWthFtr_queue_ = queue;
+    imgWthFtrQue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
@@ -135,7 +135,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                 image_data.print();
 
                 image_with_feature.image_data_raw = image_data;
-                if (imgWthFtr_queue_->push(image_with_feature)) {
+                if (imgWthFtrQue_raw_->push(image_with_feature)) {
                     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
                 } else {
                     LOG4CXX_WARN(logger_, "raw image data queue is stopped,"

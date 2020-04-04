@@ -48,6 +48,7 @@ void diffraflow::GenericConnection::run() {
         before_receiving_();
         while (!done_flag_ && do_receiving_and_processing_());
     }
+    shutdown(client_sock_fd_, SHUT_RDWR);
     close(client_sock_fd_);
     done_flag_ = true;
     return;

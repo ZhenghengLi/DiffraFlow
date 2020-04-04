@@ -187,17 +187,12 @@ int diffraflow::IngImgDatFetcher::stop() {
     if (worker_status_ == kNotStart) {
         return -1;
     }
-
     worker_status_ = kStopped;
     cv_status_.notify_all();
-
+    close_connection();
     int result = -2;
     if (worker_.valid()) {
         result = worker_.get();
     }
-
-    close_connection();
-
     return result;
-
 }

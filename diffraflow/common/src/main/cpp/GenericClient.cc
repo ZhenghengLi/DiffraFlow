@@ -101,6 +101,7 @@ bool diffraflow::GenericClient::connect_to_server() {
 
 void diffraflow::GenericClient::close_connection() {
     if (client_sock_fd_ >= 0) {
+        shutdown(client_sock_fd_, SHUT_RDWR);
         close(client_sock_fd_);
         client_sock_fd_ = -1;
     }

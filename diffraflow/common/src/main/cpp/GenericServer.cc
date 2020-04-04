@@ -281,6 +281,7 @@ int diffraflow::GenericServer::stop_and_close() {
         }
     }
     // release socket resource
+    shutdown(server_sock_fd_, SHUT_WR);
     close(server_sock_fd_);
     server_sock_fd_ = -1;
     // wait server_() to finish

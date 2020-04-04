@@ -9,15 +9,22 @@ namespace diffraflow {
         ImageFeature();
         ~ImageFeature();
 
+        void set_defined();
+        bool get_defined();
+
     public:
         // feature list
         double global_rms;
         int peak_counts;
 
+    private:
+        bool is_defined_;
+
     public:
         MSGPACK_DEFINE_MAP(
             global_rms,
-            peak_counts
+            peak_counts,
+            is_defined_
         );
 
     };

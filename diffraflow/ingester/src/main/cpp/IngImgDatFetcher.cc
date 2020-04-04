@@ -7,9 +7,9 @@ log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_
     = log4cxx::Logger::getLogger("IngImgDatFetcher");
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
-    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgDatRawQueue* raw_queue):
+    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue):
     GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
-    imgdat_raw_queue_ = raw_queue;
+    imgWthFtr_queue_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
@@ -100,6 +100,10 @@ diffraflow::IngImgDatFetcher::RequestRes diffraflow::IngImgDatFetcher::request_o
     // deserialize
     try {
         msgpack::unpack(imgdat_buffer_ + 4, payload_size - 4).get().convert(image_data);
+        if (!image_data.get_defined()) {
+            LOG4CXX_WARN(logger_, "the received image data is undefined.");
+            return kFail;
+        }
     } catch (std::exception& e) {
         LOG4CXX_WARN(logger_, "failed to deserialize image data with exception: " << e.what());
         return kFail;
@@ -116,6 +120,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         for (bool running = true; running;) {
             if (worker_status_ != kRunning) break;
             ImageData image_data;
+            ImageWithFeature image_with_feature;
             switch (request_one_image(image_data)) {
             case kDisconnected:
                 LOG4CXX_WARN(logger_, "error found when requesting one image from combiner,"
@@ -125,9 +130,12 @@ int diffraflow::IngImgDatFetcher::run_() {
                 break;
             case kSucc:
                 successive_fail_count_ = 0;
+
                 // for debug
                 image_data.print();
-                if (imgdat_raw_queue_->push(image_data)) {
+
+                image_with_feature.image_data_raw = image_data;
+                if (imgWthFtr_queue_->push(image_with_feature)) {
                     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
                 } else {
                     LOG4CXX_WARN(logger_, "raw image data queue is stopped,"

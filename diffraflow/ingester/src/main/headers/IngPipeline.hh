@@ -9,12 +9,12 @@ using std::atomic_bool;
 namespace diffraflow {
 
     class IngConfig;
-    class IngImgDatRawQueue;
+    class IngImgWthFtrQueue;
     class IngImgDatFetcher;
 
     class IngPipeline {
     public:
-        IngPipeline(IngConfig* config);
+        explicit IngPipeline(IngConfig* config);
         ~IngPipeline();
 
         void start_run();
@@ -23,7 +23,7 @@ namespace diffraflow {
     private:
         IngConfig* config_obj_;
 
-        IngImgDatRawQueue* image_data_raw_queue_;
+        IngImgWthFtrQueue* imgWthFtr_queue_;
         IngImgDatFetcher* image_data_fetcher_;
 
         atomic_bool running_flag_;

@@ -2,7 +2,7 @@
 #define __IngImgDatFetcher_H__
 
 #include "GenericClient.hh"
-#include "IngImgDatRawQueue.hh"
+#include "IngImgWthFtrQueue.hh"
 
 #include <mutex>
 #include <atomic>
@@ -21,7 +21,7 @@ namespace diffraflow {
     class IngImgDatFetcher: private GenericClient {
     public:
         IngImgDatFetcher(string combiner_host, int combiner_port,
-            uint32_t ingester_id, IngImgDatRawQueue* raw_queue);
+            uint32_t ingester_id, IngImgWthFtrQueue* queue);
         ~IngImgDatFetcher();
 
         void set_recnxn_policy(size_t wait_time, size_t max_count);
@@ -51,7 +51,7 @@ namespace diffraflow {
         size_t recnxn_max_count_;
         size_t max_successive_fail_count_;
 
-        IngImgDatRawQueue*  imgdat_raw_queue_;
+        IngImgWthFtrQueue*  imgWthFtr_queue_;
 
         char*               imgdat_buffer_;
         size_t              imgdat_buffer_size_;

@@ -1,8 +1,8 @@
-#ifndef __IngImgDatRawQueue_H__
-#define __IngImgDatRawQueue_H__
+#ifndef __IngImgWthFtrQueue_H__
+#define __IngImgWthFtrQueue_H__
 
 #include "BlockingQueue.hh"
-#include "ImageData.hh"
+#include "ImageWithFeature.hh"
 
 #include <mutex>
 #include <atomic>
@@ -14,17 +14,17 @@ using std::condition_variable;
 using std::atomic_bool;
 
 namespace diffraflow {
-    class IngImgDatRawQueue {
+    class IngImgWthFtrQueue {
     public:
-        explicit IngImgDatRawQueue(size_t img_q_ms = 100);
-        ~IngImgDatRawQueue();
+        explicit IngImgWthFtrQueue(size_t img_q_ms = 100);
+        ~IngImgWthFtrQueue();
 
-        bool push(const ImageData& image_data);
-        bool take(ImageData& image_data);
+        bool push(const ImageWithFeature& image_with_feature);
+        bool take(ImageWithFeature& image_with_feature);
         void stop(int wait_time = 0  /* millisecond */);
 
     private:
-        BlockingQueue<ImageData> imgdat_queue_;
+        BlockingQueue<ImageWithFeature> imgWthFtr_queue_;
 
         atomic_bool stopped_;
         mutex stop_mtx_;

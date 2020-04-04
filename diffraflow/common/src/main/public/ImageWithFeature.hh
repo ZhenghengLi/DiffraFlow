@@ -7,19 +7,14 @@
 #include <msgpack.hpp>
 
 namespace diffraflow {
-    class ImageWithFeature {
-    public:
-        ImageWithFeature();
-        ~ImageWithFeature();
+    struct ImageWithFeature {
 
-    public:
         // image data
         ImageData image_data_raw;
         ImageData image_data_calib;
         // image feature
         ImageFeature image_feature;
 
-    public:
         MSGPACK_DEFINE_MAP(
             image_data_raw,
             image_data_calib,

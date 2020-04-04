@@ -111,6 +111,7 @@ bool diffraflow::CmbImgCache::do_alignment_(ImageData& image_data, bool force_fl
         }
         image_data.event_time = image_time_target;
         image_data.wait_threshold = wait_threshold_;
+        image_data.set_defined();
         return true;
     } else {
         return false;

@@ -1,5 +1,5 @@
 #include "CmbImgCache.hh"
-#include "ImageFrame.hh"
+#include "ImageFramePtr.hh"
 #include "ImageData.hh"
 
 #include <log4cxx/logger.h>
@@ -15,10 +15,10 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFrame, uint64_t>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
     // wait forever
-    wait_threshold_ = numeric_limits<uint64_t>::max();
+    wait_threshold_ = numeric_limits<int64_t>::max();
     image_time_min_ = numeric_limits<uint64_t>::max();
     image_time_last_ = 0;
     num_of_empty_ = imgfrm_queues_len_;
@@ -31,24 +31,24 @@ diffraflow::CmbImgCache::~CmbImgCache() {
     stop(0);
 }
 
-bool diffraflow::CmbImgCache::push_frame(const ImageFrame& image_frame) {
+bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     if (stopped_) return false;
 
-    if (image_frame.detector_id < 0 || image_frame.detector_id >= (int) imgfrm_queues_len_) {
-        LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame.detector_id);
+    if (image_frame->detector_id < 0 || image_frame->detector_id >= (int) imgfrm_queues_len_) {
+        LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame->detector_id);
         return false;
     }
 
     lock_guard<mutex> lk(data_mtx_);
 
-    if (image_frame.image_time < image_time_min_) {
-        image_time_min_ = image_frame.image_time;
+    if (image_frame->image_time < image_time_min_) {
+        image_time_min_ = image_frame->image_time;
     }
-    if (imgfrm_queues_arr_[image_frame.detector_id].empty()) {
+    if (imgfrm_queues_arr_[image_frame->detector_id].empty()) {
         num_of_empty_--;
     }
-    imgfrm_queues_arr_[image_frame.detector_id].push(image_frame);
-    uint64_t distance_current = imgfrm_queues_arr_[image_frame.detector_id].distance();
+    imgfrm_queues_arr_[image_frame->detector_id].push(image_frame);
+    int64_t distance_current = imgfrm_queues_arr_[image_frame->detector_id].distance();
     if (distance_current > distance_max_) {
         distance_max_ = distance_current;
     }
@@ -92,19 +92,19 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
                 num_of_empty_++;
                 continue;
             }
-            if (imgfrm_queues_arr_[i].top().image_time == image_time_target) {
-                image_data->put_imgfrm(i, imgfrm_queues_arr_[i].top());
+            if (imgfrm_queues_arr_[i].top()->image_time == image_time_target) {
+                image_data->put_imgfrm(i, *imgfrm_queues_arr_[i].top());
                 imgfrm_queues_arr_[i].pop();
             }
             if (imgfrm_queues_arr_[i].empty()) {
                 num_of_empty_++;
                 continue;
             }
-            uint64_t image_time_current = imgfrm_queues_arr_[i].top().image_time;
+            uint64_t image_time_current = imgfrm_queues_arr_[i].top()->image_time;
             if (image_time_current < image_time_min_) {
                 image_time_min_ = image_time_current;
             }
-            uint64_t distance_current = imgfrm_queues_arr_[i].distance();
+            int64_t distance_current = imgfrm_queues_arr_[i].distance();
             if (distance_current > distance_max_) {
                 distance_max_ = distance_current;
             }

@@ -18,7 +18,7 @@ using std::make_shared;
 
 namespace diffraflow {
 
-    class ImageFrame;
+    class ImageFramePtr;
     class ImageData;
 
     class CmbImgCache {
@@ -26,7 +26,7 @@ namespace diffraflow {
         explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100);
         ~CmbImgCache();
 
-        bool push_frame(const ImageFrame& image_frame);
+        bool push_frame(const ImageFramePtr& image_frame);
         bool take_image(shared_ptr<ImageData>& image_data);
         void stop(int wait_time = 0  /* millisecond */);
 
@@ -34,9 +34,9 @@ namespace diffraflow {
         bool do_alignment_(shared_ptr<ImageData> image_data, bool force_flag = false);
 
     private:
-        size_t                                   imgfrm_queues_len_;
-        TimeOrderedQueue<ImageFrame, uint64_t>*  imgfrm_queues_arr_;
-        BlockingQueue< shared_ptr<ImageData> >   imgdat_queue_;
+        size_t                                      imgfrm_queues_len_;
+        TimeOrderedQueue<ImageFramePtr, int64_t>*   imgfrm_queues_arr_;
+        BlockingQueue< shared_ptr<ImageData> >      imgdat_queue_;
 
         mutex data_mtx_;
 
@@ -44,11 +44,11 @@ namespace diffraflow {
         mutex stop_mtx_;
         condition_variable stop_cv_;
 
-        uint64_t wait_threshold_;   // nanoseconds
+        int64_t  wait_threshold_;   // nanoseconds
         uint64_t image_time_min_;
         uint64_t image_time_last_;
         size_t   num_of_empty_;
-        uint64_t distance_max_;
+        int64_t  distance_max_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -1,6 +1,6 @@
 #include "CmbImgFrmConn.hh"
 #include "CmbImgCache.hh"
-#include "ImageFrame.hh"
+#include "ImageFramePtr.hh"
 #include "Decoder.hh"
 
 #include <unistd.h>
@@ -137,8 +137,8 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
             return kFailed;
         }
         current_position += 4;
-        ImageFrame image_frame;
-        image_frame.decode(current_buffer + current_position, current_size);
+        ImageFramePtr image_frame(new ImageFrame());
+        image_frame->decode(current_buffer + current_position, current_size);
         current_position += current_size;
 
         if (image_cache_->push_frame(image_frame)) {

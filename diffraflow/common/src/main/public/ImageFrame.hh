@@ -16,13 +16,6 @@ namespace diffraflow {
         bool decode(const char* buffer, const size_t size);
         void print() const;
 
-        bool operator<(const ImageFrame& right) const;
-        bool operator<=(const ImageFrame& right) const;
-        bool operator>(const ImageFrame& right) const;
-        bool operator>=(const ImageFrame& right) const;
-        bool operator==(const ImageFrame& right) const;
-        int64_t operator-(const ImageFrame& right) const;
-
     public:
         uint64_t        image_time;     // unit: nanosecond
         int32_t         detector_id;

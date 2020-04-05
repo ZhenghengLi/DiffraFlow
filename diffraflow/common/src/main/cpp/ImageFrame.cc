@@ -48,27 +48,3 @@ void diffraflow::ImageFrame::print() const {
     }
     cout << "]" << endl;
 }
-
-bool diffraflow::ImageFrame::operator<(const diffraflow::ImageFrame& right) const {
-    return image_time < right.image_time;
-}
-
-bool diffraflow::ImageFrame::operator<=(const diffraflow::ImageFrame& right) const {
-    return image_time <= right.image_time;
-}
-
-bool diffraflow::ImageFrame::operator>(const diffraflow::ImageFrame& right) const {
-    return image_time > right.image_time;
-}
-
-bool diffraflow::ImageFrame::operator>=(const diffraflow::ImageFrame& right) const {
-    return image_time >= right.image_time;
-}
-
-bool diffraflow::ImageFrame::operator==(const diffraflow::ImageFrame& right) const {
-    return image_time == right.image_time;
-}
-
-int64_t diffraflow::ImageFrame::operator-(const diffraflow::ImageFrame& right) const {
-    return image_time - right.image_time;
-}

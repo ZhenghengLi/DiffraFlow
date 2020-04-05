@@ -9,8 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] write time alignment function
-- [ ] write the code to exchange data between combiner and ingester.
+- [ ] write the template code to do data processing pipeline in ingester.
+- [ ] write the class to sink data into disk.
+
+## [0.0.10] - 2020-04-05
+
+## Changed
+
+- DynamicConfiguration: use JSON instead of MessagePack to serialize configuration data stored in ZooKeeper.
+- GenericServer: use async and future to start and stop server, this make it convenient to run multiple servers in one executable.
+- BlockingQueue: data consuming functions return false only when the internal queue is empty, even if the queue is stopped.
+
+## Added
+
+- CmbImgCache: the code to do time alignment is added, but only tested with single-detector data.
+- The data exchanging logic between combiner and ingester is added and tested, and it is ready to write data processing pipeline in ingester.
 
 ## [0.0.9] - 2020-03-26
 

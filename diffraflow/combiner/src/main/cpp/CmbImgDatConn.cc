@@ -11,6 +11,7 @@
 #include <log4cxx/ndc.h>
 
 using std::copy;
+using std::shared_ptr;
 
 log4cxx::LoggerPtr diffraflow::CmbImgDatConn::logger_
     = log4cxx::Logger::getLogger("CmbImgDatConn");
@@ -48,14 +49,14 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
 
     // serialize and send image data
     for (size_t i = 0; i < image_counts; i++) {
-        ImageData one_image;
+        shared_ptr<ImageData> one_image;
         if (!image_cache_->take_image(one_image)) {
             LOG4CXX_WARN(logger_, "image data queue is stopped and empty, close the connection.");
             return kFailed;
         }
         // serialize image data
         image_buffer_.clear();
-        msgpack::pack(image_buffer_, one_image);
+        msgpack::pack(image_buffer_, *one_image);
         // serialize head
         char head_buffer[4];
         gPS.serializeValue<uint32_t>(0xABCDEEEE, head_buffer, 4);

@@ -13,6 +13,8 @@ using std::queue;
 using std::mutex;
 using std::condition_variable;
 using std::atomic_bool;
+using std::shared_ptr;
+using std::make_shared;
 
 namespace diffraflow {
 
@@ -25,16 +27,16 @@ namespace diffraflow {
         ~CmbImgCache();
 
         bool push_frame(const ImageFrame& image_frame);
-        bool take_image(ImageData& image_data);
+        bool take_image(shared_ptr<ImageData>& image_data);
         void stop(int wait_time = 0  /* millisecond */);
 
     private:
-        bool do_alignment_(ImageData& image_data, bool force_flag = false);
+        bool do_alignment_(shared_ptr<ImageData> image_data, bool force_flag = false);
 
     private:
         size_t                                   imgfrm_queues_len_;
         TimeOrderedQueue<ImageFrame, uint64_t>*  imgfrm_queues_arr_;
-        BlockingQueue<ImageData>                 imgdat_queue_;
+        BlockingQueue< shared_ptr<ImageData> >   imgdat_queue_;
 
         mutex data_mtx_;
 

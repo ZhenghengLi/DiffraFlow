@@ -12,32 +12,54 @@ namespace diffraflow {
     public:
         ImageFramePtr(ImageFrame* image_frame): shared_ptr<ImageFrame>(image_frame) { }
 
-        ImageFramePtr() {
-            ImageFramePtr(new ImageFrame());
-        }
+        ImageFramePtr(): shared_ptr<ImageFrame>() { }
 
         bool operator<(const ImageFramePtr& right) const {
-            return (*this)->image_time < right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time < right->image_time;
+            } else {
+                return false;
+            }
         }
 
         bool operator<=(const ImageFramePtr& right) const {
-            return (*this)->image_time <= right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time <= right->image_time;
+            } else {
+                return false;
+            }
         }
 
         bool operator>(const ImageFramePtr& right) const {
-            return (*this)->image_time > right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time > right->image_time;
+            } else {
+                return false;
+            }
         }
 
         bool operator>=(const ImageFramePtr& right) const {
-            return (*this)->image_time >= right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time >= right->image_time;
+            } else {
+                return false;
+            }
         }
 
         bool operator==(const ImageFramePtr& right) const {
-            return (*this)->image_time == right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time == right->image_time;
+            } else {
+                return false;
+            }
         }
 
         int64_t operator-(const ImageFramePtr& right) const {
-            return (*this)->image_time - right->image_time;
+            if ( (*this) && right) {
+                return (*this)->image_time - right->image_time;
+            } else {
+                return 0;
+            }
         }
 
     };

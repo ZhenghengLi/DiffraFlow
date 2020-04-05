@@ -29,7 +29,11 @@ namespace diffraflow {
 
     template <typename ET, typename DT, typename Container, typename Compare>
     DT TimeOrderedQueue<ET, DT, Container, Compare>::distance() const {
-        return tail - std::priority_queue<ET, Container, Compare>::top();
+        if (std::priority_queue<ET, Container, Compare>::empty()) {
+            return DT();
+        } else {
+            return tail - std::priority_queue<ET, Container, Compare>::top();
+        }
     }
 
 }

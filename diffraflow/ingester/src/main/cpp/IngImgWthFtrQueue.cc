@@ -11,11 +11,11 @@ diffraflow::IngImgWthFtrQueue::~IngImgWthFtrQueue() {
 
 }
 
-bool diffraflow::IngImgWthFtrQueue::push(const ImageWithFeature& image_with_feature) {
+bool diffraflow::IngImgWthFtrQueue::push(const shared_ptr<ImageWithFeature>& image_with_feature) {
     return imgWthFtr_queue_.push(image_with_feature);
 }
 
-bool diffraflow::IngImgWthFtrQueue::take(ImageWithFeature& image_with_feature) {
+bool diffraflow::IngImgWthFtrQueue::take(shared_ptr<ImageWithFeature>& image_with_feature) {
     bool result = imgWthFtr_queue_.take(image_with_feature);
     if (stopped_ && imgWthFtr_queue_.empty()) {
         stop_cv_.notify_all();

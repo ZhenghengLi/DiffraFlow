@@ -120,7 +120,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         for (bool running = true; running;) {
             if (worker_status_ != kRunning) break;
             ImageData image_data;
-            ImageWithFeature image_with_feature;
+            shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
             switch (request_one_image(image_data)) {
             case kDisconnected:
                 LOG4CXX_WARN(logger_, "error found when requesting one image from combiner,"
@@ -134,7 +134,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                 // for debug
                 image_data.print();
 
-                image_with_feature.image_data_raw = image_data;
+                image_with_feature->image_data_raw = image_data;
                 if (imgWthFtrQue_raw_->push(image_with_feature)) {
                     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
                 } else {

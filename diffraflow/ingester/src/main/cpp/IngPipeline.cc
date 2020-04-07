@@ -2,6 +2,7 @@
 #include "IngConfig.hh"
 #include "IngImgWthFtrQueue.hh"
 #include "IngImgDatFetcher.hh"
+#include "IngCalibrationWorker.hh"
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
     = log4cxx::Logger::getLogger("IngPipeline");
@@ -10,10 +11,11 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     config_obj_ = config;
     running_flag_ = false;
 
-    image_data_fetcher_ = nullptr;
     imgWthFtrQue_raw_ = nullptr;
+    image_data_fetcher_ = nullptr;
 
     imgWthFtrQue_calib_ = nullptr;
+    calibration_worker_ = nullptr;
 
     imgWthFtrQue_feature_ = nullptr;
 
@@ -28,7 +30,10 @@ diffraflow::IngPipeline::~IngPipeline() {
 void diffraflow::IngPipeline::start_run() {
     if (running_flag_) return;
 
-    // fetch image data
+    // prepare queues and workers
+    bool error_flag = false;
+
+    //// fetch image data
     imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     image_data_fetcher_ = new IngImgDatFetcher(
         config_obj_->combiner_host,
@@ -39,17 +44,24 @@ void diffraflow::IngPipeline::start_run() {
         config_obj_->recnxn_wait_time,
         config_obj_->recnxn_max_count);
 
-    // do calibration
+    //// do calibration
     imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
 
-    // do feature extraction
+    //// do feature extraction
     imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
 
-    // do data filtering
+    //// do data filtering
     imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
 
-    // do data writing
+    //// do data writing
 
+    if (error_flag) {
+        LOG4CXX_ERROR(logger_, "error found when preparing queues and workers");
+        return;
+    }
+
+    // start workers in turn
     if (image_data_fetcher_->start()) {
         LOG4CXX_INFO(logger_, "successfully started image data fetcher.")
     } else {
@@ -57,15 +69,21 @@ void diffraflow::IngPipeline::start_run() {
         return;
     }
 
+    if (calibration_worker_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started calibration worker.");
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start calibration worker.");
+        return;
+    }
+
     running_flag_ = true;
 
     // then wait for finishing
     async([this]() {
-        // stop data fetcher
         image_data_fetcher_->wait();
         imgWthFtrQue_raw_->stop();
 
-        // stop data calibration
+        calibration_worker_->wait();
         imgWthFtrQue_calib_->stop();
 
         // stop feature extraction
@@ -82,7 +100,6 @@ void diffraflow::IngPipeline::terminate() {
     if (!running_flag_) return;
 
     // stop data fetcher
-    imgWthFtrQue_raw_->stop();
     int result = image_data_fetcher_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image data fetcher is normally terminated.");
@@ -93,12 +110,23 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop data calibration
-    imgWthFtrQue_calib_->stop();
+    imgWthFtrQue_raw_->stop(/* wait_time */);
+    result = calibration_worker_->stop();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "calibration worker is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "calibration worker is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "calibration worker has not yet been started.");
+    }
+
 
     // stop feature extraction
-    imgWthFtrQue_feature_->stop();
+    imgWthFtrQue_calib_->stop();
 
     // stop data writer
+    imgWthFtrQue_feature_->stop();
+
     imgWthFtrQue_write_->stop();
 
     // delete objects

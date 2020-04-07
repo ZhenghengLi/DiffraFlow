@@ -11,6 +11,7 @@ namespace diffraflow {
     class IngConfig;
     class IngImgWthFtrQueue;
     class IngImgDatFetcher;
+    class IngCalibrationWorker;
 
     class IngPipeline {
     public:
@@ -27,6 +28,7 @@ namespace diffraflow {
         IngImgWthFtrQueue* imgWthFtrQue_raw_;
 
         // Calibration
+        IngCalibrationWorker* calibration_worker_;
         IngImgWthFtrQueue* imgWthFtrQue_calib_;
 
         // Feature Extraction

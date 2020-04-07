@@ -117,8 +117,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         worker_status_ = kRunning;
         cv_status_.notify_all();
         size_t successive_fail_count_ = 0;
-        for (bool running = true; running;) {
-            if (worker_status_ != kRunning) break;
+        for (bool running = true; running && worker_status_ == kRunning;) {
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
             switch (request_one_image(image_with_feature->image_data_raw)) {
             case kDisconnected:

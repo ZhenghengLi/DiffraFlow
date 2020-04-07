@@ -15,7 +15,7 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
 
 }
 
-void diffraflow::IngCalibrationWorker::do_calib(
+void diffraflow::IngCalibrationWorker::do_calib_(
     const ImageData& imgdat_raw, ImageData& imgdat_calib) {
 
     // currently do nothing, just copy the raw data.
@@ -29,7 +29,7 @@ int diffraflow::IngCalibrationWorker::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        do_calib(image_with_feature->image_data_raw, image_with_feature->image_data_calib);
+        do_calib_(image_with_feature->image_data_raw, image_with_feature->image_data_calib);
         if (image_queue_out_->push(image_with_feature)) {
             LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
         } else {

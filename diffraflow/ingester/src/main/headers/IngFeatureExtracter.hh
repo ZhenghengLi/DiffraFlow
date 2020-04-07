@@ -37,7 +37,7 @@ namespace diffraflow {
         enum WorkerStatus {kNotStart, kRunning, kStopped};
 
     private:
-        void extract_feature(const ImageData& imgdat_raw, ImageFeature& image_feature);
+        void extract_feature_(const ImageData& imgdat_raw, ImageFeature& image_feature);
 
     private:
         int run_();

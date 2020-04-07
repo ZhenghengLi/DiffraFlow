@@ -36,7 +36,7 @@ namespace diffraflow {
         enum WorkerStatus {kNotStart, kRunning, kStopped};
 
     private:
-        void do_calib(const ImageData& imgdat_raw, ImageData& imgdat_calib);
+        void do_calib_(const ImageData& imgdat_raw, ImageData& imgdat_calib);
 
     private:
         int run_();

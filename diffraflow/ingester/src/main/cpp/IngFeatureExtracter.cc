@@ -15,7 +15,7 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
 
 }
 
-void diffraflow::IngFeatureExtracter::extract_feature(
+void diffraflow::IngFeatureExtracter::extract_feature_(
     const ImageData& imgdat_raw, ImageFeature& image_feature) {
 
     // some example code
@@ -31,7 +31,7 @@ int diffraflow::IngFeatureExtracter::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        extract_feature(image_with_feature->image_data_calib, image_with_feature->image_feature);
+        extract_feature_(image_with_feature->image_data_calib, image_with_feature->image_feature);
         if (image_queue_out_->push(image_with_feature)) {
             LOG4CXX_DEBUG(logger_, "pushed the feature data into queue.");
         } else {

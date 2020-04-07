@@ -3,6 +3,7 @@
 #include "IngImgWthFtrQueue.hh"
 #include "IngImgDatFetcher.hh"
 #include "IngCalibrationWorker.hh"
+#include "IngFeatureExtracter.hh"
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
     = log4cxx::Logger::getLogger("IngPipeline");
@@ -18,6 +19,7 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     calibration_worker_ = nullptr;
 
     imgWthFtrQue_feature_ = nullptr;
+    feature_extracter_ = nullptr;
 
     imgWthFtrQue_write_ = nullptr;
 
@@ -50,6 +52,7 @@ void diffraflow::IngPipeline::start_run() {
 
     //// do feature extraction
     imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
 
     //// do data filtering
     imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
@@ -76,6 +79,13 @@ void diffraflow::IngPipeline::start_run() {
         return;
     }
 
+    if (feature_extracter_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started feature extracter.");
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start feature extracter.");
+        return;
+    }
+
     running_flag_ = true;
 
     // then wait for finishing
@@ -86,7 +96,7 @@ void diffraflow::IngPipeline::start_run() {
         calibration_worker_->wait();
         imgWthFtrQue_calib_->stop();
 
-        // stop feature extraction
+        feature_extracter_->wait();
         imgWthFtrQue_feature_->stop();
 
         // stop data writer
@@ -120,9 +130,16 @@ void diffraflow::IngPipeline::terminate() {
         LOG4CXX_WARN(logger_, "calibration worker has not yet been started.");
     }
 
-
     // stop feature extraction
-    imgWthFtrQue_calib_->stop();
+    imgWthFtrQue_calib_->stop(/* wait_time */);
+    result = feature_extracter_->stop();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "feature extracter is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "feature extracter is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "feature extracter has not yet been started.");
+    }
 
     // stop data writer
     imgWthFtrQue_feature_->stop();

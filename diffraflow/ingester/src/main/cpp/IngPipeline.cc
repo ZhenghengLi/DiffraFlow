@@ -4,6 +4,7 @@
 #include "IngImgDatFetcher.hh"
 #include "IngCalibrationWorker.hh"
 #include "IngFeatureExtracter.hh"
+#include "IngImageFilter.hh"
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
     = log4cxx::Logger::getLogger("IngPipeline");
@@ -12,15 +13,16 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     config_obj_ = config;
     running_flag_ = false;
 
-    imgWthFtrQue_raw_ = nullptr;
     image_data_fetcher_ = nullptr;
+    imgWthFtrQue_raw_ = nullptr;
 
-    imgWthFtrQue_calib_ = nullptr;
     calibration_worker_ = nullptr;
+    imgWthFtrQue_calib_ = nullptr;
 
-    imgWthFtrQue_feature_ = nullptr;
     feature_extracter_ = nullptr;
+    imgWthFtrQue_feature_ = nullptr;
 
+    image_filter_ = nullptr;
     imgWthFtrQue_write_ = nullptr;
 
 }
@@ -50,12 +52,15 @@ void diffraflow::IngPipeline::start_run() {
     imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
 
+    //// read calibraion parameters files here
+
     //// do feature extraction
     imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
 
     //// do data filtering
     imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
 
     //// do data writing
 
@@ -86,6 +91,13 @@ void diffraflow::IngPipeline::start_run() {
         return;
     }
 
+    if (image_filter_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started image filter.");
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start image filter.");
+        return;
+    }
+
     running_flag_ = true;
 
     // then wait for finishing
@@ -99,7 +111,7 @@ void diffraflow::IngPipeline::start_run() {
         feature_extracter_->wait();
         imgWthFtrQue_feature_->stop();
 
-        // stop data writer
+        image_filter_->wait();
         imgWthFtrQue_write_->stop();
 
     }).wait();
@@ -143,6 +155,14 @@ void diffraflow::IngPipeline::terminate() {
 
     // stop data writer
     imgWthFtrQue_feature_->stop();
+    result = image_filter_->stop();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "image filter is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "image filter is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "image filter has not yet been started.");
+    }
 
     imgWthFtrQue_write_->stop();
 
@@ -153,8 +173,20 @@ void diffraflow::IngPipeline::terminate() {
     delete imgWthFtrQue_raw_;
     imgWthFtrQue_raw_ = nullptr;
 
+    delete calibration_worker_;
+    calibration_worker_ = nullptr;
+
     delete imgWthFtrQue_calib_;
     imgWthFtrQue_calib_ = nullptr;
+
+    delete feature_extracter_;
+    feature_extracter_ = nullptr;
+
+    delete imgWthFtrQue_feature_;
+    imgWthFtrQue_feature_ = nullptr;
+
+    delete image_filter_;
+    image_filter_ = nullptr;
 
     delete imgWthFtrQue_write_;
     imgWthFtrQue_write_ = nullptr;

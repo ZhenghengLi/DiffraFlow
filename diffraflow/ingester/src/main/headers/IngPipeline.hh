@@ -14,6 +14,7 @@ namespace diffraflow {
     class IngCalibrationWorker;
     class IngFeatureExtracter;
     class IngImageFilter;
+    class IngImageWriter;
 
     class IngPipeline {
     public:
@@ -42,6 +43,7 @@ namespace diffraflow {
         IngImgWthFtrQueue* imgWthFtrQue_write_;
 
         // Image Writer
+        IngImageWriter* image_writer_;
 
         atomic_bool running_flag_;
 

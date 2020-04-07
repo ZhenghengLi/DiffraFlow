@@ -5,6 +5,7 @@
 #include "IngCalibrationWorker.hh"
 #include "IngFeatureExtracter.hh"
 #include "IngImageFilter.hh"
+#include "IngImageWriter.hh"
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
     = log4cxx::Logger::getLogger("IngPipeline");
@@ -25,6 +26,8 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     image_filter_ = nullptr;
     imgWthFtrQue_write_ = nullptr;
 
+    image_writer_ = nullptr;
+
 }
 
 diffraflow::IngPipeline::~IngPipeline() {
@@ -34,41 +37,42 @@ diffraflow::IngPipeline::~IngPipeline() {
 void diffraflow::IngPipeline::start_run() {
     if (running_flag_) return;
 
-    // prepare queues and workers
-    bool error_flag = false;
-
-    //// fetch image data
+    //======================================================
+    // create all queues and workers
+    //// image fetcher
     imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     image_data_fetcher_ = new IngImgDatFetcher(
         config_obj_->combiner_host,
         config_obj_->combiner_port,
         config_obj_->ingester_id,
         imgWthFtrQue_raw_);
+
+    //// calibration worker
+    imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
+
+    //// feature extracter
+    imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
+
+    //// image filter
+    imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
+
+    //// image writer
+    image_writer_ = new IngImageWriter(imgWthFtrQue_write_, config_obj_);
+
+    //======================================================
+    // config and prepare before start
+    //// image fetcher
     image_data_fetcher_->set_recnxn_policy(
         config_obj_->recnxn_wait_time,
         config_obj_->recnxn_max_count);
 
-    //// do calibration
-    imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
-    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
-
+    //// calibration worker
     //// read calibraion parameters files here
 
-    //// do feature extraction
-    imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
-    feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
-
-    //// do data filtering
-    imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
-    image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
-
-    //// do data writing
-
-    if (error_flag) {
-        LOG4CXX_ERROR(logger_, "error found when preparing queues and workers");
-        return;
-    }
-
+    //======================================================
     // start workers in turn
     if (image_data_fetcher_->start()) {
         LOG4CXX_INFO(logger_, "successfully started image data fetcher.")
@@ -98,10 +102,19 @@ void diffraflow::IngPipeline::start_run() {
         return;
     }
 
+    if (image_writer_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started image writer.");
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start image writer.");
+        return;
+    }
+
     running_flag_ = true;
 
+    //======================================================
     // then wait for finishing
     async([this]() {
+
         image_data_fetcher_->wait();
         imgWthFtrQue_raw_->stop();
 
@@ -113,6 +126,8 @@ void diffraflow::IngPipeline::start_run() {
 
         image_filter_->wait();
         imgWthFtrQue_write_->stop();
+
+        image_writer_->wait();
 
     }).wait();
 
@@ -153,8 +168,8 @@ void diffraflow::IngPipeline::terminate() {
         LOG4CXX_WARN(logger_, "feature extracter has not yet been started.");
     }
 
-    // stop data writer
-    imgWthFtrQue_feature_->stop();
+    // stop image filter
+    imgWthFtrQue_feature_->stop(/* wait_time */);
     result = image_filter_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image filter is normally terminated.");
@@ -164,31 +179,45 @@ void diffraflow::IngPipeline::terminate() {
         LOG4CXX_WARN(logger_, "image filter has not yet been started.");
     }
 
-    imgWthFtrQue_write_->stop();
+    // stop image writer
+    imgWthFtrQue_write_->stop(/* wait_time */);
+    result = image_filter_->stop();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "image writer is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "image writer is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "image writer has not yet been started.");
+    }
 
-    // delete objects
+    // delete all workers
     delete image_data_fetcher_;
     image_data_fetcher_ = nullptr;
-
-    delete imgWthFtrQue_raw_;
-    imgWthFtrQue_raw_ = nullptr;
 
     delete calibration_worker_;
     calibration_worker_ = nullptr;
 
-    delete imgWthFtrQue_calib_;
-    imgWthFtrQue_calib_ = nullptr;
-
     delete feature_extracter_;
     feature_extracter_ = nullptr;
-
-    delete imgWthFtrQue_feature_;
-    imgWthFtrQue_feature_ = nullptr;
 
     delete image_filter_;
     image_filter_ = nullptr;
 
+    delete image_writer_;
+    image_writer_ = nullptr;
+
+    // delete all queues
+    delete imgWthFtrQue_raw_;
+    imgWthFtrQue_raw_ = nullptr;
+
+    delete imgWthFtrQue_calib_;
+    imgWthFtrQue_calib_ = nullptr;
+
+    delete imgWthFtrQue_feature_;
+    imgWthFtrQue_feature_ = nullptr;
+
     delete imgWthFtrQue_write_;
     imgWthFtrQue_write_ = nullptr;
 
+    running_flag_ = false;
 }

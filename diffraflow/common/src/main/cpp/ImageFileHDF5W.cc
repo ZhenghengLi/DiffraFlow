@@ -58,8 +58,8 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
         h5file_  = new H5::H5File(filename, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE);
         imgdat_dset_ = h5file_->openDataSet("image_data");
     } catch (H5::Exception& e) {
-        LOG4CXX_ERROR(logger_, "found error when opening HDF5 file: " << filename);
-        e.printError();
+        LOG4CXX_ERROR(logger_, "found error when opening HDF5 file "
+            << filename << " with error: " << e.getDetailMsg());
         return false;
     } catch (...) {
         LOG4CXX_ERROR(logger_, "found unknown error when opening HDF5 file: " << filename);

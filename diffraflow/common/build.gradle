@@ -11,11 +11,12 @@ library {
         linkTask.get().linkerArgs.add('-lcrypto')
         linkTask.get().linkerArgs.add('-lpulsar')
         linkTask.get().linkerArgs.add('-lhdf5_cpp')
-        linkTask.get().linkerArgs.add('-lhdf5_serial')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
             linkTask.get().linkerArgs.add('-lboost_system-mt')
+            linkTask.get().linkerArgs.add('-lhdf5')
         } else {
             linkTask.get().linkerArgs.add('-lboost_system')
+            linkTask.get().linkerArgs.add('-lhdf5_serial')
         }
     }
 }

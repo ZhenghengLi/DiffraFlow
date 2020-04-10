@@ -25,21 +25,21 @@ namespace diffraflow {
         int  get_calib_level();
 
     public:
-        uint64_t            event_time;            // equal to image_time
-        vector<bool>        status_vec;            // alignment status for each sub-detector
-        vector<ImageFrame>  imgfrm_vec;            // image data from each sub-detector
+        uint64_t            event_time;
+        vector<bool>        alignment_vec;
+        vector<ImageFrame>  image_frame_vec;
         uint64_t            wait_threshold;
         bool                late_arrived;
 
     private:
         bool                is_defined_;
-        id_t                calib_level_;
+        int                 calib_level_;
 
     public:
         MSGPACK_DEFINE_MAP (
             event_time,
-            status_vec,
-            imgfrm_vec,
+            alignment_vec,
+            image_frame_vec,
             wait_threshold,
             late_arrived,
             is_defined_,

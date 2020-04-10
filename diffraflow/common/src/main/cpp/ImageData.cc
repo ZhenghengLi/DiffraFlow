@@ -12,8 +12,8 @@ using std::copy;
 
 diffraflow::ImageData::ImageData(uint32_t numOfDet) {
     event_time = 0;
-    status_vec.resize(numOfDet, false);
-    imgfrm_vec.resize(numOfDet);
+    alignment_vec.resize(numOfDet, false);
+    image_frame_vec.resize(numOfDet);
     late_arrived = false;
     wait_threshold = 0;
     is_defined_ = false;
@@ -25,9 +25,9 @@ diffraflow::ImageData::~ImageData() {
 }
 
 bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
-    if (index >= imgfrm_vec.size()) return false;
-    status_vec[index] = true;
-    imgfrm_vec[index] = imgfrm;
+    if (index >= image_frame_vec.size()) return false;
+    alignment_vec[index] = true;
+    image_frame_vec[index] = imgfrm;
     return true;
 }
 
@@ -48,9 +48,9 @@ int diffraflow::ImageData::get_calib_level() {
 }
 
 void diffraflow::ImageData::print() {
-    for (size_t i = 0; i < imgfrm_vec.size(); i++) {
+    for (size_t i = 0; i < image_frame_vec.size(); i++) {
         cout << "ImageData[" << i << "]:" << endl;
-        imgfrm_vec[i].print();
+        image_frame_vec[i].print();
     }
     cout << "late_arrived: " << late_arrived << endl;
     cout << "is_defined: " << is_defined_ << endl;

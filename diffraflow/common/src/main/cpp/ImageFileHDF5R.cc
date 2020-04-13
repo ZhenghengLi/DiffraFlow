@@ -104,10 +104,7 @@ bool diffraflow::ImageFileHDF5R::next_batch() {
         if (remained_size <= 0) {
             return false;
         }
-        buffer_limit_ = buffer_size_;
-        if (remained_size < buffer_size_) {
-            buffer_limit_ = remained_size;
-        }
+        buffer_limit_ = (buffer_size_ <= remained_size ? buffer_size_ : remained_size);
         hsize_t file_offset[1];
         file_offset[0] = imgdat_dset_pos_;
         hsize_t memory_dim[1];
@@ -136,7 +133,14 @@ bool diffraflow::ImageFileHDF5R::next_image(ImageDataHDF5::Field& imgdat_st) {
         return false;
     }
 
-    return true;
+    if (buffer_pos_ < buffer_limit_) {
+        imgdat_st = image_buffer_[buffer_pos_];
+        buffer_pos_++;
+        return true;
+    } else {
+        return false;
+    }
+
 }
 
 size_t diffraflow::ImageFileHDF5R::image_dset_size() {

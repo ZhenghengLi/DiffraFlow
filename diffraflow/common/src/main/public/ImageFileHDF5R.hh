@@ -1,5 +1,5 @@
-#ifndef __ImageFileHDF5W_H__
-#define __ImageFileHDF5W_H__
+#ifndef __ImageFileHDF5R_H__
+#define __ImageFileHDF5R_H__
 
 #include "ImageDataHDF5.hh"
 #include "ImageData.hh"
@@ -8,17 +8,20 @@
 #include <mutex>
 
 using std::mutex;
+using std::string;
 
 namespace diffraflow {
-    class ImageFileHDF5W {
+    class ImageFileHDF5R {
     public:
-        ImageFileHDF5W(size_t buffer_size, size_t chunk_size, bool swmr = true);
-        ~ImageFileHDF5W();
+        ImageFileHDF5R(size_t buffer_size, bool swmr = true);
+        ~ImageFileHDF5R();
 
-        bool open(const char* filename, int compress_level = -1);
-        bool append(const ImageData& image_data);
-        bool flush();
+        bool open(const char* filename);
         void close();
+        bool next_batch();
+        bool next_image(ImageDataHDF5::Field& imgdat_st);
+        size_t image_dset_size();
+        string create_time();
 
     private:
         ImageDataHDF5           image_data_hdf5_;
@@ -26,13 +29,15 @@ namespace diffraflow {
 
         size_t                  buffer_size_;
         size_t                  buffer_limit_;
-        size_t                  chunk_size_;
+        size_t                  buffer_pos_;
 
         H5::H5File*             h5file_;
         bool                    swmr_mode_;
+        string                  file_create_time_;
         H5::DataSet             imgdat_dset_;
-        size_t                  imgdat_dset_pos_;
         hid_t                   imgdat_dset_id_;
+        size_t                  imgdat_dset_pos_;
+        size_t                  imgdat_dset_size_;
 
         mutex                   file_op_mtx_;
 

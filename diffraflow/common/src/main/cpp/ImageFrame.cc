@@ -21,7 +21,7 @@ diffraflow::ImageFrame::ImageFrame() {
     image_width = 0;
     image_height = 0;
     image_frame.clear();
-    image_rawdata_.clear();
+    image_rawdata.clear();
 }
 
 diffraflow::ImageFrame::~ImageFrame() {
@@ -31,20 +31,20 @@ diffraflow::ImageFrame::~ImageFrame() {
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     if (size <= 8) return false;
     image_time = gDC.decode_byte<uint64_t>(buffer, 0, 7);
-    image_rawdata_.resize(size - 8);
-    copy(buffer + 8, buffer + size, image_rawdata_.data());
+    image_rawdata.resize(size - 8);
+    copy(buffer + 8, buffer + size, image_rawdata.data());
     detector_id = 0;
     return true;
 }
 
 void diffraflow::ImageFrame::print() const {
-    if (image_rawdata_.empty()) {
+    if (image_rawdata.empty()) {
         cout << "there is no data to print" << endl;
     }
     cout << "- image_time: " << image_time << endl;
     cout << "- image_data: [";
-    for (size_t i = 0; i < image_rawdata_.size(); i++) {
-        cout << image_rawdata_[i];
+    for (size_t i = 0; i < image_rawdata.size(); i++) {
+        cout << image_rawdata[i];
     }
     cout << "]" << endl;
 }

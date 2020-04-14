@@ -1,12 +1,14 @@
 #ifndef ImageData_H
 #define ImageData_H
 
+#include <iostream>
 #include <vector>
 #include <msgpack.hpp>
 
 #include "ImageFrame.hh"
 
 using std::vector;
+using std::ostream;
 
 namespace diffraflow {
 
@@ -16,7 +18,7 @@ namespace diffraflow {
         ~ImageData();
 
         bool put_imgfrm(size_t index, const ImageFrame& imgfrm);
-        void print();
+        void print(ostream& out = std::cout) const;
 
         void set_defined();
         bool get_defined();

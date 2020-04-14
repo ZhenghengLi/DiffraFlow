@@ -6,8 +6,10 @@
 #include <log4cxx/logger.h>
 
 #include <mutex>
+#include <atomic>
 
 using std::mutex;
+using std::atomic;
 
 namespace diffraflow {
     class ImageFileHDF5W {
@@ -19,6 +21,7 @@ namespace diffraflow {
         bool append(const ImageData& image_data);
         bool flush();
         void close();
+        size_t size();
 
     private:
         ImageDataHDF5           image_data_hdf5_;
@@ -35,6 +38,8 @@ namespace diffraflow {
         hid_t                   imgdat_dset_id_;
 
         mutex                   file_op_mtx_;
+
+        atomic<size_t>          image_counts_;
 
     private:
         static log4cxx::LoggerPtr logger_;

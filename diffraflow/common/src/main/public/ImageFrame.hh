@@ -23,8 +23,7 @@ namespace diffraflow {
         uint32_t        image_height;
         vector<float>   image_frame;    // size = width * height;
 
-    private:
-        vector<char>    image_rawdata_;
+        vector<char>    image_rawdata;
 
     public:
         MSGPACK_DEFINE_MAP (
@@ -33,7 +32,7 @@ namespace diffraflow {
             image_width,
             image_height,
             image_frame,
-            image_rawdata_
+            image_rawdata
         );
 
     private:

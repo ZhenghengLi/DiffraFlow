@@ -1,5 +1,5 @@
 #include "ImageFileHDF5W.hh"
-#include "ctime"
+#include <ctime>
 #include <boost/algorithm/string.hpp>
 #include <string>
 
@@ -18,6 +18,8 @@ diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t buffer_size, size_t chunk_size
 
     h5file_ = nullptr;
     swmr_mode_ = swmr;
+
+    image_counts_ = 0;
 }
 
 diffraflow::ImageFileHDF5W::~ImageFileHDF5W() {
@@ -30,7 +32,7 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (h5file_ != nullptr) {
-        LOG4CXX_ERROR(logger_, "hdf5 file is alread opened.");
+        LOG4CXX_ERROR(logger_, "hdf5 file is already opened.");
         return false;
     }
     H5::Exception::dontPrint();
@@ -67,6 +69,7 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
         imgdat_dset_id_ = imgdat_dset_.getId();
         imgdat_dset_pos_ = 0;
         buffer_limit_ = 0;
+        image_counts_ = 0;
         // swmr needs close and reopen
         if (swmr_mode_) {
             h5file_->close();
@@ -99,6 +102,7 @@ bool diffraflow::ImageFileHDF5W::append(const ImageData& image_data) {
     if (buffer_limit_ < buffer_size_) {
         ImageDataHDF5::convert_image(image_data, image_buffer_[buffer_limit_]);
         buffer_limit_++;
+        image_counts_++;
     }
     if (buffer_limit_ == buffer_size_) {
         return flush();
@@ -168,4 +172,8 @@ void diffraflow::ImageFileHDF5W::close() {
         h5file_ = nullptr;
     }
 
+}
+
+size_t diffraflow::ImageFileHDF5W::size() {
+    return image_counts_.load();
 }

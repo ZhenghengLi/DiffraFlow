@@ -5,10 +5,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-using std::cout;
 using std::endl;
-using std::cerr;
-using std::copy;
+using std::string;
 
 diffraflow::ImageData::ImageData(uint32_t numOfDet) {
     event_time = 0;
@@ -47,12 +45,27 @@ int diffraflow::ImageData::get_calib_level() {
     return calib_level_;
 }
 
-void diffraflow::ImageData::print() {
-    for (size_t i = 0; i < image_frame_vec.size(); i++) {
-        cout << "ImageData[" << i << "]:" << endl;
-        image_frame_vec[i].print();
+void diffraflow::ImageData::print(ostream& out) const {
+    if (!is_defined_) {
+        out << "undefined image data" << endl;
+        return;
     }
-    cout << "late_arrived: " << late_arrived << endl;
-    cout << "is_defined: " << is_defined_ << endl;
-    cout << "calib_level: " << calib_level_ << endl;
+    out << "event_time: " << event_time << endl;
+    out << "late_arrived: " << late_arrived << endl;
+    out << "alignment_vec: [";
+    for (size_t i = 0; i < alignment_vec.size(); i++) {
+        if (i > 0) out << ", ";
+        if (alignment_vec[i]) {
+            out << "true";
+        } else {
+            out << "false";
+        }
+    }
+    out << "]" << endl;
+    out << "image_frame_vec:" << endl;
+    for (size_t i = 0; i < image_frame_vec.size(); i++) {
+        string rawdata_str(image_frame_vec[i].image_rawdata.data(),
+            image_frame_vec[i].image_rawdata.size());
+        out << "- [" << rawdata_str << "]" << endl;
+    }
 }

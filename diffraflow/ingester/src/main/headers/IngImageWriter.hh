@@ -35,9 +35,6 @@ namespace diffraflow {
         void wait();
         int  stop();
 
-        void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
-        ImageWithFeature get_current_image();
-
     public:
         enum WorkerStatus {kNotStart, kRunning, kStopped};
 
@@ -55,10 +52,6 @@ namespace diffraflow {
     private:
         IngImgWthFtrQueue*  image_queue_in_;
         IngConfig*          config_obj_;
-
-    private:
-        shared_ptr<ImageWithFeature>    current_image_;
-        mutex                           current_image_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

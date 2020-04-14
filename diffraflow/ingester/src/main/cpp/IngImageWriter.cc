@@ -73,15 +73,3 @@ int diffraflow::IngImageWriter::stop() {
     }
     return result;
 }
-
-void diffraflow::IngImageWriter::set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature) {
-    unique_lock<mutex> lk(current_image_mtx_, std::try_to_lock);
-    if (lk.owns_lock()) {
-        current_image_ = image_with_feature;
-    }
-}
-
-diffraflow::ImageWithFeature diffraflow::IngImageWriter::get_current_image() {
-    lock_guard<mutex> lg(current_image_mtx_);
-    return *current_image_;
-}

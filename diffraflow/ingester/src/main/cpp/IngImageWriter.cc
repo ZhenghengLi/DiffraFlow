@@ -10,14 +10,21 @@ diffraflow::IngImageWriter::IngImageWriter(
     image_queue_in_ = img_queue_in;
     config_obj_ = conf_obj;
     worker_status_ = kNotStart;
+
+    current_run_number_ = config_obj_->get_dy_run_number();
+    current_turn_number_ = 0;
+    current_sequence_number_ = 0;
+
+    image_file_hdf5_ = new ImageFileHDF5W(config_obj_->hdf5_buffer_size, config_obj_->hdf5_chunk_size, true);
+    image_file_raw_ = new ImageFileRawW();
+
 }
 
 diffraflow::IngImageWriter::~IngImageWriter() {
-
-}
-
-bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>& image_with_feature) {
-    return true;
+    delete image_file_hdf5_;
+    image_file_hdf5_ = nullptr;
+    delete image_file_raw_;
+    image_file_raw_ = nullptr;
 }
 
 int diffraflow::IngImageWriter::run_() {
@@ -72,4 +79,32 @@ int diffraflow::IngImageWriter::stop() {
         result = worker_.get();
     }
     return result;
+}
+
+bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>& image_with_feature) {
+    return true;
+}
+
+bool diffraflow::IngImageWriter::create_directories_() {
+
+    return true;
+}
+
+bool diffraflow::IngImageWriter::open_hdf5_file_() {
+
+    return true;
+}
+
+bool diffraflow::IngImageWriter::open_raw_file_() {
+
+    return true;
+}
+
+bool diffraflow::IngImageWriter::open_files_() {
+
+    return true;
+}
+
+void diffraflow::IngImageWriter::close_files_() {
+
 }

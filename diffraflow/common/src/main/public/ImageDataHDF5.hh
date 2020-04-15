@@ -1,7 +1,7 @@
 #ifndef __ImageDataHDF5_H__
 #define __ImageDataHDF5_H__
 
-#include <H5Cpp.h>
+#include "H5Cpp.h"
 #include "ImageData.hh"
 
 #define DET_CNT 4

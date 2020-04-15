@@ -6,6 +6,8 @@
 #include <condition_variable>
 #include <future>
 #include <log4cxx/logger.h>
+#include "ImageFileHDF5W.hh"
+#include "ImageFileRawW.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -39,9 +41,6 @@ namespace diffraflow {
         enum WorkerStatus {kNotStart, kRunning, kStopped};
 
     private:
-        bool save_image_(const shared_ptr<ImageWithFeature> & image_with_feature);
-
-    private:
         int run_();
         shared_future<int> worker_;
 
@@ -50,8 +49,28 @@ namespace diffraflow {
         condition_variable cv_status_;
 
     private:
+        bool create_directories_();
+        bool open_hdf5_file_();
+        bool open_raw_file_();
+
+        bool open_files_();
+        void close_files_();
+
+        bool save_image_(const shared_ptr<ImageWithFeature> & image_with_feature);
+
+    private:
         IngImgWthFtrQueue*  image_queue_in_;
         IngConfig*          config_obj_;
+
+        // files:
+        ImageFileHDF5W* image_file_hdf5_;
+        ImageFileRawW*  image_file_raw_;
+
+        // file path:
+        // storage_dir/R0000/NODENAME_N00/T00/R0000_NODENAME_N00_T00_S0000.h5
+        int current_run_number_;
+        int current_turn_number_;
+        int current_sequence_number_;
 
     private:
         static log4cxx::LoggerPtr logger_;

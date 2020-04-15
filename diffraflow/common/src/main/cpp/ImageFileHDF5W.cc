@@ -23,6 +23,7 @@ diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t buffer_size, size_t chunk_size
 }
 
 diffraflow::ImageFileHDF5W::~ImageFileHDF5W() {
+    close();
     delete [] image_buffer_;
     image_buffer_ = nullptr;
 }

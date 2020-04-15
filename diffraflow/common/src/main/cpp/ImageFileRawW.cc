@@ -14,7 +14,7 @@ diffraflow::ImageFileRawW::ImageFileRawW() {
 }
 
 diffraflow::ImageFileRawW::~ImageFileRawW() {
-
+    close();
 }
 
 bool diffraflow::ImageFileRawW::open(const char* filename) {

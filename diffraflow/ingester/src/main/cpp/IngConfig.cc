@@ -22,6 +22,10 @@ diffraflow::IngConfig::IngConfig() {
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
 
+    hdf5_chunk_size = 100;
+    hdf5_buffer_size = 100;
+    hdf5_compress_level = 3;
+
     zookeeper_setting_ready_flag_ = false;
 
     // initial values of dynamic configurations
@@ -57,6 +61,12 @@ bool diffraflow::IngConfig::load(const char* filename) {
             ingester_id = atoi(value.c_str());
         } else if (key == "storage_dir") {
             storage_dir = value;
+        } else if (key == "hdf5_chunk_size") {
+            hdf5_chunk_size = atoi(value.c_str());
+        } else if (key == "hdf5_buffer_size") {
+            hdf5_buffer_size = atoi(value.c_str());
+        } else if (key == "hdf5_compress_level") {
+            hdf5_compress_level = atoi(value.c_str());
         } else if (key == "combiner_host") {
             combiner_host = value;
         } else if (key == "combiner_port") {
@@ -78,6 +88,19 @@ bool diffraflow::IngConfig::load(const char* filename) {
         node_name = node_name_cstr;
     } else {
         node_name = "NODENAME";
+    }
+    // correction
+    if (hdf5_buffer_size < 10) {
+        LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 10), use 10 instead.");
+        hdf5_buffer_size = 10;
+    }
+    if (hdf5_chunk_size < 10) {
+        LOG4CXX_WARN(logger_, "hdf5_chunk_size is too small (< 10), use 10 instead.");
+        hdf5_chunk_size = 10;
+    }
+    if (hdf5_compress_level > 9) {
+        LOG4CXX_WARN(logger_, "hdf5_compress_level is too high (> 9), use 9 instead.");
+        hdf5_compress_level = 9;
     }
     // validation check for static parameters
     bool succ_flag = true;
@@ -106,6 +129,9 @@ bool diffraflow::IngConfig::load(const char* filename) {
         ingester_config_json_["storage_dir"] = json::value::string(storage_dir);
         ingester_config_json_["node_name"] = json::value::string(node_name);
         ingester_config_json_["ingester_id"] = json::value::number(ingester_id);
+        ingester_config_json_["hdf5_buffer_size"] = json::value::number(hdf5_buffer_size);
+        ingester_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
+        ingester_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
         ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
         ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
         return true;

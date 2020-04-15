@@ -11,9 +11,11 @@ application {
         linkTask.get().linkerArgs.add('-lpulsar')
         linkTask.get().linkerArgs.add('-lhdf5_cpp')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+            linkTask.get().linkerArgs.add('-lboost_filesystem-mt')
             linkTask.get().linkerArgs.add('-lboost_system-mt')
             linkTask.get().linkerArgs.add('-lhdf5')
         } else {
+            linkTask.get().linkerArgs.add('-lboost_filesystem')
             linkTask.get().linkerArgs.add('-lboost_system')
             linkTask.get().linkerArgs.add('-lhdf5_serial')
         }

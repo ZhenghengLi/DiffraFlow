@@ -42,6 +42,7 @@ namespace diffraflow {
         int      hdf5_chunk_size;
         int      hdf5_buffer_size;
         int      hdf5_compress_level;
+        int      file_imgcnt_limit;
 
         string   combiner_host;
         int      combiner_port;

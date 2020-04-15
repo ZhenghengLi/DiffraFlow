@@ -17,6 +17,7 @@ using std::future;
 using std::shared_future;
 using std::shared_ptr;
 using std::async;
+using std::string;
 
 namespace diffraflow {
 
@@ -56,7 +57,7 @@ namespace diffraflow {
         bool open_files_();
         void close_files_();
 
-        bool save_image_(const shared_ptr<ImageWithFeature> & image_with_feature);
+        bool save_image_(const shared_ptr<ImageWithFeature>& image_with_feature);
 
     private:
         IngImgWthFtrQueue*  image_queue_in_;
@@ -71,6 +72,9 @@ namespace diffraflow {
         int current_run_number_;
         int current_turn_number_;
         int current_sequence_number_;
+        string current_folder_path_string_;
+        string current_filename_string_;
+        int current_saved_counts_;
 
     private:
         static log4cxx::LoggerPtr logger_;

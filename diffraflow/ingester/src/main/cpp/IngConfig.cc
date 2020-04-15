@@ -25,6 +25,7 @@ diffraflow::IngConfig::IngConfig() {
     hdf5_chunk_size = 100;
     hdf5_buffer_size = 100;
     hdf5_compress_level = 3;
+    file_imgcnt_limit = 1000;
 
     zookeeper_setting_ready_flag_ = false;
 
@@ -67,6 +68,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
             hdf5_buffer_size = atoi(value.c_str());
         } else if (key == "hdf5_compress_level") {
             hdf5_compress_level = atoi(value.c_str());
+        } else if (key == "file_imgcnt_limit") {
+            file_imgcnt_limit = atoi(value.c_str());
         } else if (key == "combiner_host") {
             combiner_host = value;
         } else if (key == "combiner_port") {
@@ -102,6 +105,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "hdf5_compress_level is too high (> 9), use 9 instead.");
         hdf5_compress_level = 9;
     }
+    if (file_imgcnt_limit < 10) {
+        LOG4CXX_WARN(logger_, "file_imgcnt_limit is too mall (< 10), use 10 instead.");
+        file_imgcnt_limit = 10;
+    }
     // validation check for static parameters
     bool succ_flag = true;
     if (ingester_id < 0) {
@@ -132,6 +139,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         ingester_config_json_["hdf5_buffer_size"] = json::value::number(hdf5_buffer_size);
         ingester_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
         ingester_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
+        ingester_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
         ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
         ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
         return true;

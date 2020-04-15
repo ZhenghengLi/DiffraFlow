@@ -58,6 +58,7 @@ bool diffraflow::ImageFileRawW::write(const ImageData& image_data) {
 
     image_data.print(outfile_);
 
+    return true;
 }
 
 size_t diffraflow::ImageFileRawW::size() {

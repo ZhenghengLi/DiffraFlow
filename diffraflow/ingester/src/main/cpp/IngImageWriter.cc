@@ -207,19 +207,7 @@ bool diffraflow::IngImageWriter::create_directories_() {
     }
     current_folder_path_string_ = folder_path.string();
     // S0000
-    std::regex filename_regex("R\\d+_.+_N\\d+_T\\d+_S(\\d+)\\.h5");
-    int max_sequence_number = -1;
-    for (bf::directory_entry& de: bf::directory_iterator(folder_path)) {
-        string filename = de.path().filename().string();
-        std::smatch match_res;
-        if (std::regex_match(filename, match_res, filename_regex)) {
-            int cur_sequence_number = atoi(match_res[1].str().c_str());
-            if (cur_sequence_number > max_sequence_number) {
-                max_sequence_number = cur_sequence_number;
-            }
-        }
-    }
-    current_sequence_number_ = max_sequence_number;
+    current_sequence_number_ = -1;
 
     return true;
 }

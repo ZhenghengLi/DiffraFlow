@@ -17,7 +17,7 @@ RUN set -x \
 && apt-get install -y --no-install-recommends \
     ca-certificates \
     openjdk-8-jdk build-essential \
-    libboost-dev \
+    libboost-dev libboost-filesystem-dev \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
     libmsgpack-dev libzookeeper-mt-dev libcpprest-dev libhdf5-dev \
     wget \
@@ -70,6 +70,7 @@ RUN set -x \
 && apt-get install -y --no-install-recommends \
     ca-certificates \
     openjdk-8-jre \
+    libboost-dev libboost-filesystem-dev \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
     libmsgpack-dev libzookeeper-mt-dev libcpprest-dev libhdf5-dev \
     netcat-openbsd \

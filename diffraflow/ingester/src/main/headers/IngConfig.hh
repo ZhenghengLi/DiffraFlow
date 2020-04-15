@@ -24,6 +24,8 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     public:
+        int    get_dy_run_number();
+
         int    get_dy_param_int();
         double get_dy_param_double();
         string get_dy_param_string();
@@ -34,7 +36,10 @@ namespace diffraflow {
 
     public:
         // static parameters
-        uint32_t ingester_id;
+        string   storage_dir;
+        string   node_name;
+        int      ingester_id;
+
         string   combiner_host;
         int      combiner_port;
         size_t   recnxn_wait_time;
@@ -43,6 +48,8 @@ namespace diffraflow {
 
     private:
         // dynamic parameters
+        atomic<int>     dy_run_number_;
+
         atomic<int>     dy_param_int_;
         atomic<double>  dy_param_double_;
 

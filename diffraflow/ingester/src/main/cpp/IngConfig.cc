@@ -25,6 +25,7 @@ diffraflow::IngConfig::IngConfig() {
     zookeeper_setting_ready_flag_ = false;
 
     // initial values of dynamic configurations
+    dy_run_number_ = 0;
     dy_param_int_ = 20;
     dy_param_double_ = 100;
     dy_param_string_ = "xfel";
@@ -54,6 +55,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         // for static parameters
         if (key == "ingester_id") {
             ingester_id = atoi(value.c_str());
+        } else if (key == "storage_dir") {
+            storage_dir = value;
         } else if (key == "combiner_host") {
             combiner_host = value;
         } else if (key == "combiner_port") {
@@ -69,20 +72,23 @@ bool diffraflow::IngConfig::load(const char* filename) {
             dy_conf_map[key] = value;
         }
     }
-    // use POD IP as ingester_id
-    if (ingester_id == 0) {
-        const char* pod_ip = getenv("POD_IP");
-        if (pod_ip != NULL) {
-            vector<string> ip_nums;
-            boost::split(ip_nums, pod_ip, boost::is_any_of("."));
-            for (size_t i = 0; i < ip_nums.size(); i++) {
-                ingester_id <<= 8;
-                ingester_id += atoi(ip_nums[i].c_str());
-            }
-        }
+    // set node name
+    const char* node_name_cstr = getenv("NODE_NAME");
+    if (node_name_cstr != NULL) {
+        node_name = node_name_cstr;
+    } else {
+        node_name = "NODENAME";
     }
     // validation check for static parameters
     bool succ_flag = true;
+    if (ingester_id < 0) {
+        LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
+        succ_flag = false;
+    }
+    if (storage_dir.empty()) {
+        LOG4CXX_ERROR(logger_, "storage_dir is not set.");
+        succ_flag = false;
+    }
     if (combiner_port < 0) {
         LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
         succ_flag = false;
@@ -97,6 +103,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         succ_flag = false;
     }
     if (succ_flag) {
+        ingester_config_json_["storage_dir"] = json::value::string(storage_dir);
+        ingester_config_json_["node_name"] = json::value::string(node_name);
         ingester_config_json_["ingester_id"] = json::value::number(ingester_id);
         ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
         ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
@@ -147,6 +155,7 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
 
     // values before commit
+    int tmp_dy_run_number = dy_run_number_.load();
     int tmp_dy_param_int = dy_param_int_.load();
     double tmp_dy_param_double = dy_param_double_.load();
     string tmp_dy_param_string = dy_param_string_;
@@ -157,6 +166,8 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
         string value = iter->second;
         if (key == "dy_param_int") {
             tmp_dy_param_int = atoi(value.c_str());
+        } else if (key == "dy_run_number") {
+            tmp_dy_run_number = atoi(value.c_str());
         } else if (key == "dy_param_double") {
             tmp_dy_param_double = atof(value.c_str());
         } else if (key == "dy_param_string") {
@@ -178,6 +189,10 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
         cout << "invalid configuration: dy_param_string(" << tmp_dy_param_string << ") is too short." << endl;
         invalid_flag = true;
     }
+    if (tmp_dy_run_number < 0) {
+        cout << "invalid configuration: dy_run_number(" << tmp_dy_run_number << ") is less than zero." << endl;
+        invalid_flag = true;
+    }
 
     if (invalid_flag) {
         return false;
@@ -196,16 +211,25 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
         cout << "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string << " ]." << endl;
         dy_param_string_ = tmp_dy_param_string;
     }
+    if (dy_run_number_ != tmp_dy_run_number) {
+        cout << "configuration changed: dy_run_number [ " << dy_run_number_ << " -> " << tmp_dy_run_number << " ]." << endl;
+        dy_run_number_ = tmp_dy_run_number;
+    }
 
     config_mtime_ = conf_mtime;
 
     lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
+    ingester_config_json_["dy_run_number"] = json::value::number(dy_run_number_);
     ingester_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
     ingester_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
     ingester_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
     ingester_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
+}
+
+int diffraflow::IngConfig::get_dy_run_number() {
+    return dy_run_number_.load();
 }
 
 int diffraflow::IngConfig::get_dy_param_int() {

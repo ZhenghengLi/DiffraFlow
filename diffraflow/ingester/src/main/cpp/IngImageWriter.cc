@@ -170,7 +170,7 @@ bool diffraflow::IngImageWriter::create_directories_() {
         }
     }
     // R0000/NODENAME_N00
-    snprintf(str_buffer, STR_BUFF_SIZE, "%s_N%02d", config_obj_->node_name, config_obj_->ingester_id);
+    snprintf(str_buffer, STR_BUFF_SIZE, "%s_N%02d", config_obj_->node_name.c_str(), config_obj_->ingester_id);
     folder_path /= str_buffer;
     if (!bf::exists(folder_path)) {
         bf::create_directory(folder_path, ec);
@@ -219,7 +219,7 @@ bool diffraflow::IngImageWriter::open_hdf5_file_() {
     }
     char str_buffer[STR_BUFF_SIZE];
     snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.h5",
-        current_run_number_, config_obj_->node_name, config_obj_->ingester_id,
+        current_run_number_, config_obj_->node_name.c_str(), config_obj_->ingester_id,
         current_turn_number_, current_sequence_number_);
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;
@@ -245,7 +245,7 @@ bool diffraflow::IngImageWriter::open_raw_file_() {
     }
     char str_buffer[STR_BUFF_SIZE];
     snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.dat",
-        current_run_number_, config_obj_->node_name, config_obj_->ingester_id,
+        current_run_number_, config_obj_->node_name.c_str(), config_obj_->ingester_id,
         current_turn_number_, current_sequence_number_);
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;

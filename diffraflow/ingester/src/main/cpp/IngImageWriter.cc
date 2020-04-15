@@ -38,6 +38,21 @@ int diffraflow::IngImageWriter::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
+        // if run number is changed, create new folders
+        int new_run_number = config_obj_->get_dy_run_number();
+        if (new_run_number != current_run_number_) {
+            LOG4CXX_INFO(logger_, "run number changed from "
+                << current_run_number_ << " to " << new_run_number
+                << ". Create new folders (if not exists) for new run number.");
+            current_run_number_ = new_run_number;
+            close_files_();
+            if (!create_directories_()) {
+                LOG4CXX_WARN(logger_, "failed to create new folders for new run number.");
+            }
+            if (!open_files_()) {
+                LOG4CXX_WARN(logger_, "failed to open data files after run number changed.");
+            }
+        }
         if (save_image_(image_with_feature)) {
             if (current_saved_counts_ >= config_obj_->file_imgcnt_limit) {
                 LOG4CXX_INFO(logger_, "file limit reached, reopen new files.");
@@ -58,13 +73,13 @@ bool diffraflow::IngImageWriter::start() {
     worker_status_ = kNotStart;
     // create folders
     if (!create_directories_()) {
-        LOG4CXX_ERROR(logger_, "failed to create directories.");
+        LOG4CXX_ERROR(logger_, "failed to create directories at start.");
         worker_status_ = kStopped;
         return false;
     }
     // open files
     if (!open_files_()) {
-        LOG4CXX_ERROR(logger_, "failed to open data files.");
+        LOG4CXX_ERROR(logger_, "failed to open data files at start.");
         worker_status_ = kStopped;
         return false;
     }

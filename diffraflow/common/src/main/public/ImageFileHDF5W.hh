@@ -24,6 +24,9 @@ namespace diffraflow {
         size_t size();
 
     private:
+        bool flush_op_();
+
+    private:
         ImageDataHDF5           image_data_hdf5_;
         ImageDataHDF5::Field*   image_buffer_;
 

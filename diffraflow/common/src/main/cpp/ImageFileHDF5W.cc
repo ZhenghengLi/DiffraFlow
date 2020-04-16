@@ -124,6 +124,10 @@ bool diffraflow::ImageFileHDF5W::flush() {
         return false;
     }
 
+    return flush_op_();
+}
+
+bool diffraflow::ImageFileHDF5W::flush_op_() {
     if (buffer_limit_ == 0) {
         return true;
     }
@@ -167,7 +171,7 @@ void diffraflow::ImageFileHDF5W::close() {
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (h5file_ != nullptr) {
-        flush();
+        flush_op_();
         h5file_->close();
         delete h5file_;
         h5file_ = nullptr;

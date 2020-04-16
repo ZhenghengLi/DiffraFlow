@@ -1,4 +1,5 @@
 # dynamic parameters
+dy_run_number = 0
 dy_param_int = 230
 dy_param_double = 7.839
 dy_param_string = xfel

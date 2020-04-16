@@ -232,7 +232,10 @@ bool diffraflow::IngImageWriter::open_hdf5_file_() {
         return false;
     }
     // open file
-    image_file_hdf5_ = new ImageFileHDF5W(config_obj_->hdf5_buffer_size, config_obj_->hdf5_chunk_size, true);
+    image_file_hdf5_ = new ImageFileHDF5W(
+        config_obj_->hdf5_buffer_size,
+        config_obj_->hdf5_chunk_size,
+        config_obj_->hdf5_swmr_mode);
     if (image_file_hdf5_->open(file_path.c_str(), config_obj_->hdf5_compress_level)) {
         LOG4CXX_INFO(logger_, "successfully opened hdf5 file: " << file_path.c_str());
         return true;
@@ -272,9 +275,9 @@ bool diffraflow::IngImageWriter::open_raw_file_() {
 
 bool diffraflow::IngImageWriter::open_files_() {
     current_sequence_number_++;
-    if (!open_hdf5_file_()) {
-        return false;
-    }
+    // if (!open_hdf5_file_()) {
+    //     return false;
+    // }
     if (!open_raw_file_()) {
         return false;
     }

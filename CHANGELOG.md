@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TODO
 
 - [x] write the template code to do data processing pipeline in ingester.
-- [ ] write the class to sink data into disk.
+- [x] write the class to sink data into disk.
+- [ ] data exchange from ingester to monitor.
 
 ## [0.0.10] - 2020-04-05
 

@@ -115,6 +115,7 @@ int diffraflow::IngImageWriter::stop() {
     if (worker_.valid()) {
         result = worker_.get();
     }
+    close_files_();
     return result;
 }
 

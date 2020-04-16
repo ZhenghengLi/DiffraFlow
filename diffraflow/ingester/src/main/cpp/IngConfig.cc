@@ -88,7 +88,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
     // set node name
     const char* node_name_cstr = getenv("NODE_NAME");
     if (node_name_cstr != NULL) {
-        node_name = node_name_cstr;
+        node_name = boost::to_upper_copy<string>(node_name_cstr);
     } else {
         node_name = "NODENAME";
     }

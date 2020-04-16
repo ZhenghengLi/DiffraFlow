@@ -181,7 +181,7 @@ void diffraflow::IngPipeline::terminate() {
 
     // stop image writer
     imgWthFtrQue_write_->stop(/* wait_time */);
-    result = image_filter_->stop();
+    result = image_writer_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image writer is normally terminated.");
     } else if (result > 0) {

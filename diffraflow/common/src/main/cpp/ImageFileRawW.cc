@@ -74,6 +74,7 @@ bool diffraflow::ImageFileRawW::write(const ImageData& image_data) {
     }
 
     image_data.print(outfile_);
+    image_counts_++;
 
     return true;
 }

@@ -166,7 +166,8 @@ bool diffraflow::IngImageWriter::create_directories_() {
         if (ec == bs::errc::success) {
             LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
         } else {
-            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str());
+            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
+                << " with error: " << ec.message());
             return false;
         }
     }
@@ -178,7 +179,8 @@ bool diffraflow::IngImageWriter::create_directories_() {
         if (ec == bs::errc::success) {
             LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
         } else {
-            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str());
+            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
+                << " with error: " << ec.message());
             return false;
         }
     }
@@ -203,7 +205,8 @@ bool diffraflow::IngImageWriter::create_directories_() {
     if (ec == bs::errc::success) {
         LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
     } else {
-        LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str());
+        LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
+            << " with error: " << ec.message());
         return false;
     }
     current_folder_path_string_ = folder_path.string();

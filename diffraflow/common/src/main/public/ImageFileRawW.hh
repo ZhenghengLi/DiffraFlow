@@ -11,6 +11,7 @@
 using std::mutex;
 using std::ofstream;
 using std::atomic;
+using std::string;
 
 namespace diffraflow {
     class ImageFileRawW {
@@ -28,9 +29,11 @@ namespace diffraflow {
         atomic<size_t> image_counts_;
 
         mutex file_op_mtx_;
+        string current_filename_;
 
     private:
         static log4cxx::LoggerPtr logger_;
+        static const string inprogress_suffix_;
     };
 }
 

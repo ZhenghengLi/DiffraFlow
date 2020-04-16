@@ -272,9 +272,9 @@ bool diffraflow::IngImageWriter::open_raw_file_() {
 
 bool diffraflow::IngImageWriter::open_files_() {
     current_sequence_number_++;
-    // if (!open_hdf5_file_()) {
-    //     return false;
-    // }
+    if (!open_hdf5_file_()) {
+        return false;
+    }
     if (!open_raw_file_()) {
         return false;
     }

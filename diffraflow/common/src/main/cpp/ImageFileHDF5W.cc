@@ -2,12 +2,18 @@
 #include <ctime>
 #include <boost/algorithm/string.hpp>
 #include <string>
+#include <boost/filesystem.hpp>
+
+namespace bf = boost::filesystem;
+namespace bs = boost::system;
 
 using std::string;
 using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::ImageFileHDF5W::logger_
     = log4cxx::Logger::getLogger("ImageFileHDF5W");
+
+const string diffraflow::ImageFileHDF5W::inprogress_suffix_ = ".inprogress";
 
 diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t buffer_size, size_t chunk_size, bool swmr) {
     buffer_size_ = (buffer_size > 10 ? buffer_size : 10);
@@ -54,12 +60,15 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
     H5::DataSpace string_attr_space(1, string_attr_dim);
     H5::StrType string_type(0, H5T_VARIABLE);
 
+    string filename_inprogress = filename + inprogress_suffix_;
+
     try {
         if (swmr_mode_) {
-            h5file_ = new H5::H5File(filename, H5F_ACC_EXCL | H5F_ACC_SWMR_WRITE);
+            h5file_ = new H5::H5File(filename_inprogress, H5F_ACC_EXCL | H5F_ACC_SWMR_WRITE);
         } else {
-            h5file_ = new H5::H5File(filename, H5F_ACC_EXCL);
+            h5file_ = new H5::H5File(filename_inprogress, H5F_ACC_EXCL);
         }
+        current_filename_ = filename;
         // add create time attribute to the file
         H5::Attribute file_create_time = h5file_->createAttribute("create_time", string_type, string_attr_space);
         time_t now_time = time(NULL);
@@ -75,16 +84,16 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
         if (swmr_mode_) {
             h5file_->close();
             delete h5file_;
-            h5file_  = new H5::H5File(filename, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE);
+            h5file_  = new H5::H5File(filename_inprogress, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE);
             imgdat_dset_ = h5file_->openDataSet("image_data");
             imgdat_dset_id_ = imgdat_dset_.getId();
         }
     } catch (H5::Exception& e) {
         LOG4CXX_ERROR(logger_, "found error when opening HDF5 file "
-            << filename << " : " << e.getDetailMsg());
+            << filename_inprogress << " : " << e.getDetailMsg());
         return false;
     } catch (...) {
-        LOG4CXX_ERROR(logger_, "found unknown error when opening HDF5 file: " << filename);
+        LOG4CXX_ERROR(logger_, "found unknown error when opening HDF5 file: " << filename_inprogress);
         return false;
     }
 
@@ -175,6 +184,17 @@ void diffraflow::ImageFileHDF5W::close() {
         h5file_->close();
         delete h5file_;
         h5file_ = nullptr;
+    }
+
+    bf::path file_current_path(current_filename_ + inprogress_suffix_);
+    bf::path file_target_path(current_filename_);
+    bs::error_code ec;
+    if (bf::exists(file_current_path)) {
+        bf::rename(file_current_path, file_target_path, ec);
+        if (ec != bs::errc::success) {
+            LOG4CXX_WARN(logger_, "failed to rename file " << file_current_path.string()
+                << " with error: " << ec.message());
+        }
     }
 
 }

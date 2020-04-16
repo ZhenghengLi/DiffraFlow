@@ -10,6 +10,7 @@
 
 using std::mutex;
 using std::atomic;
+using std::string;
 
 namespace diffraflow {
     class ImageFileHDF5W {
@@ -41,11 +42,13 @@ namespace diffraflow {
         hid_t                   imgdat_dset_id_;
 
         mutex                   file_op_mtx_;
+        string                  current_filename_;
 
         atomic<size_t>          image_counts_;
 
     private:
         static log4cxx::LoggerPtr logger_;
+        static const string inprogress_suffix_;
     };
 }
 

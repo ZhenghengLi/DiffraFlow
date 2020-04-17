@@ -266,6 +266,8 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
     case ZNOTEMPTY:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " has children, it cannot be deleted.");
         return false;
+    case ZBADVERSION:
+        LOG4CXX_WARN(logger_, "version number does not match for config path " << config_path << ".");
     default:
         LOG4CXX_WARN(logger_, "failed to delete config path " << config_path << " with error code: " << rc << ".");
         return false;
@@ -303,6 +305,8 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to change the data of config path " << config_path << ".");
         return false;
+    case ZBADVERSION:
+        LOG4CXX_WARN(logger_, "version number does not match for config path " << config_path << ".");
     default:
         LOG4CXX_WARN(logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
         return false;

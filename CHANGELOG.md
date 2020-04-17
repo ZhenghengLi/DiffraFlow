@@ -9,9 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [x] write the template code to do data processing pipeline in ingester.
-- [x] write the class to sink data into disk.
-- [ ] data exchange from ingester to monitor.
+- [ ] monitor: fetch image data from ingester by an http client, do analysis and provide analysis results via HTTP.
+- [ ] controller: load balance for multiple monitors running on different nodes.
+- [ ] controller: support ZooKeeper operations for config_map via RESTful API, including HTTP verbs GET, POST, PUT, PATCH, DELETE
+
+## [0.0.11] - 2020-04-17
+
+### Changed
+
+- DynamicConfiguration: update, delete and fetch operations of config_map on ZooKeeper now support version check.
+
+### Added
+
+- Finished the template code to do data processing pipeline in **ingester**, and the specific data processing algorithms in each step of the pipeline need to be implemented later.
+- Added classes to read/write image data from/into HDF5 files, in which the SWMR mode is supported. Those classes are used to sink data into storage in **ingester**.
+- **ingester** starts an HTTP server when it starts to provide the latest image data on the request from **monitor**.
 
 ## [0.0.10] - 2020-04-05
 

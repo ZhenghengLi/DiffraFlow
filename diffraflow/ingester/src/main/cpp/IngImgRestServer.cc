@@ -18,7 +18,7 @@ diffraflow::IngImgRestServer::IngImgRestServer(IngImageFilter* img_filter) {
 }
 
 diffraflow::IngImgRestServer::~IngImgRestServer() {
-
+    stop();
 }
 
 bool diffraflow::IngImgRestServer::start(string host, int port) {

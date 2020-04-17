@@ -86,7 +86,8 @@ int main(int argc, char** argv) {
                 return 1;
             }
         } else if (op == "R") {
-            if (zk_conf_client->zookeeper_fetch_config(znode.c_str(), conf_map.data, conf_map.mtime)) {
+            int version;
+            if (zk_conf_client->zookeeper_fetch_config(znode.c_str(), conf_map.data, conf_map.mtime, version)) {
                 cout << "znode: " << znode << endl;
                 conf_map.print();
             } else {

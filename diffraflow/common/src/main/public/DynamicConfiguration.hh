@@ -48,11 +48,11 @@ namespace diffraflow {
         // for updater
         bool zookeeper_create_config(const char* config_path,
             const map<string, string>& config_map);
-        bool zookeeper_delete_config(const char* config_path);
+        bool zookeeper_delete_config(const char* config_path, int version = -1);
         bool zookeeper_change_config(const char* config_path,
-            const map<string, string>& config_map);
+            const map<string, string>& config_map, int version = -1);
         bool zookeeper_fetch_config(const char* config_path,
-            map<string, string>& config_map, time_t& config_mtime);
+            map<string, string>& config_map, time_t& config_mtime, int& version);
         bool zookeeper_get_children(const char* config_path,
             vector<string>& children_list);
         // for reader

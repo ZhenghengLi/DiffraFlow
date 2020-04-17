@@ -241,7 +241,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
     }
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path) {
+bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path, int version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
         return false;
@@ -252,7 +252,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
     if (!zookeeper_authadding_wait_()) return false;
 
     // delete config from here
-    int rc = zoo_delete(zookeeper_handle_, config_path, -1);
+    int rc = zoo_delete(zookeeper_handle_, config_path, version);
     switch(rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully deleted config path " << config_path << ".");
@@ -273,7 +273,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* confi
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_change_config(
-    const char* config_path, const map<string, string>& config_map) {
+    const char* config_path, const map<string, string>& config_map, int version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
         return false;
@@ -292,7 +292,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
 
     // update znode
     int rc = zoo_set(zookeeper_handle_,
-        config_path, config_string.data(), config_string.size(), -1);
+        config_path, config_string.data(), config_string.size(), version);
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully changed the data of config path " << config_path << ".");
@@ -310,7 +310,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
 }
 
 bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
-    const char* config_path, map<string, string>& config_map, time_t& config_mtime) {
+    const char* config_path, map<string, string>& config_map, time_t& config_mtime, int& version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
         return false;
@@ -351,6 +351,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             }
 
             config_mtime = zookeeper_znode_stat_.mtime / 1000;
+            version = zookeeper_znode_stat_.version;
             return true;
         }
     case ZNONODE:

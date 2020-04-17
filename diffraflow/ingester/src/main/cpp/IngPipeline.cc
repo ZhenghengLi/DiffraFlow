@@ -6,6 +6,7 @@
 #include "IngFeatureExtracter.hh"
 #include "IngImageFilter.hh"
 #include "IngImageWriter.hh"
+#include "IngImgHttpServer.hh"
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
     = log4cxx::Logger::getLogger("IngPipeline");
@@ -25,6 +26,8 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
 
     image_filter_ = nullptr;
     imgWthFtrQue_write_ = nullptr;
+
+    image_http_server_ = nullptr;
 
     image_writer_ = nullptr;
 
@@ -58,6 +61,9 @@ void diffraflow::IngPipeline::start_run() {
     //// image filter
     imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
+
+    //// http server
+    image_http_server_ = new IngImgHttpServer(image_filter_);
 
     //// image writer
     image_writer_ = new IngImageWriter(imgWthFtrQue_write_, config_obj_);
@@ -99,6 +105,14 @@ void diffraflow::IngPipeline::start_run() {
         LOG4CXX_INFO(logger_, "successfully started image filter.");
     } else {
         LOG4CXX_ERROR(logger_, "failed to start image filter.");
+        return;
+    }
+
+    if (image_http_server_->start(config_obj_->http_host, config_obj_->http_port)) {
+        LOG4CXX_INFO(logger_, "successfully started HTTP server listening "
+            << config_obj_->http_host << ":" << config_obj_->http_port);
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start HTTP server.");
         return;
     }
 
@@ -179,6 +193,9 @@ void diffraflow::IngPipeline::terminate() {
         LOG4CXX_WARN(logger_, "image filter has not yet been started.");
     }
 
+    // stop http server
+    image_http_server_->stop();
+
     // stop image writer
     imgWthFtrQue_write_->stop(/* wait_time */);
     result = image_writer_->stop();
@@ -202,6 +219,9 @@ void diffraflow::IngPipeline::terminate() {
 
     delete image_filter_;
     image_filter_ = nullptr;
+
+    delete image_http_server_;
+    image_http_server_ = nullptr;
 
     delete image_writer_;
     image_writer_ = nullptr;

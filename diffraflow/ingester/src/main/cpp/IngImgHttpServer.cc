@@ -1,4 +1,4 @@
-#include "IngImgRestServer.hh"
+#include "IngImgHttpServer.hh"
 #include "IngImageFilter.hh"
 #include "ImageWithFeature.hh"
 
@@ -9,19 +9,19 @@ using namespace web;
 using namespace http;
 using namespace experimental::listener;
 
-log4cxx::LoggerPtr diffraflow::IngImgRestServer::logger_
-    = log4cxx::Logger::getLogger("IngImgRestServer");
+log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_
+    = log4cxx::Logger::getLogger("IngImgHttpServer");
 
-diffraflow::IngImgRestServer::IngImgRestServer(IngImageFilter* img_filter) {
+diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter) {
     image_filter_ = img_filter;
     listener_ = nullptr;
 }
 
-diffraflow::IngImgRestServer::~IngImgRestServer() {
+diffraflow::IngImgHttpServer::~IngImgHttpServer() {
     stop();
 }
 
-bool diffraflow::IngImgRestServer::start(string host, int port) {
+bool diffraflow::IngImgHttpServer::start(string host, int port) {
     if (listener_ != nullptr) {
         LOG4CXX_WARN(logger_, "http server has already been started.");
         return false;
@@ -31,7 +31,7 @@ bool diffraflow::IngImgRestServer::start(string host, int port) {
     uri_b.set_host(host);
     uri_b.set_port(port);
     listener_ = new http_listener(uri_b.to_uri());
-    listener_->support(methods::GET, std::bind(&IngImgRestServer::handleGet_, this, std::placeholders::_1));
+    listener_->support(methods::GET, std::bind(&IngImgHttpServer::handleGet_, this, std::placeholders::_1));
 
     try {
         listener_->open().wait();
@@ -46,7 +46,7 @@ bool diffraflow::IngImgRestServer::start(string host, int port) {
 
 }
 
-void diffraflow::IngImgRestServer::stop() {
+void diffraflow::IngImgHttpServer::stop() {
     if (listener_ == nullptr) return;
 
     try {
@@ -62,7 +62,7 @@ void diffraflow::IngImgRestServer::stop() {
 
 }
 
-void diffraflow::IngImgRestServer::handleGet_(http_request message) {
+void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
 
     string relative_path = uri::decode(message.relative_uri().path());
 
@@ -81,8 +81,9 @@ void diffraflow::IngImgRestServer::handleGet_(http_request message) {
         response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
         response.set_body(response_data_vec);
         response.set_status_code(status_codes::OK);
+        response.headers().set_content_type("application/msgpack");
+        response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
         response.headers().add(U("Event-Time"), U(event_time_str));
-        response.headers().add(U("Data-Format"), U("MessagePack"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);
 
@@ -96,8 +97,9 @@ void diffraflow::IngImgRestServer::handleGet_(http_request message) {
             response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
             response.set_body(response_data_vec);
             response.set_status_code(status_codes::OK);
+            response.headers().set_content_type("application/msgpack");
+            response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
             response.headers().add(U("Event-Time"), U(event_time_str));
-            response.headers().add(U("Data-Format"), U("MessagePack"));
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
             message.reply(response);
 

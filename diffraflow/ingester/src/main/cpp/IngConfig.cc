@@ -19,6 +19,8 @@ diffraflow::IngConfig::IngConfig() {
     ingester_id = 0;
     combiner_port = -1;
     combiner_host = "localhost";
+    http_port = -1;
+    http_host = "localhost";
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
@@ -78,6 +80,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
             combiner_host = value;
         } else if (key == "combiner_port") {
             combiner_port = atoi(value.c_str());
+        } else if (key == "http_host") {
+            http_host = value;
+        } else if (key == "http_port") {
+            http_port = atoi(value.c_str());
         } else if (key == "recnxn_wait_time") {
             recnxn_wait_time = atoi(value.c_str());
         } else if (key == "recnxn_max_count") {
@@ -127,6 +133,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
         succ_flag = false;
     }
+    if (http_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid http_port: " << http_port);
+        succ_flag = false;
+    }
     if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {
         LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
@@ -147,6 +157,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         ingester_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
         ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
         ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
+        ingester_config_json_["http_host"] = json::value::string(http_host);
+        ingester_config_json_["http_port"] = json::value::number(http_port);
         return true;
     } else {
         return false;

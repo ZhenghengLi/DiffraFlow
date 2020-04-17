@@ -1,5 +1,5 @@
-#ifndef __IngImgRestServer_H__
-#define __IngImgRestServer_H__
+#ifndef __IngImgHttpServer_H__
+#define __IngImgHttpServer_H__
 
 #include <string>
 #include <cpprest/http_listener.h>
@@ -14,10 +14,10 @@ namespace diffraflow {
 
     class IngImageFilter;
 
-    class IngImgRestServer {
+    class IngImgHttpServer {
     public:
-        explicit IngImgRestServer(IngImageFilter* img_filter);
-        ~IngImgRestServer();
+        explicit IngImgHttpServer(IngImageFilter* img_filter);
+        ~IngImgHttpServer();
 
         bool start(string host, int port);
         void stop();

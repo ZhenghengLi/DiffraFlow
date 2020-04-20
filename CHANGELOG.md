@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] monitor: fetch image data from ingester by an http client, do analysis and provide analysis results via HTTP.
+- [x] monitor: fetch image data from ingester by an http client, do analysis and provide analysis results via HTTP.
 - [ ] controller: load balance for multiple monitors running on different nodes.
 - [ ] controller: support ZooKeeper operations for config_map via RESTful API, including HTTP verbs GET, POST, PUT, PATCH, DELETE
 

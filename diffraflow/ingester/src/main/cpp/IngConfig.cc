@@ -102,6 +102,11 @@ bool diffraflow::IngConfig::load(const char* filename) {
     } else {
         node_name = "NODENAME";
     }
+
+    if (storage_dir.empty()) {
+        LOG4CXX_WARN(logger_, "storage_dir is not set, data will not be saved.");
+    }
+
     // correction
     if (hdf5_buffer_size < 10) {
         LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 10), use 10 instead.");
@@ -123,10 +128,6 @@ bool diffraflow::IngConfig::load(const char* filename) {
     bool succ_flag = true;
     if (ingester_id < 0) {
         LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
-        succ_flag = false;
-    }
-    if (storage_dir.empty()) {
-        LOG4CXX_ERROR(logger_, "storage_dir is not set.");
         succ_flag = false;
     }
     if (combiner_port < 0) {

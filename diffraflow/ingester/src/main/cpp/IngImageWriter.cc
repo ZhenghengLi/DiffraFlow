@@ -38,6 +38,9 @@ int diffraflow::IngImageWriter::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
+        if (config_obj_->storage_dir.empty()) {
+            continue;
+        }
         // if run number is changed, create new folders
         int new_run_number = config_obj_->get_dy_run_number();
         if (new_run_number != current_run_number_) {
@@ -71,17 +74,19 @@ bool diffraflow::IngImageWriter::start() {
         return false;
     }
     worker_status_ = kNotStart;
-    // create folders
-    if (!create_directories_()) {
-        LOG4CXX_ERROR(logger_, "failed to create directories at start.");
-        worker_status_ = kStopped;
-        return false;
-    }
-    // open files
-    if (!open_files_()) {
-        LOG4CXX_ERROR(logger_, "failed to open data files at start.");
-        worker_status_ = kStopped;
-        return false;
+    if (!config_obj_->storage_dir.empty()) {
+        // create folders
+        if (!create_directories_()) {
+            LOG4CXX_ERROR(logger_, "failed to create directories at start.");
+            worker_status_ = kStopped;
+            return false;
+        }
+        // open files
+        if (!open_files_()) {
+            LOG4CXX_ERROR(logger_, "failed to open data files at start.");
+            worker_status_ = kStopped;
+            return false;
+        }
     }
 
     worker_ = async(&IngImageWriter::run_, this);

@@ -24,6 +24,11 @@ void diffraflow::MonSrvMan::start_run() {
     if (running_flag_) return;
 
     image_http_server_ = new MonImgHttpServer(config_obj_);
+    if (!image_http_server_->create_ingester_clients(
+        ingester_address_file_.c_str(), config_obj_->request_timeout)) {
+        LOG4CXX_ERROR(logger_, "failed to create ingester clients from file: " << ingester_address_file_);
+        return;
+    }
 
     if (image_http_server_->start(config_obj_->http_host, config_obj_->http_port)) {
         LOG4CXX_INFO(logger_, "successfully started HTTP server listening "

@@ -37,7 +37,7 @@ namespace diffraflow {
         int  stop();
 
         void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
-        ImageWithFeature get_current_image();
+        bool get_current_image(ImageWithFeature& image_with_feature);
 
     public:
         enum WorkerStatus {kNotStart, kRunning, kStopped};

@@ -93,7 +93,12 @@ void diffraflow::IngImageFilter::set_current_image(const shared_ptr<ImageWithFea
     }
 }
 
-diffraflow::ImageWithFeature diffraflow::IngImageFilter::get_current_image() {
+bool diffraflow::IngImageFilter::get_current_image(ImageWithFeature& image_with_feature) {
     lock_guard<mutex> lg(current_image_mtx_);
-    return *current_image_;
+    if (current_image_) {
+        image_with_feature = *current_image_;
+        return true;
+    } else {
+        return false;
+    }
 }

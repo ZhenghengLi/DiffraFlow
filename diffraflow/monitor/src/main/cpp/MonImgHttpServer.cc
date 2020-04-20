@@ -202,7 +202,6 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);
-
     } else {
         message.reply(status_codes::NotFound);
     }

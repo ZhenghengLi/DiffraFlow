@@ -38,6 +38,7 @@ namespace diffraflow {
         int      monitor_id;
         string   http_host;
         int      http_port;
+        int      request_timeout;
 
     private:
         // dynamic parameters

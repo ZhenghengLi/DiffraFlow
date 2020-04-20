@@ -12,9 +12,10 @@ using namespace experimental::listener;
 log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_
     = log4cxx::Logger::getLogger("IngImgHttpServer");
 
-diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter) {
+diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter, int ing_id) {
     image_filter_ = img_filter;
     listener_ = nullptr;
+    ingester_id_ = ing_id;
 }
 
 diffraflow::IngImgHttpServer::~IngImgHttpServer() {
@@ -91,6 +92,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         uint64_t request_time = std::stoul(match_res[1].str());
         ImageWithFeature current_image = image_filter_->get_current_image();
         string event_time_str = std::to_string(current_image.image_data_raw.event_time);
+        string ingester_id_str = std::to_string(ingester_id_);
         if (request_time < current_image.image_data_raw.event_time) {
 
             msgpack::pack(image_sbuff, current_image);
@@ -98,8 +100,9 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             response.set_body(response_data_vec);
             response.set_status_code(status_codes::OK);
             response.headers().set_content_type("application/msgpack");
+            response.headers().add(U("Ingester-ID"), ingester_id_str);
+            response.headers().add(U("Event-Time"), event_time_str);
             response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
-            response.headers().add(U("Event-Time"), U(event_time_str));
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
             message.reply(response);
 

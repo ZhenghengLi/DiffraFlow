@@ -63,7 +63,7 @@ void diffraflow::IngPipeline::start_run() {
     image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
 
     //// http server
-    image_http_server_ = new IngImgHttpServer(image_filter_);
+    image_http_server_ = new IngImgHttpServer(image_filter_, config_obj_->ingester_id);
 
     //// image writer
     image_writer_ = new IngImageWriter(imgWthFtrQue_write_, config_obj_);

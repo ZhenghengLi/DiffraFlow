@@ -10,6 +10,7 @@ using std::string;
 namespace diffraflow {
 
     class MonConfig;
+    class MonImgHttpServer;
 
     class MonSrvMan {
     public:
@@ -21,6 +22,7 @@ namespace diffraflow {
 
     private:
         MonConfig* config_obj_;
+        MonImgHttpServer* image_http_server_;
 
         string ingester_address_file_;
 

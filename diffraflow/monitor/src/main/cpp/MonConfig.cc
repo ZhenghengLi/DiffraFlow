@@ -19,6 +19,7 @@ diffraflow::MonConfig::MonConfig() {
     monitor_id = 0;
     http_host = "localhost";
     http_port = -1;
+    request_timeout = 1000;
     zookeeper_setting_ready_flag_ = false;
     // initial values of dynamic configurations
     dy_param_int_ = 20;
@@ -53,6 +54,8 @@ bool diffraflow::MonConfig::load(const char* filename) {
             http_host = value;
         } else if (key == "http_port") {
             http_port = atoi(value.c_str());
+        } else if (key == "request_timeout") {
+            request_timeout = atoi(value.c_str());
         // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
@@ -66,6 +69,10 @@ bool diffraflow::MonConfig::load(const char* filename) {
         node_name = "NODENAME";
     }
     // correction
+    if (request_timeout < 10) {
+        LOG4CXX_WARN(logger_, "request_timeout is too small (< 10), use 10 instead.");
+        request_timeout = 10;
+    }
 
     // validation check for static parameters
     bool succ_flag = true;
@@ -87,6 +94,7 @@ bool diffraflow::MonConfig::load(const char* filename) {
         ingester_config_json_["monitor_id"] = json::value::number(monitor_id);
         ingester_config_json_["http_host"] = json::value::string(http_host);
         ingester_config_json_["http_port"] = json::value::number(http_port);
+        ingester_config_json_["request_timeout"] = json::value::number(request_timeout);
         return true;
     } else {
         return false;

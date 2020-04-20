@@ -16,7 +16,7 @@ namespace diffraflow {
 
     class IngImgHttpServer {
     public:
-        explicit IngImgHttpServer(IngImageFilter* img_filter);
+        IngImgHttpServer(IngImageFilter* img_filter, int ing_id);
         ~IngImgHttpServer();
 
         bool start(string host, int port);
@@ -28,6 +28,8 @@ namespace diffraflow {
     private:
         IngImageFilter* image_filter_;
         http_listener*  listener_;
+
+        int ingester_id_;
 
     private:
         static log4cxx::LoggerPtr logger_;

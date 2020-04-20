@@ -15,7 +15,7 @@ namespace diffraflow {
     public:
         GenericClient(string hostname, int port, uint32_t id,
             uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
-        ~GenericClient();
+        virtual ~GenericClient();
 
         bool connect_to_server();
         void close_connection();

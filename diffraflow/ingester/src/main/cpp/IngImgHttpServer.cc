@@ -88,7 +88,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         message.reply(response);
 
     } else if (std::regex_match(relative_path, match_res, req_time_regex)) {
-        int64_t request_time = std::stol(match_res[1].str());
+        uint64_t request_time = std::stoul(match_res[1].str());
         ImageWithFeature current_image = image_filter_->get_current_image();
         string event_time_str = std::to_string(current_image.image_data_raw.event_time);
         if (request_time < current_image.image_data_raw.event_time) {

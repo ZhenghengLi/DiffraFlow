@@ -129,11 +129,20 @@ bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_st
     }
 
     for (size_t addr_idx = current_index_; true; ) {
-        http_response response = ingester_clients_vec_[addr_idx++].request(methods::GET, event_time_string).get();
+        http_response response;
+        bool found_exception = false;
+        try {
+            response = ingester_clients_vec_[addr_idx].request(methods::GET, event_time_string).get();
+        } catch (std::exception& e) {
+            found_exception = true;
+            LOG4CXX_WARN(logger_, "exception found when requesting data from \""
+                << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\": " << e.what());
+        }
+        addr_idx++;
         if (addr_idx >= ingester_clients_vec_.size()) {
             addr_idx = 0;
         }
-        if (response.status_code() == status_codes::OK) {// succ
+        if (!found_exception && response.status_code() == status_codes::OK) {// succ
             if (response.headers().has("Ingester-ID")) {
                 ingester_id_str = response.headers()["Ingester-ID"];
             } else {

@@ -4,8 +4,9 @@
 log4cxx::LoggerPtr diffraflow::MonSrvMan::logger_
     = log4cxx::Logger::getLogger("MonSrvMan");
 
-diffraflow::MonSrvMan::MonSrvMan(MonConfig* config) {
+diffraflow::MonSrvMan::MonSrvMan(MonConfig* config, const char* ingaddr_file) {
     config_obj_ = config;
+    ingester_address_file_ = ingaddr_file;
     running_flag_ = false;
 }
 

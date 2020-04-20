@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     // ------------------------------------------------------
     init(gConfiguration);
 
-    gServerManager = new MonSrvMan(gConfiguration);
+    gServerManager = new MonSrvMan(gConfiguration, option_man.ingaddr_file.c_str());
     gServerManager->start_run();
 
     clean(0);

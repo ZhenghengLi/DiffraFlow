@@ -5,6 +5,7 @@
 #include <log4cxx/logger.h>
 
 using std::atomic_bool;
+using std::string;
 
 namespace diffraflow {
 
@@ -12,7 +13,7 @@ namespace diffraflow {
 
     class MonSrvMan {
     public:
-        explicit MonSrvMan(MonConfig* config);
+        MonSrvMan(MonConfig* config, const char* ingaddr_file);
         ~MonSrvMan();
 
         void start_run();
@@ -20,6 +21,8 @@ namespace diffraflow {
 
     private:
         MonConfig* config_obj_;
+
+        string ingester_address_file_;
 
         atomic_bool running_flag_;
 

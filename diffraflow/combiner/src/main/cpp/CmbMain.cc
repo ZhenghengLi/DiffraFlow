@@ -15,7 +15,6 @@
 using namespace std;
 using namespace diffraflow;
 
-
 CmbConfig* gConfiguration = nullptr;
 CmbSrvMan* gServerManager = nullptr;
 

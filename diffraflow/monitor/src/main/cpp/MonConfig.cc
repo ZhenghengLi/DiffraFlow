@@ -17,6 +17,8 @@ log4cxx::LoggerPtr diffraflow::MonConfig::logger_
 
 diffraflow::MonConfig::MonConfig() {
     monitor_id = 0;
+    http_host = "localhost";
+    http_port = -1;
     zookeeper_setting_ready_flag_ = false;
     // initial values of dynamic configurations
     dy_param_int_ = 20;
@@ -47,8 +49,10 @@ bool diffraflow::MonConfig::load(const char* filename) {
         // for static parameters
         if (key == "monitor_id") {
             monitor_id = atoi(value.c_str());
-        } else if (key == "ingester_list_file") {
-            ingester_list_file = value;
+        } else if (key == "http_host") {
+            http_host = value;
+        } else if (key == "http_port") {
+            http_port = atoi(value.c_str());
         // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
@@ -69,6 +73,10 @@ bool diffraflow::MonConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid monitor_id: " << monitor_id);
         succ_flag = false;
     }
+    if (http_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid http_port: " << http_port);
+        succ_flag = false;
+    }
     // check and commit for dynamic parameters
     if (!check_and_commit_(dy_conf_map, time(NULL))) {
         LOG4CXX_ERROR(logger_, "dynamic configurations have invalid values.");
@@ -77,7 +85,8 @@ bool diffraflow::MonConfig::load(const char* filename) {
     if (succ_flag) {
         ingester_config_json_["node_name"] = json::value::string(node_name);
         ingester_config_json_["monitor_id"] = json::value::number(monitor_id);
-        ingester_config_json_["ingester_list_file"] = json::value::string(ingester_list_file);
+        ingester_config_json_["http_host"] = json::value::string(http_host);
+        ingester_config_json_["http_port"] = json::value::number(http_port);
         return true;
     } else {
         return false;
@@ -109,7 +118,8 @@ void diffraflow::MonConfig::print() {
     cout << "static config:" << endl;
     cout << "- node_name = " << node_name << endl;
     cout << "- monitor_id = " << monitor_id << endl;
-    cout << "- ingester_list_file = " << ingester_list_file << endl;
+    cout << "- http_host = " << http_host << endl;
+    cout << "- http_port = " << http_port << endl;
     cout << "dynamic parameters:" << endl;
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;

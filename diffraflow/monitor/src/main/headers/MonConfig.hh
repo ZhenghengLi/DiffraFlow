@@ -36,7 +36,8 @@ namespace diffraflow {
         // static parameters
         string   node_name;
         int      monitor_id;
-        string   ingester_list_file;
+        string   http_host;
+        int      http_port;
 
     private:
         // dynamic parameters

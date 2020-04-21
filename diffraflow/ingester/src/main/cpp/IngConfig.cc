@@ -95,12 +95,19 @@ bool diffraflow::IngConfig::load(const char* filename) {
             dy_conf_map[key] = value;
         }
     }
-    // set node name
     const char* node_name_cstr = getenv("NODE_NAME");
+    const char* node_ip_cstr = getenv("NODE_IP");
+    // set node name
     if (node_name_cstr != NULL) {
         node_name = boost::to_upper_copy<string>(node_name_cstr);
     } else {
         node_name = "NODENAME";
+    }
+    // adjust combiner_host if its value is NODE_NAME or NODE_IP
+    if (combiner_host == "NODE_NAME" && node_name_cstr != NULL) {
+        combiner_host = node_name_cstr;
+    } else if (combiner_host == "NODE_IP" && node_ip_cstr != NULL) {
+        combiner_host = node_ip_cstr;
     }
 
     if (storage_dir.empty()) {

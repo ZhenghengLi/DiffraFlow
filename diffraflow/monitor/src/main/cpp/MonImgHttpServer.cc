@@ -136,7 +136,7 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
 bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_string,
     ImageWithFeature& image_with_feature, string& ingester_id_str) {
 
-    lock_guard<mutex> lg(mtx_address_);
+    lock_guard<mutex> lg(mtx_client_);
 
     if (ingester_clients_vec_.empty()) {
         LOG4CXX_WARN(logger_, "empty ingester clients list.");

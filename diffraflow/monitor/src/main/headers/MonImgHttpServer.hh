@@ -54,7 +54,7 @@ namespace diffraflow {
         mutex mtx_status_;
         condition_variable cv_status_;
 
-        mutex mtx_address_;
+        mutex mtx_client_;
 
         MonConfig* config_obj_;
 

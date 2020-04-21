@@ -19,6 +19,7 @@ diffraflow::IngConfig::IngConfig() {
     ingester_id = 0;
     combiner_port = -1;
     combiner_host = "localhost";
+    node_name = "NODENAME";
     http_port = -1;
     http_host = "localhost";
     recnxn_wait_time = 0;
@@ -100,8 +101,6 @@ bool diffraflow::IngConfig::load(const char* filename) {
     // set node name
     if (node_name_cstr != NULL) {
         node_name = boost::to_upper_copy<string>(node_name_cstr);
-    } else {
-        node_name = "NODENAME";
     }
     // adjust combiner_host if its value is NODE_NAME or NODE_IP
     if (combiner_host == "NODE_NAME" && node_name_cstr != NULL) {

@@ -7,6 +7,8 @@
 #include <msgpack.hpp>
 #include <regex>
 #include <chrono>
+#include <cstdlib>
+#include <regex>
 
 using namespace web;
 using namespace http;
@@ -14,6 +16,9 @@ using namespace experimental::listener;
 using std::ifstream;
 using std::lock_guard;
 using std::unique_lock;
+using std::regex;
+using std::regex_match;
+using std::regex_replace;
 
 log4cxx::LoggerPtr diffraflow::MonImgHttpServer::logger_
     = log4cxx::Logger::getLogger("MonImgHttpServer");
@@ -89,9 +94,11 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
         LOG4CXX_ERROR(logger_, "address file open failed.");
         return false;
     }
-    http_client_config http_cc;
-    http_cc.set_timeout(std::chrono::milliseconds(timeout));
+    http_client_config client_config;
+    client_config.set_timeout(std::chrono::milliseconds(timeout));
     string oneline;
+    const char* node_name_cstr = getenv("NODE_NAME");
+    const char* node_ip_cstr = getenv("NODE_IP");
     while (true) {
         oneline = "";
         getline(addr_file, oneline);
@@ -100,22 +107,30 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
         boost::trim(oneline);
         if (oneline[0] == '#') continue;
         if (oneline.length() == 0) continue;
+        // replace NODE_NAME or NODE_IP
+        if (regex_match(oneline, regex(".*NODE_NAME.*")) && node_name_cstr != NULL) {
+            oneline = regex_replace(oneline, regex("NODE_NAME"), node_name_cstr);
+        } else if (regex_match(oneline, regex(".*NODE_IP.*")) && node_ip_cstr != NULL) {
+            oneline = regex_replace(oneline, regex("NODE_IP"), node_ip_cstr);
+        }
         // construct http client
         try {
-            ingester_clients_vec_.push_back(http_client(uri(oneline), http_cc));
+            uri uri_val(oneline);
+            http_client client(uri_val, client_config);
+            ingester_clients_vec_.push_back(client);
+            LOG4CXX_INFO(logger_, "created ingester client for " << uri_val.to_string());
         } catch (std::exception& e) {
-            LOG4CXX_ERROR(logger_, "failed to construct http client for ingester address "
-                << oneline << " with exception: " << e.what());
+            LOG4CXX_ERROR(logger_, "exception found when creating ingester client for "
+                << oneline << ": " << e.what());
             return false;
         }
     }
     if (ingester_clients_vec_.size() > 0) {
         return true;
     } else {
-            LOG4CXX_ERROR(logger_, "empty address file: " << filename);
+            LOG4CXX_ERROR(logger_, "no valid ingester addresses found in file: " << filename);
         return false;
     }
-    return true;
 }
 
 bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_string,

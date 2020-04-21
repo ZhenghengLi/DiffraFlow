@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cstdlib>
+#include <csignal>
+#include <cstring>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
@@ -8,42 +11,19 @@
 #include "DynamicConfiguration.hh"
 #include "CtrOptMan.hh"
 #include "CtrCfgMap.hh"
+#include "CtrConfig.hh"
+#include "CtrSrvMan.hh"
 
 using namespace std;
 using namespace diffraflow;
 
-int main(int argc, char** argv) {
-    // process command line parameters
-    CtrOptMan option_man;
-    if (!option_man.parse(argc, argv)) {
-        option_man.print();
-        return 2;
-    }
-    // configure logger
-    if (option_man.logconf_file.empty()) {
-        log4cxx::LogManager::getLoggerRepository()->setConfigured(true);
-        static const log4cxx::LogString logfmt(LOG4CXX_STR("%d [%t] %-5p %c - %m%n"));
-        log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(logfmt));
-        log4cxx::AppenderPtr appender(new log4cxx::ConsoleAppender(layout));
-        log4cxx::Logger::getRootLogger()->addAppender(appender);
-        log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getDebug());
-    } else {
-        log4cxx::PropertyConfigurator::configure(option_man.logconf_file);
-    }
-    // set up zk client
-    DynamicConfiguration* zk_conf_client = new DynamicConfiguration();
-    if (!zk_conf_client->load(option_man.zk_conf_file.c_str())) {
-        cerr << "failed to load zookeeper client configuration file." << endl;
-        return 1;
-    }
-    zk_conf_client->zookeeper_print_setting();
-    if (!zk_conf_client->zookeeper_start(true)) {
-        cerr << "failed to set zookeeper session." << endl;
-        return 1;
-    }
+DynamicConfiguration* gZookeeperConfClient = nullptr;
+CtrConfig* gConfiguration = nullptr;
+CtrSrvMan* gServerManager = nullptr;
 
-    for (size_t i = 0; i < option_man.zk_actions.size(); i++) {
-        string action = option_man.zk_actions[i];
+int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_actions) {
+    for (size_t i = 0; i < zk_actions.size(); i++) {
+        string action = zk_actions[i];
         size_t sepidx = action.find("#");
         string op = action.substr(0, sepidx);
         string oprnd = action.substr(sepidx + 1);
@@ -118,9 +98,118 @@ int main(int argc, char** argv) {
             }
         }
     }
+    return 0;
+}
 
-    delete zk_conf_client;
-    zk_conf_client = nullptr;
+void clean(int signum) {
+    cout << "do cleaning ..." << endl;
+    if (gServerManager != nullptr) {
+        gServerManager->terminate();
+        delete gServerManager;
+        gServerManager = nullptr;
+        cout << "Server is terminated." << endl;
+    }
+    if (gConfiguration != nullptr) {
+        delete gConfiguration;
+        gConfiguration = nullptr;
+    }
+    if (gZookeeperConfClient != nullptr) {
+        delete gZookeeperConfClient;
+        gZookeeperConfClient = nullptr;
+    }
+    exit(0);
+}
+
+void init(CtrConfig* config_obj) {
+    // register signal action
+    struct sigaction action;
+    // for Ctrl-C
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = &clean;
+    if (sigaction(SIGINT, &action, nullptr)) {
+        perror("sigaction() failed for SIGINT.");
+        exit(1);
+    }
+    // Kubernetes uses SIGTERM to terminate Pod
+    if (sigaction(SIGTERM, &action, nullptr)) {
+        perror("sigaction() failed for SIGTERM.");
+        exit(1);
+    }
+    // ignore SIGPIPE
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &action, nullptr)) {
+        perror("sigaction() failed for ignoring SIGPIPE.");
+        exit(1);
+    }
+}
+
+int main(int argc, char** argv) {
+    // process command line parameters
+    CtrOptMan option_man;
+    if (!option_man.parse(argc, argv)) {
+        option_man.print();
+        return 2;
+    }
+    // configure logger
+    if (option_man.logconf_file.empty()) {
+        log4cxx::LogManager::getLoggerRepository()->setConfigured(true);
+        static const log4cxx::LogString logfmt(LOG4CXX_STR("%d [%t] %-5p %c - %m%n"));
+        log4cxx::LayoutPtr layout(new log4cxx::PatternLayout(logfmt));
+        log4cxx::AppenderPtr appender(new log4cxx::ConsoleAppender(layout));
+        log4cxx::Logger::getRootLogger()->addAppender(appender);
+        log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getDebug());
+    } else {
+        log4cxx::PropertyConfigurator::configure(option_man.logconf_file);
+    }
+    // set up zk client
+    if (!option_man.zk_conf_file.empty()) {
+        gZookeeperConfClient = new DynamicConfiguration();
+        if (!gZookeeperConfClient->load(option_man.zk_conf_file.c_str())) {
+            cerr << "failed to load zookeeper client configuration file." << endl;
+            return 1;
+        }
+        gZookeeperConfClient->zookeeper_print_setting();
+        if (!gZookeeperConfClient->zookeeper_start(true)) {
+            cerr << "failed to start zookeeper session." << endl;
+            return 1;
+        }
+    }
+
+    // execute zookeeper actions if have
+    if (option_man.zk_actions.size() > 0) {
+        if (gZookeeperConfClient == nullptr) {
+            cout << "zookeeper session is not started, all zk operations are ignored." << endl;
+        } else {
+            int result = execute_zk_actions(gZookeeperConfClient, option_man.zk_actions);
+            if (result > 0) {
+                return result;
+            }
+        }
+    }
+
+    gConfiguration = new CtrConfig();
+    if (!option_man.config_file.empty() && !gConfiguration->load(option_man.config_file.c_str())) {
+        cout << "Failed to load configuration file: " << option_man.config_file << endl;
+        return 1;
+    }
+    gConfiguration->print();
+
+    // start servers if needed
+    // ------------------------------------------------------
+    init(gConfiguration);
+
+    if (!gConfiguration->http_host.empty()) {
+        if (!option_man.monaddr_file.empty()) {
+            gServerManager = new CtrSrvMan(gConfiguration, option_man.monaddr_file.c_str());
+        } else {
+            gServerManager = new CtrSrvMan(gConfiguration, nullptr);
+        }
+        gServerManager->start_run();
+    }
+
+    clean(0);
+    // ------------------------------------------------------
 
     return 0;
 }

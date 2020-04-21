@@ -15,6 +15,7 @@ namespace diffraflow {
         string config_file;             // -c, --config=FILE
         string zk_conf_file;            // -z, --zkconfig=FILE
         string logconf_file;            // -l, --logconf=FILE
+        string monaddr_file;            // -a, --monaddr=FILE
 
         vector<string> zk_actions;      // -C, --zkcreate=ZNODE:FILE
                                         // -D, --zkdelete=ZNODE

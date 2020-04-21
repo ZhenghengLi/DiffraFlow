@@ -8,12 +8,13 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::CtrOptMan::opt_string_[] = "c:z:l:C:D:U:R:L:vh";
+const char diffraflow::CtrOptMan::opt_string_[] = "c:z:l:a:C:D:U:R:L:vh";
 
 const option diffraflow::CtrOptMan::long_opts_[] = {
     {"config",      required_argument,  NULL, 'c'},
     {"zkconfig",    required_argument,  NULL, 'z'},
     {"logconf",     required_argument,  NULL, 'l'},
+    {"monaddr",     required_argument,  NULL, 'a'},
     {"zkcreate",    required_argument,  NULL, 'C'},
     {"zkdelete",    required_argument,  NULL, 'D'},
     {"zkupdate",    required_argument,  NULL, 'U'},
@@ -48,6 +49,9 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
         case 'l':
             logconf_file = optarg;
             break;
+        case 'a':
+            monaddr_file = optarg;
+            break;
         case 'C':
             zk_actions.push_back(string("C#") + optarg);
             break;
@@ -73,12 +77,8 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
     }
     // validation check
     bool succ_flag = true;
-    // if (config_file.empty()) {
-    //     cerr << "configuration file should be set." << endl;
-    //     succ_flag = false;
-    // }
-    if (zk_conf_file.empty()) {
-        cerr << "zookeeper client config file should be set." << endl;
+    if (config_file.empty() && zk_conf_file.empty() && zk_actions.empty()) {
+        cerr << "no actions are chosen." << endl;
         succ_flag = false;
     }
     // return
@@ -98,6 +98,7 @@ void diffraflow::CtrOptMan::print_help_() {
     cout << left;
     cout << setw(30) << "  -c, --config=FILE"           << setw(50) << "configuration file" << endl;
     cout << setw(30) << "  -z, --zkconfig=FILE"         << setw(50) << "zookeeper client configuration file" << endl;
+    cout << setw(30) << "  -a, --monaddr=FILE"          << setw(50) << "monitor addresses file" << endl;
     cout << setw(30) << "  -l, --logconf=FILE"          << setw(50) << "log configuration file" << endl;
     cout << setw(30) << "  -C, --zkcreate=ZNODE:FILE"   << setw(50) << "create a znode with confmap file" << endl;
     cout << setw(30) << "  -U, --zkupdate=ZNODE:FILE"   << setw(50) << "update a znode with confmap file" << endl;

@@ -18,7 +18,6 @@ using namespace diffraflow;
 MonConfig* gConfiguration = nullptr;
 MonSrvMan* gServerManager = nullptr;
 
-
 void clean(int signum) {
     cout << "do cleaning ..." << endl;
     if (gServerManager != nullptr) {

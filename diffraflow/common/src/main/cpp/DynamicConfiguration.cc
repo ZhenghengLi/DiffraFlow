@@ -191,16 +191,16 @@ void diffraflow::DynamicConfiguration::zookeeper_stop() {
     zookeeper_auth_res_ = kUnknown;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_create_config(
+int diffraflow::DynamicConfiguration::zookeeper_create_config(
     const char* config_path, const map<string, string>& config_map) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
-        return false;
+        return 100;
     }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
-    if (!zookeeper_authadding_wait_()) return false;
+    if (!zookeeper_authadding_wait_()) return 101;
 
     // create config from here.
     static char zkacl_world[] = "world", zkacl_anyone[] = "anyone";
@@ -225,65 +225,66 @@ bool diffraflow::DynamicConfiguration::zookeeper_create_config(
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Successfully created config path " << config_path << ".");
-        return true;
+        break;
     case ZNODEEXISTS:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " already exists.");
-        return false;
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the parent node of config path " << config_path << " does not exist.");
-        return false;
+        break;
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to create config path " << config_path << ".");
-        return false;
+        break;
     default:
         LOG4CXX_WARN(logger_, "failed to create config path " << config_path << " with error code: " << rc << ".");
-        return false;
     }
+    return rc;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path, int version) {
+int diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config_path, int version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
-        return false;
+        return 100;
     }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
-    if (!zookeeper_authadding_wait_()) return false;
+    if (!zookeeper_authadding_wait_()) return 101;
 
     // delete config from here
     int rc = zoo_delete(zookeeper_handle_, config_path, version);
     switch(rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully deleted config path " << config_path << ".");
-        return true;
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
-        return false;
+        break;
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to delete config path " << config_path << ".");
-        return false;
+        break;
     case ZNOTEMPTY:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " has children, it cannot be deleted.");
-        return false;
+        break;
     case ZBADVERSION:
         LOG4CXX_WARN(logger_, "version number does not match for config path " << config_path << ".");
+        break;
     default:
         LOG4CXX_WARN(logger_, "failed to delete config path " << config_path << " with error code: " << rc << ".");
-        return false;
     }
+    return rc;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_change_config(
+int diffraflow::DynamicConfiguration::zookeeper_change_config(
     const char* config_path, const map<string, string>& config_map, int version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
-        return false;
+        return 100;
     }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
     // wait for adding auth
-    if (!zookeeper_authadding_wait_()) return false;
+    if (!zookeeper_authadding_wait_()) return 101;
 
     // change config from here.
     json::value config_json;
@@ -298,26 +299,27 @@ bool diffraflow::DynamicConfiguration::zookeeper_change_config(
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully changed the data of config path " << config_path << ".");
-        return true;
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
-        return false;
+        break;
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to change the data of config path " << config_path << ".");
-        return false;
+        break;
     case ZBADVERSION:
         LOG4CXX_WARN(logger_, "version number does not match for config path " << config_path << ".");
+        break;
     default:
         LOG4CXX_WARN(logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
-        return false;
     }
+    return rc;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
+int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     const char* config_path, map<string, string>& config_map, time_t& config_mtime, int& version) {
     if (!zookeeper_check_path_(config_path)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
-        return false;
+        return 100;
     }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
@@ -331,7 +333,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     case ZOK:
         if (zookeeper_znode_buffer_len_ <= 0) {
             LOG4CXX_WARN(logger_, "There is no data in config path " << config_path << ".");
-            return false;
+            return 401;
         } else {
             LOG4CXX_INFO(logger_, "Sucessfully fetched the data of config path " << config_path << ".");
 
@@ -341,11 +343,11 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             if (json_parse_error) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
                     << zookeeper_config_path_ << " with error " << json_parse_error.message());
-                return false;
+                return 402;
             } else if (!json_value.is_object()) {
                 LOG4CXX_ERROR(logger_, "The json value stored in config_path "
                     << zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
-                return false;
+                return 403;
             } else {
                 config_map.clear();
                 json::object json_object = json_value.as_object();
@@ -356,26 +358,27 @@ bool diffraflow::DynamicConfiguration::zookeeper_fetch_config(
 
             config_mtime = zookeeper_znode_stat_.mtime / 1000;
             version = zookeeper_znode_stat_.version;
-            return true;
         }
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
-        return false;
+        break;
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to fetch the data of config path " << config_path << ".");
-        return false;
+        break;
     default:
         LOG4CXX_WARN(logger_, "failed to fetch the data of config path " << config_path << " with error code: " << rc << ".");
-        return false;
+        break;
     }
+    return rc;
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_path,
+int diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_path,
     vector<string>& children_list) {
     regex start_with_slash("^\\s*/.*");
     if (!regex_match(config_path, start_with_slash)) {
         LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with /.")
-        return false;
+        return 100;
     }
     // wait for re-reconnecting
     zookeeper_connection_wait_();
@@ -389,17 +392,17 @@ bool diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config
         for (int i = 0; i < string_vec.count; i++) {
             children_list.push_back(string_vec.data[i]);
         }
-        return true;
+        break;
     case ZNONODE:
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
-        return false;
+        break;
     case ZNOAUTH:
         LOG4CXX_WARN(logger_, "the client does not have permission to get the children of config path " << config_path << ".");
-        return false;
+        break;
     default:
         LOG4CXX_WARN(logger_, "failed to get the children of config path " << config_path << " with error code: " << rc << ".");
-        return false;
     }
+    return rc;
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_sync_config() {

@@ -48,7 +48,7 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
         }
         // run the action
         if (op == "C") {
-            if (zk_conf_client->zookeeper_create_config(znode.c_str(), conf_map.data)) {
+            if (ZOK == zk_conf_client->zookeeper_create_config(znode.c_str(), conf_map.data)) {
                 cout << "successfully created znode " << znode
                      << " with config map file " << conf_map_file << "." << endl;
             } else {
@@ -57,7 +57,7 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
                 return 1;
             }
         } else if (op == "U") {
-            if (zk_conf_client->zookeeper_change_config(znode.c_str(), conf_map.data)) {
+            if (ZOK == zk_conf_client->zookeeper_change_config(znode.c_str(), conf_map.data)) {
                 cout << "successfully updated znode " << znode
                      << " with config map file " << conf_map_file << "." << endl;
             } else {
@@ -67,7 +67,7 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
             }
         } else if (op == "R") {
             int version;
-            if (zk_conf_client->zookeeper_fetch_config(znode.c_str(), conf_map.data, conf_map.mtime, version)) {
+            if (ZOK == zk_conf_client->zookeeper_fetch_config(znode.c_str(), conf_map.data, conf_map.mtime, version)) {
                 cout << "znode: " << znode << endl;
                 conf_map.print();
             } else {
@@ -76,7 +76,7 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
             }
         } else if (op == "L") {
             vector<string> children_list;
-            if (zk_conf_client->zookeeper_get_children(znode.c_str(), children_list)) {
+            if (ZOK == zk_conf_client->zookeeper_get_children(znode.c_str(), children_list)) {
                 if (children_list.empty()) {
                     cout << "znode " << znode << " has no children." << endl;
                 } else {
@@ -90,7 +90,7 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
                 return 1;
             }
         } else if (op == "D") {
-            if (zk_conf_client->zookeeper_delete_config(znode.c_str())) {
+            if (ZOK == zk_conf_client->zookeeper_delete_config(znode.c_str())) {
                 cout << "successfully deleted znode " << znode << "." << endl;;
             } else {
                 cout << "failed to delete znode " << znode << "." << endl;

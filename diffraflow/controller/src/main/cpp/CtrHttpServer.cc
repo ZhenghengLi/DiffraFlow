@@ -22,3 +22,36 @@ diffraflow::CtrHttpServer::CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicC
 diffraflow::CtrHttpServer::~CtrHttpServer() {
 
 }
+
+bool diffraflow::CtrHttpServer::start(string host, int port) {
+
+    return true;
+}
+
+void diffraflow::CtrHttpServer::stop() {
+
+}
+
+void diffraflow::CtrHttpServer::wait() {
+
+}
+
+void diffraflow::CtrHttpServer::handleGet_(http_request message) {
+
+}
+
+void diffraflow::CtrHttpServer::handlePost_(http_request message) {
+
+}
+
+void diffraflow::CtrHttpServer::handlePut_(http_request message) {
+
+}
+
+void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
+
+}
+
+void diffraflow::CtrHttpServer::handleDelete_(http_request message) {
+
+}

@@ -3,6 +3,7 @@ import org.gradle.internal.os.OperatingSystem
 
 application {
     binaries.configureEach {
+        linkTask.get().linkerArgs.add('-lpulsar')
         linkTask.get().linkerArgs.add('-llog4cxx')
         linkTask.get().linkerArgs.add('-lcpprest')
         linkTask.get().linkerArgs.add('-lssl')

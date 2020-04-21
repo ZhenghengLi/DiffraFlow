@@ -4,12 +4,12 @@ import org.gradle.internal.os.OperatingSystem
 library {
     binaries.configureEach {
         compileTask.get().compilerArgs.add('-I/usr/include/hdf5/serial')
+        linkTask.get().linkerArgs.add('-lpulsar')
         linkTask.get().linkerArgs.add('-llog4cxx')
         linkTask.get().linkerArgs.add('-lzookeeper_mt')
         linkTask.get().linkerArgs.add('-lcpprest')
         linkTask.get().linkerArgs.add('-lssl')
         linkTask.get().linkerArgs.add('-lcrypto')
-        linkTask.get().linkerArgs.add('-lpulsar')
         linkTask.get().linkerArgs.add('-lhdf5_cpp')
         if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
             linkTask.get().linkerArgs.add('-lboost_filesystem-mt')

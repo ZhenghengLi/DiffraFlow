@@ -65,6 +65,7 @@ namespace diffraflow {
         bool zookeeper_parse_setting_(list< pair<string, string> > conf_KV_list);
 
     private:
+        bool zookeeper_start_session_();
         void zookeeper_connection_wait_();
         bool zookeeper_authadding_wait_();
         void zookeeper_add_auth_();
@@ -97,11 +98,13 @@ namespace diffraflow {
         atomic_bool             zookeeper_is_updater_;
 
         // znode buffer for fetching
-        mutex                   zookeeper_znode_mtx_;
         char*                   zookeeper_znode_buffer_;
         int                     zookeeper_znode_buffer_cap_;
         int                     zookeeper_znode_buffer_len_;
         Stat                    zookeeper_znode_stat_;
+
+        // lock for each zookeeper operation
+        mutex                   zookeeper_operation_mtx_;
 
         // zookeeper connectiong status
         bool                    zookeeper_connected_;

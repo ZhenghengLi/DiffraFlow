@@ -2,12 +2,23 @@
 #include "CtrMonLoadBalancer.hh"
 #include "DynamicConfiguration.hh"
 
+#include <regex>
+#include <queue>
+#include <map>
+#include <algorithm>
+
 using namespace web;
 using namespace http;
 using namespace experimental::listener;
 
 using std::lock_guard;
 using std::unique_lock;
+using std::regex;
+using std::regex_match;
+using std::regex_replace;
+using std::queue;
+using std::map;
+using std::pair;
 
 log4cxx::LoggerPtr diffraflow::CtrHttpServer::logger_
     = log4cxx::Logger::getLogger("CtrHttpServer");
@@ -81,6 +92,80 @@ void diffraflow::CtrHttpServer::wait() {
 
 void diffraflow::CtrHttpServer::handleGet_(http_request message) {
 
+    vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
+
+    std::regex number_regex("\\d+");
+
+    http_response response;
+    if (path_vec.empty()) {
+        json::value paths_json;
+        paths_json[0] = json::value::string("/event");
+        paths_json[1] = json::value::string("/event/<unsigned long>");
+        paths_json[2] = json::value::string("/config");
+        json::value root_json;
+        root_json["paths"] = paths_json;
+        message.reply(status_codes::OK, root_json);
+        return;
+    } else if (path_vec.size() > 2) {
+        message.reply(status_codes::NotFound);
+        return;
+    }
+
+    string request_type = path_vec[0];
+    string request_value = (path_vec.size() > 1 ? path_vec[1] : "");
+
+    if (request_type == "event") {
+        if (!request_value.empty()) {
+            if (!regex_match(request_value, number_regex)) {
+                message.reply(status_codes::NotFound);
+                return;
+            }
+        }
+        if (monitor_load_balancer_->do_one_request(response, request_value)) {
+            message.reply(response);
+        } else {
+            message.reply(status_codes::NotFound);
+            return;
+        }
+    } else if (request_type == "config") {
+        if (request_value.empty()) {
+            vector<string> config_list;
+            int zoo_err = zookeeper_config_client_->zookeeper_get_children("/", config_list);
+            if (zoo_err == ZOK) {
+                json::value config_list_json;
+                for (size_t i = 0; i < config_list.size(); i++) {
+                    config_list_json[i] = json::value::string(config_list[i]);
+                }
+                json::value root_json;
+                root_json["config_list"] = config_list_json;
+                message.reply(status_codes::OK, root_json);
+            } else {
+                message.reply(status_codes::InternalError);
+            }
+        } else {
+            map<string, string> config_map;
+            time_t config_mtime;
+            int version;
+            int zoo_err = zookeeper_config_client_->zookeeper_fetch_config(
+                request_value.c_str(), config_map, config_mtime, version);
+            if (zoo_err == ZOK) {
+                json::value config_map_json;
+                for (const pair<string, string>& item: config_map) {
+                    config_map_json[item.first] = json::value::string(item.second);
+                }
+                json::value root_json;
+                root_json["name"] = json::value::string(request_value);
+                root_json["data"] = config_map_json;
+                message.reply(status_codes::OK, root_json);
+            } else if (zoo_err == ZNONODE) {
+                message.reply(status_codes::NotFound);
+            } else {
+                message.reply(status_codes::InternalError);
+            }
+        }
+    } else {
+        message.reply(status_codes::NotFound);
+    }
 }
 
 void diffraflow::CtrHttpServer::handlePost_(http_request message) {

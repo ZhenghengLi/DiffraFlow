@@ -52,7 +52,7 @@ namespace diffraflow {
         void handlePost_(http_request message);     // zookeeper_create_config
         void handlePut_(http_request message);      // zookeeper_change_config
         void handlePatch_(http_request message);    // zookeeper_fetch_config & zookeeper_change_config
-        void handleDelete_(http_request message);   // zookeeper_delete_config
+        void handleDel_(http_request message);   // zookeeper_delete_config
 
     private:
         static log4cxx::LoggerPtr logger_;

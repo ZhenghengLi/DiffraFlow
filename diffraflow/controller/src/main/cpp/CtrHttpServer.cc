@@ -125,7 +125,6 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
             message.reply(response);
         } else {
             message.reply(status_codes::NotFound);
-            return;
         }
     } else if (request_type == "config") {
         if (request_value.empty()) {
@@ -169,6 +168,12 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePost_(http_request message) {
+    vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
+    http_response response;
+    if (path_vec.size() != 2) {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
 
 }
 

@@ -23,8 +23,8 @@ using std::pair;
 
 namespace diffraflow {
 
-    class ImageWithFeature;
-    class ImageAnalysisResult;
+    struct ImageWithFeature;
+    struct ImageAnalysisResult;
     class MonConfig;
 
     class MonImgHttpServer {

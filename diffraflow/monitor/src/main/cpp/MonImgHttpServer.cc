@@ -8,6 +8,7 @@
 #include <regex>
 #include <chrono>
 #include <cstdlib>
+#include <boost/algorithm/string.hpp>
 
 using namespace web;
 using namespace http;

@@ -1,4 +1,5 @@
 #include "CtrMonLoadBalancer.hh"
+#include <boost/algorithm/string.hpp>
 
 using namespace web;
 using namespace http;

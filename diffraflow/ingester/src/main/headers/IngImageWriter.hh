@@ -21,8 +21,9 @@ using std::string;
 
 namespace diffraflow {
 
+    struct ImageWithFeature;
+
     class IngImgWthFtrQueue;
-    class ImageWithFeature;
     class ImageFeature;
     class IngConfig;
 

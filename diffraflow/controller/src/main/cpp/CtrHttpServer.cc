@@ -207,13 +207,122 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePut_(http_request message) {
-
+    vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
+    http_response response;
+    if (path_vec.size() != 2) {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string request_type = path_vec[0];
+    string request_value = path_vec[1];
+    if (request_type != "config") {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string znode_path = string("/") + request_value;
+    json::value request_body_json = message.extract_json().get();
+    map<string, string> config_map;
+    if (request_body_json.is_object()) {
+        json::object json_object = request_body_json.as_object();
+        for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
+            if (iter->second.is_string()) {
+                config_map[iter->first] = iter->second.as_string();
+            } else {
+                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                return;
+            }
+        }
+        int zoo_err = zookeeper_config_client_->zookeeper_change_config(znode_path.c_str(), config_map);
+        if (zoo_err == ZOK) {
+            message.reply(status_codes::OK);
+        } else if (zoo_err == ZNONODE)  {
+            message.reply(status_codes::BadRequest, utility::string_t("config name does not exist."));
+        } else {
+            message.reply(status_codes::InternalError);
+        }
+    } else {
+        message.reply(status_codes::BadRequest, utility::string_t("request body should be a json object."));
+    }
 }
 
 void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
-
+    vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
+    http_response response;
+    if (path_vec.size() != 2) {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string request_type = path_vec[0];
+    string request_value = path_vec[1];
+    if (request_type != "config") {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string znode_path = string("/") + request_value;
+    json::value request_body_json = message.extract_json().get();
+    map<string, string> config_map_patch;
+    if (request_body_json.is_object()) {
+        json::object json_object = request_body_json.as_object();
+        for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
+            if (iter->second.is_string()) {
+                config_map_patch[iter->first] = iter->second.as_string();
+            } else {
+                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                return;
+            }
+        }
+        map<string, string> config_map;
+        int version = -1;
+        time_t config_mtime;
+        // fetch
+        int zoo_err = zookeeper_config_client_->zookeeper_fetch_config(znode_path.c_str(), config_map, config_mtime, version);
+        if (zoo_err == ZNONODE) {
+            message.reply(status_codes::BadRequest, utility::string_t("config name does not exist."));
+            return;
+        } else if (zoo_err != ZOK) {
+            message.reply(status_codes::InternalError);
+            return;
+        }
+        // patch
+        for (const pair<string, string>& item: config_map_patch) {
+            config_map[item.first] = item.second;
+        }
+        // update
+        zoo_err = zookeeper_config_client_->zookeeper_change_config(znode_path.c_str(), config_map, version);
+        if (zoo_err == ZOK) {
+            message.reply(status_codes::OK);
+        } else if (zoo_err == ZNONODE)  {
+            message.reply(status_codes::InternalError, utility::string_t("config name may be deleted during patching."));
+        } else if (zoo_err == ZBADVERSION)  {
+            message.reply(status_codes::InternalError, utility::string_t("config name may be updated during patching."));
+        } else {
+            message.reply(status_codes::InternalError);
+        }
+    } else {
+        message.reply(status_codes::BadRequest, utility::string_t("request body should be a json object."));
+    }
 }
 
 void diffraflow::CtrHttpServer::handleDel_(http_request message) {
-
+    vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
+    http_response response;
+    if (path_vec.size() != 2) {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string request_type = path_vec[0];
+    string request_value = path_vec[1];
+    if (request_type != "config") {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string znode_path = string("/") + request_value;
+    int zoo_err = zookeeper_config_client_->zookeeper_delete_config(znode_path.c_str());
+    if (zoo_err == ZOK) {
+        message.reply(status_codes::OK);
+    } else if (zoo_err == ZNONODE) {
+        message.reply(status_codes::BadRequest, utility::string_t("config name does not exist."));
+    } else {
+        message.reply(status_codes::InternalError);
+    }
 }

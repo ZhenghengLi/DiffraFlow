@@ -174,7 +174,36 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
         message.reply(status_codes::BadRequest);
         return;
     }
-
+    string request_type = path_vec[0];
+    string request_value = path_vec[1];
+    if (request_type != "config") {
+        message.reply(status_codes::BadRequest);
+        return;
+    }
+    string znode_path = string("/") + request_value;
+    json::value request_body_json = message.extract_json().get();
+    map<string, string> config_map;
+    if (request_body_json.is_object()) {
+        json::object json_object = request_body_json.as_object();
+        for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
+            if (iter->second.is_string()) {
+                config_map[iter->first] = iter->second.as_string();
+            } else {
+                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                return;
+            }
+        }
+        int zoo_err = zookeeper_config_client_->zookeeper_create_config(znode_path.c_str(), config_map);
+        if (zoo_err == ZOK) {
+            message.reply(status_codes::OK);
+        } else if (zoo_err == ZNODEEXISTS)  {
+            message.reply(status_codes::Conflict, utility::string_t("config name already exists."));
+        } else {
+            message.reply(status_codes::InternalError);
+        }
+    } else {
+        message.reply(status_codes::BadRequest, utility::string_t("request body should be a json object."));
+    }
 }
 
 void diffraflow::CtrHttpServer::handlePut_(http_request message) {

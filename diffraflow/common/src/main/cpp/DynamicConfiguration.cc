@@ -375,7 +375,11 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
                 config_map.clear();
                 json::object json_object = json_value.as_object();
                 for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
-                    config_map[iter->first] = iter->second.as_string();
+                    if (iter->second.is_string()) {
+                        config_map[iter->first] = iter->second.as_string();
+                    } else {
+                        LOG4CXX_WARN(logger_, "the value of config key " << iter->first << " is not of type string, and it is ignored.");
+                    }
                 }
             }
 
@@ -598,7 +602,11 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             } else {
                 json::object json_object = json_value.as_object();
                 for (json::object::iterator iter = json_object.begin(); iter != json_object.end(); ++iter) {
-                    conf_map[iter->first] = iter->second.as_string();
+                    if (iter->second.is_string()) {
+                        conf_map[iter->first] = iter->second.as_string();
+                    } else {
+                        LOG4CXX_WARN(logger_, "the value of config key " << iter->first << " is not of type string, and it is ignored.");
+                    }
                 }
             }
             // conf_map -> config

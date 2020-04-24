@@ -201,9 +201,9 @@ int main(int argc, char** argv) {
 
     if (!gConfiguration->http_host.empty()) {
         if (!option_man.monaddr_file.empty()) {
-            gServerManager = new CtrSrvMan(gConfiguration, option_man.monaddr_file.c_str());
+            gServerManager = new CtrSrvMan(gConfiguration, option_man.monaddr_file.c_str(), gZookeeperConfClient);
         } else {
-            gServerManager = new CtrSrvMan(gConfiguration, nullptr);
+            gServerManager = new CtrSrvMan(gConfiguration, nullptr, gZookeeperConfClient);
         }
         gServerManager->start_run();
     }

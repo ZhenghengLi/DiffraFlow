@@ -39,6 +39,12 @@ bool diffraflow::CtrHttpServer::start(string host, int port) {
         LOG4CXX_WARN(logger_, "http server has already been started.");
         return false;
     }
+
+    if (monitor_load_balancer_ == nullptr && zookeeper_config_client_ == nullptr) {
+        LOG4CXX_ERROR(logger_, "http server will not start as there is nothing to work for.");
+        return false;
+    }
+
     uri_builder uri_b;
     uri_b.set_scheme("http");
     uri_b.set_host(host);
@@ -115,6 +121,10 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
     string request_value = (path_vec.size() > 1 ? path_vec[1] : "");
 
     if (request_type == "event") {
+        if (monitor_load_balancer_ == nullptr) {
+            message.reply(status_codes::NotImplemented);
+            return;
+        }
         if (!request_value.empty()) {
             if (!regex_match(request_value, number_regex)) {
                 message.reply(status_codes::NotFound);
@@ -127,6 +137,10 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
             message.reply(status_codes::NotFound);
         }
     } else if (request_type == "config") {
+        if (zookeeper_config_client_ == nullptr) {
+            message.reply(status_codes::NotImplemented);
+            return;
+        }
         if (request_value.empty()) {
             vector<string> config_list;
             int zoo_err = zookeeper_config_client_->zookeeper_get_children("/", config_list);
@@ -168,6 +182,12 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePost_(http_request message) {
+
+    if (zookeeper_config_client_ == nullptr) {
+        message.reply(status_codes::NotImplemented);
+        return;
+    }
+
     vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
     http_response response;
     if (path_vec.size() != 2) {
@@ -207,6 +227,12 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePut_(http_request message) {
+
+    if (zookeeper_config_client_ == nullptr) {
+        message.reply(status_codes::NotImplemented);
+        return;
+    }
+
     vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
     http_response response;
     if (path_vec.size() != 2) {
@@ -246,6 +272,12 @@ void diffraflow::CtrHttpServer::handlePut_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
+
+    if (zookeeper_config_client_ == nullptr) {
+        message.reply(status_codes::NotImplemented);
+        return;
+    }
+
     vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
     http_response response;
     if (path_vec.size() != 2) {
@@ -304,6 +336,12 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handleDel_(http_request message) {
+
+    if (zookeeper_config_client_ == nullptr) {
+        message.reply(status_codes::NotImplemented);
+        return;
+    }
+
     vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
     http_response response;
     if (path_vec.size() != 2) {

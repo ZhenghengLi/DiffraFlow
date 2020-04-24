@@ -51,6 +51,8 @@ void diffraflow::MonSrvMan::terminate() {
     if (!running_flag_) return;
 
     image_http_server_->stop();
+    delete image_http_server_;
+    image_http_server_ = nullptr;
 
     running_flag_ = false;
 }

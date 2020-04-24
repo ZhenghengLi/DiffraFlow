@@ -10,6 +10,7 @@ log4cxx::LoggerPtr diffraflow::CtrConfig::logger_
 
 diffraflow::CtrConfig::CtrConfig() {
     request_timeout = 10000;  // 10 seconds
+    http_port = -1;
 }
 
 diffraflow::CtrConfig::~CtrConfig() {

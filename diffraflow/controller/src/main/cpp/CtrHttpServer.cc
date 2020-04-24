@@ -159,8 +159,9 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
             map<string, string> config_map;
             time_t config_mtime;
             int version;
+            string znode_path = string("/") + request_value;
             int zoo_err = zookeeper_config_client_->zookeeper_fetch_config(
-                request_value.c_str(), config_map, config_mtime, version);
+                znode_path.c_str(), config_map, config_mtime, version);
             if (zoo_err == ZOK) {
                 json::value config_map_json;
                 for (const pair<string, string>& item: config_map) {

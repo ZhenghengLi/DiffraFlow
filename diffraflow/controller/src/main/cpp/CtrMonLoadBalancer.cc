@@ -67,7 +67,6 @@ bool diffraflow::CtrMonLoadBalancer::do_one_request(http_response& response, str
     }
 
     for (size_t addr_idx = current_index_; true; ) {
-        http_response response;
         bool found_exception = false;
         try {
             response = monitor_clients_vec_[addr_idx].request(methods::GET, event_time_string).get();

@@ -1,3 +1,3 @@
-http://NODE_IP:8881
-http://NODE_NAME:8882
-http://localhost:8883
+http://localhost:8881
+# http://NODE_NAME:8882
+# http://localhost:8883

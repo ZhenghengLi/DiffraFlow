@@ -126,6 +126,7 @@ void diffraflow::IngPipeline::start_run() {
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
     metrics_reporter_.add("image_filter", image_filter_);
+    metrics_reporter_.add("image_writer", image_writer_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
         if (metrics_reporter_.start_msg_producer(
             config_obj_->metrics_pulsar_broker_address,

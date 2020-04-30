@@ -8,6 +8,7 @@
 #include <log4cxx/logger.h>
 #include "ImageFileHDF5W.hh"
 #include "ImageFileRawW.hh"
+#include "MetricsProvider.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -27,7 +28,7 @@ namespace diffraflow {
     class ImageFeature;
     class IngConfig;
 
-    class IngImageWriter {
+    class IngImageWriter: public MetricsProvider {
     public:
         IngImageWriter(
             IngImgWthFtrQueue*  img_queue_in,
@@ -38,6 +39,9 @@ namespace diffraflow {
         bool start();
         void wait();
         int  stop();
+
+    public:
+        json::value collect_metrics() override;
 
     public:
         enum WorkerStatus {kNotStart, kRunning, kStopped};
@@ -70,12 +74,14 @@ namespace diffraflow {
 
         // file path:
         // storage_dir/R0000/NODENAME_N00/T00/R0000_NODENAME_N00_T00_S0000.h5
-        int current_run_number_;
-        int current_turn_number_;
-        int current_sequence_number_;
+        atomic<int> current_run_number_;
+        atomic<int> current_turn_number_;
+        atomic<int> current_sequence_number_;
+        atomic<int> current_saved_counts_;
+        atomic<uint64_t> total_saved_counts_;
+        atomic<int> total_opened_counts_;
         string current_folder_path_string_;
         string current_filename_string_;
-        int current_saved_counts_;
 
     private:
         static log4cxx::LoggerPtr logger_;

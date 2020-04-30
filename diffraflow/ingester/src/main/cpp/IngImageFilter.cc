@@ -113,8 +113,8 @@ bool diffraflow::IngImageFilter::get_current_image(ImageWithFeature& image_with_
 
 json::value diffraflow::IngImageFilter::collect_metrics() {
     json::value filter_metrics_json;
-    filter_metrics_json["total_processed_images"] = json::value::number(filter_metrics.total_processed_images);
-    filter_metrics_json["total_images_for_save"] = json::value::number(filter_metrics.total_images_for_save);
-    filter_metrics_json["total_images_for_monitor"] = json::value::number(filter_metrics.total_images_for_monitor);
+    filter_metrics_json["total_processed_images"] = json::value::number(filter_metrics.total_processed_images.load());
+    filter_metrics_json["total_images_for_save"] = json::value::number(filter_metrics.total_images_for_save.load());
+    filter_metrics_json["total_images_for_monitor"] = json::value::number(filter_metrics.total_images_for_monitor.load());
     return filter_metrics_json;
 }

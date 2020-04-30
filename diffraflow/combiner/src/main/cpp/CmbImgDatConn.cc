@@ -79,7 +79,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
 json::value diffraflow::CmbImgDatConn::collect_metrics() {
     json::value root_json = GenericConnection::collect_metrics();
     json::value image_metrics_json;
-    image_metrics_json["total_sent_images"] = json::value::number(image_metrics.total_sent_images);
+    image_metrics_json["total_sent_images"] = json::value::number(image_metrics.total_sent_images.load());
     root_json["image_stats"] = image_metrics_json;
     return root_json;
 }

@@ -22,6 +22,8 @@ diffraflow::IngImageWriter::IngImageWriter(
     current_turn_number_ = 0;
     current_sequence_number_ = 0;
     current_saved_counts_ = 0;
+    total_saved_counts_ = 0;
+    total_opened_counts_ = 0;
 
     image_file_hdf5_ = nullptr;
     image_file_raw_ = nullptr;
@@ -43,9 +45,9 @@ int diffraflow::IngImageWriter::run_() {
         }
         // if run number is changed, create new folders
         int new_run_number = config_obj_->get_dy_run_number();
-        if (new_run_number != current_run_number_) {
+        if (new_run_number != current_run_number_.load()) {
             LOG4CXX_INFO(logger_, "run number changed from "
-                << current_run_number_ << " to " << new_run_number
+                << current_run_number_.load() << " to " << new_run_number
                 << ". Create new folders (if not exists) for new run number.");
             current_run_number_ = new_run_number;
             close_files_();
@@ -57,7 +59,7 @@ int diffraflow::IngImageWriter::run_() {
             }
         }
         if (save_image_(image_with_feature)) {
-            if (current_saved_counts_ >= config_obj_->file_imgcnt_limit) {
+            if (current_saved_counts_.load() >= config_obj_->file_imgcnt_limit) {
                 LOG4CXX_INFO(logger_, "file limit reached, reopen new files.");
                 close_files_();
                 open_files_();
@@ -146,6 +148,7 @@ bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>&
         return false;
     } else {
         current_saved_counts_++;
+        total_saved_counts_++;
         return true;
     }
 }
@@ -164,7 +167,7 @@ bool diffraflow::IngImageWriter::create_directories_() {
     char str_buffer[STR_BUFF_SIZE];
     bs::error_code ec;
     // R0000
-    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d", current_run_number_);
+    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d", current_run_number_.load());
     folder_path /= str_buffer;
     if (!bf::exists(folder_path)) {
         bf::create_directory(folder_path, ec);
@@ -204,7 +207,7 @@ bool diffraflow::IngImageWriter::create_directories_() {
         }
     }
     current_turn_number_ = max_turn_number + 1;
-    snprintf(str_buffer, STR_BUFF_SIZE, "T%02d", current_turn_number_);
+    snprintf(str_buffer, STR_BUFF_SIZE, "T%02d", current_turn_number_.load());
     folder_path /= str_buffer;
     bf::create_directory(folder_path, ec);
     if (ec == bs::errc::success) {
@@ -228,8 +231,8 @@ bool diffraflow::IngImageWriter::open_hdf5_file_() {
     }
     char str_buffer[STR_BUFF_SIZE];
     snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.h5",
-        current_run_number_, config_obj_->node_name.c_str(), config_obj_->ingester_id,
-        current_turn_number_, current_sequence_number_);
+        current_run_number_.load(), config_obj_->node_name.c_str(), config_obj_->ingester_id,
+        current_turn_number_.load(), current_sequence_number_.load());
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;
     if (bf::exists(file_path)) {
@@ -257,8 +260,8 @@ bool diffraflow::IngImageWriter::open_raw_file_() {
     }
     char str_buffer[STR_BUFF_SIZE];
     snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.dat",
-        current_run_number_, config_obj_->node_name.c_str(), config_obj_->ingester_id,
-        current_turn_number_, current_sequence_number_);
+        current_run_number_.load(), config_obj_->node_name.c_str(), config_obj_->ingester_id,
+        current_turn_number_.load(), current_sequence_number_.load());
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;
     if (bf::exists(file_path)) {
@@ -288,6 +291,7 @@ bool diffraflow::IngImageWriter::open_files_() {
     }
 
     current_saved_counts_ = 0;
+    total_opened_counts_++;
     return true;
 }
 
@@ -302,4 +306,15 @@ void diffraflow::IngImageWriter::close_files_() {
         delete image_file_raw_;
         image_file_raw_ = nullptr;
     }
+}
+
+json::value diffraflow::IngImageWriter::collect_metrics() {
+    json::value root_json;
+    root_json["current_run_number"] = json::value::number(current_run_number_.load());
+    root_json["current_turn_number"] = json::value::number(current_turn_number_.load());
+    root_json["current_sequence_number"] = json::value::number(current_sequence_number_.load());
+    root_json["current_saved_counts"] = json::value::number(current_saved_counts_.load());
+    root_json["total_saved_counts"] = json::value::number(total_saved_counts_.load());
+    root_json["total_opened_counts"] = json::value::number(total_opened_counts_.load());
+    return root_json;
 }

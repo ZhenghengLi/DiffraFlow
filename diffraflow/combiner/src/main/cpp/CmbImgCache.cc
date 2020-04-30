@@ -185,10 +185,10 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
 json::value diffraflow::CmbImgCache::collect_metrics() {
 
     json::value alignment_metrics_json;
-    alignment_metrics_json["total_pushed_frames"] = json::value::number(alignment_metrics.total_pushed_frames);
-    alignment_metrics_json["total_aligned_images"] = json::value::number(alignment_metrics.total_aligned_images);
-    alignment_metrics_json["total_late_arrived"] = json::value::number(alignment_metrics.total_late_arrived);
-    alignment_metrics_json["total_partial_images"] = json::value::number(alignment_metrics.total_partial_images);
+    alignment_metrics_json["total_pushed_frames"] = json::value::number(alignment_metrics.total_pushed_frames.load());
+    alignment_metrics_json["total_aligned_images"] = json::value::number(alignment_metrics.total_aligned_images.load());
+    alignment_metrics_json["total_late_arrived"] = json::value::number(alignment_metrics.total_late_arrived.load());
+    alignment_metrics_json["total_partial_images"] = json::value::number(alignment_metrics.total_partial_images.load());
 
     json::value queue_metrics_json;
     {

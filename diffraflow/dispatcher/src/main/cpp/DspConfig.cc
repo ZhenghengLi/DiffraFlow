@@ -108,7 +108,37 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "compress level for ZSTD compress method is out of range, it should be >= 1 and < 20.");
         succ_flag = false;
     }
-    return succ_flag;
+
+    if (succ_flag) {
+        static_config_json_["dispatcher_id"] = json::value::number(dispatcher_id);
+        static_config_json_["listen_host"] = json::value::string(listen_host);
+        static_config_json_["listen_port"] = json::value::number(listen_port);
+        switch (compress_method) {
+        case DspSender::kLZ4:
+            static_config_json_["compress_method"] = json::value::string("LZ4");
+            break;
+        case DspSender::kSnappy:
+            static_config_json_["compress_method"] = json::value::string("Snappy");
+            break;
+        case DspSender::kZSTD:
+            static_config_json_["compress_method"] = json::value::string("ZSTD");
+            break;
+        default:
+            static_config_json_["compress_method"] = json::value::string("None");
+        }
+        static_config_json_["compress_level"] = json::value::number(compress_level);
+
+        metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+        metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+        metrics_config_json_["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+        metrics_config_json_["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+        metrics_config_json_["metrics_http_host"] = json::value::string(metrics_http_host);
+        metrics_config_json_["metrics_http_port"] = json::value::number(metrics_http_port);
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void diffraflow::DspConfig::print() {
@@ -141,29 +171,8 @@ void diffraflow::DspConfig::print() {
 
 json::value diffraflow::DspConfig::collect_metrics() {
     json::value config_json;
-    config_json["dispatcher_id"] = json::value::number(dispatcher_id);
-    config_json["listen_host"] = json::value::string(listen_host);
-    config_json["listen_port"] = json::value::number(listen_port);
-    switch (compress_method) {
-    case DspSender::kLZ4:
-        config_json["compress_method"] = json::value::string("LZ4");
-        break;
-    case DspSender::kSnappy:
-        config_json["compress_method"] = json::value::string("Snappy");
-        break;
-    case DspSender::kZSTD:
-        config_json["compress_method"] = json::value::string("ZSTD");
-        break;
-    default:
-        config_json["compress_method"] = json::value::string("None");
-    }
-    config_json["compress_level"] = json::value::number(compress_level);
-    config_json["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
-    config_json["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
-    config_json["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
-    config_json["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
-    config_json["metrics_http_host"] = json::value::string(metrics_http_host);
-    config_json["metrics_http_port"] = json::value::number(metrics_http_port);
+    config_json["static_config"] = static_config_json_;
+    config_json["metrics_config"] = metrics_config_json_;
     return config_json;
 }
 

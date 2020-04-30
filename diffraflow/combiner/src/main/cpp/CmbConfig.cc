@@ -94,7 +94,26 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
     }
-    return succ_flag;
+
+    if (succ_flag) {
+
+        static_config_json_["imgfrm_listen_host"] = json::value::string(imgfrm_listen_host);
+        static_config_json_["imgfrm_listen_port"] = json::value::number(imgfrm_listen_port);
+        static_config_json_["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
+        static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
+        static_config_json_["imgdat_queue_capacity"] = json::value::number(imgdat_queue_capacity);
+
+        metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+        metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+        metrics_config_json_["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+        metrics_config_json_["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+        metrics_config_json_["metrics_http_host"] = json::value::string(metrics_http_host);
+        metrics_config_json_["metrics_http_port"] = json::value::number(metrics_http_port);
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void diffraflow::CmbConfig::print() {
@@ -116,20 +135,8 @@ void diffraflow::CmbConfig::print() {
 
 json::value diffraflow::CmbConfig::collect_metrics() {
     json::value config_json;
-
-    config_json["imgfrm_listen_host"] = json::value::string(imgfrm_listen_host);
-    config_json["imgfrm_listen_port"] = json::value::number(imgfrm_listen_port);
-    config_json["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
-    config_json["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
-    config_json["imgdat_queue_capacity"] = json::value::number(imgdat_queue_capacity);
-
-    config_json["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
-    config_json["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
-    config_json["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
-    config_json["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
-    config_json["metrics_http_host"] = json::value::string(metrics_http_host);
-    config_json["metrics_http_port"] = json::value::number(metrics_http_port);
-
+    config_json["static_config"] = static_config_json_;
+    config_json["metrics_config"] = metrics_config_json_;
     return config_json;
 }
 

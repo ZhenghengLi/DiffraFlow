@@ -177,18 +177,27 @@ bool diffraflow::IngConfig::load(const char* filename) {
         succ_flag = false;
     }
     if (succ_flag) {
-        ingester_config_json_["storage_dir"] = json::value::string(storage_dir);
-        ingester_config_json_["node_name"] = json::value::string(node_name);
-        ingester_config_json_["ingester_id"] = json::value::number(ingester_id);
-        ingester_config_json_["hdf5_buffer_size"] = json::value::number(hdf5_buffer_size);
-        ingester_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
-        ingester_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
-        ingester_config_json_["hdf5_swmr_mode"] = json::value::number(hdf5_swmr_mode);
-        ingester_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
-        ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
-        ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
-        ingester_config_json_["image_http_host"] = json::value::string(image_http_host);
-        ingester_config_json_["image_http_port"] = json::value::number(image_http_port);
+
+        static_config_json_["storage_dir"] = json::value::string(storage_dir);
+        static_config_json_["node_name"] = json::value::string(node_name);
+        static_config_json_["ingester_id"] = json::value::number(ingester_id);
+        static_config_json_["hdf5_buffer_size"] = json::value::number(hdf5_buffer_size);
+        static_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
+        static_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
+        static_config_json_["hdf5_swmr_mode"] = json::value::number(hdf5_swmr_mode);
+        static_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
+        static_config_json_["combiner_host"] = json::value::string(combiner_host);
+        static_config_json_["combiner_port"] = json::value::number(combiner_port);
+        static_config_json_["image_http_host"] = json::value::string(image_http_host);
+        static_config_json_["image_http_port"] = json::value::number(image_http_port);
+
+        metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+        metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+        metrics_config_json_["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+        metrics_config_json_["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+        metrics_config_json_["metrics_http_host"] = json::value::string(metrics_http_host);
+        metrics_config_json_["metrics_http_port"] = json::value::number(metrics_http_port);
+
         return true;
     } else {
         return false;
@@ -202,19 +211,14 @@ json::value diffraflow::IngConfig::collect_metrics() {
         root_json = DynamicConfiguration::collect_metrics();
     }
 
+    root_json["static_config"] = static_config_json_;
+
     {
-        lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
-        root_json["ingester_config"] = ingester_config_json_;
+        lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
+        root_json["dynamic_config"] = dynamic_config_json_;
     }
 
-    json::value metrics_config_json;
-    metrics_config_json["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
-    metrics_config_json["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
-    metrics_config_json["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
-    metrics_config_json["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
-    metrics_config_json["metrics_http_host"] = json::value::string(metrics_http_host);
-    metrics_config_json["metrics_http_port"] = json::value::number(metrics_http_port);
-    root_json["metrics_config"] = metrics_config_json;
+    root_json["metrics_config"] = metrics_config_json_;
 
     return root_json;
 }
@@ -320,12 +324,12 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 
     config_mtime_ = conf_mtime;
 
-    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
-    ingester_config_json_["dy_run_number"] = json::value::number(dy_run_number_);
-    ingester_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
-    ingester_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
-    ingester_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
-    ingester_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
+    lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
+    dynamic_config_json_["dy_run_number"] = json::value::number(dy_run_number_);
+    dynamic_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
+    dynamic_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
+    dynamic_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
+    dynamic_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
 }

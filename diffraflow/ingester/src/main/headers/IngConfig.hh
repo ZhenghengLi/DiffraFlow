@@ -77,8 +77,10 @@ namespace diffraflow {
 
         bool zookeeper_setting_ready_flag_;
 
-        json::value ingester_config_json_;
-        mutex       ingester_config_json_mtx_;
+        json::value static_config_json_;
+        json::value metrics_config_json_;
+        json::value dynamic_config_json_;
+        mutex       dynamic_config_json_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

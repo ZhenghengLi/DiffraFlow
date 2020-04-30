@@ -41,6 +41,10 @@ namespace diffraflow {
         int                         metrics_http_port;
 
     private:
+        json::value static_config_json_;
+        json::value metrics_config_json_;
+
+    private:
         static log4cxx::LoggerPtr logger_;
 
     };

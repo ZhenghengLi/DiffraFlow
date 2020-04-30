@@ -17,8 +17,8 @@ log4cxx::LoggerPtr diffraflow::MonConfig::logger_
 
 diffraflow::MonConfig::MonConfig() {
     monitor_id = 0;
-    http_host = "localhost";
-    http_port = -1;
+    image_http_host = "localhost";
+    image_http_port = -1;
     request_timeout = 1000;
     zookeeper_setting_ready_flag_ = false;
     // initial values of dynamic configurations
@@ -53,10 +53,10 @@ bool diffraflow::MonConfig::load(const char* filename) {
         // for static parameters
         if (key == "monitor_id") {
             monitor_id = atoi(value.c_str());
-        } else if (key == "http_host") {
-            http_host = value;
-        } else if (key == "http_port") {
-            http_port = atoi(value.c_str());
+        } else if (key == "image_http_host") {
+            image_http_host = value;
+        } else if (key == "image_http_port") {
+            image_http_port = atoi(value.c_str());
         } else if (key == "request_timeout") {
             request_timeout = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
@@ -104,8 +104,8 @@ bool diffraflow::MonConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid monitor_id: " << monitor_id);
         succ_flag = false;
     }
-    if (http_port < 0) {
-        LOG4CXX_ERROR(logger_, "invalid http_port: " << http_port);
+    if (image_http_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid image_http_port: " << image_http_port);
         succ_flag = false;
     }
     // check and commit for dynamic parameters
@@ -118,8 +118,8 @@ bool diffraflow::MonConfig::load(const char* filename) {
 
         static_config_json_["node_name"] = json::value::string(node_name);
         static_config_json_["monitor_id"] = json::value::number(monitor_id);
-        static_config_json_["http_host"] = json::value::string(http_host);
-        static_config_json_["http_port"] = json::value::number(http_port);
+        static_config_json_["image_http_host"] = json::value::string(image_http_host);
+        static_config_json_["image_http_port"] = json::value::number(image_http_port);
         static_config_json_["request_timeout"] = json::value::number(request_timeout);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
@@ -168,8 +168,8 @@ void diffraflow::MonConfig::print() {
     cout << "static config:" << endl;
     cout << "- node_name = " << node_name << endl;
     cout << "- monitor_id = " << monitor_id << endl;
-    cout << "- http_host = " << http_host << endl;
-    cout << "- http_port = " << http_port << endl;
+    cout << "- image_http_host = " << image_http_host << endl;
+    cout << "- image_http_port = " << image_http_port << endl;
     cout << "dynamic parameters:" << endl;
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;

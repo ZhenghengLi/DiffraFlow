@@ -39,8 +39,8 @@ namespace diffraflow {
         // static parameters
         string   node_name;
         int      monitor_id;
-        string   http_host;
-        int      http_port;
+        string   image_http_host;
+        int      image_http_port;
         int      request_timeout;
 
         string   metrics_pulsar_broker_address;

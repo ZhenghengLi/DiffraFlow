@@ -30,9 +30,9 @@ void diffraflow::MonSrvMan::start_run() {
         return;
     }
 
-    if (image_http_server_->start(config_obj_->http_host, config_obj_->http_port)) {
+    if (image_http_server_->start(config_obj_->image_http_host, config_obj_->image_http_port)) {
         LOG4CXX_INFO(logger_, "successfully started HTTP server listening "
-            << config_obj_->http_host << ":" << config_obj_->http_port);
+            << config_obj_->image_http_host << ":" << config_obj_->image_http_port);
     } else {
         LOG4CXX_ERROR(logger_, "failed to start HTTP server.");
         return;
@@ -40,6 +40,7 @@ void diffraflow::MonSrvMan::start_run() {
 
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("image_http_server", image_http_server_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
         if (metrics_reporter_.start_msg_producer(
             config_obj_->metrics_pulsar_broker_address,

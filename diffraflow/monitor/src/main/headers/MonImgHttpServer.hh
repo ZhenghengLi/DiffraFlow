@@ -10,6 +10,8 @@
 #include <pplx/pplxtasks.h>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using web::http::experimental::listener::http_listener;
 using web::http::http_request;
@@ -27,7 +29,7 @@ namespace diffraflow {
     struct ImageAnalysisResult;
     class MonConfig;
 
-    class MonImgHttpServer {
+    class MonImgHttpServer: public MetricsProvider {
     public:
         explicit MonImgHttpServer(MonConfig* conf_obj);
         ~MonImgHttpServer();
@@ -37,6 +39,14 @@ namespace diffraflow {
         bool start(string host, int port);
         void stop();
         void wait();
+
+    public:
+        struct {
+            atomic<uint64_t> total_request_counts;
+            atomic<uint64_t> total_sent_counts;
+        } metrics;
+
+        json::value collect_metrics() override;
 
     public:
         enum WorkerStatus {kNotStart, kRunning, kStopped};

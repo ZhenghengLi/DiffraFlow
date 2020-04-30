@@ -28,6 +28,9 @@ diffraflow::MonImgHttpServer::MonImgHttpServer(MonConfig* conf_obj) {
     current_index_ = 0;
     config_obj_ = conf_obj;
     server_status_ = kNotStart;
+
+    metrics.total_request_counts = 0;
+    metrics.total_sent_counts = 0;
 }
 
 diffraflow::MonImgHttpServer::~MonImgHttpServer() {
@@ -189,6 +192,8 @@ void diffraflow::MonImgHttpServer::do_analysis_(const ImageWithFeature& image_wi
 
 void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
+    metrics.total_request_counts++;
+
     string relative_path = uri::decode(message.relative_uri().path());
 
     std::regex req_time_regex("^/(\\d+)$");
@@ -226,8 +231,16 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);
+        metrics.total_sent_counts++;
     } else {
         message.reply(status_codes::NotFound);
     }
 
+}
+
+json::value diffraflow::MonImgHttpServer::collect_metrics() {
+    json::value root_json;
+    root_json["total_request_counts"] = json::value::number(metrics.total_request_counts.load());
+    root_json["total_sent_counts"] = json::value::number(metrics.total_sent_counts.load());
+    return root_json;
 }

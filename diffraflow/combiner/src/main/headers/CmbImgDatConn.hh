@@ -14,6 +14,13 @@ namespace diffraflow {
         CmbImgDatConn(int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct = 10);
         ~CmbImgDatConn();
 
+    public:
+        struct {
+            atomic<uint64_t> total_sent_images;
+        } image_metrics;
+
+        json::value collect_metrics() override;
+
     protected:
         ProcessRes process_payload_(const char* payload_buffer,
             const size_t payload_size) override;

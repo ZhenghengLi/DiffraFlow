@@ -18,8 +18,9 @@ diffraflow::DspConfig::DspConfig() {
     listen_host = "0.0.0.0";
     listen_port = -1;
     compress_method = DspSender::kNone;
-    pulsar_report_period = 1000;
-    http_server_port = -1;
+
+    metrics_pulsar_report_period = 1000;
+    metrics_http_port = -1;
 }
 
 diffraflow::DspConfig::~DspConfig() {
@@ -54,18 +55,18 @@ bool diffraflow::DspConfig::load(const char* filename) {
             }
         } else if (key == "compress_level") {
             compress_level = atoi(value.c_str());
-        } else if (key == "pulsar_broker_address") {
-            pulsar_broker_address = value;
-        } else if (key == "pulsar_topic_name") {
-            pulsar_topic_name = value;
-        } else if (key == "pulsar_message_key") {
-            pulsar_message_key = value;
-        } else if (key == "pulsar_report_period") {
-            pulsar_report_period = atoi(value.c_str());
-        } else if (key == "http_server_host") {
-            http_server_host = value;
-        } else if (key == "http_server_port") {
-            http_server_port = atoi(value.c_str());
+        } else if (key == "metrics_pulsar_broker_address") {
+            metrics_pulsar_broker_address = value;
+        } else if (key == "metrics_pulsar_topic_name") {
+            metrics_pulsar_topic_name = value;
+        } else if (key == "metrics_pulsar_message_key") {
+            metrics_pulsar_message_key = value;
+        } else if (key == "metrics_pulsar_report_period") {
+            metrics_pulsar_report_period = atoi(value.c_str());
+        } else if (key == "metrics_http_host") {
+            metrics_http_host = value;
+        } else if (key == "metrics_http_port") {
+            metrics_http_port = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
                 << key << " = " << value << " in " << filename);
@@ -85,17 +86,17 @@ bool diffraflow::DspConfig::load(const char* filename) {
         }
     }
     // if NODE_NAME is defined, use it as the suffix of pulsar_message_key
-    if (!pulsar_message_key.empty()) {
+    if (!metrics_pulsar_message_key.empty()) {
         const char* node_name = getenv("NODE_NAME");
         if (node_name != NULL) {
-            pulsar_message_key += string(".") + string(node_name);
+            metrics_pulsar_message_key += string(".") + string(node_name);
         }
     }
 
     // correction
-    if (pulsar_report_period < 500) {
+    if (metrics_pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
-        pulsar_report_period = 500;
+        metrics_pulsar_report_period = 500;
     }
     // check
     bool succ_flag = true;
@@ -129,12 +130,12 @@ void diffraflow::DspConfig::print() {
         cout << "None" << endl;
     }
     cout << "  compress_level = " << compress_level << endl;
-    cout << "  pulsar_broker_address = " << pulsar_broker_address << endl;
-    cout << "  pulsar_topic_name = " << pulsar_topic_name << endl;
-    cout << "  pulsar_message_key = " << pulsar_message_key << endl;
-    cout << "  pulsar_report_period = " << pulsar_report_period << endl;
-    cout << "  http_server_host = " << http_server_host << endl;
-    cout << "  http_server_port = " << http_server_port << endl;
+    cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
+    cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
+    cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;
+    cout << "  metrics_pulsar_report_period = " << metrics_pulsar_report_period << endl;
+    cout << "  metrics_http_host = " << metrics_http_host << endl;
+    cout << "  metrics_http_port = " << metrics_http_port << endl;
     cout << " ---- Configuration Dump End ----" << endl;
 }
 
@@ -157,26 +158,26 @@ json::value diffraflow::DspConfig::collect_metrics() {
         config_json["compress_method"] = json::value::string("None");
     }
     config_json["compress_level"] = json::value::number(compress_level);
-    config_json["pulsar_broker_address"] = json::value::string(pulsar_broker_address);
-    config_json["pulsar_topic_name"] = json::value::string(pulsar_topic_name);
-    config_json["pulsar_message_key"] = json::value::string(pulsar_message_key);
-    config_json["pulsar_report_period"] = json::value::number(pulsar_report_period);
-    config_json["http_server_host"] = json::value::string(http_server_host);
-    config_json["http_server_port"] = json::value::number(http_server_port);
+    config_json["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+    config_json["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+    config_json["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+    config_json["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+    config_json["metrics_http_host"] = json::value::string(metrics_http_host);
+    config_json["metrics_http_port"] = json::value::number(metrics_http_port);
     return config_json;
 }
 
-bool diffraflow::DspConfig::pulsar_params_are_set() {
+bool diffraflow::DspConfig::metrics_pulsar_params_are_set() {
     return (
-        !pulsar_broker_address.empty() &&
-        !pulsar_topic_name.empty() &&
-        !pulsar_message_key.empty()
+        !metrics_pulsar_broker_address.empty() &&
+        !metrics_pulsar_topic_name.empty() &&
+        !metrics_pulsar_message_key.empty()
     );
 }
 
-bool diffraflow::DspConfig::http_server_params_are_set() {
+bool diffraflow::DspConfig::metrics_http_params_are_set() {
     return (
-        !http_server_host.empty() &&
-        http_server_port > 0
+        !metrics_http_host.empty() &&
+        metrics_http_port > 0
     );
 }

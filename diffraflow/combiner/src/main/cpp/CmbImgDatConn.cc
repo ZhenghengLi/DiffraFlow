@@ -21,6 +21,9 @@ diffraflow::CmbImgDatConn::CmbImgDatConn(
     GenericConnection(sock_fd, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE, 1024) {
     image_cache_ = image_cache;
     max_req_imgct_ = max_req_imgct;
+
+    image_metrics.total_sent_images = 0;
+
 }
 
 diffraflow::CmbImgDatConn::~CmbImgDatConn() {
@@ -63,6 +66,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
         // send data
         if (send_one_(head_buffer, 4, image_buffer_.data(), image_buffer_.size())) {
             LOG4CXX_DEBUG(logger_, "successfully send one image.");
+            image_metrics.total_sent_images++;
         } else {
             LOG4CXX_ERROR(logger_, "failed to send one image.");
             return kFailed;
@@ -70,4 +74,12 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
     }
 
     return ProcessRes::kProcessed;
+}
+
+json::value diffraflow::CmbImgDatConn::collect_metrics() {
+    json::value root_json = GenericConnection::collect_metrics();
+    json::value image_metrics_json;
+    image_metrics_json["total_sent_images"] = json::value::number(image_metrics.total_sent_images);
+    root_json["image_stats"] = image_metrics_json;
+    return root_json;
 }

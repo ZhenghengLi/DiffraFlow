@@ -45,38 +45,38 @@ void diffraflow::DspSrvMan::start_run() {
     imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_host,
         config_obj_->listen_port, sender_arr_, sender_cnt_);
 
-    // start metrics reporter
-    metrics_reporter_.add("configuration", config_obj_);
-    metrics_reporter_.add("image_frame_server", imgfrm_srv_);
-    metrics_reporter_.add("image_frame_senders", (MetricsProvider**) sender_arr_, sender_cnt_);
-    if (config_obj_->pulsar_params_are_set()) {
-        if (metrics_reporter_.start_msg_producer(
-            config_obj_->pulsar_broker_address,
-            config_obj_->pulsar_topic_name,
-            config_obj_->pulsar_message_key,
-            config_obj_->pulsar_report_period)) {
-            LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
-        } else {
-            LOG4CXX_ERROR(logger_, "Failed to start pulsar producer to periodically report metrics.");
-            return;
-        }
-    }
-    if (config_obj_->http_server_params_are_set()) {
-        if (metrics_reporter_.start_http_server(
-            config_obj_->http_server_host,
-            config_obj_->http_server_port)) {
-            LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
-        } else {
-            LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
-        }
-    }
-
     // multiple servers start from here
     if (imgfrm_srv_->start()) {
         LOG4CXX_INFO(logger_, "successfully started image frame server.")
     } else {
         LOG4CXX_ERROR(logger_, "failed to start image frame server.")
         return;
+    }
+
+    // start metrics reporter
+    metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("image_frame_server", imgfrm_srv_);
+    metrics_reporter_.add("image_frame_senders", (MetricsProvider**) sender_arr_, sender_cnt_);
+    if (config_obj_->metrics_pulsar_params_are_set()) {
+        if (metrics_reporter_.start_msg_producer(
+            config_obj_->metrics_pulsar_broker_address,
+            config_obj_->metrics_pulsar_topic_name,
+            config_obj_->metrics_pulsar_message_key,
+            config_obj_->metrics_pulsar_report_period)) {
+            LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to start pulsar producer to periodically report metrics.");
+            return;
+        }
+    }
+    if (config_obj_->metrics_http_params_are_set()) {
+        if (metrics_reporter_.start_http_server(
+            config_obj_->metrics_http_host,
+            config_obj_->metrics_http_port)) {
+            LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
+        }
     }
 
     running_flag_ = true;

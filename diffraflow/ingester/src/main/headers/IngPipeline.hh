@@ -4,6 +4,8 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsReporter.hh"
+
 using std::atomic_bool;
 
 namespace diffraflow {
@@ -50,6 +52,9 @@ namespace diffraflow {
         IngImageWriter* image_writer_;
 
         atomic_bool running_flag_;
+
+        // metrics
+        MetricsReporter metrics_reporter_;
 
     private:
         static log4cxx::LoggerPtr logger_;

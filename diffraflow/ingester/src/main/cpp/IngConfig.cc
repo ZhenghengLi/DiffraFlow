@@ -20,8 +20,8 @@ diffraflow::IngConfig::IngConfig() {
     combiner_port = -1;
     combiner_host = "localhost";
     node_name = "NODENAME";
-    http_port = -1;
-    http_host = "localhost";
+    image_http_port = -1;
+    image_http_host = "localhost";
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
@@ -39,6 +39,9 @@ diffraflow::IngConfig::IngConfig() {
     dy_param_int_ = 20;
     dy_param_double_ = 100;
     dy_param_string_ = "xfel";
+
+    metrics_pulsar_report_period = 1000;
+    metrics_http_port = -1;
 
 }
 
@@ -81,16 +84,28 @@ bool diffraflow::IngConfig::load(const char* filename) {
             combiner_host = value;
         } else if (key == "combiner_port") {
             combiner_port = atoi(value.c_str());
-        } else if (key == "http_host") {
-            http_host = value;
-        } else if (key == "http_port") {
-            http_port = atoi(value.c_str());
+        } else if (key == "image_http_host") {
+            image_http_host = value;
+        } else if (key == "image_http_port") {
+            image_http_port = atoi(value.c_str());
         } else if (key == "recnxn_wait_time") {
             recnxn_wait_time = atoi(value.c_str());
         } else if (key == "recnxn_max_count") {
             recnxn_max_count = atoi(value.c_str());
         } else if (key == "imgdat_queue_capacity") {
             imgdat_queue_capacity = atoi(value.c_str());
+        } else if (key == "metrics_pulsar_broker_address") {
+            metrics_pulsar_broker_address = value;
+        } else if (key == "metrics_pulsar_topic_name") {
+            metrics_pulsar_topic_name = value;
+        } else if (key == "metrics_pulsar_message_key") {
+            metrics_pulsar_message_key = value;
+        } else if (key == "metrics_pulsar_report_period") {
+            metrics_pulsar_report_period = atoi(value.c_str());
+        } else if (key == "metrics_http_host") {
+            metrics_http_host = value;
+        } else if (key == "metrics_http_port") {
+            metrics_http_port = atoi(value.c_str());
         // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
@@ -109,11 +124,19 @@ bool diffraflow::IngConfig::load(const char* filename) {
         combiner_host = node_ip_cstr;
     }
 
+    if (node_name_cstr != nullptr) {
+        metrics_pulsar_message_key += string(".") + string(node_name_cstr);
+    }
+
     if (storage_dir.empty()) {
         LOG4CXX_WARN(logger_, "storage_dir is not set, data will not be saved.");
     }
 
     // correction
+    if (metrics_pulsar_report_period < 500) {
+        LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
+        metrics_pulsar_report_period = 500;
+    }
     if (hdf5_buffer_size < 10) {
         LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 10), use 10 instead.");
         hdf5_buffer_size = 10;
@@ -140,8 +163,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
         succ_flag = false;
     }
-    if (http_port < 0) {
-        LOG4CXX_ERROR(logger_, "invalid http_port: " << http_port);
+    if (image_http_port < 0) {
+        LOG4CXX_ERROR(logger_, "invalid image_http_port: " << image_http_port);
         succ_flag = false;
     }
     if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {
@@ -164,8 +187,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         ingester_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
         ingester_config_json_["combiner_host"] = json::value::string(combiner_host);
         ingester_config_json_["combiner_port"] = json::value::number(combiner_port);
-        ingester_config_json_["http_host"] = json::value::string(http_host);
-        ingester_config_json_["http_port"] = json::value::number(http_port);
+        ingester_config_json_["image_http_host"] = json::value::string(image_http_host);
+        ingester_config_json_["image_http_port"] = json::value::number(image_http_port);
         return true;
     } else {
         return false;
@@ -174,11 +197,25 @@ bool diffraflow::IngConfig::load(const char* filename) {
 
 json::value diffraflow::IngConfig::collect_metrics() {
     json::value root_json;
+
     if (zookeeper_setting_ready_flag_) {
         root_json = DynamicConfiguration::collect_metrics();
     }
-    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
-    root_json["ingester_config"] = ingester_config_json_;
+
+    {
+        lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
+        root_json["ingester_config"] = ingester_config_json_;
+    }
+
+    json::value metrics_config_json;
+    metrics_config_json["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+    metrics_config_json["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+    metrics_config_json["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+    metrics_config_json["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+    metrics_config_json["metrics_http_host"] = json::value::string(metrics_http_host);
+    metrics_config_json["metrics_http_port"] = json::value::number(metrics_http_port);
+    root_json["metrics_config"] = metrics_config_json;
+
     return root_json;
 }
 
@@ -204,6 +241,13 @@ void diffraflow::IngConfig::print() {
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;
     cout << "- dy_param_string = " << dy_param_string_ << endl;
+    cout << "metrics config:" << endl;
+    cout << "- metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
+    cout << "- metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
+    cout << "- metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;
+    cout << "- metrics_pulsar_report_period = " << metrics_pulsar_report_period << endl;
+    cout << "- metrics_http_host = " << metrics_http_host << endl;
+    cout << "- metrics_http_port = " << metrics_http_port << endl;
 
 }
 
@@ -301,4 +345,19 @@ double diffraflow::IngConfig::get_dy_param_double() {
 string diffraflow::IngConfig::get_dy_param_string() {
     lock_guard<mutex> lg(dy_param_string_mtx_);
     return dy_param_string_;
+}
+
+bool diffraflow::IngConfig::metrics_pulsar_params_are_set() {
+    return (
+        !metrics_pulsar_broker_address.empty() &&
+        !metrics_pulsar_topic_name.empty() &&
+        !metrics_pulsar_message_key.empty()
+    );
+}
+
+bool diffraflow::IngConfig::metrics_http_params_are_set() {
+    return (
+        !metrics_http_host.empty() &&
+        metrics_http_port > 0
+    );
 }

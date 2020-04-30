@@ -108,9 +108,9 @@ void diffraflow::IngPipeline::start_run() {
         return;
     }
 
-    if (image_http_server_->start(config_obj_->http_host, config_obj_->http_port)) {
+    if (image_http_server_->start(config_obj_->image_http_host, config_obj_->image_http_port)) {
         LOG4CXX_INFO(logger_, "successfully started HTTP server listening "
-            << config_obj_->http_host << ":" << config_obj_->http_port);
+            << config_obj_->image_http_host << ":" << config_obj_->image_http_port);
     } else {
         LOG4CXX_ERROR(logger_, "failed to start HTTP server.");
         return;

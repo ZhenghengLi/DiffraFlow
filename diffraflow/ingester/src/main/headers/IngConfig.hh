@@ -21,6 +21,9 @@ namespace diffraflow {
 
         bool zookeeper_setting_is_ready();
 
+        bool metrics_pulsar_params_are_set();
+        bool metrics_http_params_are_set();
+
         json::value collect_metrics() override;
 
     public:
@@ -47,11 +50,18 @@ namespace diffraflow {
 
         string   combiner_host;
         int      combiner_port;
-        string   http_host;
-        int      http_port;
+        string   image_http_host;
+        int      image_http_port;
         size_t   recnxn_wait_time;
         size_t   recnxn_max_count;
         size_t   imgdat_queue_capacity;
+
+        string   metrics_pulsar_broker_address;
+        string   metrics_pulsar_topic_name;
+        string   metrics_pulsar_message_key;
+        int      metrics_pulsar_report_period;
+        string   metrics_http_host;
+        int      metrics_http_port;
 
     private:
         // dynamic parameters

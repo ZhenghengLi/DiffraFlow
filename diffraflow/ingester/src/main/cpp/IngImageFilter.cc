@@ -11,6 +11,11 @@ diffraflow::IngImageFilter::IngImageFilter(
     image_queue_out_ = img_queue_out;
     config_obj_ = conf_obj;
     worker_status_ = kNotStart;
+
+    filter_metrics.total_images_for_monitor = 0;
+    filter_metrics.total_images_for_save = 0;
+    filter_metrics.total_processed_images = 0;
+
 }
 
 diffraflow::IngImageFilter::~IngImageFilter() {
@@ -32,6 +37,7 @@ int diffraflow::IngImageFilter::run_() {
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
         if (check_for_save_(image_with_feature->image_feature)) {
+            filter_metrics.total_images_for_save++;
             if (image_queue_out_->push(image_with_feature)) {
                 LOG4CXX_DEBUG(logger_, "pushed the one good image into queue for saving.");
             } else {
@@ -39,8 +45,10 @@ int diffraflow::IngImageFilter::run_() {
             }
         }
         if (check_for_monitor_(image_with_feature->image_feature)) {
+            filter_metrics.total_images_for_monitor++;
             set_current_image(image_with_feature);
         }
+        filter_metrics.total_processed_images++;
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();
@@ -101,4 +109,12 @@ bool diffraflow::IngImageFilter::get_current_image(ImageWithFeature& image_with_
     } else {
         return false;
     }
+}
+
+json::value diffraflow::IngImageFilter::collect_metrics() {
+    json::value filter_metrics_json;
+    filter_metrics_json["total_processed_images"] = json::value::number(filter_metrics.total_processed_images);
+    filter_metrics_json["total_images_for_save"] = json::value::number(filter_metrics.total_images_for_save);
+    filter_metrics_json["total_images_for_monitor"] = json::value::number(filter_metrics.total_images_for_monitor);
+    return filter_metrics_json;
 }

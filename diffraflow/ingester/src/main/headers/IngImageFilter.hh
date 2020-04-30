@@ -7,6 +7,8 @@
 #include <future>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::mutex;
 using std::condition_variable;
 using std::atomic_bool;
@@ -24,7 +26,7 @@ namespace diffraflow {
     class ImageFeature;
     class IngConfig;
 
-    class IngImageFilter {
+    class IngImageFilter: public MetricsProvider {
     public:
         IngImageFilter(
             IngImgWthFtrQueue*  img_queue_in,
@@ -39,6 +41,15 @@ namespace diffraflow {
 
         void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
         bool get_current_image(ImageWithFeature& image_with_feature);
+
+    public:
+        struct {
+            atomic<uint64_t> total_processed_images;
+            atomic<uint64_t> total_images_for_save;
+            atomic<uint64_t> total_images_for_monitor;
+        } filter_metrics;
+
+        json::value collect_metrics() override;
 
     public:
         enum WorkerStatus {kNotStart, kRunning, kStopped};

@@ -3,6 +3,7 @@
 
 #include "BlockingQueue.hh"
 #include "TimeOrderedQueue.hh"
+#include "MetricsProvider.hh"
 
 #include <mutex>
 #include <atomic>
@@ -13,6 +14,7 @@ using std::queue;
 using std::mutex;
 using std::condition_variable;
 using std::atomic_bool;
+using std::atomic;
 using std::shared_ptr;
 using std::make_shared;
 
@@ -21,7 +23,7 @@ namespace diffraflow {
     class ImageFramePtr;
     class ImageData;
 
-    class CmbImgCache {
+    class CmbImgCache: public MetricsProvider {
     public:
         explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100);
         ~CmbImgCache();
@@ -29,6 +31,16 @@ namespace diffraflow {
         bool push_frame(const ImageFramePtr& image_frame);
         bool take_image(shared_ptr<ImageData>& image_data);
         void stop(int wait_time = 0  /* millisecond */);
+
+    public:
+        struct {
+            atomic<uint64_t> total_pushed_frames;
+            atomic<uint64_t> total_aligned_images;
+            atomic<uint64_t> total_late_arrived;
+            atomic<uint64_t> total_partial_images;
+        } alignment_metrics;
+
+        json::value collect_metrics() override;
 
     private:
         bool do_alignment_(shared_ptr<ImageData> image_data, bool force_flag = false);

@@ -24,6 +24,12 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     num_of_empty_ = imgfrm_queues_len_;
     distance_max_ = 0;
     stopped_ = false;
+
+    alignment_metrics.total_pushed_frames = 0;
+    alignment_metrics.total_aligned_images = 0;
+    alignment_metrics.total_late_arrived = 0;
+    alignment_metrics.total_partial_images = 0;
+
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
@@ -53,6 +59,8 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         distance_max_ = distance_current;
     }
 
+    alignment_metrics.total_pushed_frames++;
+
     while (true) {
         shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
         if (!do_alignment_(image_data, false)) {
@@ -60,9 +68,17 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         }
         if (image_data->event_time < image_time_last_) {
             image_data->late_arrived = true;
+            alignment_metrics.total_late_arrived++;
         } else {
             image_data->late_arrived = false;
             image_time_last_ = image_data->event_time;
+        }
+        alignment_metrics.total_aligned_images++;
+        for (const bool& item: image_data->alignment_vec) {
+            if (!item) {
+                alignment_metrics.total_partial_images++;
+                break;
+            }
         }
         // for debug
         image_data->print();
@@ -163,5 +179,30 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
             [this]() {return imgdat_queue_.empty();}
         );
     }
+
+}
+
+json::value diffraflow::CmbImgCache::collect_metrics() {
+
+    json::value alignment_metrics_json;
+    alignment_metrics_json["total_pushed_frames"] = json::value::number(alignment_metrics.total_pushed_frames);
+    alignment_metrics_json["total_aligned_images"] = json::value::number(alignment_metrics.total_aligned_images);
+    alignment_metrics_json["total_late_arrived"] = json::value::number(alignment_metrics.total_late_arrived);
+    alignment_metrics_json["total_partial_images"] = json::value::number(alignment_metrics.total_partial_images);
+
+    lock_guard<mutex> lg(data_mtx_);
+    json::value queue_metrics_json;
+    queue_metrics_json["image_data_queue_size"] = json::value::number(imgdat_queue_.size());
+    json::value image_frame_queue_sizes;
+    for (size_t i = 0; i < imgfrm_queues_len_; i++) {
+        image_frame_queue_sizes[i] = json::value::number(imgfrm_queues_arr_[i].size());
+    }
+    queue_metrics_json["image_frame_queue_sizes"] = image_frame_queue_sizes;
+
+    json::value root_json;
+    root_json["alignment_stat"] = alignment_metrics_json;
+    root_json["queue_stat"] = queue_metrics_json;
+
+    return root_json;
 
 }

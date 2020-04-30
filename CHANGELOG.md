@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [x] monitor: fetch image data from ingester by an http client, do analysis and provide analysis results via HTTP.
-- [ ] controller: load balance for multiple monitors running on different nodes.
-- [ ] controller: support ZooKeeper operations for config_map via RESTful API, including HTTP verbs GET, POST, PUT, PATCH, DELETE
+- [ ] add the YAML deployment files for ingester, monitor and controller
+- [ ] aggregator: running on the pulsar consumer side to aggregate metrics from all components, calculate speeds and serve results via HTTP GET.
+
+## [0.0.12] - 2020-04-30
+
+### Added
+
+- Finished the code of **monitor** to fetch image data from **ingester** by an HTTP client, as well as the online data analysis template code, the HTTP server to provide image data and analysis results on request.
+- Finished the load balancer in **controller** for multiple monitors running on different nodes, and the support for ZooKeeper operations via RESTful API, including HTTP verbs GET, POST, PUT, PATCH and DELETE.
+- Added the code to collect metrics for **combiner**, **ingester** and **monitor**.
 
 ## [0.0.11] - 2020-04-17
 

@@ -16,6 +16,9 @@ diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter, int i
     image_filter_ = img_filter;
     listener_ = nullptr;
     ingester_id_ = ing_id;
+
+    metrics.total_request_counts = 0;
+    metrics.total_sent_counts = 0;
 }
 
 diffraflow::IngImgHttpServer::~IngImgHttpServer() {
@@ -65,6 +68,8 @@ void diffraflow::IngImgHttpServer::stop() {
 
 void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
 
+    metrics.total_request_counts++;
+
     string relative_path = uri::decode(message.relative_uri().path());
 
     std::regex req_time_regex("^/(\\d+)$");
@@ -93,6 +98,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);
+        metrics.total_sent_counts++;
 
     } else if (std::regex_match(relative_path, match_res, req_time_regex)) {
         uint64_t request_time = std::stoul(match_res[1].str());
@@ -115,6 +121,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
             message.reply(response);
+            metrics.total_sent_counts++;
 
         } else {
             message.reply(status_codes::NotFound);
@@ -123,4 +130,11 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
     } else {
         message.reply(status_codes::NotFound);
     }
+}
+
+json::value diffraflow::IngImgHttpServer::collect_metrics() {
+    json::value root_json;
+    root_json["total_request_counts"] = json::value::number(metrics.total_request_counts.load());
+    root_json["total_sent_counts"] = json::value::number(metrics.total_sent_counts.load());
+    return root_json;
 }

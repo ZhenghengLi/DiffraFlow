@@ -4,6 +4,8 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsReporter.hh"
+
 using std::atomic_bool;
 using std::string;
 
@@ -27,6 +29,9 @@ namespace diffraflow {
         string ingester_address_file_;
 
         atomic_bool running_flag_;
+
+        // metrics
+        MetricsReporter metrics_reporter_;
 
     private:
         static log4cxx::LoggerPtr logger_;

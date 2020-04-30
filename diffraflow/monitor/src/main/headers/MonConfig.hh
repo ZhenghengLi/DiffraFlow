@@ -21,6 +21,9 @@ namespace diffraflow {
 
         bool zookeeper_setting_is_ready();
 
+        bool metrics_pulsar_params_are_set();
+        bool metrics_http_params_are_set();
+
         json::value collect_metrics() override;
 
     public:
@@ -40,6 +43,13 @@ namespace diffraflow {
         int      http_port;
         int      request_timeout;
 
+        string   metrics_pulsar_broker_address;
+        string   metrics_pulsar_topic_name;
+        string   metrics_pulsar_message_key;
+        int      metrics_pulsar_report_period;
+        string   metrics_http_host;
+        int      metrics_http_port;
+
     private:
         // dynamic parameters
         atomic<int>     dy_param_int_;
@@ -52,8 +62,10 @@ namespace diffraflow {
 
         bool zookeeper_setting_ready_flag_;
 
-        json::value ingester_config_json_;
-        mutex       ingester_config_json_mtx_;
+        json::value static_config_json_;
+        json::value metrics_config_json_;
+        json::value dynamic_config_json_;
+        mutex       dynamic_config_json_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

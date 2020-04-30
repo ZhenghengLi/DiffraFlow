@@ -25,6 +25,9 @@ diffraflow::MonConfig::MonConfig() {
     dy_param_int_ = 20;
     dy_param_double_ = 100;
     dy_param_string_ = "xfel";
+
+    metrics_pulsar_report_period = 1000;
+    metrics_http_port = -1;
 }
 
 diffraflow::MonConfig::~MonConfig() {
@@ -56,6 +59,18 @@ bool diffraflow::MonConfig::load(const char* filename) {
             http_port = atoi(value.c_str());
         } else if (key == "request_timeout") {
             request_timeout = atoi(value.c_str());
+        } else if (key == "metrics_pulsar_broker_address") {
+            metrics_pulsar_broker_address = value;
+        } else if (key == "metrics_pulsar_topic_name") {
+            metrics_pulsar_topic_name = value;
+        } else if (key == "metrics_pulsar_message_key") {
+            metrics_pulsar_message_key = value;
+        } else if (key == "metrics_pulsar_report_period") {
+            metrics_pulsar_report_period = atoi(value.c_str());
+        } else if (key == "metrics_http_host") {
+            metrics_http_host = value;
+        } else if (key == "metrics_http_port") {
+            metrics_http_port = atoi(value.c_str());
         // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
@@ -68,7 +83,16 @@ bool diffraflow::MonConfig::load(const char* filename) {
     } else {
         node_name = "NODENAME";
     }
+
+    if (node_name_cstr != nullptr) {
+        metrics_pulsar_message_key += string(".") + string(node_name_cstr);
+    }
+
     // correction
+    if (metrics_pulsar_report_period < 500) {
+        LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
+        metrics_pulsar_report_period = 500;
+    }
     if (request_timeout < 10) {
         LOG4CXX_WARN(logger_, "request_timeout is too small (< 10), use 10 instead.");
         request_timeout = 10;
@@ -89,12 +113,22 @@ bool diffraflow::MonConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "dynamic configurations have invalid values.");
         succ_flag = false;
     }
+
     if (succ_flag) {
-        ingester_config_json_["node_name"] = json::value::string(node_name);
-        ingester_config_json_["monitor_id"] = json::value::number(monitor_id);
-        ingester_config_json_["http_host"] = json::value::string(http_host);
-        ingester_config_json_["http_port"] = json::value::number(http_port);
-        ingester_config_json_["request_timeout"] = json::value::number(request_timeout);
+
+        static_config_json_["node_name"] = json::value::string(node_name);
+        static_config_json_["monitor_id"] = json::value::number(monitor_id);
+        static_config_json_["http_host"] = json::value::string(http_host);
+        static_config_json_["http_port"] = json::value::number(http_port);
+        static_config_json_["request_timeout"] = json::value::number(request_timeout);
+
+        metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+        metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+        metrics_config_json_["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+        metrics_config_json_["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+        metrics_config_json_["metrics_http_host"] = json::value::string(metrics_http_host);
+        metrics_config_json_["metrics_http_port"] = json::value::number(metrics_http_port);
+
         return true;
     } else {
         return false;
@@ -106,8 +140,16 @@ json::value diffraflow::MonConfig::collect_metrics() {
     if (zookeeper_setting_ready_flag_) {
         root_json = DynamicConfiguration::collect_metrics();
     }
-    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
-    root_json["ingester_config"] = ingester_config_json_;
+
+    root_json["static_config"] = static_config_json_;
+
+    {
+        lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
+        root_json["dynamic_config"] = dynamic_config_json_;
+    }
+
+    root_json["metrics_config"] = metrics_config_json_;
+
     return root_json;
 }
 
@@ -193,11 +235,11 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
 
     config_mtime_ = conf_mtime;
 
-    lock_guard<mutex> ingester_config_json_lg(ingester_config_json_mtx_);
-    ingester_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
-    ingester_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
-    ingester_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
-    ingester_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
+    lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
+    dynamic_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
+    dynamic_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
+    dynamic_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
+    dynamic_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
 }
@@ -213,4 +255,19 @@ double diffraflow::MonConfig::get_dy_param_double() {
 string diffraflow::MonConfig::get_dy_param_string() {
     lock_guard<mutex> lg(dy_param_string_mtx_);
     return dy_param_string_;
+}
+
+bool diffraflow::MonConfig::metrics_pulsar_params_are_set() {
+    return (
+        !metrics_pulsar_broker_address.empty() &&
+        !metrics_pulsar_topic_name.empty() &&
+        !metrics_pulsar_message_key.empty()
+    );
+}
+
+bool diffraflow::MonConfig::metrics_http_params_are_set() {
+    return (
+        !metrics_http_host.empty() &&
+        metrics_http_port > 0
+    );
 }

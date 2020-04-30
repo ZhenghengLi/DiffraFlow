@@ -193,10 +193,10 @@ json::value diffraflow::CmbImgCache::collect_metrics() {
     json::value queue_metrics_json;
     {
         lock_guard<mutex> lg(data_mtx_);
-        queue_metrics_json["image_data_queue_size"] = json::value::number(imgdat_queue_.size());
+        queue_metrics_json["image_data_queue_size"] = json::value::number( (uint32_t) imgdat_queue_.size());
         json::value image_frame_queue_sizes;
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
-            image_frame_queue_sizes[i] = json::value::number(imgfrm_queues_arr_[i].size());
+            image_frame_queue_sizes[i] = json::value::number( (uint32_t) imgfrm_queues_arr_[i].size());
         }
         queue_metrics_json["image_frame_queue_sizes"] = image_frame_queue_sizes;
     }

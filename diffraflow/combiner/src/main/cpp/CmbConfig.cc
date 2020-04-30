@@ -101,7 +101,7 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         static_config_json_["imgfrm_listen_port"] = json::value::number(imgfrm_listen_port);
         static_config_json_["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
         static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
-        static_config_json_["imgdat_queue_capacity"] = json::value::number(imgdat_queue_capacity);
+        static_config_json_["imgdat_queue_capacity"] = json::value::number( (uint32_t) imgdat_queue_capacity);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);

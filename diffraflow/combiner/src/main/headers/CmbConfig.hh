@@ -15,8 +15,8 @@ namespace diffraflow {
     public:
        CmbConfig();
        ~CmbConfig();
-       bool load(const char* filename);
-       void print();
+       bool load(const char* filename) override;
+       void print() override;
 
     public:
         bool metrics_pulsar_params_are_set();

@@ -55,13 +55,11 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
     size_t current_limit = 0;
 
     switch (payload_type) {
-    case 0xABCDFF00: // Non-Compress, use the raw data
-    {
+    case 0xABCDFF00: { // Non-Compress, use the raw data
         current_buffer = payload_buffer + 8;
         current_limit = payload_size - 8;
     } break;
-    case 0xABCDFF01: // Compressed by LZ4, decompress
-    {
+    case 0xABCDFF01: { // Compressed by LZ4, decompress
         int result = LZ4_decompress_safe(payload_buffer + 8, buffer_uncompress_, payload_size - 8, buffer_size_);
         if (result < 0) {
             LOG4CXX_WARN(
@@ -73,8 +71,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
         current_buffer = buffer_uncompress_;
         current_limit = buffer_uncompress_limit_;
     } break;
-    case 0xABCDFF02: // Compressed by Snappy, decompress
-    {
+    case 0xABCDFF02: { // Compressed by Snappy, decompress
         if (!snappy::GetUncompressedLength(payload_buffer + 8, payload_size - 8, &buffer_uncompress_limit_)) {
             LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
             return kSkipped;
@@ -90,8 +87,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
         current_buffer = buffer_uncompress_;
         current_limit = buffer_uncompress_limit_;
     } break;
-    case 0xABCDFF03: // Compressed by ZSTD, decompress
-    {
+    case 0xABCDFF03: { // Compressed by ZSTD, decompress
         buffer_uncompress_limit_ =
             ZSTD_decompress(buffer_uncompress_, buffer_size_, payload_buffer + 8, payload_size - 8);
         if (ZSTD_isError(buffer_uncompress_limit_)) {

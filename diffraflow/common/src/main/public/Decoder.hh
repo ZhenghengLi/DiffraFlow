@@ -13,7 +13,7 @@ namespace diffraflow {
         template <class T>
         T decode_bit(const char* buffer, size_t begin, size_t end);
         template <class T>
-        T decode_byte(const char* buffer, size_t begin, size_t end); 
+        T decode_byte(const char* buffer, size_t begin, size_t end);
     };
 
     static Decoder gDC;
@@ -37,7 +37,7 @@ namespace diffraflow {
             }
             sum <<= end_pos;
             sum <<= 1; // equivalent to sum <<= (end_pos + 1)
-            sum += static_cast<uint8_t>(buffer[end_byte]) >> (8 - end_pos -1);
+            sum += static_cast<uint8_t>(buffer[end_byte]) >> (8 - end_pos - 1);
             return sum;
         }
     }
@@ -52,6 +52,6 @@ namespace diffraflow {
         }
         return sum;
     }
-}
+} // namespace diffraflow
 
 #endif

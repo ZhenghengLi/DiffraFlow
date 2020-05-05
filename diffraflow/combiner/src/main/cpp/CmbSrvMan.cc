@@ -4,8 +4,7 @@
 #include "CmbImgFrmSrv.hh"
 #include "CmbImgDatSrv.hh"
 
-log4cxx::LoggerPtr diffraflow::CmbSrvMan::logger_
-    = log4cxx::Logger::getLogger("CmbSrvMan");
+log4cxx::LoggerPtr diffraflow::CmbSrvMan::logger_ = log4cxx::Logger::getLogger("CmbSrvMan");
 
 diffraflow::CmbSrvMan::CmbSrvMan(CmbConfig* config) {
     config_obj_ = config;
@@ -15,19 +14,15 @@ diffraflow::CmbSrvMan::CmbSrvMan(CmbConfig* config) {
     imgdat_srv_ = nullptr;
 }
 
-diffraflow::CmbSrvMan::~CmbSrvMan() {
-
-}
+diffraflow::CmbSrvMan::~CmbSrvMan() {}
 
 void diffraflow::CmbSrvMan::start_run() {
     if (running_flag_) return;
 
     image_cache_ = new CmbImgCache(1, config_obj_->imgdat_queue_capacity);
 
-    imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->imgfrm_listen_host,
-        config_obj_->imgfrm_listen_port, image_cache_);
-    imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_listen_host,
-        config_obj_->imgdat_listen_port, image_cache_);
+    imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->imgfrm_listen_host, config_obj_->imgfrm_listen_port, image_cache_);
+    imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_listen_host, config_obj_->imgdat_listen_port, image_cache_);
 
     // multiple servers start from here
     if (imgfrm_srv_->start()) {
@@ -49,11 +44,9 @@ void diffraflow::CmbSrvMan::start_run() {
     metrics_reporter_.add("image_frame_server", imgfrm_srv_);
     metrics_reporter_.add("image_data_server", imgdat_srv_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
-        if (metrics_reporter_.start_msg_producer(
-            config_obj_->metrics_pulsar_broker_address,
-            config_obj_->metrics_pulsar_topic_name,
-            config_obj_->metrics_pulsar_message_key,
-            config_obj_->metrics_pulsar_report_period)) {
+        if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,
+                config_obj_->metrics_pulsar_topic_name, config_obj_->metrics_pulsar_message_key,
+                config_obj_->metrics_pulsar_report_period)) {
             LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
         } else {
             LOG4CXX_ERROR(logger_, "Failed to start pulsar producer to periodically report metrics.");
@@ -61,9 +54,7 @@ void diffraflow::CmbSrvMan::start_run() {
         }
     }
     if (config_obj_->metrics_http_params_are_set()) {
-        if (metrics_reporter_.start_http_server(
-            config_obj_->metrics_http_host,
-            config_obj_->metrics_http_port)) {
+        if (metrics_reporter_.start_http_server(config_obj_->metrics_http_host, config_obj_->metrics_http_port)) {
             LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
         } else {
             LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
@@ -76,8 +67,8 @@ void diffraflow::CmbSrvMan::start_run() {
     async([this]() {
         imgfrm_srv_->wait();
         imgdat_srv_->wait();
-    }).wait();
-
+    })
+        .wait();
 }
 
 void diffraflow::CmbSrvMan::terminate() {

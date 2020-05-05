@@ -26,18 +26,15 @@ namespace diffraflow {
     class ImageFeature;
     class IngConfig;
 
-    class IngImageFilter: public MetricsProvider {
+    class IngImageFilter : public MetricsProvider {
     public:
-        IngImageFilter(
-            IngImgWthFtrQueue*  img_queue_in,
-            IngImgWthFtrQueue*  img_queue_out,
-            IngConfig*          conf_obj);
+        IngImageFilter(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, IngConfig* conf_obj);
 
         ~IngImageFilter();
 
         bool start();
         void wait();
-        int  stop();
+        int stop();
 
         void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
         bool get_current_image(ImageWithFeature& image_with_feature);
@@ -52,7 +49,7 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
         bool check_for_save_(const ImageFeature& image_feature);
@@ -67,17 +64,17 @@ namespace diffraflow {
         condition_variable cv_status_;
 
     private:
-        IngImgWthFtrQueue*  image_queue_in_;
-        IngImgWthFtrQueue*  image_queue_out_;
-        IngConfig*          config_obj_;
+        IngImgWthFtrQueue* image_queue_in_;
+        IngImgWthFtrQueue* image_queue_out_;
+        IngConfig* config_obj_;
 
     private:
-        shared_ptr<ImageWithFeature>    current_image_;
-        mutex                           current_image_mtx_;
+        shared_ptr<ImageWithFeature> current_image_;
+        mutex current_image_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

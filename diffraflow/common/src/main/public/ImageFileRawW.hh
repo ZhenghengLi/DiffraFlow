@@ -35,6 +35,6 @@ namespace diffraflow {
         static log4cxx::LoggerPtr logger_;
         static const string inprogress_suffix_;
     };
-}
+} // namespace diffraflow
 
 #endif

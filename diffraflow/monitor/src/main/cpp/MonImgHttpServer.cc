@@ -20,8 +20,7 @@ using std::regex;
 using std::regex_match;
 using std::regex_replace;
 
-log4cxx::LoggerPtr diffraflow::MonImgHttpServer::logger_
-    = log4cxx::Logger::getLogger("MonImgHttpServer");
+log4cxx::LoggerPtr diffraflow::MonImgHttpServer::logger_ = log4cxx::Logger::getLogger("MonImgHttpServer");
 
 diffraflow::MonImgHttpServer::MonImgHttpServer(MonConfig* conf_obj) {
     listener_ = nullptr;
@@ -33,9 +32,7 @@ diffraflow::MonImgHttpServer::MonImgHttpServer(MonConfig* conf_obj) {
     metrics.total_sent_counts = 0;
 }
 
-diffraflow::MonImgHttpServer::~MonImgHttpServer() {
-
-}
+diffraflow::MonImgHttpServer::~MonImgHttpServer() {}
 
 bool diffraflow::MonImgHttpServer::start(string host, int port) {
     if (server_status_ == kRunning) {
@@ -56,7 +53,7 @@ bool diffraflow::MonImgHttpServer::start(string host, int port) {
     } catch (std::exception& e) {
         LOG4CXX_ERROR(logger_, "failed to start http server: " << e.what());
         return false;
-    } catch(...) {
+    } catch (...) {
         LOG4CXX_ERROR(logger_, "failed to start http server with unknown error.");
         return false;
     }
@@ -79,14 +76,11 @@ void diffraflow::MonImgHttpServer::stop() {
 
     server_status_ = kStopped;
     cv_status_.notify_all();
-
 }
 
 void diffraflow::MonImgHttpServer::wait() {
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {return server_status_ != kRunning;}
-    );
+    cv_status_.wait(ulk, [this]() { return server_status_ != kRunning; });
 }
 
 bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename, int timeout) {
@@ -123,21 +117,20 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
             ingester_clients_vec_.push_back(client);
             LOG4CXX_INFO(logger_, "created ingester client for " << uri_val.to_string());
         } catch (std::exception& e) {
-            LOG4CXX_ERROR(logger_, "exception found when creating ingester client for "
-                << oneline << ": " << e.what());
+            LOG4CXX_ERROR(logger_, "exception found when creating ingester client for " << oneline << ": " << e.what());
             return false;
         }
     }
     if (ingester_clients_vec_.size() > 0) {
         return true;
     } else {
-            LOG4CXX_ERROR(logger_, "no valid ingester addresses found in file: " << filename);
+        LOG4CXX_ERROR(logger_, "no valid ingester addresses found in file: " << filename);
         return false;
     }
 }
 
-bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_string,
-    ImageWithFeature& image_with_feature, string& ingester_id_str) {
+bool diffraflow::MonImgHttpServer::request_one_image_(
+    const string event_time_string, ImageWithFeature& image_with_feature, string& ingester_id_str) {
 
     lock_guard<mutex> lg(mtx_client_);
 
@@ -146,7 +139,7 @@ bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_st
         return false;
     }
 
-    for (size_t addr_idx = current_index_; true; ) {
+    for (size_t addr_idx = current_index_; true;) {
         http_response response;
         bool found_exception = false;
         try {
@@ -154,13 +147,13 @@ bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_st
         } catch (std::exception& e) {
             found_exception = true;
             LOG4CXX_WARN(logger_, "exception found when requesting data from \""
-                << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\": " << e.what());
+                                      << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\": " << e.what());
         }
         addr_idx++;
         if (addr_idx >= ingester_clients_vec_.size()) {
             addr_idx = 0;
         }
-        if (!found_exception && response.status_code() == status_codes::OK) {// succ
+        if (!found_exception && response.status_code() == status_codes::OK) { // succ
             if (response.headers().has("Ingester-ID")) {
                 ingester_id_str = response.headers()["Ingester-ID"];
             } else {
@@ -169,7 +162,7 @@ bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_st
             }
             vector<unsigned char> body_vec = response.extract_vector().get();
             try {
-                msgpack::unpack((const char*) body_vec.data(), body_vec.size()).get().convert(image_with_feature);
+                msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_with_feature);
             } catch (std::exception& e) {
                 LOG4CXX_WARN(logger_, "failed to deserialize image_with_feature data with exception: " << e.what());
                 return false;
@@ -180,14 +173,12 @@ bool diffraflow::MonImgHttpServer::request_one_image_(const string event_time_st
             return false;
         }
     }
-
 }
 
-void diffraflow::MonImgHttpServer::do_analysis_(const ImageWithFeature& image_with_feature,
-    ImageAnalysisResult& image_analysis_result) {
+void diffraflow::MonImgHttpServer::do_analysis_(
+    const ImageWithFeature& image_with_feature, ImageAnalysisResult& image_analysis_result) {
     image_analysis_result.image_with_feature = image_with_feature;
     // do some heavy analysis here and save result into image_analysis_result
-
 }
 
 void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
@@ -235,7 +226,6 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     } else {
         message.reply(status_codes::NotFound);
     }
-
 }
 
 json::value diffraflow::MonImgHttpServer::collect_metrics() {

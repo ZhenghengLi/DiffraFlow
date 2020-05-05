@@ -6,8 +6,7 @@
 using std::string;
 using std::lock_guard;
 
-log4cxx::LoggerPtr diffraflow::ImageFileHDF5R::logger_
-    = log4cxx::Logger::getLogger("ImageFileHDF5R");
+log4cxx::LoggerPtr diffraflow::ImageFileHDF5R::logger_ = log4cxx::Logger::getLogger("ImageFileHDF5R");
 
 diffraflow::ImageFileHDF5R::ImageFileHDF5R(size_t buffer_size, bool swmr) {
     buffer_size_ = (buffer_size > 10 ? buffer_size : 10);
@@ -21,7 +20,7 @@ diffraflow::ImageFileHDF5R::ImageFileHDF5R(size_t buffer_size, bool swmr) {
 }
 
 diffraflow::ImageFileHDF5R::~ImageFileHDF5R() {
-    delete [] image_buffer_;
+    delete[] image_buffer_;
     image_buffer_ = nullptr;
 }
 
@@ -60,8 +59,7 @@ bool diffraflow::ImageFileHDF5R::open(const char* filename) {
         file_space.getSimpleExtentDims(current_dim);
         imgdat_dset_size_ = current_dim[0];
     } catch (H5::Exception& e) {
-        LOG4CXX_ERROR(logger_, "found error when opening HDF5 file "
-            << filename << " : " << e.getDetailMsg());
+        LOG4CXX_ERROR(logger_, "found error when opening HDF5 file " << filename << " : " << e.getDetailMsg());
         return false;
     } catch (...) {
         LOG4CXX_ERROR(logger_, "found unknown error when opening HDF5 file: " << filename);
@@ -80,7 +78,6 @@ void diffraflow::ImageFileHDF5R::close() {
         delete h5file_;
         h5file_ = nullptr;
     }
-
 }
 
 bool diffraflow::ImageFileHDF5R::next_batch() {
@@ -140,7 +137,6 @@ bool diffraflow::ImageFileHDF5R::next_image(ImageDataHDF5::Field& imgdat_st) {
     } else {
         return false;
     }
-
 }
 
 size_t diffraflow::ImageFileHDF5R::image_dset_size() {

@@ -1,6 +1,7 @@
 ---
 Language: Cpp
 IndentWidth: 4
+BreakBeforeBraces: Attach
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignEscapedNewlines: Left
@@ -8,7 +9,7 @@ AlignOperands: true
 AlignTrailingComments: true
 SortIncludes: false
 SortUsingDeclarations: false
-ColumnLimit: 0
+ColumnLimit: 120
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 DerivePointerAlignment: false
@@ -17,4 +18,7 @@ Standard: Cpp11
 TabWidth: 4
 UseTab: Never
 NamespaceIndentation: All
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments: true
+BinPackParameters: true
 ...

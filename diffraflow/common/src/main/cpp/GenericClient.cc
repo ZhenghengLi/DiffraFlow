@@ -11,11 +11,10 @@
 #include <netdb.h>
 #include <string.h>
 
-log4cxx::LoggerPtr diffraflow::GenericClient::logger_
-    = log4cxx::Logger::getLogger("GenericClient");
+log4cxx::LoggerPtr diffraflow::GenericClient::logger_ = log4cxx::Logger::getLogger("GenericClient");
 
-diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
-    uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd) {
+diffraflow::GenericClient::GenericClient(
+    string hostname, int port, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd) {
     dest_host_ = hostname;
     dest_port_ = port;
     client_id_ = id;
@@ -30,12 +29,9 @@ diffraflow::GenericClient::GenericClient(string hostname, int port, uint32_t id,
     network_metrics.total_sent_counts = 0;
     network_metrics.total_received_size = 0;
     network_metrics.total_received_counts = 0;
-
 }
 
-diffraflow::GenericClient::~GenericClient() {
-    close_connection();
-}
+diffraflow::GenericClient::~GenericClient() { close_connection(); }
 
 bool diffraflow::GenericClient::connect_to_server() {
 
@@ -108,17 +104,11 @@ void diffraflow::GenericClient::close_connection() {
     network_metrics.connected = false;
 }
 
-bool diffraflow::GenericClient::send_one_(
-    const char*    payload_head_buffer,
-    const size_t   payload_head_size,
-    const char*    payload_data_buffer,
-    const size_t   payload_data_size) {
+bool diffraflow::GenericClient::send_one_(const char* payload_head_buffer, const size_t payload_head_size,
+    const char* payload_data_buffer, const size_t payload_data_size) {
 
-    if (NetworkUtils::send_packet(
-            client_sock_fd_, sending_head_,
-            payload_head_buffer, payload_head_size,
-            payload_data_buffer, payload_data_size,
-            logger_) ) {
+    if (NetworkUtils::send_packet(client_sock_fd_, sending_head_, payload_head_buffer, payload_head_size,
+            payload_data_buffer, payload_data_size, logger_)) {
 
         network_metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
         // 8 is the size of packet head
@@ -128,18 +118,11 @@ bool diffraflow::GenericClient::send_one_(
     } else {
         return false;
     }
-
 }
 
-bool diffraflow::GenericClient::receive_one_(
-    char*          buffer,
-    const size_t   buffer_size,
-    size_t&        payload_size) {
+bool diffraflow::GenericClient::receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size) {
 
-    if (NetworkUtils::receive_packet(
-            client_sock_fd_, receiving_head_,
-            buffer, buffer_size, payload_size,
-            logger_) ) {
+    if (NetworkUtils::receive_packet(client_sock_fd_, receiving_head_, buffer, buffer_size, payload_size, logger_)) {
 
         network_metrics.total_received_size += 8 + payload_size;
         // 8 is the size of packet head
@@ -155,7 +138,8 @@ json::value diffraflow::GenericClient::collect_metrics() {
 
     json::value network_metrics_json;
     network_metrics_json["connected"] = json::value::boolean(network_metrics.connected.load());
-    network_metrics_json["connecting_action_counts"] = json::value::number(network_metrics.connecting_action_counts.load());
+    network_metrics_json["connecting_action_counts"] =
+        json::value::number(network_metrics.connecting_action_counts.load());
     network_metrics_json["total_sent_size"] = json::value::number(network_metrics.total_sent_size.load());
     network_metrics_json["total_sent_counts"] = json::value::number(network_metrics.total_sent_counts.load());
     network_metrics_json["total_received_size"] = json::value::number(network_metrics.total_received_size.load());

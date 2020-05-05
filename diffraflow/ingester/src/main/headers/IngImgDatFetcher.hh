@@ -18,21 +18,20 @@ using std::shared_future;
 using std::async;
 
 namespace diffraflow {
-    class IngImgDatFetcher: private GenericClient {
+    class IngImgDatFetcher : private GenericClient {
     public:
-        IngImgDatFetcher(string combiner_host, int combiner_port,
-            uint32_t ingester_id, IngImgWthFtrQueue* queue);
+        IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue);
         ~IngImgDatFetcher();
 
         void set_recnxn_policy(size_t wait_time, size_t max_count);
 
         bool start();
         void wait();
-        int  stop();
+        int stop();
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
-        enum RequestRes {kSucc, kFail, kDisconnected};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
+        enum RequestRes { kSucc, kFail, kDisconnected };
 
     private:
         bool connect_to_combiner_();
@@ -51,10 +50,10 @@ namespace diffraflow {
         size_t recnxn_max_count_;
         size_t max_successive_fail_count_;
 
-        IngImgWthFtrQueue*  imgWthFtrQue_raw_;
+        IngImgWthFtrQueue* imgWthFtrQue_raw_;
 
-        char*               imgdat_buffer_;
-        size_t              imgdat_buffer_size_;
+        char* imgdat_buffer_;
+        size_t imgdat_buffer_size_;
 
         mutex cnxn_mtx_;
         condition_variable cnxn_cv_;
@@ -62,6 +61,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

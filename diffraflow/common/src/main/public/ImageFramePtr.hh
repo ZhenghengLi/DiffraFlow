@@ -8,14 +8,14 @@ using std::shared_ptr;
 using std::make_shared;
 
 namespace diffraflow {
-    class ImageFramePtr: public shared_ptr<ImageFrame> {
+    class ImageFramePtr : public shared_ptr<ImageFrame> {
     public:
-        ImageFramePtr(ImageFrame* image_frame): shared_ptr<ImageFrame>(image_frame) { }
+        ImageFramePtr(ImageFrame* image_frame) : shared_ptr<ImageFrame>(image_frame) {}
 
-        ImageFramePtr(): shared_ptr<ImageFrame>() { }
+        ImageFramePtr() : shared_ptr<ImageFrame>() {}
 
         bool operator<(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time < right->image_time;
             } else {
                 return false;
@@ -23,7 +23,7 @@ namespace diffraflow {
         }
 
         bool operator<=(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time <= right->image_time;
             } else {
                 return false;
@@ -31,7 +31,7 @@ namespace diffraflow {
         }
 
         bool operator>(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time > right->image_time;
             } else {
                 return false;
@@ -39,7 +39,7 @@ namespace diffraflow {
         }
 
         bool operator>=(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time >= right->image_time;
             } else {
                 return false;
@@ -47,7 +47,7 @@ namespace diffraflow {
         }
 
         bool operator==(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time == right->image_time;
             } else {
                 return false;
@@ -55,14 +55,13 @@ namespace diffraflow {
         }
 
         int64_t operator-(const ImageFramePtr& right) const {
-            if ( (*this) && right) {
+            if ((*this) && right) {
                 return (*this)->image_time - right->image_time;
             } else {
                 return 0;
             }
         }
-
     };
-}
+} // namespace diffraflow
 
 #endif

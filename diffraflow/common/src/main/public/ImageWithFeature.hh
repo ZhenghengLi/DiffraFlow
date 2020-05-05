@@ -15,13 +15,8 @@ namespace diffraflow {
         // image feature
         ImageFeature image_feature;
 
-        MSGPACK_DEFINE_MAP(
-            image_data_raw,
-            image_data_calib,
-            image_feature
-        );
-
+        MSGPACK_DEFINE_MAP(image_data_raw, image_data_calib, image_feature);
     };
-}
+} // namespace diffraflow
 
 #endif

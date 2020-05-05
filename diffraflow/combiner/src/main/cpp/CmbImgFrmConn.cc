@@ -16,12 +16,10 @@
 
 using std::copy;
 
-log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_
-    = log4cxx::Logger::getLogger("CmbImgFrmConn");
+log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_ = log4cxx::Logger::getLogger("CmbImgFrmConn");
 
-diffraflow::CmbImgFrmConn::CmbImgFrmConn(
-    int sock_fd, CmbImgCache* img_cache_):
-    GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 4 * 1024 * 1024) {
+diffraflow::CmbImgFrmConn::CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_)
+    : GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 4 * 1024 * 1024) {
     image_cache_ = img_cache_;
     // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
     buffer_uncompress_ = new char[buffer_size_];
@@ -32,12 +30,9 @@ diffraflow::CmbImgFrmConn::CmbImgFrmConn(
 
     compression_metrics.total_compressed_size = 0;
     compression_metrics.total_uncompressed_size = 0;
-
 }
 
-diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {
-    delete [] buffer_uncompress_;
-}
+diffraflow::CmbImgFrmConn::~CmbImgFrmConn() { delete[] buffer_uncompress_; }
 
 diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
     const char* payload_buffer, const size_t payload_size) {
@@ -61,59 +56,52 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
     switch (payload_type) {
     case 0xABCDFF00: // Non-Compress, use the raw data
-        {
-            current_buffer = payload_buffer + 8;
-            current_limit = payload_size - 8;
-        }
-        break;
+    {
+        current_buffer = payload_buffer + 8;
+        current_limit = payload_size - 8;
+    } break;
     case 0xABCDFF01: // Compressed by LZ4, decompress
-        {
-            int result = LZ4_decompress_safe(payload_buffer + 8,
-                buffer_uncompress_, payload_size - 8, buffer_size_);
-            if (result < 0) {
-                LOG4CXX_WARN(logger_, "Failed to decompress data by LZ4 with error code: "
-                    << result << ", skip the packet.");
-                return kSkipped;
-            } else {
-                buffer_uncompress_limit_ = result;
-            }
-            current_buffer = buffer_uncompress_;
-            current_limit  = buffer_uncompress_limit_;
+    {
+        int result = LZ4_decompress_safe(payload_buffer + 8, buffer_uncompress_, payload_size - 8, buffer_size_);
+        if (result < 0) {
+            LOG4CXX_WARN(
+                logger_, "Failed to decompress data by LZ4 with error code: " << result << ", skip the packet.");
+            return kSkipped;
+        } else {
+            buffer_uncompress_limit_ = result;
         }
-        break;
+        current_buffer = buffer_uncompress_;
+        current_limit = buffer_uncompress_limit_;
+    } break;
     case 0xABCDFF02: // Compressed by Snappy, decompress
-        {
-            if (!snappy::GetUncompressedLength(payload_buffer + 8,
-                payload_size - 8, &buffer_uncompress_limit_)) {
-                LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
-                return kSkipped;
-            }
-            if (buffer_uncompress_limit_ > buffer_size_) {
-                LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > buffer_size_, skip the packet.");
-                return kSkipped;
-            }
-            if (!snappy::RawUncompress(payload_buffer + 8,
-                payload_size - 8, buffer_uncompress_)) {
-                LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
-                return kSkipped;
-            }
-            current_buffer = buffer_uncompress_;
-            current_limit  = buffer_uncompress_limit_;
+    {
+        if (!snappy::GetUncompressedLength(payload_buffer + 8, payload_size - 8, &buffer_uncompress_limit_)) {
+            LOG4CXX_WARN(logger_, "Failed to GetUncompressedLength, skip the packet.");
+            return kSkipped;
         }
-        break;
+        if (buffer_uncompress_limit_ > buffer_size_) {
+            LOG4CXX_WARN(logger_, "buffer_uncompress_limit_ > buffer_size_, skip the packet.");
+            return kSkipped;
+        }
+        if (!snappy::RawUncompress(payload_buffer + 8, payload_size - 8, buffer_uncompress_)) {
+            LOG4CXX_WARN(logger_, "Failed to RawUncompress, skip the packet.");
+            return kSkipped;
+        }
+        current_buffer = buffer_uncompress_;
+        current_limit = buffer_uncompress_limit_;
+    } break;
     case 0xABCDFF03: // Compressed by ZSTD, decompress
-        {
-            buffer_uncompress_limit_ = ZSTD_decompress(buffer_uncompress_, buffer_size_,
-                payload_buffer + 8, payload_size - 8);
-            if (ZSTD_isError(buffer_uncompress_limit_)) {
-                LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
-                    << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
-                return kSkipped;
-            }
-            current_buffer = buffer_uncompress_;
-            current_limit  = buffer_uncompress_limit_;
+    {
+        buffer_uncompress_limit_ =
+            ZSTD_decompress(buffer_uncompress_, buffer_size_, payload_buffer + 8, payload_size - 8);
+        if (ZSTD_isError(buffer_uncompress_limit_)) {
+            LOG4CXX_WARN(logger_, "Failed to decompress data by ZSTD with error: "
+                                      << ZSTD_getErrorName(buffer_uncompress_limit_) << ", skip the packet.");
+            return kSkipped;
         }
-        break;
+        current_buffer = buffer_uncompress_;
+        current_limit = buffer_uncompress_limit_;
+    } break;
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
         return kSkipped;
@@ -150,7 +138,6 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
         frame_metrics.total_processed_frame_size += current_size;
         frame_metrics.total_processed_frame_counts += 1;
-
     }
 
     // size validation
@@ -167,16 +154,19 @@ json::value diffraflow::CmbImgFrmConn::collect_metrics() {
     json::value root_json = GenericConnection::collect_metrics();
 
     json::value frame_metrics_json;
-    frame_metrics_json["total_processed_frame_size"] = json::value::number(frame_metrics.total_processed_frame_size.load());
-    frame_metrics_json["total_processed_frame_counts"] = json::value::number(frame_metrics.total_processed_frame_counts.load());
+    frame_metrics_json["total_processed_frame_size"] =
+        json::value::number(frame_metrics.total_processed_frame_size.load());
+    frame_metrics_json["total_processed_frame_counts"] =
+        json::value::number(frame_metrics.total_processed_frame_counts.load());
 
     json::value compression_metrics_json;
-    compression_metrics_json["total_compressed_size"] = json::value::number(compression_metrics.total_compressed_size.load());
-    compression_metrics_json["total_uncompressed_size"] = json::value::number(compression_metrics.total_uncompressed_size.load());
+    compression_metrics_json["total_compressed_size"] =
+        json::value::number(compression_metrics.total_compressed_size.load());
+    compression_metrics_json["total_uncompressed_size"] =
+        json::value::number(compression_metrics.total_uncompressed_size.load());
 
     root_json["frame_stats"] = frame_metrics_json;
     root_json["compression_stats"] = compression_metrics_json;
 
     return root_json;
-
 }

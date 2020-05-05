@@ -3,24 +3,23 @@
 #include "Decoder.hh"
 #include <msgpack.hpp>
 
-log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_
-    = log4cxx::Logger::getLogger("IngImgDatFetcher");
+log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_ = log4cxx::Logger::getLogger("IngImgDatFetcher");
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
-    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue):
-    GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
+    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue)
+    : GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
     imgWthFtrQue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
     worker_status_ = kNotStart;
-    imgdat_buffer_size_ = 8 * 1024 * 1024;    // 8MiB
+    imgdat_buffer_size_ = 8 * 1024 * 1024; // 8MiB
     imgdat_buffer_ = new char[imgdat_buffer_size_];
 }
 
 diffraflow::IngImgDatFetcher::~IngImgDatFetcher() {
     stop();
-    delete [] imgdat_buffer_;
+    delete[] imgdat_buffer_;
 }
 
 void diffraflow::IngImgDatFetcher::set_recnxn_policy(size_t wait_time, size_t max_count) {
@@ -42,14 +41,13 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
         } else {
             if (current_count < recnxn_max_count_) {
                 LOG4CXX_WARN(logger_, "failed to connect to combiner "
-                    << dest_host_ << ":" << dest_port_
-                    << ", wait for " << recnxn_wait_time_ << "ms and retry ("
-                    << current_count + 1 << "/" << recnxn_max_count_ << ") ...");
+                                          << dest_host_ << ":" << dest_port_ << ", wait for " << recnxn_wait_time_
+                                          << "ms and retry (" << current_count + 1 << "/" << recnxn_max_count_
+                                          << ") ...");
                 if (recnxn_wait_time_ > 0) {
                     unique_lock<mutex> ulk(cnxn_mtx_);
                     cnxn_cv_.wait_for(ulk, std::chrono::milliseconds(recnxn_wait_time_),
-                        [this]() {return worker_status_ == kStopped;}
-                    );
+                        [this]() { return worker_status_ == kStopped; });
                 }
                 if (worker_status_ == kStopped) {
                     LOG4CXX_WARN(logger_, "image data fetcher is stopped, abort reconnecting.");
@@ -62,8 +60,8 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
         LOG4CXX_INFO(logger_, "successfully connected to combiner " << dest_host_ << ":" << dest_port_);
         return true;
     } else {
-        LOG4CXX_WARN(logger_, "failed to connect to combiner " << dest_host_ << ":" << dest_port_
-            << " after " << recnxn_max_count_ << " retry counts.");
+        LOG4CXX_WARN(logger_, "failed to connect to combiner " << dest_host_ << ":" << dest_port_ << " after "
+                                                               << recnxn_max_count_ << " retry counts.");
         return false;
     }
 }
@@ -122,7 +120,7 @@ int diffraflow::IngImgDatFetcher::run_() {
             switch (request_one_image(image_with_feature->image_data_raw)) {
             case kDisconnected:
                 LOG4CXX_WARN(logger_, "error found when requesting one image from combiner,"
-                    << " close the connection and try to reconnect.")
+                                          << " close the connection and try to reconnect.")
                 close_connection();
                 running = false;
                 break;
@@ -136,7 +134,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
                 } else {
                     LOG4CXX_WARN(logger_, "raw image data queue is stopped,"
-                        << " close the connection and stop running.");
+                                              << " close the connection and stop running.");
                     close_connection();
                     worker_status_ = kStopped;
                     running = false;
@@ -144,11 +142,12 @@ int diffraflow::IngImgDatFetcher::run_() {
                 break;
             case kFail:
                 successive_fail_count_++;
-                LOG4CXX_WARN(logger_, "failed to deserialize image data ("
-                    << successive_fail_count_ << "/" << max_successive_fail_count_ << ").");
+                LOG4CXX_WARN(logger_, "failed to deserialize image data (" << successive_fail_count_ << "/"
+                                                                           << max_successive_fail_count_ << ").");
                 if (successive_fail_count_ >= max_successive_fail_count_) {
-                    LOG4CXX_WARN(logger_, "successively failed for " << successive_fail_count_
-                        << " times, close the connection and stop running.");
+                    LOG4CXX_WARN(logger_, "successively failed for "
+                                              << successive_fail_count_
+                                              << " times, close the connection and stop running.");
                     close_connection();
                     worker_status_ = kStopped;
                     running = false;
@@ -169,17 +168,12 @@ bool diffraflow::IngImgDatFetcher::start() {
     worker_status_ = kNotStart;
     worker_ = async(&IngImgDatFetcher::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {
-            return worker_status_ != kNotStart;
-        }
-    );
+    cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {
         return true;
     } else {
         return false;
     }
-
 }
 
 void diffraflow::IngImgDatFetcher::wait() {

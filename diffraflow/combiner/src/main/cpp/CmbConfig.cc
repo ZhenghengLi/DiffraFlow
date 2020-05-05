@@ -11,8 +11,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-log4cxx::LoggerPtr diffraflow::CmbConfig::logger_
-    = log4cxx::Logger::getLogger("CmbConfig");
+log4cxx::LoggerPtr diffraflow::CmbConfig::logger_ = log4cxx::Logger::getLogger("CmbConfig");
 
 diffraflow::CmbConfig::CmbConfig() {
     imgfrm_listen_host = "0.0.0.0";
@@ -25,17 +24,15 @@ diffraflow::CmbConfig::CmbConfig() {
     metrics_http_port = -1;
 }
 
-diffraflow::CmbConfig::~CmbConfig() {
-
-}
+diffraflow::CmbConfig::~CmbConfig() {}
 
 bool diffraflow::CmbConfig::load(const char* filename) {
-    list< pair<string, string> > conf_KV_list;
+    list<pair<string, string>> conf_KV_list;
     if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
-    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+    for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
         if (key == "imgfrm_listen_host") {
@@ -61,8 +58,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         } else if (key == "metrics_http_port") {
             metrics_http_port = atoi(value.c_str());
         } else {
-            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
-                << key << " = " << value << " in " << filename);
+            LOG4CXX_WARN(logger_,
+                "Found unknown configuration which is ignored: " << key << " = " << value << " in " << filename);
         }
     }
 
@@ -101,7 +98,7 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         static_config_json_["imgfrm_listen_port"] = json::value::number(imgfrm_listen_port);
         static_config_json_["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
         static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
-        static_config_json_["imgdat_queue_capacity"] = json::value::number( (uint32_t) imgdat_queue_capacity);
+        static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -130,7 +127,6 @@ void diffraflow::CmbConfig::print() {
     cout << "  metrics_http_host = " << metrics_http_host << endl;
     cout << "  metrics_http_port = " << metrics_http_port << endl;
     cout << " = Configuration Dump End =" << endl;
-
 }
 
 json::value diffraflow::CmbConfig::collect_metrics() {
@@ -141,16 +137,10 @@ json::value diffraflow::CmbConfig::collect_metrics() {
 }
 
 bool diffraflow::CmbConfig::metrics_pulsar_params_are_set() {
-    return (
-        !metrics_pulsar_broker_address.empty() &&
-        !metrics_pulsar_topic_name.empty() &&
-        !metrics_pulsar_message_key.empty()
-    );
+    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
+            !metrics_pulsar_message_key.empty());
 }
 
 bool diffraflow::CmbConfig::metrics_http_params_are_set() {
-    return (
-        !metrics_http_host.empty() &&
-        metrics_http_port > 0
-    );
+    return (!metrics_http_host.empty() && metrics_http_port > 0);
 }

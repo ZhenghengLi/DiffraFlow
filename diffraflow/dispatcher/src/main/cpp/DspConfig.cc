@@ -10,8 +10,7 @@ using std::cout;
 using std::flush;
 using std::endl;
 
-log4cxx::LoggerPtr diffraflow::DspConfig::logger_
-    = log4cxx::Logger::getLogger("DspConfig");
+log4cxx::LoggerPtr diffraflow::DspConfig::logger_ = log4cxx::Logger::getLogger("DspConfig");
 
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
@@ -23,18 +22,16 @@ diffraflow::DspConfig::DspConfig() {
     metrics_http_port = -1;
 }
 
-diffraflow::DspConfig::~DspConfig() {
-
-}
+diffraflow::DspConfig::~DspConfig() {}
 
 bool diffraflow::DspConfig::load(const char* filename) {
-    list< pair<string, string> > conf_KV_list;
+    list<pair<string, string>> conf_KV_list;
     if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
     // parse
-    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+    for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
         if (key == "listen_host") {
@@ -68,8 +65,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
         } else if (key == "metrics_http_port") {
             metrics_http_port = atoi(value.c_str());
         } else {
-            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
-                << key << " = " << value << " in " << filename);
+            LOG4CXX_WARN(logger_,
+                "Found unknown configuration which is ignored: " << key << " = " << value << " in " << filename);
         }
     }
 
@@ -177,16 +174,10 @@ json::value diffraflow::DspConfig::collect_metrics() {
 }
 
 bool diffraflow::DspConfig::metrics_pulsar_params_are_set() {
-    return (
-        !metrics_pulsar_broker_address.empty() &&
-        !metrics_pulsar_topic_name.empty() &&
-        !metrics_pulsar_message_key.empty()
-    );
+    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
+            !metrics_pulsar_message_key.empty());
 }
 
 bool diffraflow::DspConfig::metrics_http_params_are_set() {
-    return (
-        !metrics_http_host.empty() &&
-        metrics_http_port > 0
-    );
+    return (!metrics_http_host.empty() && metrics_http_port > 0);
 }

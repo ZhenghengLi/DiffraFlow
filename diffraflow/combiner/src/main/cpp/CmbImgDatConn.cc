@@ -13,22 +13,17 @@
 using std::copy;
 using std::shared_ptr;
 
-log4cxx::LoggerPtr diffraflow::CmbImgDatConn::logger_
-    = log4cxx::Logger::getLogger("CmbImgDatConn");
+log4cxx::LoggerPtr diffraflow::CmbImgDatConn::logger_ = log4cxx::Logger::getLogger("CmbImgDatConn");
 
-diffraflow::CmbImgDatConn::CmbImgDatConn(
-    int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct):
-    GenericConnection(sock_fd, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE, 1024) {
+diffraflow::CmbImgDatConn::CmbImgDatConn(int sock_fd, CmbImgCache* image_cache, size_t max_req_imgct)
+    : GenericConnection(sock_fd, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE, 1024) {
     image_cache_ = image_cache;
     max_req_imgct_ = max_req_imgct;
 
     image_metrics.total_sent_images = 0;
-
 }
 
-diffraflow::CmbImgDatConn::~CmbImgDatConn() {
-
-}
+diffraflow::CmbImgDatConn::~CmbImgDatConn() {}
 
 diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_payload_(
     const char* payload_buffer, const size_t payload_size) {
@@ -46,7 +41,8 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
     // extract number of images
     uint32_t image_counts = gDC.decode_byte<uint32_t>(payload_buffer, 4, 7);
     if (image_counts < 1 || image_counts > max_req_imgct_) {
-        LOG4CXX_WARN(logger_, "image counts is out of range " << 1 << "-" << max_req_imgct_ << ", close the connection.");
+        LOG4CXX_WARN(
+            logger_, "image counts is out of range " << 1 << "-" << max_req_imgct_ << ", close the connection.");
         return kFailed;
     }
 

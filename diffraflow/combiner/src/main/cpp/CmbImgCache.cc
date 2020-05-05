@@ -10,8 +10,7 @@ using std::numeric_limits;
 using std::lock_guard;
 using std::unique_lock;
 
-log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_
-    = log4cxx::Logger::getLogger("CmbImgCache");
+log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger("CmbImgCache");
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     imgfrm_queues_len_ = num_of_dets;
@@ -29,18 +28,17 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     alignment_metrics.total_aligned_images = 0;
     alignment_metrics.total_late_arrived = 0;
     alignment_metrics.total_partial_images = 0;
-
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
-    delete [] imgfrm_queues_arr_;
+    delete[] imgfrm_queues_arr_;
     stop(0);
 }
 
 bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     if (stopped_) return false;
 
-    if (image_frame->detector_id < 0 || image_frame->detector_id >= (int) imgfrm_queues_len_) {
+    if (image_frame->detector_id < 0 || image_frame->detector_id >= (int)imgfrm_queues_len_) {
         LOG4CXX_WARN(logger_, "Detector ID is out of range: " << image_frame->detector_id);
         return false;
     }
@@ -74,7 +72,7 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
             image_time_last_ = image_data->event_time;
         }
         alignment_metrics.total_aligned_images++;
-        for (const bool& item: image_data->alignment_vec) {
+        for (const bool& item : image_data->alignment_vec) {
             if (!item) {
                 alignment_metrics.total_partial_images++;
                 break;
@@ -175,11 +173,8 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
     // wait ingester to consume image data in queue for wait_time
     if (wait_time > 0) {
         unique_lock<mutex> ulk(stop_mtx_);
-        stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time),
-            [this]() {return imgdat_queue_.empty();}
-        );
+        stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time), [this]() { return imgdat_queue_.empty(); });
     }
-
 }
 
 json::value diffraflow::CmbImgCache::collect_metrics() {
@@ -193,10 +188,10 @@ json::value diffraflow::CmbImgCache::collect_metrics() {
     json::value queue_metrics_json;
     {
         lock_guard<mutex> lg(data_mtx_);
-        queue_metrics_json["image_data_queue_size"] = json::value::number( (uint32_t) imgdat_queue_.size());
+        queue_metrics_json["image_data_queue_size"] = json::value::number((uint32_t)imgdat_queue_.size());
         json::value image_frame_queue_sizes;
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
-            image_frame_queue_sizes[i] = json::value::number( (uint32_t) imgfrm_queues_arr_[i].size());
+            image_frame_queue_sizes[i] = json::value::number((uint32_t)imgfrm_queues_arr_[i].size());
         }
         queue_metrics_json["image_frame_queue_sizes"] = image_frame_queue_sizes;
     }
@@ -206,5 +201,4 @@ json::value diffraflow::CmbImgCache::collect_metrics() {
     root_json["queue_stats"] = queue_metrics_json;
 
     return root_json;
-
 }

@@ -5,11 +5,11 @@
 #include <getopt.h>
 
 namespace diffraflow {
-    class IngOptMan: public OptionsManager {
+    class IngOptMan : public OptionsManager {
     public:
         // option varables
-        string config_file;       // -c, --config=FILE
-        string logconf_file;      // -l, --logconf=FILE
+        string config_file;  // -c, --config=FILE
+        string logconf_file; // -l, --logconf=FILE
 
     public:
         IngOptMan();
@@ -23,9 +23,8 @@ namespace diffraflow {
     private:
         static const char opt_string_[];
         static const option long_opts_[];
-
     };
 
-}
+} // namespace diffraflow
 
 #endif

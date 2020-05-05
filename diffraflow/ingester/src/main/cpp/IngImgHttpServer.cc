@@ -9,8 +9,7 @@ using namespace web;
 using namespace http;
 using namespace experimental::listener;
 
-log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_
-    = log4cxx::Logger::getLogger("IngImgHttpServer");
+log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_ = log4cxx::Logger::getLogger("IngImgHttpServer");
 
 diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter, int ing_id) {
     image_filter_ = img_filter;
@@ -21,9 +20,7 @@ diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter, int i
     metrics.total_sent_counts = 0;
 }
 
-diffraflow::IngImgHttpServer::~IngImgHttpServer() {
-    stop();
-}
+diffraflow::IngImgHttpServer::~IngImgHttpServer() { stop(); }
 
 bool diffraflow::IngImgHttpServer::start(string host, int port) {
     if (listener_ != nullptr) {
@@ -43,11 +40,10 @@ bool diffraflow::IngImgHttpServer::start(string host, int port) {
     } catch (std::exception& e) {
         LOG4CXX_ERROR(logger_, "failed to start http server: " << e.what());
         return false;
-    } catch(...) {
+    } catch (...) {
         LOG4CXX_ERROR(logger_, "failed to start http server with unknown error.");
         return false;
     }
-
 }
 
 void diffraflow::IngImgHttpServer::stop() {
@@ -63,7 +59,6 @@ void diffraflow::IngImgHttpServer::stop() {
 
     delete listener_;
     listener_ = nullptr;
-
 }
 
 void diffraflow::IngImgHttpServer::handleGet_(http_request message) {

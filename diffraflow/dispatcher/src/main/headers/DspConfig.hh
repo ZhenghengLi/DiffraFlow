@@ -11,7 +11,7 @@
 using std::string;
 
 namespace diffraflow {
-    class DspConfig: public GenericConfiguration, public MetricsProvider {
+    class DspConfig : public GenericConfiguration, public MetricsProvider {
     public:
         DspConfig();
         ~DspConfig();
@@ -27,18 +27,18 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     public:
-        uint32_t                    dispatcher_id;
-        string                      listen_host;
-        int                         listen_port;
-        DspSender::CompressMethod   compress_method;
-        int                         compress_level;
+        uint32_t dispatcher_id;
+        string listen_host;
+        int listen_port;
+        DspSender::CompressMethod compress_method;
+        int compress_level;
 
-        string                      metrics_pulsar_broker_address;
-        string                      metrics_pulsar_topic_name;
-        string                      metrics_pulsar_message_key;
-        int                         metrics_pulsar_report_period;
-        string                      metrics_http_host;
-        int                         metrics_http_port;
+        string metrics_pulsar_broker_address;
+        string metrics_pulsar_topic_name;
+        string metrics_pulsar_message_key;
+        int metrics_pulsar_report_period;
+        string metrics_http_host;
+        int metrics_http_port;
 
     private:
         json::value static_config_json_;
@@ -46,8 +46,7 @@ namespace diffraflow {
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

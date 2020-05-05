@@ -2,8 +2,7 @@
 #include "IngImgWthFtrQueue.hh"
 #include "IngConfig.hh"
 
-log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_
-    = log4cxx::Logger::getLogger("IngImageFilter");
+log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_ = log4cxx::Logger::getLogger("IngImageFilter");
 
 diffraflow::IngImageFilter::IngImageFilter(
     IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, IngConfig* conf_obj) {
@@ -15,20 +14,13 @@ diffraflow::IngImageFilter::IngImageFilter(
     filter_metrics.total_images_for_monitor = 0;
     filter_metrics.total_images_for_save = 0;
     filter_metrics.total_processed_images = 0;
-
 }
 
-diffraflow::IngImageFilter::~IngImageFilter() {
+diffraflow::IngImageFilter::~IngImageFilter() {}
 
-}
+bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature& image_feature) { return true; }
 
-bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature& image_feature) {
-    return true;
-}
-
-bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature& image_feature) {
-    return true;
-}
+bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature& image_feature) { return true; }
 
 int diffraflow::IngImageFilter::run_() {
     int result = 0;
@@ -62,17 +54,12 @@ bool diffraflow::IngImageFilter::start() {
     worker_status_ = kNotStart;
     worker_ = async(&IngImageFilter::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {
-            return worker_status_ != kNotStart;
-        }
-    );
+    cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {
         return true;
     } else {
         return false;
     }
-
 }
 
 void diffraflow::IngImageFilter::wait() {
@@ -115,6 +102,7 @@ json::value diffraflow::IngImageFilter::collect_metrics() {
     json::value filter_metrics_json;
     filter_metrics_json["total_processed_images"] = json::value::number(filter_metrics.total_processed_images.load());
     filter_metrics_json["total_images_for_save"] = json::value::number(filter_metrics.total_images_for_save.load());
-    filter_metrics_json["total_images_for_monitor"] = json::value::number(filter_metrics.total_images_for_monitor.load());
+    filter_metrics_json["total_images_for_monitor"] =
+        json::value::number(filter_metrics.total_images_for_monitor.load());
     return filter_metrics_json;
 }

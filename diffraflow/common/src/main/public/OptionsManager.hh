@@ -21,8 +21,7 @@ namespace diffraflow {
     protected:
         string software_name_;
         bool version_flag_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -1,8 +1,7 @@
 #include "IngCalibrationWorker.hh"
 #include "IngImgWthFtrQueue.hh"
 
-log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_
-    = log4cxx::Logger::getLogger("IngCalibrationWorker");
+log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
 diffraflow::IngCalibrationWorker::IngCalibrationWorker(
     IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out) {
@@ -11,16 +10,12 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
     worker_status_ = kNotStart;
 }
 
-diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
+diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}
 
-}
-
-void diffraflow::IngCalibrationWorker::do_calib_(
-    const ImageData& imgdat_raw, ImageData& imgdat_calib) {
+void diffraflow::IngCalibrationWorker::do_calib_(const ImageData& imgdat_raw, ImageData& imgdat_calib) {
 
     // currently do nothing, just copy the raw data.
     imgdat_calib = imgdat_raw;
-
 }
 
 int diffraflow::IngCalibrationWorker::run_() {
@@ -48,17 +43,12 @@ bool diffraflow::IngCalibrationWorker::start() {
     worker_status_ = kNotStart;
     worker_ = async(&IngCalibrationWorker::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {
-            return worker_status_ != kNotStart;
-        }
-    );
+    cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {
         return true;
     } else {
         return false;
     }
-
 }
 
 void diffraflow::IngCalibrationWorker::wait() {

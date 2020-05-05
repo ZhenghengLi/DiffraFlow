@@ -5,12 +5,12 @@
 #include <getopt.h>
 
 namespace diffraflow {
-    class DspOptMan: public OptionsManager {
+    class DspOptMan : public OptionsManager {
     public:
         // option varables
-        string config_file;       // -c, --config=FILE
-        string logconf_file;      // -l, --logconf=FILE
-        string cmbaddr_file;      // -a, --cmbaddr=FILE
+        string config_file;  // -c, --config=FILE
+        string logconf_file; // -l, --logconf=FILE
+        string cmbaddr_file; // -a, --cmbaddr=FILE
 
     public:
         DspOptMan();
@@ -24,9 +24,8 @@ namespace diffraflow {
     private:
         static const char opt_string_[];
         static const option long_opts_[];
-
     };
 
-}
+} // namespace diffraflow
 
 #endif

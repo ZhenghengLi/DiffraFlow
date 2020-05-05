@@ -36,6 +36,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -13,12 +13,10 @@
 
 using std::copy;
 
-log4cxx::LoggerPtr diffraflow::GenericConnection::logger_
-    = log4cxx::Logger::getLogger("GenericConnection");
+log4cxx::LoggerPtr diffraflow::GenericConnection::logger_ = log4cxx::Logger::getLogger("GenericConnection");
 
-diffraflow::GenericConnection::GenericConnection(int sock_fd,
-    uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd,
-    size_t buff_sz) {
+diffraflow::GenericConnection::GenericConnection(
+    int sock_fd, uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd, size_t buff_sz) {
     assert(sock_fd > 0);
     client_sock_fd_ = sock_fd;
     greeting_head_ = greet_hd;
@@ -36,17 +34,15 @@ diffraflow::GenericConnection::GenericConnection(int sock_fd,
     network_metrics.total_received_counts = 0;
     network_metrics.total_processed_counts = 0;
     network_metrics.total_skipped_counts = 0;
-
 }
 
-diffraflow::GenericConnection::~GenericConnection() {
-    delete [] buffer_;
-}
+diffraflow::GenericConnection::~GenericConnection() { delete[] buffer_; }
 
 void diffraflow::GenericConnection::run() {
     if (start_connection_()) {
         before_receiving_();
-        while (!done_flag_ && do_receiving_and_processing_());
+        while (!done_flag_ && do_receiving_and_processing_())
+            ;
     }
     shutdown(client_sock_fd_, SHUT_RDWR);
     close(client_sock_fd_);
@@ -54,9 +50,7 @@ void diffraflow::GenericConnection::run() {
     return;
 }
 
-bool diffraflow::GenericConnection::done() {
-    return done_flag_;
-}
+bool diffraflow::GenericConnection::done() { return done_flag_; }
 
 void diffraflow::GenericConnection::stop() {
     shutdown(client_sock_fd_, SHUT_RDWR);
@@ -77,8 +71,8 @@ bool diffraflow::GenericConnection::start_connection_() {
             pos += count;
         }
     }
-    uint32_t head  = gDC.decode_byte<uint32_t>(buffer_, 0, 3);
-    uint32_t size  = gDC.decode_byte<uint32_t>(buffer_, 4, 7);
+    uint32_t head = gDC.decode_byte<uint32_t>(buffer_, 0, 3);
+    uint32_t size = gDC.decode_byte<uint32_t>(buffer_, 4, 7);
     connection_id_ = gDC.decode_byte<uint32_t>(buffer_, 8, 11);
     if (head != greeting_head_ || size != 4) {
         LOG4CXX_INFO(logger_, "got wrong greeting message, close the connection.");
@@ -111,13 +105,11 @@ bool diffraflow::GenericConnection::start_connection_() {
     return true;
 }
 
-void diffraflow::GenericConnection::before_receiving_() {
-    LOG4CXX_INFO(logger_, "connection ID: " << connection_id_);
-}
+void diffraflow::GenericConnection::before_receiving_() { LOG4CXX_INFO(logger_, "connection ID: " << connection_id_); }
 
 bool diffraflow::GenericConnection::do_receiving_and_processing_() {
-    if (!NetworkUtils::receive_packet(client_sock_fd_, receiving_head_,
-        buffer_, buffer_size_, buffer_limit_, logger_)) {
+    if (!NetworkUtils::receive_packet(
+            client_sock_fd_, receiving_head_, buffer_, buffer_size_, buffer_limit_, logger_)) {
         return false;
     }
 
@@ -125,7 +117,7 @@ bool diffraflow::GenericConnection::do_receiving_and_processing_() {
     network_metrics.total_received_counts += 1;
 
     // payload level process
-    switch ( process_payload_(buffer_, buffer_limit_) ) {
+    switch (process_payload_(buffer_, buffer_limit_)) {
     case kProcessed:
         network_metrics.total_processed_counts += 1;
         return true;
@@ -143,17 +135,11 @@ diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process
     return kFailed;
 }
 
-bool diffraflow::GenericConnection::send_one_(
-    const char*    payload_head_buffer,
-    const size_t   payload_head_size,
-    const char*    payload_data_buffer,
-    const size_t   payload_data_size) {
+bool diffraflow::GenericConnection::send_one_(const char* payload_head_buffer, const size_t payload_head_size,
+    const char* payload_data_buffer, const size_t payload_data_size) {
 
-    if (NetworkUtils::send_packet(
-            client_sock_fd_, sending_head_,
-            payload_head_buffer, payload_head_size,
-            payload_data_buffer, payload_data_size,
-            logger_) ) {
+    if (NetworkUtils::send_packet(client_sock_fd_, sending_head_, payload_head_buffer, payload_head_size,
+            payload_data_buffer, payload_data_size, logger_)) {
 
         network_metrics.total_sent_size += (8 + payload_head_size + payload_data_size);
         network_metrics.total_sent_counts += 1;
@@ -162,7 +148,6 @@ bool diffraflow::GenericConnection::send_one_(
     } else {
         return false;
     }
-
 }
 
 json::value diffraflow::GenericConnection::collect_metrics() {

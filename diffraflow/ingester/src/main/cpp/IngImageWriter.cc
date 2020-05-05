@@ -9,11 +9,9 @@ namespace bs = boost::system;
 
 #define STR_BUFF_SIZE 256
 
-log4cxx::LoggerPtr diffraflow::IngImageWriter::logger_
-    = log4cxx::Logger::getLogger("IngImageWriter");
+log4cxx::LoggerPtr diffraflow::IngImageWriter::logger_ = log4cxx::Logger::getLogger("IngImageWriter");
 
-diffraflow::IngImageWriter::IngImageWriter(
-    IngImgWthFtrQueue* img_queue_in, IngConfig* conf_obj) {
+diffraflow::IngImageWriter::IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngConfig* conf_obj) {
     image_queue_in_ = img_queue_in;
     config_obj_ = conf_obj;
     worker_status_ = kNotStart;
@@ -27,12 +25,9 @@ diffraflow::IngImageWriter::IngImageWriter(
 
     image_file_hdf5_ = nullptr;
     image_file_raw_ = nullptr;
-
 }
 
-diffraflow::IngImageWriter::~IngImageWriter() {
-    close_files_();
-}
+diffraflow::IngImageWriter::~IngImageWriter() { close_files_(); }
 
 int diffraflow::IngImageWriter::run_() {
     int result = 0;
@@ -47,8 +42,8 @@ int diffraflow::IngImageWriter::run_() {
         int new_run_number = config_obj_->get_dy_run_number();
         if (new_run_number != current_run_number_.load()) {
             LOG4CXX_INFO(logger_, "run number changed from "
-                << current_run_number_.load() << " to " << new_run_number
-                << ". Create new folders (if not exists) for new run number.");
+                                      << current_run_number_.load() << " to " << new_run_number
+                                      << ". Create new folders (if not exists) for new run number.");
             current_run_number_ = new_run_number;
             close_files_();
             if (!create_directories_()) {
@@ -93,17 +88,12 @@ bool diffraflow::IngImageWriter::start() {
 
     worker_ = async(&IngImageWriter::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {
-            return worker_status_ != kNotStart;
-        }
-    );
+    cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {
         return true;
     } else {
         return false;
     }
-
 }
 
 void diffraflow::IngImageWriter::wait() {
@@ -174,8 +164,8 @@ bool diffraflow::IngImageWriter::create_directories_() {
         if (ec == bs::errc::success) {
             LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
         } else {
-            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
-                << " with error: " << ec.message());
+            LOG4CXX_ERROR(
+                logger_, "failed to create folder " << folder_path.c_str() << " with error: " << ec.message());
             return false;
         }
     }
@@ -187,15 +177,15 @@ bool diffraflow::IngImageWriter::create_directories_() {
         if (ec == bs::errc::success) {
             LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
         } else {
-            LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
-                << " with error: " << ec.message());
+            LOG4CXX_ERROR(
+                logger_, "failed to create folder " << folder_path.c_str() << " with error: " << ec.message());
             return false;
         }
     }
     // R0000/NODENAME_N00/T00
     std::regex turn_regex("T(\\d+)");
     int max_turn_number = -1;
-    for (bf::directory_entry& de: bf::directory_iterator(folder_path)) {
+    for (bf::directory_entry& de : bf::directory_iterator(folder_path)) {
         if (!bf::is_directory(de.path())) continue;
         string filename = de.path().filename().string();
         std::smatch match_res;
@@ -213,8 +203,7 @@ bool diffraflow::IngImageWriter::create_directories_() {
     if (ec == bs::errc::success) {
         LOG4CXX_INFO(logger_, "created folder " << folder_path.c_str());
     } else {
-        LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str()
-            << " with error: " << ec.message());
+        LOG4CXX_ERROR(logger_, "failed to create folder " << folder_path.c_str() << " with error: " << ec.message());
         return false;
     }
     current_folder_path_string_ = folder_path.string();
@@ -230,9 +219,9 @@ bool diffraflow::IngImageWriter::open_hdf5_file_() {
         return false;
     }
     char str_buffer[STR_BUFF_SIZE];
-    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.h5",
-        current_run_number_.load(), config_obj_->node_name.c_str(), config_obj_->ingester_id,
-        current_turn_number_.load(), current_sequence_number_.load());
+    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.h5", current_run_number_.load(),
+        config_obj_->node_name.c_str(), config_obj_->ingester_id, current_turn_number_.load(),
+        current_sequence_number_.load());
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;
     if (bf::exists(file_path)) {
@@ -240,10 +229,8 @@ bool diffraflow::IngImageWriter::open_hdf5_file_() {
         return false;
     }
     // open file
-    image_file_hdf5_ = new ImageFileHDF5W(
-        config_obj_->hdf5_buffer_size,
-        config_obj_->hdf5_chunk_size,
-        config_obj_->hdf5_swmr_mode);
+    image_file_hdf5_ =
+        new ImageFileHDF5W(config_obj_->hdf5_buffer_size, config_obj_->hdf5_chunk_size, config_obj_->hdf5_swmr_mode);
     if (image_file_hdf5_->open(file_path.c_str(), config_obj_->hdf5_compress_level)) {
         LOG4CXX_INFO(logger_, "successfully opened hdf5 file: " << file_path.c_str());
         return true;
@@ -259,9 +246,9 @@ bool diffraflow::IngImageWriter::open_raw_file_() {
         return false;
     }
     char str_buffer[STR_BUFF_SIZE];
-    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.dat",
-        current_run_number_.load(), config_obj_->node_name.c_str(), config_obj_->ingester_id,
-        current_turn_number_.load(), current_sequence_number_.load());
+    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.dat", current_run_number_.load(),
+        config_obj_->node_name.c_str(), config_obj_->ingester_id, current_turn_number_.load(),
+        current_sequence_number_.load());
     bf::path file_path(current_folder_path_string_);
     file_path /= str_buffer;
     if (bf::exists(file_path)) {

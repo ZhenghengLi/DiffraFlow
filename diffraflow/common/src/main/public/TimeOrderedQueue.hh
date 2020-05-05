@@ -5,20 +5,20 @@
 
 namespace diffraflow {
 
-    template <typename ET, typename DT, typename Container = std::vector<ET>, typename Compare = std::greater<typename Container::value_type> >
-    class TimeOrderedQueue: public std::priority_queue<ET, Container, Compare> {
+    template <typename ET, typename DT, typename Container = std::vector<ET>,
+        typename Compare = std::greater<typename Container::value_type>>
+    class TimeOrderedQueue : public std::priority_queue<ET, Container, Compare> {
     public:
         TimeOrderedQueue();
         void push(const ET& value);
         DT distance() const;
+
     private:
         ET tail;
     };
 
     template <typename ET, typename DT, typename Container, typename Compare>
-    TimeOrderedQueue<ET, DT, Container, Compare>::TimeOrderedQueue(): std::priority_queue<ET, Container, Compare>() {
-
-    }
+    TimeOrderedQueue<ET, DT, Container, Compare>::TimeOrderedQueue() : std::priority_queue<ET, Container, Compare>() {}
 
     template <typename ET, typename DT, typename Container, typename Compare>
     void TimeOrderedQueue<ET, DT, Container, Compare>::push(const ET& value) {
@@ -42,6 +42,6 @@ namespace diffraflow {
         }
     }
 
-}
+} // namespace diffraflow
 
 #endif

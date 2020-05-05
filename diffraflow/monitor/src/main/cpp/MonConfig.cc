@@ -12,8 +12,7 @@ using std::cout;
 using std::endl;
 using std::lock_guard;
 
-log4cxx::LoggerPtr diffraflow::MonConfig::logger_
-    = log4cxx::Logger::getLogger("MonConfig");
+log4cxx::LoggerPtr diffraflow::MonConfig::logger_ = log4cxx::Logger::getLogger("MonConfig");
 
 diffraflow::MonConfig::MonConfig() {
     monitor_id = 0;
@@ -30,12 +29,10 @@ diffraflow::MonConfig::MonConfig() {
     metrics_http_port = -1;
 }
 
-diffraflow::MonConfig::~MonConfig() {
-
-}
+diffraflow::MonConfig::~MonConfig() {}
 
 bool diffraflow::MonConfig::load(const char* filename) {
-    list< pair<string, string> > conf_KV_list;
+    list<pair<string, string>> conf_KV_list;
     if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
@@ -47,7 +44,7 @@ bool diffraflow::MonConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "zookeeper setting is not ready, configuration will not be dynamically updated.")
     }
     map<string, string> dy_conf_map;
-    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+    for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
         // for static parameters
@@ -71,7 +68,7 @@ bool diffraflow::MonConfig::load(const char* filename) {
             metrics_http_host = value;
         } else if (key == "metrics_http_port") {
             metrics_http_port = atoi(value.c_str());
-        // for dynamic parameters
+            // for dynamic parameters
         } else {
             dy_conf_map[key] = value;
         }
@@ -153,9 +150,7 @@ json::value diffraflow::MonConfig::collect_metrics() {
     return root_json;
 }
 
-bool diffraflow::MonConfig::zookeeper_setting_is_ready() {
-    return zookeeper_setting_ready_flag_;
-}
+bool diffraflow::MonConfig::zookeeper_setting_is_ready() { return zookeeper_setting_ready_flag_; }
 
 void diffraflow::MonConfig::print() {
     // with all locks
@@ -174,7 +169,6 @@ void diffraflow::MonConfig::print() {
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;
     cout << "- dy_param_string = " << dy_param_string_ << endl;
-
 }
 
 bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
@@ -207,7 +201,8 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
         invalid_flag = true;
     }
     if (tmp_dy_param_double > 1000) {
-        cout << "invalid configuration: dy_param_double(" << tmp_dy_param_double << ") is out of range (-inf, 1000]." << endl;
+        cout << "invalid configuration: dy_param_double(" << tmp_dy_param_double << ") is out of range (-inf, 1000]."
+             << endl;
         invalid_flag = true;
     }
     if (tmp_dy_param_string.length() < 2) {
@@ -221,15 +216,18 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
 
     // commit change
     if (dy_param_int_ != tmp_dy_param_int) {
-        cout << "configuration changed: dy_param_int [ " << dy_param_int_ << " -> " << tmp_dy_param_int << " ]." << endl;
+        cout << "configuration changed: dy_param_int [ " << dy_param_int_ << " -> " << tmp_dy_param_int << " ]."
+             << endl;
         dy_param_int_ = tmp_dy_param_int;
     }
     if (dy_param_double_ != tmp_dy_param_double) {
-        cout << "configuration changed: dy_param_double [ " << dy_param_double_ << " -> " << tmp_dy_param_double << " ]." << endl;
+        cout << "configuration changed: dy_param_double [ " << dy_param_double_ << " -> " << tmp_dy_param_double
+             << " ]." << endl;
         dy_param_double_ = tmp_dy_param_double;
     }
     if (dy_param_string_ != tmp_dy_param_string) {
-        cout << "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string << " ]." << endl;
+        cout << "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string
+             << " ]." << endl;
         dy_param_string_ = tmp_dy_param_string;
     }
 
@@ -244,13 +242,9 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
     return true;
 }
 
-int diffraflow::MonConfig::get_dy_param_int() {
-    return dy_param_int_.load();
-}
+int diffraflow::MonConfig::get_dy_param_int() { return dy_param_int_.load(); }
 
-double diffraflow::MonConfig::get_dy_param_double() {
-    return dy_param_double_.load();
-}
+double diffraflow::MonConfig::get_dy_param_double() { return dy_param_double_.load(); }
 
 string diffraflow::MonConfig::get_dy_param_string() {
     lock_guard<mutex> lg(dy_param_string_mtx_);
@@ -258,16 +252,10 @@ string diffraflow::MonConfig::get_dy_param_string() {
 }
 
 bool diffraflow::MonConfig::metrics_pulsar_params_are_set() {
-    return (
-        !metrics_pulsar_broker_address.empty() &&
-        !metrics_pulsar_topic_name.empty() &&
-        !metrics_pulsar_message_key.empty()
-    );
+    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
+            !metrics_pulsar_message_key.empty());
 }
 
 bool diffraflow::MonConfig::metrics_http_params_are_set() {
-    return (
-        !metrics_http_host.empty() &&
-        metrics_http_port > 0
-    );
+    return (!metrics_http_host.empty() && metrics_http_port > 0);
 }

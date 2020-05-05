@@ -11,7 +11,7 @@ namespace diffraflow {
 
     class CmbImgCache;
 
-    class CmbImgFrmConn: public GenericConnection {
+    class CmbImgFrmConn : public GenericConnection {
     public:
         CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_);
         ~CmbImgFrmConn();
@@ -31,18 +31,16 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     protected:
-        ProcessRes process_payload_(const char* payload_buffer,
-            const size_t payload_size) override;
+        ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size) override;
 
     private:
         CmbImgCache* image_cache_;
-        char*  buffer_uncompress_;
+        char* buffer_uncompress_;
         size_t buffer_uncompress_limit_;
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

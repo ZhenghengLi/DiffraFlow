@@ -24,26 +24,26 @@ namespace diffraflow {
         string create_time();
 
     private:
-        ImageDataHDF5           image_data_hdf5_;
-        ImageDataHDF5::Field*   image_buffer_;
+        ImageDataHDF5 image_data_hdf5_;
+        ImageDataHDF5::Field* image_buffer_;
 
-        size_t                  buffer_size_;
-        size_t                  buffer_limit_;
-        size_t                  buffer_pos_;
+        size_t buffer_size_;
+        size_t buffer_limit_;
+        size_t buffer_pos_;
 
-        H5::H5File*             h5file_;
-        bool                    swmr_mode_;
-        string                  file_create_time_;
-        H5::DataSet             imgdat_dset_;
-        hid_t                   imgdat_dset_id_;
-        size_t                  imgdat_dset_pos_;
-        size_t                  imgdat_dset_size_;
+        H5::H5File* h5file_;
+        bool swmr_mode_;
+        string file_create_time_;
+        H5::DataSet imgdat_dset_;
+        hid_t imgdat_dset_id_;
+        size_t imgdat_dset_pos_;
+        size_t imgdat_dset_size_;
 
-        mutex                   file_op_mtx_;
+        mutex file_op_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

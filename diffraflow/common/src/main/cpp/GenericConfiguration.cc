@@ -7,19 +7,14 @@
 
 using std::ifstream;
 
-log4cxx::LoggerPtr diffraflow::GenericConfiguration::logger_
-    = log4cxx::Logger::getLogger("GenericConfiguration");
+log4cxx::LoggerPtr diffraflow::GenericConfiguration::logger_ = log4cxx::Logger::getLogger("GenericConfiguration");
 
-diffraflow::GenericConfiguration::GenericConfiguration() {
+diffraflow::GenericConfiguration::GenericConfiguration() {}
 
-}
-
-diffraflow::GenericConfiguration::~GenericConfiguration() {
-
-}
+diffraflow::GenericConfiguration::~GenericConfiguration() {}
 
 bool diffraflow::GenericConfiguration::read_conf_KV_list_(
-    const char* filename, list< pair<string, string> >& conf_KV_list) {
+    const char* filename, list<pair<string, string>>& conf_KV_list) {
     conf_KV_list.clear();
     ifstream conf_file;
     conf_file.open(filename);

@@ -10,6 +10,7 @@ using std::setw;
 
 const char diffraflow::CtrOptMan::opt_string_[] = "c:z:l:a:C:D:U:R:L:vh";
 
+// clang-format off
 const option diffraflow::CtrOptMan::long_opts_[] = {
     {"config",      required_argument,  NULL, 'c'},
     {"zkconfig",    required_argument,  NULL, 'z'},
@@ -24,14 +25,11 @@ const option diffraflow::CtrOptMan::long_opts_[] = {
     {"version",     no_argument,        NULL, 'v'},
     {NULL,          no_argument,        NULL, 0}
 };
+// clang-format on
 
-diffraflow::CtrOptMan::CtrOptMan(): OptionsManager("controller") {
+diffraflow::CtrOptMan::CtrOptMan() : OptionsManager("controller") {}
 
-}
-
-diffraflow::CtrOptMan::~CtrOptMan() {
-
-}
+diffraflow::CtrOptMan::~CtrOptMan() {}
 
 bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
     zk_actions.clear();
@@ -91,6 +89,7 @@ bool diffraflow::CtrOptMan::parse(int argc, char** argv) {
 }
 
 void diffraflow::CtrOptMan::print_help_() {
+    // clang-format off
     cout << "Usage:" << endl;
     cout << "  " << software_name_ << " [OPTION...]" << endl;
     cout << endl;
@@ -108,4 +107,5 @@ void diffraflow::CtrOptMan::print_help_() {
     cout << setw(30) << "  -v, --version"               << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help"                  << setw(50) << "print this help" << endl;
     cout << endl;
+    // clang-format on
 }

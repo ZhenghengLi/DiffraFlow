@@ -14,10 +14,9 @@ namespace diffraflow {
 
     class DspSender;
 
-    class DspImgFrmSrv: public GenericServer {
+    class DspImgFrmSrv : public GenericServer {
     public:
-        DspImgFrmSrv(string host, int port,
-            DspSender** sender_arr, size_t sender_cnt);
+        DspImgFrmSrv(string host, int port, DspSender** sender_arr, size_t sender_cnt);
         ~DspImgFrmSrv();
 
     protected:
@@ -25,8 +24,8 @@ namespace diffraflow {
 
     private:
         DspSender** sender_array_;
-        size_t      sender_count_;
+        size_t sender_count_;
     };
-}
+} // namespace diffraflow
 
 #endif

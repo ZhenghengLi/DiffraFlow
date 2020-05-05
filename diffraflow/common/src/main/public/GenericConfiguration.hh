@@ -22,13 +22,11 @@ namespace diffraflow {
         virtual void print() = 0;
 
     protected:
-        bool read_conf_KV_list_(const char* filename,
-            list< pair<string, string> >& conf_KV_list);
+        bool read_conf_KV_list_(const char* filename, list<pair<string, string>>& conf_KV_list);
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

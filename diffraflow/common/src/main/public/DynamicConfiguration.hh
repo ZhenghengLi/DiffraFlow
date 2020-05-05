@@ -26,7 +26,7 @@ using std::atomic_int;
 
 namespace diffraflow {
 
-    class DynamicConfiguration: public GenericConfiguration, public MetricsProvider {
+    class DynamicConfiguration : public GenericConfiguration, public MetricsProvider {
     public:
         DynamicConfiguration();
         virtual ~DynamicConfiguration();
@@ -46,15 +46,12 @@ namespace diffraflow {
         bool zookeeper_start();
         void zookeeper_stop();
         // for updater
-        int zookeeper_create_config(const char* config_path,
-            const map<string, string>& config_map);
+        int zookeeper_create_config(const char* config_path, const map<string, string>& config_map);
         int zookeeper_delete_config(const char* config_path, int version = -1);
-        int zookeeper_change_config(const char* config_path,
-            const map<string, string>& config_map, int version = -1);
-        int zookeeper_fetch_config(const char* config_path,
-            map<string, string>& config_map, time_t& config_mtime, int& version);
-        int zookeeper_get_children(const char* config_path,
-            vector<string>& children_list);
+        int zookeeper_change_config(const char* config_path, const map<string, string>& config_map, int version = -1);
+        int zookeeper_fetch_config(
+            const char* config_path, map<string, string>& config_map, time_t& config_mtime, int& version);
+        int zookeeper_get_children(const char* config_path, vector<string>& children_list);
         // for reader
         void zookeeper_sync_config();
         // print setting
@@ -62,7 +59,7 @@ namespace diffraflow {
 
     protected:
         // parse setting
-        bool zookeeper_parse_setting_(list< pair<string, string> > conf_KV_list);
+        bool zookeeper_parse_setting_(list<pair<string, string>> conf_KV_list);
 
     private:
         bool zookeeper_start_session_();
@@ -74,55 +71,52 @@ namespace diffraflow {
 
     private:
         // zookeeper callbacks
-        static void zookeeper_main_watcher_(zhandle_t* zh, int type,
-            int state, const char* path, void* context);
-        static void zookeeper_config_watcher_(zhandle_t* zh, int type,
-            int state, const char* path, void* context);
+        static void zookeeper_main_watcher_(zhandle_t* zh, int type, int state, const char* path, void* context);
+        static void zookeeper_config_watcher_(zhandle_t* zh, int type, int state, const char* path, void* context);
         static void zookeeper_auth_completion_(int rc, const void* data);
-        static void zookeeper_data_completion_(int rc, const char* value,
-            int value_len, const struct Stat* stat, const void* data);
-        static void zookeeper_stat_completion_(int rc,
-            const struct Stat* stat, const void* data);
+        static void zookeeper_data_completion_(
+            int rc, const char* value, int value_len, const struct Stat* stat, const void* data);
+        static void zookeeper_stat_completion_(int rc, const struct Stat* stat, const void* data);
 
     private:
-        enum CallbackRes_ {kUnknown, kSucc, kFail};
+        enum CallbackRes_ { kUnknown, kSucc, kFail };
 
         // zookeeper configurations
-        zhandle_t*              zookeeper_handle_;
-        string                  zookeeper_server_;
-        string                  zookeeper_chroot_;
-        string                  zookeeper_log_level_;
-        int                     zookeeper_expiration_time_;
-        string                  zookeeper_auth_string_;  // user:password
-        string                  zookeeper_config_path_;
-        atomic_bool             zookeeper_is_updater_;
+        zhandle_t* zookeeper_handle_;
+        string zookeeper_server_;
+        string zookeeper_chroot_;
+        string zookeeper_log_level_;
+        int zookeeper_expiration_time_;
+        string zookeeper_auth_string_; // user:password
+        string zookeeper_config_path_;
+        atomic_bool zookeeper_is_updater_;
 
         // znode buffer for fetching
-        char*                   zookeeper_znode_buffer_;
-        int                     zookeeper_znode_buffer_cap_;
-        int                     zookeeper_znode_buffer_len_;
-        Stat                    zookeeper_znode_stat_;
+        char* zookeeper_znode_buffer_;
+        int zookeeper_znode_buffer_cap_;
+        int zookeeper_znode_buffer_len_;
+        Stat zookeeper_znode_stat_;
 
         // lock for each zookeeper operation
-        mutex                   zookeeper_operation_mtx_;
+        mutex zookeeper_operation_mtx_;
 
         // zookeeper connectiong status
-        bool                    zookeeper_connected_;
-        mutex                   zookeeper_connected_mtx_;
-        condition_variable      zookeeper_connected_cv_;
+        bool zookeeper_connected_;
+        mutex zookeeper_connected_mtx_;
+        condition_variable zookeeper_connected_cv_;
 
         // zookeeper operation results
-        CallbackRes_            zookeeper_auth_res_;
-        mutex                   zookeeper_auth_res_mtx_;
-        condition_variable      zookeeper_auth_res_cv_;
+        CallbackRes_ zookeeper_auth_res_;
+        mutex zookeeper_auth_res_mtx_;
+        condition_variable zookeeper_auth_res_cv_;
 
         // for metrics
-        json::value             zookeeper_config_json_;
+        json::value zookeeper_config_json_;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
 
-}
+} // namespace diffraflow
 
 #endif

@@ -13,8 +13,7 @@ using std::chrono::milliseconds;
 using std::chrono::system_clock;
 using std::milli;
 
-log4cxx::LoggerPtr diffraflow::MetricsReporter::logger_
-    = log4cxx::Logger::getLogger("MetricsReporter");
+log4cxx::LoggerPtr diffraflow::MetricsReporter::logger_ = log4cxx::Logger::getLogger("MetricsReporter");
 
 diffraflow::MetricsReporter::MetricsReporter() {
     listener_ = nullptr;
@@ -60,13 +59,13 @@ json::value diffraflow::MetricsReporter::aggregate_metrics_() {
     root_json["timestamp"] = json::value::number(current_time.count());
     root_json["timestamp_unit"] = json::value::string("milliseconds");
 
-    for (map<string, MetricsProvider*>::iterator iter = metrics_scalar_.begin();
-        iter != metrics_scalar_.end(); ++iter) {
+    for (map<string, MetricsProvider*>::iterator iter = metrics_scalar_.begin(); iter != metrics_scalar_.end();
+         ++iter) {
         root_json[iter->first] = iter->second->collect_metrics();
     }
-    for (map<string, vector<MetricsProvider*> >::iterator iter = metrics_array_.begin();
-        iter != metrics_array_.end(); ++iter) {
-        for (size_t i = 0 ; i < iter->second.size(); i++) {
+    for (map<string, vector<MetricsProvider*>>::iterator iter = metrics_array_.begin(); iter != metrics_array_.end();
+         ++iter) {
+        for (size_t i = 0; i < iter->second.size(); i++) {
             root_json[iter->first][i] = iter->second[i]->collect_metrics();
         }
     }
@@ -96,28 +95,24 @@ bool diffraflow::MetricsReporter::start_msg_producer(
     message_key_ = msg_key;
     report_period_ = report_period;
     sender_is_running_ = true;
-    sender_thread_ = new thread(
-        [this] () {
-            while (sender_is_running_) {
-                unique_lock<mutex> ulk(wait_mtx_);
-                if (!sender_is_running_) break;
+    sender_thread_ = new thread([this]() {
+        while (sender_is_running_) {
+            unique_lock<mutex> ulk(wait_mtx_);
+            if (!sender_is_running_) break;
 
-                json::value metrics_json = aggregate_metrics_();
-                pulsar::Message message = pulsar::MessageBuilder().
-                    setPartitionKey(message_key_).
-                    setContent(metrics_json.serialize()).
-                    build();
-                pulsar::Result result = pulsar_producer_->send(message);
-                if (result == pulsar::ResultOk) {
-                    LOG4CXX_DEBUG(logger_, "successfully sent metrics with timestamp: " << metrics_json["timestamp"]);
-                } else {
-                    LOG4CXX_DEBUG(logger_, "failed to send metrics with timestamp: " << metrics_json["timestamp"]);
-                }
-
-                wait_cv_.wait_for(ulk, milliseconds(report_period_));
+            json::value metrics_json = aggregate_metrics_();
+            pulsar::Message message =
+                pulsar::MessageBuilder().setPartitionKey(message_key_).setContent(metrics_json.serialize()).build();
+            pulsar::Result result = pulsar_producer_->send(message);
+            if (result == pulsar::ResultOk) {
+                LOG4CXX_DEBUG(logger_, "successfully sent metrics with timestamp: " << metrics_json["timestamp"]);
+            } else {
+                LOG4CXX_DEBUG(logger_, "failed to send metrics with timestamp: " << metrics_json["timestamp"]);
             }
+
+            wait_cv_.wait_for(ulk, milliseconds(report_period_));
         }
-    );
+    });
 
     return true;
 }
@@ -125,7 +120,7 @@ bool diffraflow::MetricsReporter::start_msg_producer(
 void diffraflow::MetricsReporter::stop_msg_producer() {
     if (pulsar_client_ == nullptr) return;
 
-    {   // make sure stop the thread when it is in wait state
+    { // make sure stop the thread when it is in wait state
         lock_guard<mutex> lg(wait_mtx_);
         sender_is_running_ = false;
         wait_cv_.notify_all();
@@ -162,11 +157,10 @@ bool diffraflow::MetricsReporter::start_http_server(string host, int port) {
     } catch (std::exception& e) {
         LOG4CXX_ERROR(logger_, "failed to start http server: " << e.what());
         return false;
-    } catch(...) {
+    } catch (...) {
         LOG4CXX_ERROR(logger_, "failed to start http server with unknown error.");
         return false;
     }
-
 }
 
 void diffraflow::MetricsReporter::handleGet_(http_request message) {

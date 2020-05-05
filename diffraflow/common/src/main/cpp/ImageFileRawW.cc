@@ -10,18 +10,13 @@ using std::string;
 using std::endl;
 using std::lock_guard;
 
-log4cxx::LoggerPtr diffraflow::ImageFileRawW::logger_
-    = log4cxx::Logger::getLogger("ImageFileRawW");
+log4cxx::LoggerPtr diffraflow::ImageFileRawW::logger_ = log4cxx::Logger::getLogger("ImageFileRawW");
 
 const string diffraflow::ImageFileRawW::inprogress_suffix_ = ".inprogress";
 
-diffraflow::ImageFileRawW::ImageFileRawW() {
-    image_counts_ = 0;
-}
+diffraflow::ImageFileRawW::ImageFileRawW() { image_counts_ = 0; }
 
-diffraflow::ImageFileRawW::~ImageFileRawW() {
-    close();
-}
+diffraflow::ImageFileRawW::~ImageFileRawW() { close(); }
 
 bool diffraflow::ImageFileRawW::open(const char* filename) {
     lock_guard<mutex> lg(file_op_mtx_);
@@ -55,8 +50,8 @@ void diffraflow::ImageFileRawW::close() {
     if (bf::exists(file_current_path)) {
         bf::rename(file_current_path, file_target_path, ec);
         if (ec != bs::errc::success) {
-            LOG4CXX_WARN(logger_, "failed to rename file " << file_current_path.string()
-                << " with error: " << ec.message());
+            LOG4CXX_WARN(
+                logger_, "failed to rename file " << file_current_path.string() << " with error: " << ec.message());
         }
     }
 }
@@ -79,6 +74,4 @@ bool diffraflow::ImageFileRawW::write(const ImageData& image_data) {
     return true;
 }
 
-size_t diffraflow::ImageFileRawW::size() {
-    return image_counts_.load();
-}
+size_t diffraflow::ImageFileRawW::size() { return image_counts_.load(); }

@@ -33,12 +33,12 @@ namespace diffraflow {
         bool create_senders_(const char* address_list_fn, int dispatcher_id,
             DspSender::CompressMethod compress_method = DspSender::kNone, int compress_level = 1);
         void delete_senders_();
-        bool read_address_list_(const char* filename, vector< pair<string, int> >& addr_vec);
+        bool read_address_list_(const char* filename, vector<pair<string, int>>& addr_vec);
 
     private:
-        DspConfig*  config_obj_;
+        DspConfig* config_obj_;
         DspSender** sender_arr_;
-        size_t      sender_cnt_;
+        size_t sender_cnt_;
 
         DspImgFrmSrv* imgfrm_srv_;
         atomic_bool running_flag_;
@@ -49,8 +49,7 @@ namespace diffraflow {
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

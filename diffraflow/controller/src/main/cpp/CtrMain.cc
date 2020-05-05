@@ -49,20 +49,18 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
         // run the action
         if (op == "C") {
             if (ZOK == zk_conf_client->zookeeper_create_config(znode.c_str(), conf_map.data)) {
-                cout << "successfully created znode " << znode
-                     << " with config map file " << conf_map_file << "." << endl;
+                cout << "successfully created znode " << znode << " with config map file " << conf_map_file << "."
+                     << endl;
             } else {
-                cout << "failed to create znode " << znode
-                     << " with config map file " << conf_map_file << "." << endl;
+                cout << "failed to create znode " << znode << " with config map file " << conf_map_file << "." << endl;
                 return 1;
             }
         } else if (op == "U") {
             if (ZOK == zk_conf_client->zookeeper_change_config(znode.c_str(), conf_map.data)) {
-                cout << "successfully updated znode " << znode
-                     << " with config map file " << conf_map_file << "." << endl;
+                cout << "successfully updated znode " << znode << " with config map file " << conf_map_file << "."
+                     << endl;
             } else {
-                cout << "failed to update znode " << znode
-                     << " with config map file " << conf_map_file << "." << endl;
+                cout << "failed to update znode " << znode << " with config map file " << conf_map_file << "." << endl;
                 return 1;
             }
         } else if (op == "R") {
@@ -91,7 +89,8 @@ int execute_zk_actions(DynamicConfiguration* zk_conf_client, vector<string> zk_a
             }
         } else if (op == "D") {
             if (ZOK == zk_conf_client->zookeeper_delete_config(znode.c_str())) {
-                cout << "successfully deleted znode " << znode << "." << endl;;
+                cout << "successfully deleted znode " << znode << "." << endl;
+                ;
             } else {
                 cout << "failed to delete znode " << znode << "." << endl;
                 return 1;

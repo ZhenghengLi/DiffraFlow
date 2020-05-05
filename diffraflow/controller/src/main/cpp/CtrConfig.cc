@@ -5,26 +5,23 @@ using std::cout;
 using std::endl;
 using std::flush;
 
-log4cxx::LoggerPtr diffraflow::CtrConfig::logger_
-    = log4cxx::Logger::getLogger("CtrConfig");
+log4cxx::LoggerPtr diffraflow::CtrConfig::logger_ = log4cxx::Logger::getLogger("CtrConfig");
 
 diffraflow::CtrConfig::CtrConfig() {
-    request_timeout = 10000;  // 10 seconds
+    request_timeout = 10000; // 10 seconds
     http_port = -1;
 }
 
-diffraflow::CtrConfig::~CtrConfig() {
-
-}
+diffraflow::CtrConfig::~CtrConfig() {}
 
 bool diffraflow::CtrConfig::load(const char* filename) {
-    list< pair<string, string> > conf_KV_list;
+    list<pair<string, string>> conf_KV_list;
     if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
     }
     // parse
-    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
+    for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
         if (key == "http_host") {
@@ -34,8 +31,8 @@ bool diffraflow::CtrConfig::load(const char* filename) {
         } else if (key == "request_timeout") {
             request_timeout = atoi(value.c_str());
         } else {
-            LOG4CXX_WARN(logger_, "Found unknown configuration which is ignored: "
-                << key << " = " << value << " in " << filename);
+            LOG4CXX_WARN(logger_,
+                "Found unknown configuration which is ignored: " << key << " = " << value << " in " << filename);
         }
     }
     // currection

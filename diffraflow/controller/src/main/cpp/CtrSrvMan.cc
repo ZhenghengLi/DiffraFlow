@@ -8,8 +8,7 @@
 
 using std::async;
 
-log4cxx::LoggerPtr diffraflow::CtrSrvMan::logger_
-    = log4cxx::Logger::getLogger("CtrSrvMan");
+log4cxx::LoggerPtr diffraflow::CtrSrvMan::logger_ = log4cxx::Logger::getLogger("CtrSrvMan");
 
 diffraflow::CtrSrvMan::CtrSrvMan(CtrConfig* config, const char* monaddr_file, DynamicConfiguration* zk_conf_client) {
     config_obj_ = config;
@@ -22,9 +21,7 @@ diffraflow::CtrSrvMan::CtrSrvMan(CtrConfig* config, const char* monaddr_file, Dy
     running_flag_ = false;
 }
 
-diffraflow::CtrSrvMan::~CtrSrvMan() {
-
-}
+diffraflow::CtrSrvMan::~CtrSrvMan() {}
 
 void diffraflow::CtrSrvMan::start_run() {
     if (running_flag_) return;
@@ -37,7 +34,8 @@ void diffraflow::CtrSrvMan::start_run() {
     if (!monitor_address_file_.empty()) {
         monitor_load_balancer_ = new CtrMonLoadBalancer();
 
-        if (monitor_load_balancer_->create_monitor_clients(monitor_address_file_.c_str(), config_obj_->request_timeout)) {
+        if (monitor_load_balancer_->create_monitor_clients(
+                monitor_address_file_.c_str(), config_obj_->request_timeout)) {
             LOG4CXX_INFO(logger_, "successfully created monitor load balancer.");
         } else {
             LOG4CXX_ERROR(logger_, "failed to create monitor load balancer.");
@@ -47,8 +45,8 @@ void diffraflow::CtrSrvMan::start_run() {
 
     http_server_ = new CtrHttpServer(monitor_load_balancer_, zookeeper_config_client_);
     if (http_server_->start(config_obj_->http_host, config_obj_->http_port)) {
-        LOG4CXX_INFO(logger_, "successfully started HTTP server listening "
-            << config_obj_->http_host << ":" << config_obj_->http_port);
+        LOG4CXX_INFO(logger_,
+            "successfully started HTTP server listening " << config_obj_->http_host << ":" << config_obj_->http_port);
     } else {
         LOG4CXX_ERROR(logger_, "failed to start HTTP server.");
         return;
@@ -57,10 +55,7 @@ void diffraflow::CtrSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async([this]() {
-        http_server_->wait();
-    }).wait();
-
+    async([this]() { http_server_->wait(); }).wait();
 }
 
 void diffraflow::CtrSrvMan::terminate() {

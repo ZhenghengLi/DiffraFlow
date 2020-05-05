@@ -12,8 +12,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-log4cxx::LoggerPtr diffraflow::ImageFrame::logger_
-    = log4cxx::Logger::getLogger("ImageFrame");
+log4cxx::LoggerPtr diffraflow::ImageFrame::logger_ = log4cxx::Logger::getLogger("ImageFrame");
 
 diffraflow::ImageFrame::ImageFrame() {
     image_time = 0;
@@ -24,9 +23,7 @@ diffraflow::ImageFrame::ImageFrame() {
     image_rawdata.clear();
 }
 
-diffraflow::ImageFrame::~ImageFrame() {
-
-}
+diffraflow::ImageFrame::~ImageFrame() {}
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     if (size <= 8) return false;

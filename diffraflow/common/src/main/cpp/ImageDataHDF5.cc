@@ -1,6 +1,6 @@
 #include "ImageDataHDF5.hh"
 
-diffraflow::ImageDataHDF5::ImageDataHDF5(): H5::CompType(sizeof(Field)) {
+diffraflow::ImageDataHDF5::ImageDataHDF5() : H5::CompType(sizeof(Field)) {
     //// event_time
     insertMember("event_time", HOFFSET(Field, event_time), H5::PredType::NATIVE_UINT64);
     //// alignment
@@ -17,9 +17,7 @@ diffraflow::ImageDataHDF5::ImageDataHDF5(): H5::CompType(sizeof(Field)) {
     insertMember("late_arrived", HOFFSET(Field, late_arrived), H5::PredType::NATIVE_HBOOL);
 }
 
-diffraflow::ImageDataHDF5::~ImageDataHDF5() {
-
-}
+diffraflow::ImageDataHDF5::~ImageDataHDF5() {}
 
 void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field& imgdat_st) {
     // event_time

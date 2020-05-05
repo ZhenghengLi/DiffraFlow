@@ -35,10 +35,10 @@ namespace diffraflow {
         void wait();
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        http_listener*  listener_;
+        http_listener* listener_;
 
         atomic<WorkerStatus> server_status_;
         mutex mtx_status_;
@@ -48,15 +48,15 @@ namespace diffraflow {
         DynamicConfiguration* zookeeper_config_client_;
 
     private:
-        void handleGet_(http_request message);      // zookeeper_fetch_config | zookeeper_get_children
-        void handlePost_(http_request message);     // zookeeper_create_config
-        void handlePut_(http_request message);      // zookeeper_change_config
-        void handlePatch_(http_request message);    // zookeeper_fetch_config & zookeeper_change_config
+        void handleGet_(http_request message);   // zookeeper_fetch_config | zookeeper_get_children
+        void handlePost_(http_request message);  // zookeeper_create_config
+        void handlePut_(http_request message);   // zookeeper_change_config
+        void handlePatch_(http_request message); // zookeeper_fetch_config & zookeeper_change_config
         void handleDel_(http_request message);   // zookeeper_delete_config
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

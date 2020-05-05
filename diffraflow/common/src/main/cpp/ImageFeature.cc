@@ -6,14 +6,8 @@ diffraflow::ImageFeature::ImageFeature() {
     is_defined_ = false;
 }
 
-diffraflow::ImageFeature::~ImageFeature() {
+diffraflow::ImageFeature::~ImageFeature() {}
 
-}
+void diffraflow::ImageFeature::set_defined() { is_defined_ = true; }
 
-void diffraflow::ImageFeature::set_defined() {
-    is_defined_ = true;
-}
-
-bool diffraflow::ImageFeature::get_defined() {
-    return is_defined_;
-}
+bool diffraflow::ImageFeature::get_defined() { return is_defined_; }

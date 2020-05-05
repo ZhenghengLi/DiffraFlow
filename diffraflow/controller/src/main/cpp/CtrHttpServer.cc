@@ -20,8 +20,7 @@ using std::queue;
 using std::map;
 using std::pair;
 
-log4cxx::LoggerPtr diffraflow::CtrHttpServer::logger_
-    = log4cxx::Logger::getLogger("CtrHttpServer");
+log4cxx::LoggerPtr diffraflow::CtrHttpServer::logger_ = log4cxx::Logger::getLogger("CtrHttpServer");
 
 diffraflow::CtrHttpServer::CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicConfiguration* zk_conf_client) {
     listener_ = nullptr;
@@ -30,9 +29,7 @@ diffraflow::CtrHttpServer::CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicC
     zookeeper_config_client_ = zk_conf_client;
 }
 
-diffraflow::CtrHttpServer::~CtrHttpServer() {
-
-}
+diffraflow::CtrHttpServer::~CtrHttpServer() {}
 
 bool diffraflow::CtrHttpServer::start(string host, int port) {
     if (server_status_ == kRunning) {
@@ -63,7 +60,7 @@ bool diffraflow::CtrHttpServer::start(string host, int port) {
     } catch (std::exception& e) {
         LOG4CXX_ERROR(logger_, "failed to start http server: " << e.what());
         return false;
-    } catch(...) {
+    } catch (...) {
         LOG4CXX_ERROR(logger_, "failed to start http server with unknown error.");
         return false;
     }
@@ -86,14 +83,11 @@ void diffraflow::CtrHttpServer::stop() {
 
     server_status_ = kStopped;
     cv_status_.notify_all();
-
 }
 
 void diffraflow::CtrHttpServer::wait() {
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {return server_status_ != kRunning;}
-    );
+    cv_status_.wait(ulk, [this]() { return server_status_ != kRunning; });
 }
 
 void diffraflow::CtrHttpServer::handleGet_(http_request message) {
@@ -160,11 +154,11 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
             time_t config_mtime;
             int version;
             string znode_path = string("/") + request_value;
-            int zoo_err = zookeeper_config_client_->zookeeper_fetch_config(
-                znode_path.c_str(), config_map, config_mtime, version);
+            int zoo_err =
+                zookeeper_config_client_->zookeeper_fetch_config(znode_path.c_str(), config_map, config_mtime, version);
             if (zoo_err == ZOK) {
                 json::value config_map_json;
-                for (const pair<string, string>& item: config_map) {
+                for (const pair<string, string>& item : config_map) {
                     config_map_json[item.first] = json::value::string(item.second);
                 }
                 json::value root_json;
@@ -210,14 +204,15 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
             if (iter->second.is_string()) {
                 config_map[iter->first] = iter->second.as_string();
             } else {
-                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                message.reply(
+                    status_codes::BadRequest, utility::string_t("config value should only be of type string."));
                 return;
             }
         }
         int zoo_err = zookeeper_config_client_->zookeeper_create_config(znode_path.c_str(), config_map);
         if (zoo_err == ZOK) {
             message.reply(status_codes::OK);
-        } else if (zoo_err == ZNODEEXISTS)  {
+        } else if (zoo_err == ZNODEEXISTS) {
             message.reply(status_codes::Conflict, utility::string_t("config name already exists."));
         } else {
             message.reply(status_codes::InternalError);
@@ -255,14 +250,15 @@ void diffraflow::CtrHttpServer::handlePut_(http_request message) {
             if (iter->second.is_string()) {
                 config_map[iter->first] = iter->second.as_string();
             } else {
-                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                message.reply(
+                    status_codes::BadRequest, utility::string_t("config value should only be of type string."));
                 return;
             }
         }
         int zoo_err = zookeeper_config_client_->zookeeper_change_config(znode_path.c_str(), config_map);
         if (zoo_err == ZOK) {
             message.reply(status_codes::OK);
-        } else if (zoo_err == ZNONODE)  {
+        } else if (zoo_err == ZNONODE) {
             message.reply(status_codes::BadRequest, utility::string_t("config name does not exist."));
         } else {
             message.reply(status_codes::InternalError);
@@ -300,7 +296,8 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
             if (iter->second.is_string()) {
                 config_map_patch[iter->first] = iter->second.as_string();
             } else {
-                message.reply(status_codes::BadRequest, utility::string_t("config value should only be of type string."));
+                message.reply(
+                    status_codes::BadRequest, utility::string_t("config value should only be of type string."));
                 return;
             }
         }
@@ -308,7 +305,8 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
         int version = -1;
         time_t config_mtime;
         // fetch
-        int zoo_err = zookeeper_config_client_->zookeeper_fetch_config(znode_path.c_str(), config_map, config_mtime, version);
+        int zoo_err =
+            zookeeper_config_client_->zookeeper_fetch_config(znode_path.c_str(), config_map, config_mtime, version);
         if (zoo_err == ZNONODE) {
             message.reply(status_codes::BadRequest, utility::string_t("config name does not exist."));
             return;
@@ -317,17 +315,19 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
             return;
         }
         // patch
-        for (const pair<string, string>& item: config_map_patch) {
+        for (const pair<string, string>& item : config_map_patch) {
             config_map[item.first] = item.second;
         }
         // update
         zoo_err = zookeeper_config_client_->zookeeper_change_config(znode_path.c_str(), config_map, version);
         if (zoo_err == ZOK) {
             message.reply(status_codes::OK);
-        } else if (zoo_err == ZNONODE)  {
-            message.reply(status_codes::InternalError, utility::string_t("config name may be deleted during patching."));
-        } else if (zoo_err == ZBADVERSION)  {
-            message.reply(status_codes::InternalError, utility::string_t("config name may be updated during patching."));
+        } else if (zoo_err == ZNONODE) {
+            message.reply(
+                status_codes::InternalError, utility::string_t("config name may be deleted during patching."));
+        } else if (zoo_err == ZBADVERSION) {
+            message.reply(
+                status_codes::InternalError, utility::string_t("config name may be updated during patching."));
         } else {
             message.reply(status_codes::InternalError);
         }

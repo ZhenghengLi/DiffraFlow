@@ -35,12 +35,12 @@ namespace diffraflow {
         TemporaryMap(const TemporaryMap& tmap);
         virtual ~TemporaryMap();
 
-        virtual void    set(K key, V value);
-        bool            get(K key, V* value);
+        virtual void set(K key, V value);
+        bool get(K key, V* value);
 
-        void            clear();
-        size_t          size();
-        bool            empty();
+        void clear();
+        size_t size();
+        bool empty();
 
     private:
         void do_cleaning_();
@@ -49,7 +49,7 @@ namespace diffraflow {
         map<K, V> data_;
         size_t capacity_;
         double ttl_;
-        list< pair<K, double> > key_list_;
+        list<pair<K, double>> key_list_;
 
         thread* cleaner_;
         atomic_bool is_running_;
@@ -62,13 +62,11 @@ namespace diffraflow {
         capacity_ = (capacity > 100 ? capacity : 100);
         ttl_ = (ttl > 100 ? ttl : 100);
         is_running_ = true;
-        cleaner_ = new thread(
-            [this] () {
-                while (is_running_) {
-                    do_cleaning_();
-                }
+        cleaner_ = new thread([this]() {
+            while (is_running_) {
+                do_cleaning_();
             }
-        );
+        });
     }
 
     template <typename K, typename V>
@@ -77,7 +75,7 @@ namespace diffraflow {
         assert(false);
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     TemporaryMap<K, V>::~TemporaryMap() {
         is_running_ = false;
         clean_cv_.notify_all();
@@ -85,7 +83,7 @@ namespace diffraflow {
         delete cleaner_;
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     void TemporaryMap<K, V>::set(K key, V value) {
         lock_guard<mutex> lg(data_mtx_);
         // with new key
@@ -96,20 +94,16 @@ namespace diffraflow {
                 key_list_.pop_front();
             }
         } else { // key already exists
-            key_list_.remove_if(
-                [&key] ( pair<K, double> el ) {
-                    return el.first == key;
-                }
-            );
+            key_list_.remove_if([&key](pair<K, double> el) { return el.first == key; });
         }
         // add or update data with current time
         duration<double, milli> current_time = system_clock::now().time_since_epoch();
-        key_list_.push_back( make_pair(key, current_time.count()) );
+        key_list_.push_back(make_pair(key, current_time.count()));
         data_[key] = value;
         clean_cv_.notify_all();
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     bool TemporaryMap<K, V>::get(K key, V* value) {
         lock_guard<mutex> lg(data_mtx_);
         typename map<K, V>::iterator iter = data_.find(key);
@@ -123,35 +117,31 @@ namespace diffraflow {
         }
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     void TemporaryMap<K, V>::clear() {
         lock_guard<mutex> lg(data_mtx_);
         data_.clear();
         key_list_.clear();
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     bool TemporaryMap<K, V>::empty() {
         lock_guard<mutex> lg(data_mtx_);
         return key_list_.empty();
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     size_t TemporaryMap<K, V>::size() {
         lock_guard<mutex> lg(data_mtx_);
         return key_list_.size();
     }
 
-    template<typename K, typename V>
+    template <typename K, typename V>
     void TemporaryMap<K, V>::do_cleaning_() {
         unique_lock<mutex> ulk(data_mtx_);
 
         if (key_list_.empty()) {
-            clean_cv_.wait(ulk,
-                [this] () {
-                    return !is_running_;
-                }
-            );
+            clean_cv_.wait(ulk, [this]() { return !is_running_; });
         }
 
         if (!is_running_) return;
@@ -163,11 +153,10 @@ namespace diffraflow {
             data_.erase(oldest.first);
             key_list_.pop_front();
         } else {
-            clean_cv_.wait_for(ulk, milliseconds( static_cast<int>(ttl_ - longest_live_time)) );
+            clean_cv_.wait_for(ulk, milliseconds(static_cast<int>(ttl_ - longest_live_time)));
         }
-
     }
 
-}
+} // namespace diffraflow
 
 #endif

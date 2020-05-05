@@ -22,18 +22,16 @@ namespace diffraflow {
 
     class IngCalibrationWorker {
     public:
-        IngCalibrationWorker(
-            IngImgWthFtrQueue* img_queue_in,
-            IngImgWthFtrQueue* img_queue_out);
+        IngCalibrationWorker(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out);
 
         ~IngCalibrationWorker();
 
         bool start();
         void wait();
-        int  stop();
+        int stop();
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
         void do_calib_(const ImageData& imgdat_raw, ImageData& imgdat_calib);
@@ -53,6 +51,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -10,9 +10,7 @@ diffraflow::OptionsManager::OptionsManager(const char* sw_name) {
     version_flag_ = false;
 }
 
-diffraflow::OptionsManager::~OptionsManager() {
-
-}
+diffraflow::OptionsManager::~OptionsManager() {}
 
 void diffraflow::OptionsManager::print() {
     if (version_flag_) {
@@ -24,8 +22,10 @@ void diffraflow::OptionsManager::print() {
 
 void diffraflow::OptionsManager::print_version_() {
     cout << endl;
-    cout << "    " << software_name_ << " - " << "DiffraFlow Project" << endl;
-    cout << "    " << gReleaseVersion << " (" << gReleaseDate << ", compiled " << __DATE__ << " " << __TIME__ << ")" << endl;
+    cout << "    " << software_name_ << " - "
+         << "DiffraFlow Project" << endl;
+    cout << "    " << gReleaseVersion << " (" << gReleaseDate << ", compiled " << __DATE__ << " " << __TIME__ << ")"
+         << endl;
     cout << endl;
     cout << gCopyrightStatement << endl;
     // cout << " Source Code: " << gSourceCodeUrl << endl;

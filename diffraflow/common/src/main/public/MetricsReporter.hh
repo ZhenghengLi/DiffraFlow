@@ -39,10 +39,7 @@ namespace diffraflow {
         ~MetricsReporter();
 
         bool start_msg_producer(
-            string broker_address,
-            string topic,
-            string msg_key,
-            size_t report_period  /* milliseconds */
+            string broker_address, string topic, string msg_key, size_t report_period /* milliseconds */
         );
         void stop_msg_producer();
 
@@ -60,7 +57,7 @@ namespace diffraflow {
 
     private:
         map<string, MetricsProvider*> metrics_scalar_;
-        map<string, vector<MetricsProvider*> > metrics_array_;
+        map<string, vector<MetricsProvider*>> metrics_array_;
 
         http_listener* listener_;
         pulsar::Client* pulsar_client_;
@@ -75,8 +72,7 @@ namespace diffraflow {
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

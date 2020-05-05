@@ -19,8 +19,7 @@ using std::regex_match;
 using std::error_code;
 using namespace web;
 
-log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_
-    = log4cxx::Logger::getLogger("DynamicConfiguration");
+log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_ = log4cxx::Logger::getLogger("DynamicConfiguration");
 
 diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_handle_ = nullptr;
@@ -39,11 +38,11 @@ diffraflow::DynamicConfiguration::~DynamicConfiguration() {
     if (zookeeper_handle_ != nullptr) {
         zookeeper_stop();
     }
-    delete [] zookeeper_znode_buffer_;
+    delete[] zookeeper_znode_buffer_;
 }
 
 bool diffraflow::DynamicConfiguration::load(const char* filename) {
-    list< pair<string, string> > conf_KV_list;
+    list<pair<string, string>> conf_KV_list;
     if (!read_conf_KV_list_(filename, conf_KV_list)) {
         LOG4CXX_ERROR(logger_, "Failed to read configuration file: " << filename);
         return false;
@@ -51,9 +50,9 @@ bool diffraflow::DynamicConfiguration::load(const char* filename) {
     return zookeeper_parse_setting_(conf_KV_list);
 }
 
-bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list< pair<string, string> > conf_KV_list) {
+bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list<pair<string, string>> conf_KV_list) {
     // parse settings
-    for (list< pair<string, string> >::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end();) {
+    for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end();) {
         string key = iter->first;
         string value = iter->second;
         if (key == "zookeeper_server") {
@@ -106,7 +105,8 @@ bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list< pair<strin
         zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
     } else {
         zoo_set_debug_level(ZOO_LOG_LEVEL_INFO);
-        LOG4CXX_WARN(logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
+        LOG4CXX_WARN(
+            logger_, "an unknown zookeeper_log_level is set: " << zookeeper_log_level_ << ", use info instread.");
     }
     // correction
     if (zookeeper_expiration_time_ < 5000 || zookeeper_expiration_time_ > 15000) {
@@ -129,9 +129,7 @@ json::value diffraflow::DynamicConfiguration::collect_metrics() {
     root_json["zookeeper_config"] = zookeeper_config_json_;
 }
 
-void diffraflow::DynamicConfiguration::print() {
-    zookeeper_print_setting();
-}
+void diffraflow::DynamicConfiguration::print() { zookeeper_print_setting(); }
 
 void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
     cout << "zookeeper setting:" << endl;
@@ -174,11 +172,10 @@ bool diffraflow::DynamicConfiguration::zookeeper_start_session_() {
         LOG4CXX_WARN(logger_, "Zookeeper session is already started.");
         return true;
     }
-    string zk_conn_string = (zookeeper_chroot_.empty() ?
-        zookeeper_server_ : zookeeper_server_ + zookeeper_chroot_);
+    string zk_conn_string = (zookeeper_chroot_.empty() ? zookeeper_server_ : zookeeper_server_ + zookeeper_chroot_);
     // init zookeeper session
-    zookeeper_handle_ = zookeeper_init(zk_conn_string.c_str(),
-        zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
+    zookeeper_handle_ =
+        zookeeper_init(zk_conn_string.c_str(), zookeeper_main_watcher_, zookeeper_expiration_time_, NULL, this, 0);
 
     if (zookeeper_is_updater_) {
         zookeeper_add_auth_();
@@ -220,10 +217,7 @@ int diffraflow::DynamicConfiguration::zookeeper_create_config(
     // create config from here.
     static char zkacl_world[] = "world", zkacl_anyone[] = "anyone";
     static char zkacl_auth[] = "auth", zkacl_empty[] = "";
-    ACL my_acl[] = {
-        {ZOO_PERM_READ, {zkacl_world, zkacl_anyone}},
-        {ZOO_PERM_ALL, {zkacl_auth, zkacl_empty}}
-    };
+    ACL my_acl[] = {{ZOO_PERM_READ, {zkacl_world, zkacl_anyone}}, {ZOO_PERM_ALL, {zkacl_auth, zkacl_empty}}};
     ACL_vector zkacl_vec = {2, my_acl};
 
     // serialize config_map
@@ -234,9 +228,8 @@ int diffraflow::DynamicConfiguration::zookeeper_create_config(
     string config_string = config_json.serialize();
 
     // creat znode
-    int rc = zoo_create(zookeeper_handle_,
-        config_path, config_string.data(), config_string.size(),
-        &zkacl_vec, 0, nullptr, 0);
+    int rc = zoo_create(
+        zookeeper_handle_, config_path, config_string.data(), config_string.size(), &zkacl_vec, 0, nullptr, 0);
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Successfully created config path " << config_path << ".");
@@ -271,7 +264,7 @@ int diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config
 
     // delete config from here
     int rc = zoo_delete(zookeeper_handle_, config_path, version);
-    switch(rc) {
+    switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully deleted config path " << config_path << ".");
         break;
@@ -315,8 +308,7 @@ int diffraflow::DynamicConfiguration::zookeeper_change_config(
     string config_string = config_json.serialize();
 
     // update znode
-    int rc = zoo_set(zookeeper_handle_,
-        config_path, config_string.data(), config_string.size(), version);
+    int rc = zoo_set(zookeeper_handle_, config_path, config_string.data(), config_string.size(), version);
     switch (rc) {
     case ZOK:
         LOG4CXX_INFO(logger_, "Sucessfully changed the data of config path " << config_path << ".");
@@ -325,13 +317,15 @@ int diffraflow::DynamicConfiguration::zookeeper_change_config(
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         break;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permission to change the data of config path " << config_path << ".");
+        LOG4CXX_WARN(
+            logger_, "the client does not have permission to change the data of config path " << config_path << ".");
         break;
     case ZBADVERSION:
         LOG4CXX_WARN(logger_, "version number does not match for config path " << config_path << ".");
         break;
     default:
-        LOG4CXX_WARN(logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
+        LOG4CXX_WARN(
+            logger_, "failed to change the data of config path " << config_path << " with error code: " << rc << ".");
     }
     return rc;
 }
@@ -350,8 +344,8 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
 
     // fetch config from here.
     zookeeper_znode_buffer_len_ = zookeeper_znode_buffer_cap_;
-    int rc = zoo_get(zookeeper_handle_, config_path, 0,
-        zookeeper_znode_buffer_, &zookeeper_znode_buffer_len_, &zookeeper_znode_stat_);
+    int rc = zoo_get(zookeeper_handle_, config_path, 0, zookeeper_znode_buffer_, &zookeeper_znode_buffer_len_,
+        &zookeeper_znode_stat_);
     switch (rc) {
     case ZOK:
         if (zookeeper_znode_buffer_len_ <= 0) {
@@ -365,11 +359,12 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
             json::value json_value = json::value::parse(json_string, json_parse_error);
             if (json_parse_error) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
-                    << zookeeper_config_path_ << " with error " << json_parse_error.message());
+                                           << zookeeper_config_path_ << " with error " << json_parse_error.message());
                 return 402;
             } else if (!json_value.is_object()) {
                 LOG4CXX_ERROR(logger_, "The json value stored in config_path "
-                    << zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
+                                           << zookeeper_config_path_
+                                           << " is not an object, cannot convert it to a map<string, string>.");
                 return 403;
             } else {
                 config_map.clear();
@@ -378,7 +373,8 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
                     if (iter->second.is_string()) {
                         config_map[iter->first] = iter->second.as_string();
                     } else {
-                        LOG4CXX_WARN(logger_, "the value of config key " << iter->first << " is not of type string, and it is ignored.");
+                        LOG4CXX_WARN(logger_,
+                            "the value of config key " << iter->first << " is not of type string, and it is ignored.");
                     }
                 }
             }
@@ -391,10 +387,12 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         break;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permission to fetch the data of config path " << config_path << ".");
+        LOG4CXX_WARN(
+            logger_, "the client does not have permission to fetch the data of config path " << config_path << ".");
         break;
     default:
-        LOG4CXX_WARN(logger_, "failed to fetch the data of config path " << config_path << " with error code: " << rc << ".");
+        LOG4CXX_WARN(
+            logger_, "failed to fetch the data of config path " << config_path << " with error code: " << rc << ".");
         break;
     }
     return rc;
@@ -426,10 +424,12 @@ int diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_
         LOG4CXX_WARN(logger_, "the config path " << config_path << " does not exist.");
         break;
     case ZNOAUTH:
-        LOG4CXX_WARN(logger_, "the client does not have permission to get the children of config path " << config_path << ".");
+        LOG4CXX_WARN(
+            logger_, "the client does not have permission to get the children of config path " << config_path << ".");
         break;
     default:
-        LOG4CXX_WARN(logger_, "failed to get the children of config path " << config_path << " with error code: " << rc << ".");
+        LOG4CXX_WARN(
+            logger_, "failed to get the children of config path " << config_path << " with error code: " << rc << ".");
     }
     return rc;
 }
@@ -441,8 +441,7 @@ void diffraflow::DynamicConfiguration::zookeeper_sync_config() {
     // wait for re-connected
     zookeeper_connection_wait_();
     // check existence and watch
-    zoo_awexists(zookeeper_handle_, zookeeper_config_path_.c_str(),
-        zookeeper_config_watcher_, this,
+    zoo_awexists(zookeeper_handle_, zookeeper_config_path_.c_str(), zookeeper_config_watcher_, this,
         zookeeper_stat_completion_, this);
 }
 
@@ -450,8 +449,7 @@ void diffraflow::DynamicConfiguration::zookeeper_add_auth_() {
     // wait for connected
     zookeeper_connection_wait_();
     // add auth
-    zoo_add_auth(zookeeper_handle_, "digest",
-        zookeeper_auth_string_.c_str(), zookeeper_auth_string_.length(),
+    zoo_add_auth(zookeeper_handle_, "digest", zookeeper_auth_string_.c_str(), zookeeper_auth_string_.length(),
         zookeeper_auth_completion_, this);
 }
 
@@ -459,15 +457,13 @@ void diffraflow::DynamicConfiguration::zookeeper_get_config_() {
     // wait for re-connected
     zookeeper_connection_wait_();
     // get znode data
-    zoo_aget(zookeeper_handle_, zookeeper_config_path_.c_str(), 0,
-        zookeeper_data_completion_, this);
+    zoo_aget(zookeeper_handle_, zookeeper_config_path_.c_str(), 0, zookeeper_data_completion_, this);
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_connection_wait_() {
     unique_lock<mutex> lk(zookeeper_connected_mtx_);
     bool log_flag = (!zookeeper_connected_);
-    zookeeper_connected_cv_.wait(lk,
-        [this]() {return zookeeper_connected_;});
+    zookeeper_connected_cv_.wait(lk, [this]() { return zookeeper_connected_; });
     if (log_flag) {
         LOG4CXX_INFO(logger_, "zookeeper session is set up.");
     }
@@ -480,8 +476,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_authadding_wait_() {
     }
     unique_lock<mutex> lk(zookeeper_auth_res_mtx_);
     bool log_flag = (zookeeper_auth_res_ == kUnknown);
-    zookeeper_auth_res_cv_.wait(lk,
-        [this]() {return zookeeper_auth_res_ != kUnknown;});
+    zookeeper_auth_res_cv_.wait(lk, [this]() { return zookeeper_auth_res_ != kUnknown; });
     if (zookeeper_auth_res_ == kSucc) {
         if (log_flag) {
             LOG4CXX_INFO(logger_, "Successfully added digest auth: " << zookeeper_auth_string_);
@@ -510,7 +505,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_check_path_(const char* path) {
 void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
     if (type != ZOO_SESSION_EVENT) return;
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) context;
+    DynamicConfiguration* the_obj = (DynamicConfiguration*)context;
     unique_lock<mutex> lk(the_obj->zookeeper_connected_mtx_);
     if (state == ZOO_CONNECTED_STATE) {
         the_obj->zookeeper_connected_ = true;
@@ -530,7 +525,7 @@ void diffraflow::DynamicConfiguration::zookeeper_main_watcher_(
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const void* data) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
+    DynamicConfiguration* the_obj = (DynamicConfiguration*)data;
     unique_lock<mutex> lk(the_obj->zookeeper_auth_res_mtx_);
     switch (rc) {
     case ZOK:
@@ -551,15 +546,14 @@ void diffraflow::DynamicConfiguration::zookeeper_auth_completion_(int rc, const 
 
 void diffraflow::DynamicConfiguration::zookeeper_config_watcher_(
     zhandle_t* zh, int type, int state, const char* path, void* context) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) context;
+    DynamicConfiguration* the_obj = (DynamicConfiguration*)context;
     if (type == ZOO_CHANGED_EVENT || type == ZOO_CREATED_EVENT || type == ZOO_DELETED_EVENT) {
         the_obj->zookeeper_sync_config();
     }
 }
 
-void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc,
-    const struct Stat* stat, const void* data) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
+void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc, const struct Stat* stat, const void* data) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*)data;
     switch (rc) {
     case ZOK:
         the_obj->zookeeper_get_config_();
@@ -569,18 +563,18 @@ void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc,
         the_obj->zookeeper_sync_config();
         break;
     case ZNONODE:
-        LOG4CXX_WARN(logger_, "the config znode of path " << the_obj->zookeeper_config_path_
-            << " does not exist or it is deleted.");
+        LOG4CXX_WARN(logger_,
+            "the config znode of path " << the_obj->zookeeper_config_path_ << " does not exist or it is deleted.");
         break;
     default:
-        LOG4CXX_WARN(logger_, "error found when checking existence of path "
-            << the_obj->zookeeper_config_path_ << " with error code: " << rc);
+        LOG4CXX_WARN(logger_, "error found when checking existence of path " << the_obj->zookeeper_config_path_
+                                                                             << " with error code: " << rc);
     }
 }
 
-void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const char *value,
-    int value_len, const struct Stat *stat, const void *data) {
-    DynamicConfiguration* the_obj = (DynamicConfiguration*) data;
+void diffraflow::DynamicConfiguration::zookeeper_data_completion_(
+    int rc, const char* value, int value_len, const struct Stat* stat, const void* data) {
+    DynamicConfiguration* the_obj = (DynamicConfiguration*)data;
     switch (rc) {
     case ZOK:
         if (value_len <= 0) {
@@ -593,11 +587,13 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             json::value json_value = json::value::parse(json_string, json_parse_error);
             if (json_parse_error) {
                 LOG4CXX_ERROR(logger_, "Failed to deserialize the data of config_path "
-                    << the_obj->zookeeper_config_path_ << " with error " << json_parse_error.message());
+                                           << the_obj->zookeeper_config_path_ << " with error "
+                                           << json_parse_error.message());
                 return;
             } else if (!json_value.is_object()) {
                 LOG4CXX_ERROR(logger_, "The json value stored in config_path "
-                    << the_obj->zookeeper_config_path_ << " is not an object, cannot convert it to a map<string, string>.");
+                                           << the_obj->zookeeper_config_path_
+                                           << " is not an object, cannot convert it to a map<string, string>.");
                 return;
             } else {
                 json::object json_object = json_value.as_object();
@@ -605,7 +601,8 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
                     if (iter->second.is_string()) {
                         conf_map[iter->first] = iter->second.as_string();
                     } else {
-                        LOG4CXX_WARN(logger_, "the value of config key " << iter->first << " is not of type string, and it is ignored.");
+                        LOG4CXX_WARN(logger_,
+                            "the value of config key " << iter->first << " is not of type string, and it is ignored.");
                     }
                 }
             }
@@ -614,14 +611,14 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
             string now_time_string = boost::trim_copy(string(ctime(&now_time)));
             time_t conf_mtime = stat->mtime / 1000;
             string mtime_string = boost::trim_copy(string(ctime(&conf_mtime)));
-            LOG4CXX_INFO(logger_, "Configuration synchronizing (" << now_time_string
-                 << "): received new config data with mtime " << mtime_string);
+            LOG4CXX_INFO(logger_, "Configuration synchronizing ("
+                                      << now_time_string << "): received new config data with mtime " << mtime_string);
             if (the_obj->check_and_commit_(conf_map, conf_mtime)) {
-                LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: "
-                    << boost::trim_copy(string(ctime(&conf_mtime))));
+                LOG4CXX_INFO(logger_, "Successfully synchronized config data with mtime: " << boost::trim_copy(
+                                          string(ctime(&conf_mtime))));
             } else {
-                LOG4CXX_INFO(logger_, "Failed to synchronize config data with mtime: "
-                    << boost::trim_copy(string(ctime(&conf_mtime))));
+                LOG4CXX_INFO(logger_,
+                    "Failed to synchronize config data with mtime: " << boost::trim_copy(string(ctime(&conf_mtime))));
             }
         }
         break;
@@ -630,11 +627,10 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(int rc, const 
         the_obj->zookeeper_get_config_();
         break;
     case ZNONODE:
-        LOG4CXX_WARN(logger_, "there is no znode of path: "
-            << the_obj->zookeeper_config_path_ << ".");
+        LOG4CXX_WARN(logger_, "there is no znode of path: " << the_obj->zookeeper_config_path_ << ".");
         break;
     default:
-        LOG4CXX_WARN(logger_, "error found when reading path "
-            << the_obj->zookeeper_config_path_ << " with error code: " << rc);
+        LOG4CXX_WARN(
+            logger_, "error found when reading path " << the_obj->zookeeper_config_path_ << " with error code: " << rc);
     }
 }

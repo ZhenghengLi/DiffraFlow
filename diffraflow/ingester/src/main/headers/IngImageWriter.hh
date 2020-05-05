@@ -28,23 +28,21 @@ namespace diffraflow {
     class ImageFeature;
     class IngConfig;
 
-    class IngImageWriter: public MetricsProvider {
+    class IngImageWriter : public MetricsProvider {
     public:
-        IngImageWriter(
-            IngImgWthFtrQueue*  img_queue_in,
-            IngConfig*          conf_obj);
+        IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngConfig* conf_obj);
 
         ~IngImageWriter();
 
         bool start();
         void wait();
-        int  stop();
+        int stop();
 
     public:
         json::value collect_metrics() override;
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
         int run_();
@@ -65,12 +63,12 @@ namespace diffraflow {
         bool save_image_(const shared_ptr<ImageWithFeature>& image_with_feature);
 
     private:
-        IngImgWthFtrQueue*  image_queue_in_;
-        IngConfig*          config_obj_;
+        IngImgWthFtrQueue* image_queue_in_;
+        IngConfig* config_obj_;
 
         // files:
         ImageFileHDF5W* image_file_hdf5_;
-        ImageFileRawW*  image_file_raw_;
+        ImageFileRawW* image_file_raw_;
 
         // file path:
         // storage_dir/R0000/NODENAME_N00/T00/R0000_NODENAME_N00_T00_S0000.h5
@@ -86,6 +84,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

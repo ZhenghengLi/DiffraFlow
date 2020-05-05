@@ -8,7 +8,7 @@ namespace diffraflow {
     class CmbImgDatConn;
     class CmbImgCache;
 
-    class CmbImgDatSrv: public GenericServer {
+    class CmbImgDatSrv : public GenericServer {
     public:
         CmbImgDatSrv(string host, int port, CmbImgCache* img_cache);
         ~CmbImgDatSrv();
@@ -19,6 +19,6 @@ namespace diffraflow {
     private:
         CmbImgCache* image_cache_;
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -18,9 +18,7 @@ diffraflow::ImageData::ImageData(uint32_t numOfDet) {
     calib_level_ = 0;
 }
 
-diffraflow::ImageData::~ImageData() {
-
-}
+diffraflow::ImageData::~ImageData() {}
 
 bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
     if (index >= image_frame_vec.size()) return false;
@@ -29,21 +27,13 @@ bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
     return true;
 }
 
-void diffraflow::ImageData::set_defined() {
-    is_defined_ = true;
-}
+void diffraflow::ImageData::set_defined() { is_defined_ = true; }
 
-bool diffraflow::ImageData::get_defined() {
-    return is_defined_;
-}
+bool diffraflow::ImageData::get_defined() { return is_defined_; }
 
-void diffraflow::ImageData::set_calib_level(int level) {
-    calib_level_ = level;
-}
+void diffraflow::ImageData::set_calib_level(int level) { calib_level_ = level; }
 
-int diffraflow::ImageData::get_calib_level() {
-    return calib_level_;
-}
+int diffraflow::ImageData::get_calib_level() { return calib_level_; }
 
 void diffraflow::ImageData::print(ostream& out) const {
     if (!is_defined_) {
@@ -64,8 +54,7 @@ void diffraflow::ImageData::print(ostream& out) const {
     out << "]" << endl;
     out << "image_frame_vec:" << endl;
     for (size_t i = 0; i < image_frame_vec.size(); i++) {
-        string rawdata_str(image_frame_vec[i].image_rawdata.data(),
-            image_frame_vec[i].image_rawdata.size());
+        string rawdata_str(image_frame_vec[i].image_rawdata.data(), image_frame_vec[i].image_rawdata.size());
         out << "- [" << rawdata_str << "]" << endl;
     }
 }

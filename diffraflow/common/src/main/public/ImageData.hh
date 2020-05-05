@@ -24,30 +24,23 @@ namespace diffraflow {
         bool get_defined();
 
         void set_calib_level(int level);
-        int  get_calib_level();
+        int get_calib_level();
 
     public:
-        uint64_t            event_time;
-        vector<bool>        alignment_vec;
-        vector<ImageFrame>  image_frame_vec;
-        uint64_t            wait_threshold;
-        bool                late_arrived;
+        uint64_t event_time;
+        vector<bool> alignment_vec;
+        vector<ImageFrame> image_frame_vec;
+        uint64_t wait_threshold;
+        bool late_arrived;
 
     private:
-        bool                is_defined_;
-        int                 calib_level_;
+        bool is_defined_;
+        int calib_level_;
 
     public:
-        MSGPACK_DEFINE_MAP (
-            event_time,
-            alignment_vec,
-            image_frame_vec,
-            wait_threshold,
-            late_arrived,
-            is_defined_,
-            calib_level_
-        );
+        MSGPACK_DEFINE_MAP(
+            event_time, alignment_vec, image_frame_vec, wait_threshold, late_arrived, is_defined_, calib_level_);
     };
-}
+} // namespace diffraflow
 
 #endif

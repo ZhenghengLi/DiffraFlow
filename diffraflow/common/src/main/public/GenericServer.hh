@@ -28,7 +28,7 @@ namespace diffraflow {
 
     class GenericConnection;
 
-    class GenericServer: public MetricsProvider {
+    class GenericServer : public MetricsProvider {
     public:
         explicit GenericServer(string host, int port, size_t max_conn = 100);
         explicit GenericServer(string sock_path, size_t max_conn = 100);
@@ -36,7 +36,7 @@ namespace diffraflow {
 
         bool start();
         void wait();
-        int  stop_and_close();
+        int stop_and_close();
 
     private:
         int serve_();
@@ -58,15 +58,15 @@ namespace diffraflow {
         void stop_cleaner_();
 
     protected:
-        typedef list< pair<GenericConnection*, thread*> > connListT_;
+        typedef list<pair<GenericConnection*, thread*>> connListT_;
 
     protected:
-        enum ServerStatus {kNotStart, kRunning, kStopped, kClosed};
+        enum ServerStatus { kNotStart, kRunning, kStopped, kClosed };
 
     protected:
         bool is_ipc_;
         string server_sock_host_;
-        int    server_sock_port_;
+        int server_sock_port_;
         string server_sock_path_;
         int server_sock_fd_;
 
@@ -85,8 +85,7 @@ namespace diffraflow {
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -29,7 +29,7 @@ namespace diffraflow {
     struct ImageAnalysisResult;
     class MonConfig;
 
-    class MonImgHttpServer: public MetricsProvider {
+    class MonImgHttpServer : public MetricsProvider {
     public:
         explicit MonImgHttpServer(MonConfig* conf_obj);
         ~MonImgHttpServer();
@@ -49,16 +49,15 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        bool request_one_image_(const string event_time_string,
-            ImageWithFeature& image_with_feature, string& ingester_id_str);
-        void do_analysis_(const ImageWithFeature& image_with_feature,
-            ImageAnalysisResult& image_analysis_result);
+        bool request_one_image_(
+            const string event_time_string, ImageWithFeature& image_with_feature, string& ingester_id_str);
+        void do_analysis_(const ImageWithFeature& image_with_feature, ImageAnalysisResult& image_analysis_result);
 
     private:
-        http_listener*  listener_;
+        http_listener* listener_;
 
         atomic<WorkerStatus> server_status_;
         mutex mtx_status_;
@@ -78,6 +77,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

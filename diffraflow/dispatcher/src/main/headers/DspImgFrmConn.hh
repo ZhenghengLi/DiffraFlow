@@ -11,27 +11,24 @@ namespace diffraflow {
 
     class DspSender;
 
-    class DspImgFrmConn: public GenericConnection {
+    class DspImgFrmConn : public GenericConnection {
     public:
         DspImgFrmConn(int sock_fd, DspSender** sender_arr, size_t sender_cnt);
         ~DspImgFrmConn();
 
     protected:
-        ProcessRes process_payload_(
-            const char*  payload_buffer,
-            const size_t payload_size) override;
+        ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size) override;
 
     private:
         uint32_t hash_long_(uint64_t value);
 
     private:
         DspSender** sender_array_;
-        size_t      sender_count_;
+        size_t sender_count_;
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

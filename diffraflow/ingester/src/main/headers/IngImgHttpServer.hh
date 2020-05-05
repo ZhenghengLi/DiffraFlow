@@ -18,7 +18,7 @@ namespace diffraflow {
 
     class IngImageFilter;
 
-    class IngImgHttpServer: public MetricsProvider {
+    class IngImgHttpServer : public MetricsProvider {
     public:
         IngImgHttpServer(IngImageFilter* img_filter, int ing_id);
         ~IngImgHttpServer();
@@ -39,13 +39,13 @@ namespace diffraflow {
 
     private:
         IngImageFilter* image_filter_;
-        http_listener*  listener_;
+        http_listener* listener_;
 
         int ingester_id_;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

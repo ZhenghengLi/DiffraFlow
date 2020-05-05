@@ -10,6 +10,7 @@ namespace diffraflow {
     class PrimitiveSerializer {
     private:
         bool isLittleEndian_;
+
     public:
         PrimitiveSerializer();
 
@@ -18,12 +19,11 @@ namespace diffraflow {
 
         template <class T>
         size_t deserializeValue(T* value_p, const char* const buffer_p, size_t buffer_l);
-
     };
 
     static PrimitiveSerializer gPS;
 
-}
+} // namespace diffraflow
 
 template <class T>
 size_t diffraflow::PrimitiveSerializer::serializeValue(T value, char* const buffer_p, size_t buffer_l) {

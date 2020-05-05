@@ -23,18 +23,16 @@ namespace diffraflow {
 
     class IngFeatureExtracter {
     public:
-        IngFeatureExtracter(
-            IngImgWthFtrQueue* img_queue_in,
-            IngImgWthFtrQueue* img_queue_out);
+        IngFeatureExtracter(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out);
 
         ~IngFeatureExtracter();
 
         bool start();
         void wait();
-        int  stop();
+        int stop();
 
     public:
-        enum WorkerStatus {kNotStart, kRunning, kStopped};
+        enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
         void extract_feature_(const ImageData& imgdat_raw, ImageFeature& image_feature);
@@ -54,6 +52,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

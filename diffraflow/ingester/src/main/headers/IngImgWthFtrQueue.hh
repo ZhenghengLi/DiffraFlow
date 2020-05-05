@@ -23,10 +23,10 @@ namespace diffraflow {
 
         bool push(const shared_ptr<ImageWithFeature>& image_with_feature);
         bool take(shared_ptr<ImageWithFeature>& image_with_feature);
-        void stop(int wait_time = 0  /* millisecond */);
+        void stop(int wait_time = 0 /* millisecond */);
 
     private:
-        BlockingQueue< shared_ptr<ImageWithFeature> > imgWthFtr_queue_;
+        BlockingQueue<shared_ptr<ImageWithFeature>> imgWthFtr_queue_;
 
         atomic_bool stopped_;
         mutex stop_mtx_;
@@ -35,6 +35,6 @@ namespace diffraflow {
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

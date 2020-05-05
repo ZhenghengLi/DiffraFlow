@@ -22,13 +22,12 @@ using std::atomic;
 using std::atomic_bool;
 
 namespace diffraflow {
-    class DspSender: public GenericClient {
+    class DspSender : public GenericClient {
     public:
-        enum CompressMethod {kNone, kLZ4, kSnappy, kZSTD};
+        enum CompressMethod { kNone, kLZ4, kSnappy, kZSTD };
 
     public:
-        DspSender(string hostname, int port, int id,
-            CompressMethod compr_method = kNone, int compr_level = 1);
+        DspSender(string hostname, int port, int id, CompressMethod compr_method = kNone, int compr_level = 1);
         ~DspSender();
 
         // push to buffer_A and block on buffer full
@@ -64,13 +63,13 @@ namespace diffraflow {
     private:
         // buffer
         size_t buffer_size_;
-        char*  buffer_A_;
+        char* buffer_A_;
         size_t buffer_A_limit_;
         size_t buffer_A_imgct_;
-        char*  buffer_B_;
+        char* buffer_B_;
         size_t buffer_B_limit_;
         size_t buffer_B_imgct_;
-        char*  buffer_compress_;
+        char* buffer_compress_;
         size_t buffer_compress_limit_;
         size_t size_threshold_;
         size_t time_threshold_; // ms
@@ -86,8 +85,7 @@ namespace diffraflow {
 
     private:
         static log4cxx::LoggerPtr logger_;
-
     };
-}
+} // namespace diffraflow
 
 #endif

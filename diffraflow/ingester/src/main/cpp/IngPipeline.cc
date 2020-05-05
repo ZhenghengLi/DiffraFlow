@@ -8,8 +8,7 @@
 #include "IngImageWriter.hh"
 #include "IngImgHttpServer.hh"
 
-log4cxx::LoggerPtr diffraflow::IngPipeline::logger_
-    = log4cxx::Logger::getLogger("IngPipeline");
+log4cxx::LoggerPtr diffraflow::IngPipeline::logger_ = log4cxx::Logger::getLogger("IngPipeline");
 
 diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     config_obj_ = config;
@@ -30,12 +29,9 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     image_http_server_ = nullptr;
 
     image_writer_ = nullptr;
-
 }
 
-diffraflow::IngPipeline::~IngPipeline() {
-
-}
+diffraflow::IngPipeline::~IngPipeline() {}
 
 void diffraflow::IngPipeline::start_run() {
     if (running_flag_) return;
@@ -45,10 +41,7 @@ void diffraflow::IngPipeline::start_run() {
     //// image fetcher
     imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
     image_data_fetcher_ = new IngImgDatFetcher(
-        config_obj_->combiner_host,
-        config_obj_->combiner_port,
-        config_obj_->ingester_id,
-        imgWthFtrQue_raw_);
+        config_obj_->combiner_host, config_obj_->combiner_port, config_obj_->ingester_id, imgWthFtrQue_raw_);
 
     //// calibration worker
     imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
@@ -71,9 +64,7 @@ void diffraflow::IngPipeline::start_run() {
     //======================================================
     // config and prepare before start
     //// image fetcher
-    image_data_fetcher_->set_recnxn_policy(
-        config_obj_->recnxn_wait_time,
-        config_obj_->recnxn_max_count);
+    image_data_fetcher_->set_recnxn_policy(config_obj_->recnxn_wait_time, config_obj_->recnxn_max_count);
 
     //// calibration worker
     //// read calibraion parameters files here
@@ -109,8 +100,8 @@ void diffraflow::IngPipeline::start_run() {
     }
 
     if (image_http_server_->start(config_obj_->image_http_host, config_obj_->image_http_port)) {
-        LOG4CXX_INFO(logger_, "successfully started HTTP server listening "
-            << config_obj_->image_http_host << ":" << config_obj_->image_http_port);
+        LOG4CXX_INFO(logger_, "successfully started HTTP server listening " << config_obj_->image_http_host << ":"
+                                                                            << config_obj_->image_http_port);
     } else {
         LOG4CXX_ERROR(logger_, "failed to start HTTP server.");
         return;
@@ -129,11 +120,9 @@ void diffraflow::IngPipeline::start_run() {
     metrics_reporter_.add("image_writer", image_writer_);
     metrics_reporter_.add("image_http_server", image_http_server_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
-        if (metrics_reporter_.start_msg_producer(
-            config_obj_->metrics_pulsar_broker_address,
-            config_obj_->metrics_pulsar_topic_name,
-            config_obj_->metrics_pulsar_message_key,
-            config_obj_->metrics_pulsar_report_period)) {
+        if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,
+                config_obj_->metrics_pulsar_topic_name, config_obj_->metrics_pulsar_message_key,
+                config_obj_->metrics_pulsar_report_period)) {
             LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
         } else {
             LOG4CXX_ERROR(logger_, "Failed to start pulsar producer to periodically report metrics.");
@@ -141,9 +130,7 @@ void diffraflow::IngPipeline::start_run() {
         }
     }
     if (config_obj_->metrics_http_params_are_set()) {
-        if (metrics_reporter_.start_http_server(
-            config_obj_->metrics_http_host,
-            config_obj_->metrics_http_port)) {
+        if (metrics_reporter_.start_http_server(config_obj_->metrics_http_host, config_obj_->metrics_http_port)) {
             LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
         } else {
             LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
@@ -155,7 +142,6 @@ void diffraflow::IngPipeline::start_run() {
     //======================================================
     // then wait for finishing
     async([this]() {
-
         image_data_fetcher_->wait();
         imgWthFtrQue_raw_->stop();
 
@@ -169,9 +155,8 @@ void diffraflow::IngPipeline::start_run() {
         imgWthFtrQue_write_->stop();
 
         image_writer_->wait();
-
-    }).wait();
-
+    })
+        .wait();
 }
 
 void diffraflow::IngPipeline::terminate() {

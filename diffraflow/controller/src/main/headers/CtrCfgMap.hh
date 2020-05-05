@@ -12,7 +12,7 @@ using std::map;
 using std::string;
 
 namespace diffraflow {
-    class CtrCfgMap: public GenericConfiguration {
+    class CtrCfgMap : public GenericConfiguration {
     public:
         CtrCfgMap();
         ~CtrCfgMap();
@@ -22,11 +22,11 @@ namespace diffraflow {
 
     public:
         map<string, string> data;
-        time_t              mtime;
+        time_t mtime;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

@@ -1,8 +1,7 @@
 #include "IngFeatureExtracter.hh"
 #include "IngImgWthFtrQueue.hh"
 
-log4cxx::LoggerPtr diffraflow::IngFeatureExtracter::logger_
-    = log4cxx::Logger::getLogger("IngFeatureExtracter");
+log4cxx::LoggerPtr diffraflow::IngFeatureExtracter::logger_ = log4cxx::Logger::getLogger("IngFeatureExtracter");
 
 diffraflow::IngFeatureExtracter::IngFeatureExtracter(
     IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out) {
@@ -11,18 +10,14 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
     worker_status_ = kNotStart;
 }
 
-diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
+diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 
-}
-
-void diffraflow::IngFeatureExtracter::extract_feature_(
-    const ImageData& imgdat_raw, ImageFeature& image_feature) {
+void diffraflow::IngFeatureExtracter::extract_feature_(const ImageData& imgdat_raw, ImageFeature& image_feature) {
 
     // some example code
     image_feature.peak_counts = 1;
     image_feature.global_rms = 2;
     image_feature.set_defined();
-
 }
 
 int diffraflow::IngFeatureExtracter::run_() {
@@ -50,17 +45,12 @@ bool diffraflow::IngFeatureExtracter::start() {
     worker_status_ = kNotStart;
     worker_ = async(&IngFeatureExtracter::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
-    cv_status_.wait(ulk,
-        [this]() {
-            return worker_status_ != kNotStart;
-        }
-    );
+    cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {
         return true;
     } else {
         return false;
     }
-
 }
 
 void diffraflow::IngFeatureExtracter::wait() {

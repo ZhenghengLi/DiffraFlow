@@ -30,12 +30,11 @@ namespace diffraflow {
         CtrMonLoadBalancer* monitor_load_balancer_;
         CtrHttpServer* http_server_;
 
-
         atomic_bool running_flag_;
 
     private:
         static log4cxx::LoggerPtr logger_;
     };
-}
+} // namespace diffraflow
 
 #endif

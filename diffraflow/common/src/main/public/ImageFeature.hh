@@ -21,13 +21,8 @@ namespace diffraflow {
         bool is_defined_;
 
     public:
-        MSGPACK_DEFINE_MAP(
-            global_rms,
-            peak_counts,
-            is_defined_
-        );
-
+        MSGPACK_DEFINE_MAP(global_rms, peak_counts, is_defined_);
     };
-}
+} // namespace diffraflow
 
 #endif

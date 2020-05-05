@@ -67,8 +67,7 @@ void diffraflow::CmbSrvMan::start_run() {
     async([this]() {
         imgfrm_srv_->wait();
         imgdat_srv_->wait();
-    })
-        .wait();
+    }).wait();
 }
 
 void diffraflow::CmbSrvMan::terminate() {

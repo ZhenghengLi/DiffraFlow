@@ -155,8 +155,7 @@ void diffraflow::IngPipeline::start_run() {
         imgWthFtrQue_write_->stop();
 
         image_writer_->wait();
-    })
-        .wait();
+    }).wait();
 }
 
 void diffraflow::IngPipeline::terminate() {

@@ -39,11 +39,23 @@ spec:
       volumes:
       - name: broker-logs
         hostPath:
-          path: "/data/pulsar/psLogs"
+          path: "/kubernetes/data/lizhh1/services/pulsar/psLogs"
       securityContext:
-        runAsUser: 42700
-        runAsGroup: 42700
-        fsGroup: 42700
+        runAsUser: 1017
+        runAsGroup: 1010
+      initContainers:
+      - name: zookeeper-cnxn-checker
+        image: zhenghengli/bookkeeper:4.9.2
+        imagePullPolicy: Always
+        command:
+        - check_cnxn_address.sh
+        - "10.15.39.21:2181"
+        - "10.15.39.22:2181"
+        - "10.15.39.23:2181"
+        - "10.15.39.20:3181"
+        - "10.15.39.21:3181"
+        - "10.15.39.22:3181"
+        - "10.15.39.23:3181"
       containers:
       - name: pulsar-broker
         image: zhenghengli/pulsar:2.5.0
@@ -53,15 +65,15 @@ spec:
         - broker
         env:
         - name: PULSAR_MEM
-          value: "-Xms32m -Xmx128m -XX:MaxDirectMemorySize=256m"
+          value: "-Xms768m -Xmx1536m -XX:MaxDirectMemorySize=2048m"
         - name: PULSAR_CLUSTER_NAME
           value: pulsar-cluster
         - name: PULSAR_ADVERTISED_ADDRESS
           valueFrom:
             fieldRef:
-              fieldPath: spec.nodeName
+              fieldPath: status.hostIP
         - name: ZK_SERVERS
-          value: "kube-worker-1:2181,kube-worker-2:2181,kube-worker-3:2181"
+          value: "10.15.39.21:2181,10.15.39.22:2181,10.15.39.23:2181"
         - name: ZK_CHROOT
           value: "pulsar"
         volumeMounts:

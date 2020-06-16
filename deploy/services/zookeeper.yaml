@@ -40,17 +40,16 @@ spec:
       volumes:
       - name: zookeeper-data
         hostPath:
-          path: "/data/zookeeper/data"
+          path: "/kubernetes/data/lizhh1/services/zookeeper/data"
       - name: zookeeper-data-log
         hostPath:
-          path: "/data/zookeeper/dataLog"
+          path: "/kubernetes/data/lizhh1/services/zookeeper/dataLog"
       - name: zookeeper-logs
         hostPath:
-          path: "/data/zookeeper/logs"
+          path: "/kubernetes/data/lizhh1/services/zookeeper/logs"
       securityContext:
-        runAsUser: 42700
-        runAsGroup: 42700
-        fsGroup: 42700
+        runAsUser: 1017
+        runAsGroup: 1010
       containers:
       - name: zookeeper
         image: zhenghengli/zookeeper:3.5.7
@@ -60,14 +59,14 @@ spec:
         - start-foreground
         env:
         - name: ZK_SERVER_HEAP
-          value: "128"
+          value: "512"
         - name: ZOO_STANDALONE_ENABLED
           value: "false"
         - name: ZOO_SERVERS
           value: >-
-            server.1=kube-worker-1:2888:3888;2181
-            server.2=kube-worker-2:2888:3888;2181
-            server.3=kube-worker-3:2888:3888;2181
+            server.1=10.15.39.21:2888:3888;2181
+            server.2=10.15.39.22:2888:3888;2181
+            server.3=10.15.39.23:2888:3888;2181
         volumeMounts:
         - name: zookeeper-data
           mountPath: "/zookeeper/data"

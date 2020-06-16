@@ -39,17 +39,16 @@ spec:
       volumes:
       - name: bookkeeper-data-journal
         hostPath:
-          path: "/data/pulsar/bkDataJournal"
+          path: "/kubernetes/data/lizhh1/services/pulsar/bkDataJournal"
       - name: bookkeeper-data-ledger
         hostPath:
-          path: "/data/pulsar/bkDataLedger"
+          path: "/kubernetes/data/lizhh1/services/pulsar/bkDataLedger"
       - name: bookkeeper-logs
         hostPath:
-          path: "/data/pulsar/bkLogs"
+          path: "/kubernetes/data/lizhh1/services/pulsar/bkLogs"
       securityContext:
-        runAsUser: 42700
-        runAsGroup: 42700
-        fsGroup: 42700
+        runAsUser: 1017
+        runAsGroup: 1010
       containers:
       - name: pulsar-bookkeeper
         image: zhenghengli/bookkeeper:4.9.2
@@ -59,17 +58,17 @@ spec:
         - bookie
         env:
         - name: BOOKIE_MIN_HEAP_MEMORY
-          value: "32m"
+          value: "512m"
         - name: BOOKIE_MAX_HEAP_MEMORY
-          value: "128m"
+          value: "1024m"
         - name: BOOKIE_MAX_DIRECT_MEMORY
-          value: "256m"
+          value: "2048m"
         - name: BOOKIE_ADVERTISE_ADDRESS
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         - name: ZK_SERVERS
-          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
+          value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
         - name: ZK_CHROOT
           value: "pulsar/ledgers"
         volumeMounts:
@@ -107,9 +106,8 @@ spec:
       nodeSelector:
         diffraflow/node-type: service
       securityContext:
-        runAsUser: 42700
-        runAsGroup: 42700
-        fsGroup: 42700
+        runAsUser: 1017
+        runAsGroup: 1010
       containers:
       - name: bookkeeper
         image: zhenghengli/bookkeeper:4.9.2
@@ -119,12 +117,12 @@ spec:
         - autorecovery
         env:
         - name: BOOKIE_MIN_HEAP_MEMORY
-          value: "32m"
+          value: "512m"
         - name: BOOKIE_MAX_HEAP_MEMORY
-          value: "128m"
+          value: "1024m"
         - name: BOOKIE_MAX_DIRECT_MEMORY
-          value: "256m"
+          value: "2048m"
         - name: ZK_SERVERS
-          value: "kube-worker-1:2181;kube-worker-2:2181;kube-worker-3:2181"
+          value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
         - name: ZK_CHROOT
           value: "pulsar/ledgers"

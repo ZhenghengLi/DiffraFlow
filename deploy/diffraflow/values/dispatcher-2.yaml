@@ -1,4 +1,4 @@
-nameSuffix: "1"
+nameSuffix: "2"
 listenPort: 27221
 httpListenPort: 27222
 combinerAddresses: |

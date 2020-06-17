@@ -15,7 +15,7 @@ spec:
         name: dispatcher-{{ .Values.nameSuffix }}
     spec:
       imagePullSecrets:
-      - name: docker-hub
+      - name: docker-hub-zhenghengli
       initContainers:
       - name: combiner-cnxn-checker
         image: zhenghengli/diffraflow:latest
@@ -36,6 +36,8 @@ spec:
         ports:
         - containerPort: {{ .Values.listenPort }}
           hostPort: {{ .Values.listenPort }}
+        - containerPort: {{ .Values.httpListenPort }}
+          hostPort: {{ .Values.httpListenPort }}
         env:
         - name: POD_IP
           valueFrom:

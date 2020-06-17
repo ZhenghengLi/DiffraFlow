@@ -9,6 +9,15 @@ data:
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
     compress_method = None
+    compress_level = 10
+    # http
+    metrics_http_host = 0.0.0.0
+    metrics_http_port = {{ .Values.httpListenPort }}
+    # pulsar
+    # metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
+    # metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/dispatcher
+    # metrics_pulsar_message_key = dispatcher-{{ .Values.nameSuffix }}
+    # metrics_pulsar_report_period = 1000
   combiner_addresses.txt: {{ .Values.combinerAddresses | quote }}
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console

@@ -5,8 +5,19 @@ metadata:
   namespace: diffraflow
 data:
   combiner.conf: |
-    listen_host = 0.0.0.0
-    listen_port = {{ .Values.listenPort }}
+    imgfrm_listen_host = 0.0.0.0
+    imgfrm_listen_port = {{ .Values.imgfrmListenPort }}
+    imgdat_listen_host = 0.0.0.0
+    imgdat_listen_port = {{ .Values.imgdatListenPort }}
+    imgdat_queue_capacity = 1000
+    # http server
+    metrics_http_host = 0.0.0.0
+    metrics_http_port = {{ .Values.httpListenPort }}
+    # pulsar
+    # metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
+    # metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/combiner
+    # metrics_pulsar_message_key = combiner-{{ .Values.nameSuffix }}
+    # metrics_pulsar_report_period = 1000
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender

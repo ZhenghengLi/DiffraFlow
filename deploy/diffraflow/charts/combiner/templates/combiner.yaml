@@ -15,7 +15,7 @@ spec:
         name: combiner-{{ .Values.nameSuffix }}
     spec:
       imagePullSecrets:
-      - name: docker-hub
+      - name: docker-hub-zhenghengli
       containers:
       - name: combiner
         image: zhenghengli/diffraflow:latest
@@ -24,8 +24,12 @@ spec:
         - --config=/config/combiner.conf
         - --logconf=/config/log4cxx.properties
         ports:
-        - containerPort: {{ .Values.listenPort }}
-          hostPort: {{ .Values.listenPort }}
+        - containerPort: {{ .Values.imgfrmListenPort }}
+          hostPort: {{ .Values.imgfrmListenPort }}
+        - containerPort: {{ .Values.imgdatListenPort }}
+          hostPort: {{ .Values.imgdatListenPort }}
+        - containerPort: {{ .Values.httpListenPort }}
+          hostPort: {{ .Values.httpListenPort }}
         volumeMounts:
         - name: config-volume
           mountPath: /config

@@ -1,0 +1,4 @@
+nameSuffix: "2"
+imgfrmListenPort: 27121
+imgdatListenPort: 27122
+httpListenPort: 27123

@@ -1,0 +1,5 @@
+nameSuffix: "02"
+ingesterID: 2
+combinerPort: 27112
+imageHttpPort: 27313
+metricsHttpPort: 27314

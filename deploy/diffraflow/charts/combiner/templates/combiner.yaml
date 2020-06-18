@@ -14,6 +14,9 @@ spec:
       labels:
         name: combiner-{{ .Values.nameSuffix }}
     spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
       imagePullSecrets:
       - name: docker-hub-zhenghengli
       containers:

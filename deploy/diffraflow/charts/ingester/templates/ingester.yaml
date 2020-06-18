@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ingester-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: ingester-{{ .Values.nameSuffix }}
+spec:
+  selector:
+    matchLabels:
+      name: ingester-{{ .Values.nameSuffix }}
+  template:
+    metadata:
+      labels:
+        name: ingester-{{ .Values.nameSuffix }}
+    spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      initContainers:
+      - name: combiner-cnxn-checker
+        image: zhenghengli/diffraflow:latest
+        command:
+        - check_cnxn_address.sh
+        - "$(NODE_IP):{{ .Values.combinerPort }}"
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+      containers:
+      - name: ingester
+        image: zhenghengli/diffraflow:latest
+        command:
+        - ingester
+        - --config=/config/ingester.conf
+        - --logconf=/config/log4cxx.properties
+        ports:
+        - containerPort: {{ .Values.imageHttpPort }}
+          hostPort: {{ .Values.imageHttpPort }}
+        - containerPort: {{ .Values.metricsHttpPort }}
+          hostPort: {{ .Values.metricsHttpPort }}
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: ingester-data
+          mountPath: /ingester-data
+      nodeSelector:
+        diffraflow/node-type: daq-ana
+      volumes:
+      - name: config-volume
+        configMap:
+          name: ingester-config-{{ .Values.nameSuffix }}
+      - name: ingester-data
+        hostPath:
+          path: "/data-ib/home/lizhh1/diffraflow/ingester"

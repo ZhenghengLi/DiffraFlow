@@ -1,0 +1,8 @@
+nameSuffix: "1"
+monitorID: 1
+imageHttpPort: 27411
+metricsHttpPort: 27412
+ingesterAddresses: |
+  http://NODE_IP:27311
+  http://NODE_IP:27313
+  http://NODE_IP:27315

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: monitor-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: monitor-{{ .Values.nameSuffix }}
+spec:
+  selector:
+    matchLabels:
+      name: monitor-{{ .Values.nameSuffix }}
+  template:
+    metadata:
+      labels:
+        name: monitor-{{ .Values.nameSuffix }}
+    spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      initContainers:
+      - name: ingester-cnxn-checker
+        image: zhenghengli/diffraflow:latest
+        command:
+        - check_cnxn_addrlist.sh
+        - /config/ingester_addresses.txt
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      containers:
+      - name: monitor
+        image: zhenghengli/diffraflow:latest
+        command:
+        - monitor
+        - --config=/config/monitor.conf
+        - --ingaddr=/config/ingester_addresses.txt
+        - --logconf=/config/log4cxx.properties
+        ports:
+        - containerPort: {{ .Values.imageHttpPort }}
+          hostPort: {{ .Values.imageHttpPort }}
+        - containerPort: {{ .Values.metricsHttpPort }}
+          hostPort: {{ .Values.metricsHttpPort }}
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      nodeSelector:
+        diffraflow/node-type: daq-ana
+      volumes:
+      - name: config-volume
+        configMap:
+          name: monitor-config-{{ .Values.nameSuffix }}

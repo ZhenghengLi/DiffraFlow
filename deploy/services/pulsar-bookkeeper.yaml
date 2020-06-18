@@ -96,7 +96,7 @@ spec:
           hostPort: 3180
 ---
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: pulsar-bk-autorecovery
   namespace: diffraflow

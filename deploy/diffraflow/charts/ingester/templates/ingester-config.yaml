@@ -6,12 +6,11 @@ metadata:
 data:
   ingester.conf: |
     ## zookeeper settings
-    # zookeeper_server = zookeeper:2181
-    # zookeeper_chroot = /diffraflow
-    # zookeeper_expiration_time = 10000
-    # zookeeper_auth_string = diffraflow:controller
-    # zookeeper_log_level = warn
-    # zookeeper_config_path = /ingester.dyconf
+    zookeeper_server = zookeeper:2181
+    zookeeper_chroot = /diffraflow
+    zookeeper_expiration_time = 10000
+    zookeeper_log_level = warn
+    zookeeper_config_path = /ingester.dyconf
 
     ## static parameters
     ingester_id = {{ .Values.ingesterID }}

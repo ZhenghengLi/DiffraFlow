@@ -5,10 +5,23 @@ metadata:
   namespace: diffraflow
 data:
   monitor.conf: |
+    ## zookeeper settings
+    zookeeper_server = zookeeper:2181
+    zookeeper_chroot = /diffraflow
+    zookeeper_expiration_time = 10000
+    zookeeper_log_level = warn
+    zookeeper_config_path = /monitor.dyconf
+
+    ## static parameters
     monitor_id = {{ .Values.monitorID }}
     image_http_host = 0.0.0.0
     image_http_port = {{ .Values.imageHttpPort }}
     request_timeout = 2000
+
+    ## dynamic parameters
+    dy_param_int = 100
+    dy_param_double = 45.67
+    dy_param_string = xfel
 
     ## metrics http server
     metrics_http_host = 0.0.0.0

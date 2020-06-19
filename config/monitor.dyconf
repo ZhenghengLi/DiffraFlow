@@ -1,0 +1,4 @@
+# dynamic parameters
+dy_param_int = 123
+dy_param_double = 3.14159
+dy_param_string = mon

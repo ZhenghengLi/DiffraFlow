@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: controller-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: controller-{{ .Values.nameSuffix }}
+spec:
+  selector:
+    matchLabels:
+      name: controller-{{ .Values.nameSuffix }}
+  template:
+    metadata:
+      labels:
+        name: controller-{{ .Values.nameSuffix }}
+    spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      initContainers:
+      - name: monitor-cnxn-checker
+        image: zhenghengli/diffraflow:latest
+        command:
+        - check_cnxn_addrlist.sh
+        - /config/monitor_addresses.txt
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      containers:
+      - name: controller
+        image: zhenghengli/diffraflow:latest
+        command:
+        - controller
+        - --config=/config/controller.conf
+        - --zkconfig=/config/zookeeper.conf
+        - --monaddr=/config/monitor_addresses.txt
+        - --logconf=/config/log4cxx.properties
+        ports:
+        - containerPort: {{ .Values.httpPort }}
+          hostPort: {{ .Values.httpPort }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      nodeSelector:
+        kubernetes.io/hostname: kube-master-0
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - name: config-volume
+        configMap:
+          name: controller-config-{{ .Values.nameSuffix }}

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: controller-config-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+data:
+  controller.conf: |
+    http_host = 0.0.0.0
+    http_port = {{ .Values.httpPort }}
+    request_timeout = 10000
+  zookeeper.conf: |
+    zookeeper_server = zookeeper:2181
+    zookeeper_chroot = /diffraflow
+    zookeeper_expiration_time = 10000
+    zookeeper_auth_string = diffraflow:controller
+    zookeeper_log_level = warn
+  monitor_addresses.txt: {{ .Values.monitorAddresses | quote }}
+  log4cxx.properties: |
+    log4j.rootLogger = DEBUG, Console
+    log4j.appender.Console = org.apache.log4j.ConsoleAppender
+    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
+    log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n

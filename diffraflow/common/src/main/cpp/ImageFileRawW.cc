@@ -43,6 +43,7 @@ bool diffraflow::ImageFileRawW::open(const char* filename) {
 
 void diffraflow::ImageFileRawW::close() {
     lock_guard<mutex> lg(file_op_mtx_);
+    outfile_.flush();
     outfile_.close();
     bf::path file_current_path(current_filename_ + inprogress_suffix_);
     bf::path file_target_path(current_filename_);

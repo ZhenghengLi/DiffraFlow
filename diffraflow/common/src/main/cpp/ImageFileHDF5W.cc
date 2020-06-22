@@ -180,6 +180,7 @@ void diffraflow::ImageFileHDF5W::close() {
 
     if (h5file_ != nullptr) {
         flush_op_();
+        h5file_->flush(H5F_SCOPE_LOCAL);
         h5file_->close();
         delete h5file_;
         h5file_ = nullptr;

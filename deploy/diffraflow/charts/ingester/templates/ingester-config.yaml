@@ -22,7 +22,7 @@ data:
     recnxn_max_count = 5
     imgdat_queue_capacity = 1000
 
-    # storage_dir = ingester_data
+    # storage_dir = /ingester-data
     hdf5_chunk_size = 10
     hdf5_buffer_size = 10
     hdf5_compress_level = 3

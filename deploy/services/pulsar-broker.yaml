@@ -45,7 +45,7 @@ spec:
         runAsGroup: 1010
       initContainers:
       - name: zookeeper-cnxn-checker
-        image: zhenghengli/bookkeeper:4.9.2
+        image: zhenghengli/pulsar:2.5.2
         imagePullPolicy: Always
         command:
         - check_cnxn_address.sh
@@ -58,7 +58,7 @@ spec:
         - "10.15.39.23:3181"
       containers:
       - name: pulsar-broker
-        image: zhenghengli/pulsar:2.5.0
+        image: zhenghengli/pulsar:2.5.2
         imagePullPolicy: Always
         args:
         - pulsar

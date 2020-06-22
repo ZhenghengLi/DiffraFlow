@@ -6,7 +6,7 @@ FROM ubuntu:18.04 AS builder
 # FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS builder
 
 # install dependencies
-ARG PULSAR_VERSION=2.5.0
+ARG PULSAR_VERSION=2.5.2
 ARG PULSAR_URL_PREFIX=https://archive.apache.org/dist/pulsar/pulsar-${PULSAR_VERSION}
 ARG PULSAR_CLIENT=apache-pulsar-client.deb
 ARG PULSAR_CLIENT_DEV=apache-pulsar-client-dev.deb
@@ -60,7 +60,7 @@ FROM ubuntu:18.04
 # FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 
 # install dependencies
-ARG PULSAR_VERSION=2.5.0
+ARG PULSAR_VERSION=2.5.2
 ARG PULSAR_URL_PREFIX=https://archive.apache.org/dist/pulsar/pulsar-${PULSAR_VERSION}
 ARG PULSAR_CLIENT=apache-pulsar-client.deb
 RUN set -x \

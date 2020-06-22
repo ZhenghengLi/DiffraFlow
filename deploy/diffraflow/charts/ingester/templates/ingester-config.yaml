@@ -40,10 +40,10 @@ data:
     metrics_http_port = {{ .Values.metricsHttpPort }}
 
     ## metrics pulsar setting
-    # metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
-    # metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/ingester
-    # metrics_pulsar_message_key = ingester-{{ .Values.nameSuffix }}@NODE_NAME
-    # metrics_pulsar_report_period = 1000
+    metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
+    metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/ingester
+    metrics_pulsar_message_key = ingester-{{ .Values.nameSuffix }}@NODE_NAME
+    metrics_pulsar_report_period = 1000
 
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console

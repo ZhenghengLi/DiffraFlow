@@ -72,6 +72,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.hostIP
+        - name: PULSAR_ALLOW_AUTO_TOPIC_CREATION
+          value: "false"
         - name: ZK_SERVERS
           value: "10.15.39.21:2181,10.15.39.22:2181,10.15.39.23:2181"
         - name: ZK_CHROOT

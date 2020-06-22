@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <regex>
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
@@ -10,6 +11,9 @@ using std::stringstream;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::regex;
+using std::regex_match;
+using std::regex_replace;
 
 log4cxx::LoggerPtr diffraflow::CmbConfig::logger_ = log4cxx::Logger::getLogger("CmbConfig");
 
@@ -63,11 +67,11 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         }
     }
 
-    // if NODE_NAME is defined, use it as the suffix of pulsar_message_key
+    // replace the NODE_NAME in pulsar_message_key
     if (!metrics_pulsar_message_key.empty()) {
         const char* node_name = getenv("NODE_NAME");
-        if (node_name != NULL) {
-            metrics_pulsar_message_key += string(".") + string(node_name);
+        if (node_name != NULL && regex_match(metrics_pulsar_message_key, regex(".*NODE_NAME.*"))) {
+            metrics_pulsar_message_key = regex_replace(metrics_pulsar_message_key, regex("NODE_NAME"), node_name);
         }
     }
 

@@ -7,10 +7,14 @@
 #include <ctime>
 #include <cstdlib>
 #include <thread>
+#include <regex>
 
 using std::cout;
 using std::endl;
 using std::lock_guard;
+using std::regex;
+using std::regex_match;
+using std::regex_replace;
 
 log4cxx::LoggerPtr diffraflow::MonConfig::logger_ = log4cxx::Logger::getLogger("MonConfig");
 
@@ -81,8 +85,8 @@ bool diffraflow::MonConfig::load(const char* filename) {
         node_name = "NODENAME";
     }
 
-    if (node_name_cstr != nullptr) {
-        metrics_pulsar_message_key += string(".") + string(node_name_cstr);
+    if (node_name_cstr != nullptr && regex_match(metrics_pulsar_message_key, regex(".*NODE_NAME.*"))) {
+        metrics_pulsar_message_key = regex_replace(metrics_pulsar_message_key, regex("NODE_NAME"), node_name_cstr);
     }
 
     // correction

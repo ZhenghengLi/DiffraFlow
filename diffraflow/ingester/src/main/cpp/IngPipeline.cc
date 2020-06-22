@@ -134,6 +134,7 @@ void diffraflow::IngPipeline::start_run() {
             LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
         } else {
             LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
+            return;
         }
     }
 

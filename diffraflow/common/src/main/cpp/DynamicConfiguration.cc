@@ -127,6 +127,7 @@ bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list<pair<string
 json::value diffraflow::DynamicConfiguration::collect_metrics() {
     json::value root_json;
     root_json["zookeeper_config"] = zookeeper_config_json_;
+    return root_json;
 }
 
 void diffraflow::DynamicConfiguration::print() { zookeeper_print_setting(); }

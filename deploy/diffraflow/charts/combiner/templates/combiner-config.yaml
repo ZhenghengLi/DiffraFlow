@@ -16,7 +16,7 @@ data:
     # pulsar
     # metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
     # metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/combiner
-    # metrics_pulsar_message_key = combiner-{{ .Values.nameSuffix }}
+    # metrics_pulsar_message_key = combiner-{{ .Values.nameSuffix }}@NODE_NAME
     # metrics_pulsar_report_period = 1000
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console

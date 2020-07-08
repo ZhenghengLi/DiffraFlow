@@ -23,6 +23,7 @@ diffraflow::CmbConfig::CmbConfig() {
     imgdat_listen_host = "0.0.0.0";
     imgdat_listen_port = -1;
     imgdat_queue_capacity = 100;
+    max_linger_time = 30000; // 30 seconds
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -49,6 +50,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
             imgdat_listen_port = atoi(value.c_str());
         } else if (key == "imgdat_queue_capacity") {
             imgdat_queue_capacity = atoi(value.c_str());
+        } else if (key == "max_linger_time") {
+            max_linger_time = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -95,6 +98,10 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
     }
+    if (max_linger_time < 5000 || max_linger_time > 60000) {
+        LOG4CXX_ERROR(logger_, "max_linger_time is out of range " << 5000 << "-" << 60000);
+        succ_flag = false;
+    }
 
     if (succ_flag) {
 
@@ -103,6 +110,7 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         static_config_json_["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
         static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
         static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
+        static_config_json_["max_linger_time"] = json::value::number(max_linger_time);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -124,6 +132,7 @@ void diffraflow::CmbConfig::print() {
     cout << "  imgdat_listen_host = " << imgdat_listen_host << endl;
     cout << "  imgdat_listen_port = " << imgdat_listen_port << endl;
     cout << "  imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
+    cout << "  max_linger_time = " << max_linger_time << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
     cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;

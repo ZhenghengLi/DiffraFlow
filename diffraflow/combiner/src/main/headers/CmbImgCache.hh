@@ -27,7 +27,7 @@ namespace diffraflow {
 
     class CmbImgCache : public MetricsProvider {
     public:
-        explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100);
+        explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100, int max_lt = 30000);
         ~CmbImgCache();
 
         bool push_frame(const ImageFramePtr& image_frame);

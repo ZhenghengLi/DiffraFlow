@@ -17,7 +17,7 @@ using std::milli;
 
 log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger("CmbImgCache");
 
-diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
+diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int max_lt) {
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
@@ -29,7 +29,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     distance_max_ = 0;
     stopped_ = false;
 
-    max_linger_time_ = 30000; // 30 seconds
+    max_linger_time_ = max_lt;
     clear_flag_ = true;
     latest_push_time_ = 0;
 

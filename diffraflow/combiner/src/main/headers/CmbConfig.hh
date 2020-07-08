@@ -33,6 +33,7 @@ namespace diffraflow {
         int imgdat_listen_port;
 
         size_t imgdat_queue_capacity;
+        int max_linger_time; // milliseconds
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

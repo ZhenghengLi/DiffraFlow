@@ -7,6 +7,7 @@
 
 #include <mutex>
 #include <atomic>
+#include <thread>
 #include <condition_variable>
 #include <log4cxx/logger.h>
 
@@ -17,6 +18,7 @@ using std::atomic_bool;
 using std::atomic;
 using std::shared_ptr;
 using std::make_shared;
+using std::thread;
 
 namespace diffraflow {
 
@@ -44,6 +46,7 @@ namespace diffraflow {
 
     private:
         bool do_alignment_(shared_ptr<ImageData> image_data, bool force_flag = false);
+        void clear_cache_();
 
     private:
         size_t imgfrm_queues_len_;
@@ -61,6 +64,12 @@ namespace diffraflow {
         uint64_t image_time_last_;
         size_t num_of_empty_;
         int64_t distance_max_;
+
+        double latest_push_time_;
+        double max_linger_time_; // milliseconds
+        bool clear_flag_;
+        condition_variable clear_cv_;
+        thread* clear_worker_;
 
     private:
         static log4cxx::LoggerPtr logger_;

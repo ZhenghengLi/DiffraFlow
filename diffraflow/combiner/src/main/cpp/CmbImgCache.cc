@@ -5,10 +5,15 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <limits>
+#include <chrono>
 
 using std::numeric_limits;
 using std::lock_guard;
 using std::unique_lock;
+using std::chrono::duration;
+using std::chrono::milliseconds;
+using std::chrono::system_clock;
+using std::milli;
 
 log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger("CmbImgCache");
 
@@ -24,6 +29,30 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
     distance_max_ = 0;
     stopped_ = false;
 
+    max_linger_time_ = 30000; // 30 seconds
+    clear_flag_ = true;
+    latest_push_time_ = 0;
+
+    clear_worker_ = new thread([this]() {
+        while (!stopped_) {
+            unique_lock<mutex> ulk(data_mtx_);
+            if (clear_flag_) {
+                clear_cv_.wait(ulk, [&]() {return stopped_ || !clear_flag_;});
+                if (stopped_) break;
+            }
+            duration<double, milli> current_time = system_clock::now().time_since_epoch();
+            double linger_time = current_time.count() - latest_push_time_;
+            if (linger_time >= max_linger_time_) {
+                clear_cache_();
+                clear_flag_ = true;
+            } else {
+                int wait_time = max_linger_time_ - linger_time;
+                clear_cv_.wait_for(ulk, milliseconds(wait_time), [&]() {return stopped_.load();});
+                if (stopped_) break;
+            }
+        }
+    });
+
     alignment_metrics.total_pushed_frames = 0;
     alignment_metrics.total_aligned_images = 0;
     alignment_metrics.total_late_arrived = 0;
@@ -33,6 +62,8 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms) {
 diffraflow::CmbImgCache::~CmbImgCache() {
     delete[] imgfrm_queues_arr_;
     stop(0);
+    clear_worker_->join();
+    delete clear_worker_;
 }
 
 bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
@@ -89,6 +120,13 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         }
     }
 
+    duration<double, milli> current_time = system_clock::now().time_since_epoch();
+    latest_push_time_ = current_time.count();
+    if (clear_flag_) {
+        clear_flag_ = false;
+        clear_cv_.notify_all();
+    }
+
     return true;
 }
 
@@ -140,14 +178,7 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
     return result;
 }
 
-void diffraflow::CmbImgCache::stop(int wait_time) {
-    stopped_ = true;
-
-    imgdat_queue_.stop();
-
-    lock_guard<mutex> lk(data_mtx_);
-
-    // clear all data in imgfrm_queues_arr_
+void diffraflow::CmbImgCache::clear_cache_() {
     while (true) {
         shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
         if (!do_alignment_(image_data, true)) {
@@ -169,12 +200,25 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
             break;
         }
     }
+}
+
+void diffraflow::CmbImgCache::stop(int wait_time) {
+    stopped_ = true;
+
+    imgdat_queue_.stop();
+
+    lock_guard<mutex> lk(data_mtx_);
+
+    // clear all data in imgfrm_queues_arr_
+    clear_cache_();
 
     // wait ingester to consume image data in queue for wait_time
     if (wait_time > 0) {
         unique_lock<mutex> ulk(stop_mtx_);
         stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time), [this]() { return imgdat_queue_.empty(); });
     }
+
+    clear_cv_.notify_all();
 }
 
 json::value diffraflow::CmbImgCache::collect_metrics() {

@@ -52,6 +52,7 @@ def copyScripts = copySpec {
         include "thisenv.sh"
         include "check_cnxn_address.sh"
         include "check_cnxn_addrlist.sh"
+        include "calib_gen.py"
     }
 }
 

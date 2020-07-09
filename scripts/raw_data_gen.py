@@ -74,7 +74,11 @@ for x in range(event_num_len):
     if current_file_idx != index_vec[0]:
         if h5file_data: h5file_data.close()
         h5file_data_fn = os.path.join(args.data_dir, 'CORR-R0243-AGIPD%02d-S%05d.h5')
-        h5file_data = h5py.File(h5file_data_fn, 'r')
+        try:
+            h5file_data = h5py.File(h5file_data_fn, 'r')
+        except Exception as e:
+            print('failed open file %s with error %s' % (h5file_data_fn, str(e)))
+            break
         cellId_dset = get_image_dset(h5file_data, det_path, 'cellId')
         mask_dset = get_image_dset(h5file_data, det_path, 'mask')
         image_dset = get_image_dset(h5file_data, det_path, 'data')
@@ -83,7 +87,16 @@ for x in range(event_num_len):
     mask_data = mask_dset[index_vec[1]]
     image_data = np.nan_to_num(image_dset[index_vec[1]])
     image_data[mask_data > 0] = 0
+    # create one empty bytearray
+    one_frame = bytearray(131096)
     # header
+    one_frame[0:4] = (0xDEFAF127).to_bytes(4, 'big')            # Header
+    one_frame[4:6] = (x % 65536).to_bytes(2, 'big')             # Frame index
+    # meta data
+    one_frame[6:8] = args.mod_id.to_bytes(2, 'big')             # Module ID
+    one_frame[8:10] = cellId.to_bytes(2, 'big')                 # Cell ID
+    one_frame[10:12] = (0).to_bytes(2, 'big')                   # Status
+    one_frame[12:20] = x.to_bytes(8, 'big')                     # Bunch ID
     # image data
     for [idx, [row, col]] in enumerate(np.ndindex(512, 128)):
         energy = image_data[row, col]
@@ -98,11 +111,17 @@ for x in range(event_num_len):
         else:
             gain = 2
             ADC = energy * gain_data[2, row, col] + pedestal_data[2, row, col]
+        ADC = int(ADC)
         if ADC < 0: ADC = 0
-        if ADC > 16384: ADC = 16384
+        if ADC > 16383: ADC = 16383
+        pixel = (gain << 14) | ADC
+        one_frame[20 + idx : 20 + idx + 2] = pixel.to_bytes(2, 'big')
     # CRC
+    crc = zlib.crc32(one_frame[4:131092])
+    one_frame[131092:131096] = crc.to_bytes(4, 'big')
     # write one frame
-
+    binary_outfile.write(one_frame)
+    event_counts += 1
 
 h5file_event.close()
 h5file_align.close()

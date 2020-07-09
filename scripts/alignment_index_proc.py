@@ -11,7 +11,7 @@ from cxidb_euxfel_utils import get_image_dset
 parser = argparse.ArgumentParser(description='align event according to trainId and pulseId, then generate index file')
 parser.add_argument("data_dir", help = "directory that contains input data files")
 parser.add_argument("outfile", help = "output HDF5 file")
-parser.add_argument("-s", dest = "seg_count", help = "segments count", default= 3, type=int)
+parser.add_argument("-s", dest = "seg_count", help = "segments count", default=3, type=int)
 parser.add_argument("-c", dest = "compress", help = "compress level (0 -- 9)", default=5, type=int)
 args = parser.parse_args()
 

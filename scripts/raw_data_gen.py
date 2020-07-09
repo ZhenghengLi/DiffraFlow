@@ -83,7 +83,7 @@ for x in range(event_num_len):
         mask_dset = get_image_dset(h5file_data, det_path, 'mask')
         image_dset = get_image_dset(h5file_data, det_path, 'data')
         current_file_idx = index_vec[0]
-    cellId = cellId_dset[index_vec[1]]
+    cellId = int(cellId_dset[index_vec[1]])
     mask_data = mask_dset[index_vec[1]]
     image_data = np.nan_to_num(image_dset[index_vec[1]])
     image_data[mask_data > 0] = 0

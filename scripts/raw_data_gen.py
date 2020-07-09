@@ -73,7 +73,7 @@ for x in range(event_num_len):
         event_counts = 0
     if current_file_idx != index_vec[0]:
         if h5file_data: h5file_data.close()
-        h5file_data_fn = os.path.join(args.data_dir, 'CORR-R0243-AGIPD%02d-S%05d.h5' %(args.mod_id, index_vec[0]))
+        h5file_data_fn = os.path.join(args.data_dir, 'CORR-R0243-AGIPD%02d-S%05d.h5' % (args.mod_id, index_vec[0]))
         try:
             h5file_data = h5py.File(h5file_data_fn, 'r')
         except Exception as e:

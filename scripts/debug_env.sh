@@ -10,6 +10,7 @@ scriptsDir=$my_dir/scripts
 export CLASSPATH=$packageDir/jar/*
 
 export PATH=$scriptsDir:$packageDir/bin:$PATH
+export PYTHONPATH=$scriptsDir:$PYTHONPATH
 
 export LD_LIBRARY_PATH=$packageDir/lib:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$packageDir/lib:$DYLD_LIBRARY_PATH

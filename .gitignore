@@ -5,6 +5,7 @@ gradlew.bat
 .project
 .settings
 **/bin/*
-.vscode/*
+**/.vscode/*
 **/.DS_Store
 *.h5
+__pycache__/

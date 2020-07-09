@@ -34,6 +34,8 @@ if event_num >= align_idx_dset.shape[0]:
 
 index_mat = align_idx_dset[event_num]
 
+align_idx_h5file.close()
+
 det_path = '/INSTRUMENT/SPB_DET_AGIPD1M-1/DET'
 file_paths = [
     ['%s/CORR-R0243-AGIPD%02d-S%05d.h5' % (args.data_dir, x, y)
@@ -67,6 +69,9 @@ for x in range(16):
     with image_dsets[x].astype('float64'):
         image_data[x] = np.nan_to_num(image_dsets[x][cur_idx])
         image_data[x][mask_data > 0] = 0
+
+for x in range(16):
+    image_h5files[x].close()
 
 signal_sum = np.sum(image_data)
 signal_mean = signal_sum / (1024. * 1024)

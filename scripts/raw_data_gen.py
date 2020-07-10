@@ -39,8 +39,8 @@ align_idx_dset = h5file_align['alignment_index']
 # open event number file
 h5file_event = h5py.File(args.event_file, 'r')
 event_num_dset = h5file_event['event_num']
-# event_num_len = event_num_dset.shape[0]
-event_num_len = 100
+event_num_len = event_num_dset.shape[0]
+# event_num_len = 100
 
 # iterate image data file and convert
 
@@ -57,8 +57,8 @@ event_counts = -1
 binary_outfile = None
 
 for x in range(event_num_len):
-    # if (x % 1000 == 0):
-    print("converting ", x)
+    if (x % 100 == 0):
+        print("converting ", x)
     event_num = event_num_dset[x]
     index_vec = align_idx_dset[event_num][args.mod_id]
     if index_vec[0] < 0 or index_vec[1] < 0:

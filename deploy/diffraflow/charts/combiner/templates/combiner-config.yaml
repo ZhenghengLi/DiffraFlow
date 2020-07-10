@@ -10,6 +10,7 @@ data:
     imgdat_listen_host = 0.0.0.0
     imgdat_listen_port = {{ .Values.imgdatListenPort }}
     imgdat_queue_capacity = 1000
+    max_linger_time = 20000
     # http server
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

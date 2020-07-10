@@ -14,7 +14,7 @@ RUN set -x \
 && sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list \
 ## install by apt-get
 && apt-get update \
-&& apt-get install -y --no-install-recommends \
+&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     openjdk-8-jdk build-essential \
     libboost-dev libboost-filesystem-dev \
@@ -67,13 +67,14 @@ RUN set -x \
 && sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list \
 ## install by apt-get
 && apt-get update \
-&& apt-get install -y --no-install-recommends \
+&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     openjdk-8-jre \
     libboost-dev libboost-filesystem-dev \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
     libmsgpack-dev libzookeeper-mt-dev libcpprest-dev libhdf5-dev \
     netcat-openbsd \
+    python3-h5py python3-numpy python3-scipy python3-matplotlib \
     wget \
 ## install pulsar c++ client
 && mkdir -pv /tmp/pulsar/DEB \

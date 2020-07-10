@@ -86,8 +86,9 @@ for x in range(event_num_len):
         current_file_idx = index_vec[0]
     cellId = int(cellId_dset[index_vec[1]])
     mask_data = mask_dset[index_vec[1]]
-    image_data = np.nan_to_num(image_dset[index_vec[1]])
+    image_data = np.nan_to_num(image_dset[index_vec[1]]) / 1000.0
     image_data[mask_data > 0] = 0
+    image_data[image_data < -0.1] = 0
     # create one empty bytearray
     one_frame = bytearray(131096)
     # header
@@ -99,20 +100,13 @@ for x in range(event_num_len):
     one_frame[10:12] = (0).to_bytes(2, 'big')                   # Status
     one_frame[12:20] = x.to_bytes(8, 'big')                     # Bunch ID
     # image data
+    ADC_data = [image_data * gain_data[x] + pedestal_data[x] for x in range(3)]
     for [idx, [row, col]] in enumerate(np.ndindex(512, 128)):
-        energy = image_data[row, col] / 1000.0
-        if energy < -0.1: energy = 0
-        gain, ADC = 0, 0
-        if energy < threshold_data[0, row, col]:
-            gain = 0
-            ADC = energy * gain_data[0, row, col] + pedestal_data[0, row, col]
-        elif energy < threshold_data[1, row, col]:
-            gain = 1
-            ADC = energy * gain_data[1, row, col] + pedestal_data[1, row, col]
-        else:
-            gain = 2
-            ADC = energy * gain_data[2, row, col] + pedestal_data[2, row, col]
-        ADC = int(np.round(ADC))
+        gain = 0
+        if image_data[row, col] < threshold_data[0, row, col]: gain = 0
+        elif image_data[row, col] < threshold_data[1, row, col]: gain = 1
+        else: gain = 2
+        ADC = int(np.round(ADC_data[gain][row, col]))
         if ADC < 0: ADC = 0
         if ADC > 16383: ADC = 16383
         pixel = (gain << 14) | ADC

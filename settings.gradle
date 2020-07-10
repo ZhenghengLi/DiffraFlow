@@ -6,6 +6,7 @@ new File("$rootDir/diffraflow").eachDir {
 }
 
 include ':testing:console_test'
+include ':testing:generator'
 include ':testing:sender'
 include ':testing:trigger'
 

@@ -39,7 +39,8 @@ align_idx_dset = h5file_align['alignment_index']
 # open event number file
 h5file_event = h5py.File(args.event_file, 'r')
 event_num_dset = h5file_event['event_num']
-event_num_len = event_num_dset.shape[0]
+# event_num_len = event_num_dset.shape[0]
+event_num_len = 100
 
 # iterate image data file and convert
 
@@ -56,8 +57,8 @@ event_counts = -1
 binary_outfile = None
 
 for x in range(event_num_len):
-    if (x % 1000 == 0):
-        print("converting ", x)
+    # if (x % 1000 == 0):
+    print("converting ", x)
     event_num = event_num_dset[x]
     index_vec = align_idx_dset[event_num][args.mod_id]
     if index_vec[0] < 0 or index_vec[1] < 0:
@@ -99,7 +100,9 @@ for x in range(event_num_len):
     one_frame[12:20] = x.to_bytes(8, 'big')                     # Bunch ID
     # image data
     for [idx, [row, col]] in enumerate(np.ndindex(512, 128)):
-        energy = image_data[row, col]
+        energy = image_data[row, col] / 1000.0
+        if energy < -0.1:
+            energy = 0
         gain = 0
         ADC = 0
         if energy < threshold_data[0, row, col]:
@@ -111,11 +114,12 @@ for x in range(event_num_len):
         else:
             gain = 2
             ADC = energy * gain_data[2, row, col] + pedestal_data[2, row, col]
-        ADC = int(ADC)
+        ADC = int(np.round(ADC))
         if ADC < 0: ADC = 0
         if ADC > 16383: ADC = 16383
         pixel = (gain << 14) | ADC
-        one_frame[20 + idx : 20 + idx + 2] = pixel.to_bytes(2, 'big')
+        offset = (row * 128 + col) * 2
+        one_frame[20 + offset : 20 + offset + 2] = pixel.to_bytes(2, 'big')
     # CRC
     crc = zlib.crc32(one_frame[4:131092])
     one_frame[131092:131096] = crc.to_bytes(4, 'big')

@@ -101,10 +101,8 @@ for x in range(event_num_len):
     # image data
     for [idx, [row, col]] in enumerate(np.ndindex(512, 128)):
         energy = image_data[row, col] / 1000.0
-        if energy < -0.1:
-            energy = 0
-        gain = 0
-        ADC = 0
+        if energy < -0.1: energy = 0
+        gain, ADC = 0, 0
         if energy < threshold_data[0, row, col]:
             gain = 0
             ADC = energy * gain_data[0, row, col] + pedestal_data[0, row, col]

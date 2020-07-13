@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
         if (event % 100 == 0) {
             cout << "converting " << event << endl;
         }
-        if (event >= 100) break;
+        if (event >= 10) break;
         cout << event << endl;
         // read alignment index
         event_num_offset[0] = event;
@@ -201,6 +201,7 @@ int main(int argc, char** argv) {
             for (int col = 0; col < 128; col++) {
                 int idx = row * 128 + col;
                 float energy = image_arr[idx] / 1000.0;
+                if (isnan(energy)) energy = 0;
                 if (mask_arr[idx] > 0 || energy < -0.1) energy = 0;
                 int gain = 0;
                 if (energy < threshold_arr[idx]) {

@@ -112,8 +112,7 @@ for x in range(event_num_len):
         if ADC < 0: ADC = 0
         if ADC > 16383: ADC = 16383
         pixel = (gain << 14) | ADC
-        offset = (row * 128 + col) * 2
-        one_frame[20 + offset : 20 + offset + 2] = pixel.to_bytes(2, 'big')
+        one_frame[20 + idx * 2 : 20 + idx * 2 + 2] = pixel.to_bytes(2, 'big')
     # CRC
     crc = zlib.crc32(one_frame[4:131092])
     one_frame[131092:131096] = crc.to_bytes(4, 'big')

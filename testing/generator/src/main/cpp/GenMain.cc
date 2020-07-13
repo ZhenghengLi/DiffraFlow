@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <H5Cpp.h>
 
 #include "GenOptMan.hh"
@@ -6,6 +7,15 @@
 using namespace std;
 using namespace diffraflow;
 using namespace H5;
+
+DataSet get_image_dset(H5File* h5file, const string& det_path, const string& name) {
+    Group det_group = h5file->openGroup(det_path);
+    string det_name = det_group.getObjnameByIdx(0);
+    cout << "det_name: " << det_name << endl;
+    DataSet one_dset = det_group.openDataSet(det_name + "/image/" + name);
+    cout << "one_dset: " << one_dset.getObjName() << endl;
+    return one_dset;
+}
 
 int main(int argc, char** argv) {
     GenOptMan option_man;
@@ -60,6 +70,43 @@ int main(int argc, char** argv) {
     calib_h5file->close();
     delete calib_h5file;
     calib_h5file = nullptr;
+
+    //// open alignment file
+    H5File* align_h5file = new H5File(option_man.align_file, H5F_ACC_RDONLY);
+    DataSet align_idx_dset = align_h5file->openDataSet("alignment_index");
+    int align_idx_arr[16 * 2];
+    hsize_t align_idx_mdim[] = {1, 16, 2};
+    DataSpace align_idx_mspace(3, align_idx_mdim);
+    DataSpace align_idx_fspace = align_idx_dset.getSpace();
+    hsize_t align_idx_offset[] = {0, 0, 0};
+
+    //// open event num file
+    H5File* event_h5file = new H5File(option_man.event_file, H5F_ACC_RDONLY);
+    DataSet event_num_dset = event_h5file->openDataSet("event_num");
+    int event_num = 0;
+    hsize_t event_num_mdim[] = {1};
+    DataSpace event_num_mspace(1, event_num_mdim);
+    DataSpace event_num_fspace = event_num_dset.getSpace();
+    hsize_t event_num_offset[] = {0};
+    hsize_t event_num_len;
+    event_num_fspace.getSimpleExtentDims(&event_num_len);
+
+    //// convert
+    string det_path = "/INSTRUMENT/SPB_DET_AGIPD1M-1/DET";
+    int sequential_id = -1;
+    int event_counts = -1;
+    ofstream* binary_outfile = nullptr;
+    // H5File* data_h5file = new H5File(option_man.data_dir, H5F_ACC_RDONLY);
+    // DataSet image_data_dset = get_image_dset(data_h5file, det_path, "data");
+    for (size_t event = 0; event < event_num_len; event++) {
+        if (event % 100 == 0) {
+            cout << "converting " << event << endl;
+        }
+        event_num_offset[0] = event;
+        event_num_fspace.selectHyperslab(H5S_SELECT_SET, event_num_mdim, event_num_offset);
+        event_num_dset.read(&event_num, PredType::NATIVE_INT32, event_num_mspace, event_num_fspace);
+        cout << event_num << endl;
+    }
 
     // clean
     delete[] pedestal_arr;

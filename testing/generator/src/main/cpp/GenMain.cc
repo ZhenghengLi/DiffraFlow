@@ -19,9 +19,7 @@ using boost::crc_32_type;
 DataSet get_image_dset(H5File* h5file, const string& det_path, const string& name) {
     Group det_group = h5file->openGroup(det_path);
     string det_name = det_group.getObjnameByIdx(0);
-    cout << "det_name: " << det_name << endl;
     DataSet one_dset = det_group.openDataSet(det_name + "/image/" + name);
-    cout << "one_dset: " << one_dset.getObjName() << endl;
     return one_dset;
 }
 
@@ -112,14 +110,14 @@ int main(int argc, char** argv) {
     DataSet mask_dset;
     uint8_t mask_arr[512 * 128];
     hsize_t mask_mdim[] = {1, 512, 128};
-    DataSpace mask_mspace(1, mask_mdim);
+    DataSpace mask_mspace(3, mask_mdim);
     DataSpace mask_fspace;
     hsize_t mask_offset[] = {0, 0, 0};
 
     DataSet image_dset;
     float image_arr[512 * 128];
     hsize_t image_mdim[] = {1, 512, 128};
-    DataSpace image_mspace(1, image_mdim);
+    DataSpace image_mspace(3, image_mdim);
     DataSpace image_fspace;
     hsize_t image_offset[] = {0, 0, 0};
 
@@ -131,6 +129,8 @@ int main(int argc, char** argv) {
         if (event % 100 == 0) {
             cout << "converting " << event << endl;
         }
+        if (event >= 100) break;
+        cout << event << endl;
         // read alignment index
         event_num_offset[0] = event;
         event_num_fspace.selectHyperslab(H5S_SELECT_SET, event_num_mdim, event_num_offset);
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
                 binary_outfile = nullptr;
             }
             sequential_id += 1;
-            snprintf(filename_buffer, FN_BUFF_SIZE, "%s/AGIPD-BIN-R0243-M%02d-S%03d.dat", option_man.output_dir,
+            snprintf(filename_buffer, FN_BUFF_SIZE, "%s/AGIPD-BIN-R0243-M%02d-S%03d.dat", option_man.output_dir.c_str(),
                 option_man.module_id, sequential_id);
             binary_outfile = new ofstream(filename_buffer, ios::out | ios::binary);
             if (!binary_outfile->is_open()) {
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
                 delete data_h5file;
                 data_h5file = nullptr;
             }
-            snprintf(filename_buffer, FN_BUFF_SIZE, "%s/CORR-R0243-AGIPD%02d-S%05d.h5", option_man.data_dir,
+            snprintf(filename_buffer, FN_BUFF_SIZE, "%s/CORR-R0243-AGIPD%02d-S%05d.h5", option_man.data_dir.c_str(),
                 option_man.module_id, align_idx_arr[0]);
             data_h5file = new H5File(filename_buffer, H5F_ACC_RDONLY);
             cellId_dset = get_image_dset(data_h5file, det_path, "cellId");
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
         // read image data
         image_offset[0] = align_idx_arr[1];
         image_fspace.selectHyperslab(H5S_SELECT_SET, image_mdim, image_offset);
-        image_dset.read(image_arr, PredType::NATIVE_INT_FAST32, image_mspace, image_fspace);
+        image_dset.read(image_arr, PredType::NATIVE_FLOAT, image_mspace, image_fspace);
         //// assemble frame
         gPS.serializeValue<uint32_t>(0xDEFAF127, frame_buffer + 0, 4);           // header
         gPS.serializeValue<uint16_t>(event % 65536, frame_buffer + 4, 2);        // frame index

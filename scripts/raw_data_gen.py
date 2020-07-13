@@ -59,6 +59,8 @@ binary_outfile = None
 for x in range(event_num_len):
     if (x % 100 == 0):
         print("converting ", x)
+    if x >= 10: break
+    print(x)
     event_num = event_num_dset[x]
     index_vec = align_idx_dset[event_num][args.mod_id]
     if index_vec[0] < 0 or index_vec[1] < 0:

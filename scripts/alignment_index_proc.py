@@ -74,7 +74,7 @@ while True:
             current_files[x].close()
             current_pos[x][0] += 1
             current_pos[x][1] = 0
-            if current_pos[x][0] >= 3:
+            if current_pos[x][0] >= args.seg_count:
                 current_files[x] = None
                 reach_end_flag[x] = True
             else:

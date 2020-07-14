@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: calib-gen-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: calib-gen-{{ .Values.nameSuffix }}
+spec:
+  template:
+    metadata:
+      labels:
+        name: calib-gen-{{ .Values.nameSuffix }}
+    spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      containers:
+      - name: calib-gen
+        image: zhenghengli/diffraflow:latest
+        command:
+        - calib_gen.py
+        - -s 0
+        - /aux-files/calib-rand-s0.h5
+        volumeMounts:
+        - name: aux-files
+          mountPath: /aux-files
+      volumes:
+      - name: aux-files
+        hostPath:
+          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
+      restartPolicy: Never

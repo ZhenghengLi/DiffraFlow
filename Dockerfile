@@ -74,7 +74,7 @@ RUN set -x \
     liblz4-dev libsnappy-dev libzstd-dev liblog4cxx-dev \
     libmsgpack-dev libzookeeper-mt-dev libcpprest-dev libhdf5-dev \
     netcat-openbsd \
-    python3-h5py python3-numpy python3-scipy python3-matplotlib \
+    python3-h5py python3-numpy python3-scipy python3-matplotlib python3-tk \
     wget \
 ## install pulsar c++ client
 && mkdir -pv /tmp/pulsar/DEB \

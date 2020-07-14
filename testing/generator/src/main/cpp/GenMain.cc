@@ -126,11 +126,9 @@ int main(int argc, char** argv) {
 
     // read and convert event by event
     for (size_t event = 0; event < event_num_len; event++) {
-        if (event % 100 == 0) {
+        if (event % 1000 == 0) {
             cout << "converting " << event << endl;
         }
-        if (event >= 10) break;
-        cout << event << endl;
         // read alignment index
         event_num_offset[0] = event;
         event_num_fspace.selectHyperslab(H5S_SELECT_SET, event_num_mdim, event_num_offset);
@@ -154,6 +152,7 @@ int main(int argc, char** argv) {
             sequential_id += 1;
             snprintf(filename_buffer, FN_BUFF_SIZE, "%s/AGIPD-BIN-R0243-M%02d-S%03d.dat", option_man.output_dir.c_str(),
                 option_man.module_id, sequential_id);
+            cout << "open binary file: " << filename_buffer << endl;
             binary_outfile = new ofstream(filename_buffer, ios::out | ios::binary);
             if (!binary_outfile->is_open()) {
                 cerr << "failed open binary output file " << filename_buffer << endl;
@@ -170,6 +169,7 @@ int main(int argc, char** argv) {
             }
             snprintf(filename_buffer, FN_BUFF_SIZE, "%s/CORR-R0243-AGIPD%02d-S%05d.h5", option_man.data_dir.c_str(),
                 option_man.module_id, align_idx_arr[0]);
+            cout << "open HDF5 file: " << filename_buffer << endl;
             data_h5file = new H5File(filename_buffer, H5F_ACC_RDONLY);
             cellId_dset = get_image_dset(data_h5file, det_path, "cellId");
             cellId_fspace = cellId_dset.getSpace();
@@ -177,6 +177,7 @@ int main(int argc, char** argv) {
             mask_fspace = mask_dset.getSpace();
             image_dset = get_image_dset(data_h5file, det_path, "data");
             image_fspace = image_dset.getSpace();
+            current_file_idx = align_idx_arr[0];
         }
         // read cellId
         cellId_offset[0] = align_idx_arr[1];
@@ -223,6 +224,7 @@ int main(int argc, char** argv) {
         uint32_t crc_value = crc_32.checksum();
         gPS.serializeValue<uint32_t>(crc_value, frame_buffer + 131092, 4);
         binary_outfile->write(frame_buffer, FRAME_BUFF_SISE);
+        event_counts += 1;
     }
 
     // clean

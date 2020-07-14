@@ -63,7 +63,7 @@ for x in range(align_idx_len):
     if not invalid_flag:
         dim1_len = event_num_dset.shape[0]
         event_num_dset.resize( (dim1_len + 1,) )
-        event_num_dset[-1,] = x
+        event_num_dset[-1] = x
 
 h5file_out.flush()
 h5file_out.close()

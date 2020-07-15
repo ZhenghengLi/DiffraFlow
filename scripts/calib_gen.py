@@ -19,15 +19,15 @@ ped_sigma = [500, 500, 500]
 ped_max = [5500, 7500, 8500]
 ped_min = [4500, 6500, 7500]
 
-gain_mu = [750, 80, 15]
-gain_sigma = [40, 5, 1]
-gain_max = [800, 85, 16.5]
-gain_min = [700, 75, 13.5]
+gain_mu = [8, 0.35, 0.05]
+gain_sigma = [0.5, 0.03, 0.003]
+gain_max = [8.5, 0.4, 0.055]
+gain_min = [7.5, 0.3, 0.045]
 
-threshold_mu = [10, 80]
-threshold_sigma = [1, 5]
-threshold_max = [11.5, 85]
-threshold_min = [8.5, 75]
+threshold_mu = [1000, 20000]
+threshold_sigma = [100, 600]
+threshold_max = [1200, 21000]
+threshold_min = [800, 19000]
 
 h5file_out = h5py.File(args.outfile, 'w')
 
@@ -128,7 +128,7 @@ for det in range(16):
         ped = pedestal_data[det, 2, x, y]
         gain = gain_data[det, 2, x, y]
         energy_min = threshold_data[det, 1, x, y]
-        energy_max = 200
+        energy_max = 48000
         ADC_min_arr[x, y] = ped + gain * energy_min
         ADC_max_arr[x, y] = ped + gain * energy_max
         if ADC_max_arr[x, y] > ADC_max: overflow_count += 1

@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
         for (int row = 0; row < 512; row++) {
             for (int col = 0; col < 128; col++) {
                 int idx = row * 128 + col;
-                float energy = image_arr[idx] / 1000.0;
+                float energy = image_arr[idx] / 10.0;
                 if (isnan(energy)) energy = 0;
                 if (mask_arr[idx] > 0 || energy < -0.1) energy = 0;
                 int gain = 0;

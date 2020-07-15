@@ -86,7 +86,7 @@ for x in range(event_num_len):
         current_file_idx = index_vec[0]
     cellId = int(cellId_dset[index_vec[1]])
     mask_data = mask_dset[index_vec[1]]
-    image_data = np.nan_to_num(image_dset[index_vec[1]]) / 1000.0
+    image_data = np.nan_to_num(image_dset[index_vec[1]]) / 10.0
     image_data[mask_data > 0] = 0
     image_data[image_data < -0.1] = 0
     # create one empty bytearray

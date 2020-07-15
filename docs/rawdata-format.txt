@@ -1,0 +1,9 @@
+Offset      Length      Type                    Content
+0           4           uint32                  Header (0xDEFAF127)
+4           2           uint16                  Frame Index
+6           2           uint16                  Module ID (0 -- 15)
+8           2           uint16                  Cell ID (0 -- 351)
+10          2           uint16                  Status
+12          8           uint64                  Bunch ID or Timestamp
+20          131072      uint16 (512 * 128)      Gain[0:1] and ADC[2:15] of all pixels (512 x 128)
+131092      4           uint32                  CRC-32 (cover byte range 4 -- 131091)

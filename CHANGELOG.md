@@ -9,8 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] add the YAML deployment files for ingester, monitor and controller
+- [ ] implement sender and trigger
 - [ ] aggregator: running on the pulsar consumer side to aggregate metrics from all components, calculate speeds and serve results via HTTP GET.
+
+## [0.0.13] - 2020-07-15
+
+### Changed
+
+- Dockerfile: switched to use Pulsar v2.5.2 instead of v2.5.0.
+- **combiner** now will force doing alignment if the module data in cache stays for a relatively long time. This is useful to clear the cache after a run finished but there is still some partial data remained in cache.
+
+### Added
+
+- Added file .clang-format and applied clang-format for all C++ code.
+- Added the YAML deployment files for **ingester**, **monitor** and **controller**, and together with **dispatcher** and **combiner**, the deployments of all these 5 components on demo machine are tested.
+- Added some programs to convert the EuXFEL data published on CXIDB for the purpose of using it as the test data for this project. These programs include scripts/{calib_gen.py, alignment_index_proc.py, event_select_proc.py, event_view_proc.py, raw_data_gen.py} and testing/generator. And the raw data format is defined by file docs/rawdata-format.txt.
+- Added some kubernetes job deployment files for doing the data generating and converting works on demo machine.
 
 ## [0.0.12] - 2020-04-30
 

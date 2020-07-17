@@ -1,18 +1,25 @@
 #include "ImageDataHDF5.hh"
 
 diffraflow::ImageDataHDF5::ImageDataHDF5() : H5::CompType(sizeof(Field)) {
-    //// event_time
-    insertMember("event_time", HOFFSET(Field, event_time), H5::PredType::NATIVE_UINT64);
+    //// bunch_id
+    insertMember("bunch_id", HOFFSET(Field, bunch_id), H5::PredType::NATIVE_UINT64);
     //// alignment
-    hsize_t detector_dim[] = {DET_CNT};
-    H5::ArrayType alignment_t(H5::PredType::NATIVE_HBOOL, 1, detector_dim);
+    hsize_t module_dim[] = {MOD_CNT};
+    H5::ArrayType alignment_t(H5::PredType::NATIVE_HBOOL, 1, module_dim);
     insertMember("alignment", HOFFSET(Field, alignment), alignment_t);
+    //// cell_id
+    H5::ArrayType cell_id_t(H5::PredType::NATIVE_INT16, 1, module_dim);
+    insertMember("cell_id", HOFFSET(Field, cell_id), cell_id_t);
+    //// status
+    H5::ArrayType status_t(H5::PredType::NATIVE_UINT16, 1, module_dim);
+    insertMember("status", HOFFSET(Field, status), status_t);
     //// image_frame
-    hsize_t image_frame_dim[] = {DET_CNT, IMAGE_H, IMAGE_W};
-    H5::ArrayType image_frame_t(H5::PredType::NATIVE_FLOAT, 3, image_frame_dim);
-    insertMember("image_frame", HOFFSET(Field, image_frame), image_frame_t);
-    //// wait_threshold
-    insertMember("wait_threshold", HOFFSET(Field, wait_threshold), H5::PredType::NATIVE_UINT64);
+    hsize_t frame_dim[] = {MOD_CNT, IMAGE_H, IMAGE_W};
+    H5::ArrayType pixel_data_t(H5::PredType::NATIVE_FLOAT, 3, frame_dim);
+    insertMember("pixel_data", HOFFSET(Field, pixel_data), pixel_data_t);
+    //// gain_level
+    H5::ArrayType gain_level_t(H5::PredType::NATIVE_UINT8, 3, frame_dim);
+    insertMember("gain_level", HOFFSET(Field, gain_level), gain_level_t);
     //// late_arrived
     insertMember("late_arrived", HOFFSET(Field, late_arrived), H5::PredType::NATIVE_HBOOL);
 }
@@ -20,43 +27,38 @@ diffraflow::ImageDataHDF5::ImageDataHDF5() : H5::CompType(sizeof(Field)) {
 diffraflow::ImageDataHDF5::~ImageDataHDF5() {}
 
 void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field& imgdat_st) {
-    // event_time
-    imgdat_st.event_time = imgdat_obj.event_time;
-    for (size_t i = 0; i < DET_CNT; i++) {
-        // alighment
+
+    // bunch_id
+    imgdat_st.bunch_id = imgdat_obj.bunch_id;
+
+    for (size_t i = 0; i < MOD_CNT; i++) {
+
+        // alignment, cell_id, status
         if (i < imgdat_obj.alignment_vec.size()) {
             imgdat_st.alignment[i] = imgdat_obj.alignment_vec[i];
+            imgdat_st.cell_id[i] = imgdat_obj.image_frame_vec[i].cell_id;
+            imgdat_st.status[i] = imgdat_obj.image_frame_vec[i].status;
         } else {
             imgdat_st.alignment[i] = 0;
+            imgdat_st.cell_id[i] = -1;
+            imgdat_st.status[i] = 0;
         }
-        // image frame
-        if (i < imgdat_obj.image_frame_vec.size()) {
-            for (size_t h = 0; h < IMAGE_H; h++) {
-                if (h < imgdat_obj.image_frame_vec[i].image_height) {
-                    for (size_t w = 0; w < IMAGE_W; w++) {
-                        size_t idx = h * imgdat_obj.image_frame_vec[i].image_width + w;
-                        if (w < imgdat_obj.image_frame_vec[i].image_width) {
-                            imgdat_st.image_frame[i][h][w] = imgdat_obj.image_frame_vec[i].image_frame[idx];
-                        } else {
-                            imgdat_st.image_frame[i][h][w] = 0;
-                        }
-                    }
+
+        // pixel_data, gain_level
+        for (size_t h = 0; h < IMAGE_H; h++) {
+            for (size_t w = 0; w < IMAGE_W; w++) {
+                size_t pos = h * 128 + w;
+                if (i < imgdat_obj.image_frame_vec.size() && pos < 65536) {
+                    imgdat_st.pixel_data[i][h][w] = imgdat_obj.image_frame_vec[i].pixel_data[pos];
+                    imgdat_st.gain_level[i][h][w] = imgdat_obj.image_frame_vec[i].gain_level[pos];
                 } else {
-                    for (size_t w = 0; w < IMAGE_W; w++) {
-                        imgdat_st.image_frame[i][h][w] = 0;
-                    }
-                }
-            }
-        } else {
-            for (size_t h = 0; h < IMAGE_H; h++) {
-                for (size_t w = 0; w < IMAGE_W; w++) {
-                    imgdat_st.image_frame[i][h][w] = 0;
+                    imgdat_st.pixel_data[i][h][w] = 0;
+                    imgdat_st.gain_level[i][h][w] = 0;
                 }
             }
         }
     }
-    // wait_threshold
-    imgdat_st.wait_threshold = imgdat_obj.wait_threshold;
+
     // late_arrived
     imgdat_st.late_arrived = imgdat_obj.late_arrived;
 }

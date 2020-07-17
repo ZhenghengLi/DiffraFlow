@@ -8,12 +8,11 @@
 using std::endl;
 using std::string;
 
-diffraflow::ImageData::ImageData(uint32_t numOfDet) {
-    event_time = 0;
-    alignment_vec.resize(numOfDet, false);
-    image_frame_vec.resize(numOfDet);
+diffraflow::ImageData::ImageData(uint32_t numOfMod) {
+    bunch_id = 0;
+    alignment_vec.resize(numOfMod, false);
+    image_frame_vec.resize(numOfMod);
     late_arrived = false;
-    wait_threshold = 0;
     is_defined_ = false;
     calib_level_ = 0;
 }
@@ -40,21 +39,16 @@ void diffraflow::ImageData::print(ostream& out) const {
         out << "undefined image data" << endl;
         return;
     }
-    out << "event_time: " << event_time << endl;
+    out << "bunch_id: " << bunch_id << endl;
     out << "late_arrived: " << late_arrived << endl;
     out << "alignment_vec: [";
     for (size_t i = 0; i < alignment_vec.size(); i++) {
         if (i > 0) out << ", ";
-        if (alignment_vec[i]) {
-            out << "true";
-        } else {
-            out << "false";
-        }
+        out << alignment_vec[i];
     }
     out << "]" << endl;
-    out << "image_frame_vec:" << endl;
-    for (size_t i = 0; i < image_frame_vec.size(); i++) {
-        string rawdata_str(image_frame_vec[i].image_rawdata.data(), image_frame_vec[i].image_rawdata.size());
-        out << "- [" << rawdata_str << "]" << endl;
+    if (image_frame_vec.size() > 0) {
+        out << "image_frame_vec[0]:" << endl;
+        image_frame_vec[0].print(out);
     }
 }

@@ -4,9 +4,9 @@
 #include "H5Cpp.h"
 #include "ImageData.hh"
 
-#define DET_CNT 4
-#define IMAGE_H 6
-#define IMAGE_W 8
+#define MOD_CNT 16
+#define IMAGE_H 512
+#define IMAGE_W 128
 
 namespace diffraflow {
 
@@ -17,10 +17,12 @@ namespace diffraflow {
 
     public:
         struct Field {
-            uint64_t event_time;
-            bool alignment[DET_CNT];
-            float image_frame[DET_CNT][IMAGE_H][IMAGE_W];
-            uint64_t wait_threshold;
+            uint64_t bunch_id;
+            bool alignment[MOD_CNT];
+            int16_t cell_id[MOD_CNT];
+            uint16_t status[MOD_CNT];
+            float pixel_data[MOD_CNT][IMAGE_H][IMAGE_W];
+            uint8_t gain_level[MOD_CNT][IMAGE_H][IMAGE_W];
             bool late_arrived;
         };
 

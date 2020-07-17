@@ -14,7 +14,7 @@ namespace diffraflow {
 
     class ImageData {
     public:
-        explicit ImageData(uint32_t numOfDet = 1);
+        explicit ImageData(uint32_t numOfMod = 1);
         ~ImageData();
 
         bool put_imgfrm(size_t index, const ImageFrame& imgfrm);
@@ -27,10 +27,9 @@ namespace diffraflow {
         int get_calib_level();
 
     public:
-        uint64_t event_time;
+        uint64_t bunch_id;
         vector<bool> alignment_vec;
         vector<ImageFrame> image_frame_vec;
-        uint64_t wait_threshold;
         bool late_arrived;
 
     private:
@@ -38,9 +37,9 @@ namespace diffraflow {
         int calib_level_;
 
     public:
-        MSGPACK_DEFINE_MAP(
-            event_time, alignment_vec, image_frame_vec, wait_threshold, late_arrived, is_defined_, calib_level_);
+        MSGPACK_DEFINE_MAP(bunch_id, alignment_vec, image_frame_vec, late_arrived, is_defined_, calib_level_);
     };
+
 } // namespace diffraflow
 
 #endif

@@ -130,7 +130,7 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
 }
 
 bool diffraflow::MonImgHttpServer::request_one_image_(
-    const string event_time_string, ImageWithFeature& image_with_feature, string& ingester_id_str) {
+    const string bunch_id_string, ImageWithFeature& image_with_feature, string& ingester_id_str) {
 
     lock_guard<mutex> lg(mtx_client_);
 
@@ -143,7 +143,7 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
         http_response response;
         bool found_exception = false;
         try {
-            response = ingester_clients_vec_[addr_idx].request(methods::GET, event_time_string).get();
+            response = ingester_clients_vec_[addr_idx].request(methods::GET, bunch_id_string).get();
         } catch (std::exception& e) {
             found_exception = true;
             LOG4CXX_WARN(logger_, "exception found when requesting data from \""
@@ -187,18 +187,18 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
     string relative_path = uri::decode(message.relative_uri().path());
 
-    std::regex req_time_regex("^/(\\d+)$");
+    std::regex req_regex("^/(\\d+)$");
     std::smatch match_res;
 
     msgpack::sbuffer image_sbuff;
     http_response response;
     vector<unsigned char> response_data_vec;
 
-    string event_time_string;
+    string bunch_id_string;
     if (relative_path == "/") {
-        event_time_string = "";
-    } else if (std::regex_match(relative_path, match_res, req_time_regex)) {
-        event_time_string = match_res[1].str();
+        bunch_id_string = "";
+    } else if (std::regex_match(relative_path, match_res, req_regex)) {
+        bunch_id_string = match_res[1].str();
     } else {
         message.reply(status_codes::NotFound);
         return;
@@ -207,8 +207,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     ImageWithFeature image_with_feature;
     string ingester_id_str;
     string monitor_id_str = std::to_string(config_obj_->monitor_id);
-    if (request_one_image_(event_time_string, image_with_feature, ingester_id_str)) {
-        string event_time_str = std::to_string(image_with_feature.image_data_raw.event_time);
+    if (request_one_image_(bunch_id_string, image_with_feature, ingester_id_str)) {
+        string bunch_id_str = std::to_string(image_with_feature.image_data_raw.bunch_id);
         ImageAnalysisResult image_analysis_result;
         do_analysis_(image_with_feature, image_analysis_result);
         msgpack::pack(image_sbuff, image_analysis_result);
@@ -218,7 +218,7 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().set_content_type("application/msgpack");
         response.headers().add(U("Monitor-ID"), monitor_id_str);
         response.headers().add(U("Ingester-ID"), ingester_id_str);
-        response.headers().add(U("Event-Time"), event_time_str);
+        response.headers().add(U("Bunch-ID"), bunch_id_str);
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);

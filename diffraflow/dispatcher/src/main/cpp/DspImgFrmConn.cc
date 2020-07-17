@@ -21,15 +21,17 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
     uint32_t payload_type = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
     switch (payload_type) {
     case 0xABCDFFFF: {
-        if (payload_size <= 8) {
-            LOG4CXX_INFO(logger_, "got wrong image frame, close the connection.");
-            return kFailed;
+        const char* frame_buffer = payload_buffer + 4;
+        size_t frame_size = payload_size - 4;
+        if (frame_size != 131096) {
+            LOG4CXX_INFO(logger_, "got an image frame with wrong size " << frame_size << ", skip it.");
+            return kSkipped;
         }
-        uint64_t identifier = gDC.decode_byte<uint64_t>(payload_buffer, 4, 11);
-        size_t index = hash_long_(identifier) % sender_count_;
-        LOG4CXX_DEBUG(logger_, "Send data with key: " << identifier);
-        if (sender_array_[index]->push(payload_buffer + 4, payload_size - 4)) {
-            LOG4CXX_DEBUG(logger_, "pushed one image frame into sender.");
+        uint64_t bunch_id = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
+        size_t index = hash_long_(bunch_id) % sender_count_;
+        LOG4CXX_DEBUG(logger_, "received an image frame with bunch_id: " << bunch_id);
+        if (sender_array_[index]->push(frame_buffer, frame_size)) {
+            LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
             return kProcessed;
         } else {
             LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");

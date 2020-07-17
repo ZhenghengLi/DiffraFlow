@@ -11,37 +11,62 @@ using std::copy;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::flush;
 
 log4cxx::LoggerPtr diffraflow::ImageFrame::logger_ = log4cxx::Logger::getLogger("ImageFrame");
 
 diffraflow::ImageFrame::ImageFrame() {
-    image_time = 0;
-    detector_id = -1;
-    image_width = 0;
-    image_height = 0;
-    image_frame.clear();
-    image_rawdata.clear();
+    bunch_id = 0;
+    module_id = -1;
+    cell_id = -1;
+    status = 0;
+
+    gain_level.resize(65536);
+    pixel_data.resize(65536);
 }
 
 diffraflow::ImageFrame::~ImageFrame() {}
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
-    if (size <= 8) return false;
-    image_time = gDC.decode_byte<uint64_t>(buffer, 0, 7);
-    image_rawdata.resize(size - 8);
-    copy(buffer + 8, buffer + size, image_rawdata.data());
-    detector_id = 0;
+    if (size <= 131096) return false;
+
+    bunch_id = gDC.decode_byte<uint64_t>(buffer, 12, 19);
+    module_id = gDC.decode_byte<uint16_t>(buffer, 6, 7);
+    if (module_id > 15) {
+        LOG4CXX_WARN(logger_, "found wrong module_id " << module_id << " with bunch_id " << bunch_id);
+        return false;
+    }
+    cell_id = gDC.decode_byte<uint16_t>(buffer, 8, 9);
+
+    for (size_t i = 0; i < 65536; i++) {
+        size_t offset = 20 + i * 2;
+        gain_level[i] = gDC.decode_bit<uint8_t>(buffer + offset, 0, 1);
+        pixel_data[i] = gDC.decode_bit<uint16_t>(buffer + offset, 2, 15);
+    }
+
     return true;
 }
 
-void diffraflow::ImageFrame::print() const {
-    if (image_rawdata.empty()) {
-        cout << "there is no data to print" << endl;
+void diffraflow::ImageFrame::print(ostream& out) const {
+    out << "  bunch_id: " << bunch_id << endl;
+    out << "  module_id: " << module_id << endl;
+    out << "  cell_id: " << cell_id << endl;
+    out << "  pixel_data: [";
+    for (size_t i = 0; i < 5; i++) {
+        out << pixel_data[i] << ", ";
     }
-    cout << "- image_time: " << image_time << endl;
-    cout << "- image_data: [";
-    for (size_t i = 0; i < image_rawdata.size(); i++) {
-        cout << image_rawdata[i];
+    out << "...";
+    for (size_t i = 65531; i < 65536; i++) {
+        out << ", " << pixel_data[i];
     }
-    cout << "]" << endl;
+    out << "]" << endl;
+    out << " gain_level: [";
+    for (size_t i = 0; i < 5; i++) {
+        out << gain_level[i] << ", ";
+    }
+    out << "...";
+    for (size_t i = 65531; i < 65536; i++) {
+        out << ", " << gain_level[i];
+    }
+    out << "]" << endl;
 }

@@ -19,7 +19,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int max_lt) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new TimeOrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new OrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
     // wait forever
     wait_threshold_ = numeric_limits<int64_t>::max();
@@ -37,7 +37,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
         while (!stopped_) {
             unique_lock<mutex> ulk(data_mtx_);
             if (clear_flag_) {
-                clear_cv_.wait(ulk, [&]() {return stopped_ || !clear_flag_;});
+                clear_cv_.wait(ulk, [&]() { return stopped_ || !clear_flag_; });
                 if (stopped_) break;
             }
             duration<double, milli> current_time = system_clock::now().time_since_epoch();
@@ -47,7 +47,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
                 clear_flag_ = true;
             } else {
                 int wait_time = max_linger_time_ - linger_time;
-                clear_cv_.wait_for(ulk, milliseconds(wait_time), [&]() {return stopped_.load();});
+                clear_cv_.wait_for(ulk, milliseconds(wait_time), [&]() { return stopped_.load(); });
                 if (stopped_) break;
             }
         }

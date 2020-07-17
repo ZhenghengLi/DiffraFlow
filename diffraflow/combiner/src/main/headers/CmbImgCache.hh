@@ -2,7 +2,7 @@
 #define CmbImgCache_H
 
 #include "BlockingQueue.hh"
-#include "TimeOrderedQueue.hh"
+#include "OrderedQueue.hh"
 #include "MetricsProvider.hh"
 
 #include <mutex>
@@ -50,7 +50,7 @@ namespace diffraflow {
 
     private:
         size_t imgfrm_queues_len_;
-        TimeOrderedQueue<ImageFramePtr, int64_t>* imgfrm_queues_arr_;
+        OrderedQueue<ImageFramePtr, int64_t>* imgfrm_queues_arr_;
         BlockingQueue<shared_ptr<ImageData>> imgdat_queue_;
 
         mutex data_mtx_;

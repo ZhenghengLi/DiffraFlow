@@ -21,12 +21,17 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
     imgfrm_queues_len_ = num_of_dets;
     imgfrm_queues_arr_ = new OrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
-    // wait forever
-    wait_threshold_ = numeric_limits<int64_t>::max();
+
     image_time_min_ = numeric_limits<uint64_t>::max();
     image_time_last_ = 0;
     num_of_empty_ = imgfrm_queues_len_;
     distance_max_ = 0;
+    queue_size_max_ = 0;
+
+    // wait forever
+    distance_threshold_ = numeric_limits<int64_t>::max();
+    queue_size_threshold_ = numeric_limits<size_t>::max();
+
     stopped_ = false;
 
     max_linger_time_ = max_lt;
@@ -84,8 +89,12 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     }
     imgfrm_queues_arr_[image_frame->detector_id].push(image_frame);
     int64_t distance_current = imgfrm_queues_arr_[image_frame->detector_id].distance();
+    size_t queue_size_current = imgfrm_queues_arr_[image_frame->detector_id].size();
     if (distance_current > distance_max_) {
         distance_max_ = distance_current;
+    }
+    if (queue_size_current > queue_size_max_) {
+        queue_size_max_ = queue_size_current;
     }
 
     alignment_metrics.total_pushed_frames++;
@@ -134,11 +143,13 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
     if (num_of_empty_ == imgfrm_queues_len_) {
         return false;
     }
-    if (num_of_empty_ <= 0 || distance_max_ > wait_threshold_ || force_flag) {
+    if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
+        force_flag) {
         uint64_t image_time_target = image_time_min_;
         image_time_min_ = numeric_limits<uint64_t>::max();
         num_of_empty_ = 0;
         distance_max_ = 0;
+        queue_size_max_ = 0;
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
             if (imgfrm_queues_arr_[i].empty()) {
                 num_of_empty_++;
@@ -157,12 +168,16 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
                 image_time_min_ = image_time_current;
             }
             int64_t distance_current = imgfrm_queues_arr_[i].distance();
+            size_t queue_size_current = imgfrm_queues_arr_[i].size();
             if (distance_current > distance_max_) {
                 distance_max_ = distance_current;
             }
+            if (queue_size_current > queue_size_max_) {
+                queue_size_max_ = queue_size_current;
+            }
         }
         image_data->event_time = image_time_target;
-        image_data->wait_threshold = wait_threshold_;
+        image_data->wait_threshold = distance_threshold_;
         image_data->set_defined();
         return true;
     } else {

@@ -59,11 +59,14 @@ namespace diffraflow {
         mutex stop_mtx_;
         condition_variable stop_cv_;
 
-        int64_t wait_threshold_; // nanoseconds
         uint64_t image_time_min_;
         uint64_t image_time_last_;
         size_t num_of_empty_;
         int64_t distance_max_;
+        size_t queue_size_max_;
+
+        int64_t distance_threshold_;
+        size_t queue_size_threshold_;
 
         double latest_push_time_;
         double max_linger_time_; // milliseconds

@@ -105,9 +105,9 @@ bool diffraflow::MetricsReporter::start_msg_producer(
                 pulsar::MessageBuilder().setPartitionKey(message_key_).setContent(metrics_json.serialize()).build();
             pulsar::Result result = pulsar_producer_->send(message);
             if (result == pulsar::ResultOk) {
-                LOG4CXX_DEBUG(logger_, "successfully sent metrics with timestamp: " << metrics_json["timestamp"]);
+                // LOG4CXX_DEBUG(logger_, "successfully sent metrics with timestamp: " << metrics_json["timestamp"]);
             } else {
-                LOG4CXX_DEBUG(logger_, "failed to send metrics with timestamp: " << metrics_json["timestamp"]);
+                LOG4CXX_WARN(logger_, "failed to send metrics with timestamp: " << metrics_json["timestamp"]);
             }
 
             wait_cv_.wait_for(ulk, milliseconds(report_period_));

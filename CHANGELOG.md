@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] implement sender and trigger
+- [x] change the data structure of ImageFrame and adjust all the related code. (finished but not tested)
+- [ ] implement sender and trigger.
 - [ ] aggregator: running on the pulsar consumer side to aggregate metrics from all components, calculate speeds and serve results via HTTP GET.
 
 ## [0.0.13] - 2020-07-15

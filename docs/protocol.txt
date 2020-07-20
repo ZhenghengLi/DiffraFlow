@@ -1,8 +1,9 @@
 1. one character name for each endpoint:
-    source       -> F
+    sender       -> F
     dispatcher   -> D
     combiner     -> C
     ingester     -> E
+    trigger      -> B
 
 2. common data format for transfering:
     [header(4)|size(4)|type(4)|payload(size-4)]
@@ -26,7 +27,7 @@
         - note: MassagePack serialized ImageData object
 
 4. binary protocol between different endpoints:
-    (1) TCP: source -> dispatcher (push)
+    (1) TCP: sender -> dispatcher (push)
         greeting:    0xFFDD1234    (int)4      | (uint)id
         return code: succ(1234)    fail(4321)
         transfering: 0xFFF22DDD    (int)size   | (uint)type   (char[])payload
@@ -41,6 +42,12 @@
         return code: succ(1234)    fail(4321)
         request:     0xEEE22CCC    (int)size   | (uint)type   (uint)imgct
         response:    0xCCC22EEE    (int)size   | (uint)type   (char[])payload
+
+    (4) TCP: trigger -> sender (push)
+        greeting:    0xBBFF1234    (int)4      | (int)id
+        return code: succ(1234)    fail(4321)
+        foreward:    0xBBB22FFF    (int)4      | (uint)bunch_id
+        backward:    0xFFF22BBB    (int)4      | (uint)result
 
 5. REST API
     (1) GET: monitor -> ingester (round-robin)

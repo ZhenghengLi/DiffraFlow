@@ -22,8 +22,8 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
     imgfrm_queues_arr_ = new OrderedQueue<ImageFramePtr, int64_t>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
 
-    bunch_id_min_ = numeric_limits<uint64_t>::max();
-    bunch_id_last_ = 0;
+    key_min_ = numeric_limits<uint64_t>::max();
+    key_last_ = 0;
     num_of_empty_ = imgfrm_queues_len_;
     distance_max_ = 0;
     queue_size_max_ = 0;
@@ -81,8 +81,8 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
 
     lock_guard<mutex> lk(data_mtx_);
 
-    if (image_frame->bunch_id < bunch_id_min_) {
-        bunch_id_min_ = image_frame->bunch_id;
+    if (image_frame->get_key() < key_min_) {
+        key_min_ = image_frame->get_key();
     }
     if (imgfrm_queues_arr_[image_frame->module_id].empty()) {
         num_of_empty_--;
@@ -104,12 +104,12 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         if (!do_alignment_(image_data, false)) {
             break;
         }
-        if (image_data->bunch_id < bunch_id_last_) {
+        if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
             alignment_metrics.total_late_arrived++;
         } else {
             image_data->late_arrived = false;
-            bunch_id_last_ = image_data->bunch_id;
+            key_last_ = image_data->get_key();
         }
         alignment_metrics.total_aligned_images++;
         for (const bool& item : image_data->alignment_vec) {
@@ -145,8 +145,8 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
     }
     if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
         force_flag) {
-        uint64_t bunch_id_target = bunch_id_min_;
-        bunch_id_min_ = numeric_limits<uint64_t>::max();
+        uint64_t key_target = key_min_;
+        key_min_ = numeric_limits<uint64_t>::max();
         num_of_empty_ = 0;
         distance_max_ = 0;
         queue_size_max_ = 0;
@@ -155,7 +155,7 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
                 num_of_empty_++;
                 continue;
             }
-            if (imgfrm_queues_arr_[i].top()->bunch_id == bunch_id_target) {
+            if (imgfrm_queues_arr_[i].top()->get_key() == key_target) {
                 image_data->put_imgfrm(i, *imgfrm_queues_arr_[i].top());
                 imgfrm_queues_arr_[i].pop();
             }
@@ -163,9 +163,9 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
                 num_of_empty_++;
                 continue;
             }
-            uint64_t bunch_id_current = imgfrm_queues_arr_[i].top()->bunch_id;
-            if (bunch_id_current < bunch_id_min_) {
-                bunch_id_min_ = bunch_id_current;
+            uint64_t key_current = imgfrm_queues_arr_[i].top()->get_key();
+            if (key_current < key_min_) {
+                key_min_ = key_current;
             }
             int64_t distance_current = imgfrm_queues_arr_[i].distance();
             size_t queue_size_current = imgfrm_queues_arr_[i].size();
@@ -176,7 +176,7 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bo
                 queue_size_max_ = queue_size_current;
             }
         }
-        image_data->bunch_id = bunch_id_target;
+        image_data->set_key(key_target);
         image_data->set_defined();
         return true;
     } else {
@@ -198,11 +198,11 @@ void diffraflow::CmbImgCache::clear_cache_() {
         if (!do_alignment_(image_data, true)) {
             break;
         }
-        if (image_data->bunch_id < bunch_id_last_) {
+        if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
         } else {
             image_data->late_arrived = false;
-            bunch_id_last_ = image_data->bunch_id;
+            key_last_ = image_data->get_key();
         }
         // for debug
         image_data->print();

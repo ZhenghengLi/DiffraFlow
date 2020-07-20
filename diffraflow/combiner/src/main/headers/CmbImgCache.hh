@@ -59,8 +59,8 @@ namespace diffraflow {
         mutex stop_mtx_;
         condition_variable stop_cv_;
 
-        uint64_t bunch_id_min_;
-        uint64_t bunch_id_last_;
+        uint64_t key_min_;
+        uint64_t key_last_;
         size_t num_of_empty_;
         int64_t distance_max_;
         size_t queue_size_max_;

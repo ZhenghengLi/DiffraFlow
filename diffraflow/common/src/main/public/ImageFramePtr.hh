@@ -16,7 +16,7 @@ namespace diffraflow {
 
         bool operator<(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id < right->bunch_id;
+                return (*this)->get_key() < right->get_key();
             } else {
                 return false;
             }
@@ -24,7 +24,7 @@ namespace diffraflow {
 
         bool operator<=(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id <= right->bunch_id;
+                return (*this)->get_key() <= right->get_key();
             } else {
                 return false;
             }
@@ -32,7 +32,7 @@ namespace diffraflow {
 
         bool operator>(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id > right->bunch_id;
+                return (*this)->get_key() > right->get_key();
             } else {
                 return false;
             }
@@ -40,7 +40,7 @@ namespace diffraflow {
 
         bool operator>=(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id >= right->bunch_id;
+                return (*this)->get_key() >= right->get_key();
             } else {
                 return false;
             }
@@ -48,7 +48,7 @@ namespace diffraflow {
 
         bool operator==(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id == right->bunch_id;
+                return (*this)->get_key() == right->get_key();
             } else {
                 return false;
             }
@@ -56,7 +56,7 @@ namespace diffraflow {
 
         int64_t operator-(const ImageFramePtr& right) const {
             if ((*this) && right) {
-                return (*this)->bunch_id - right->bunch_id;
+                return (*this)->get_key() - right->get_key();
             } else {
                 return 0;
             }

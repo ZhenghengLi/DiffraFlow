@@ -80,7 +80,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             message.reply(status_codes::NotFound);
             return;
         }
-        string bunch_id_str = std::to_string(current_image.image_data_raw.bunch_id);
+        string key_str = std::to_string(current_image.image_data_raw.get_key());
         string ingester_id_str = std::to_string(ingester_id_);
 
         msgpack::pack(image_sbuff, current_image);
@@ -89,22 +89,22 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         response.set_status_code(status_codes::OK);
         response.headers().set_content_type("application/msgpack");
         response.headers().add(U("Ingester-ID"), ingester_id_str);
-        response.headers().add(U("Bunch-ID"), bunch_id_str);
+        response.headers().add(U("Event-Key"), key_str);
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         message.reply(response);
         metrics.total_sent_counts++;
 
     } else if (std::regex_match(relative_path, match_res, req_regex)) {
-        uint64_t request_bunch_id = std::stoul(match_res[1].str());
+        uint64_t request_key = std::stoul(match_res[1].str());
         ImageWithFeature current_image;
         if (!image_filter_->get_current_image(current_image)) {
             message.reply(status_codes::NotFound);
             return;
         }
-        string bunch_id_str = std::to_string(current_image.image_data_raw.bunch_id);
+        string key_str = std::to_string(current_image.image_data_raw.get_key());
         string ingester_id_str = std::to_string(ingester_id_);
-        if (request_bunch_id < current_image.image_data_raw.bunch_id) {
+        if (request_key < current_image.image_data_raw.get_key()) {
 
             msgpack::pack(image_sbuff, current_image);
             response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
@@ -112,7 +112,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             response.set_status_code(status_codes::OK);
             response.headers().set_content_type("application/msgpack");
             response.headers().add(U("Ingester-ID"), ingester_id_str);
-            response.headers().add(U("Event-Time"), bunch_id_str);
+            response.headers().add(U("Event-Key"), key_str);
             response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
             response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
             message.reply(response);

@@ -27,6 +27,8 @@ diffraflow::ImageFrame::ImageFrame() {
 
 diffraflow::ImageFrame::~ImageFrame() {}
 
+uint64_t diffraflow::ImageFrame::get_key() { return bunch_id; }
+
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     if (size <= 131096) return false;
 

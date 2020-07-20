@@ -18,6 +18,8 @@ namespace diffraflow {
         bool decode(const char* buffer, const size_t size);
         void print(ostream& out = std::cout) const;
 
+        uint64_t get_key();
+
     public:
         uint64_t bunch_id;          // key
         int16_t module_id;          // 0 -- 15

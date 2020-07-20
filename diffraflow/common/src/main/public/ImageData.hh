@@ -26,6 +26,9 @@ namespace diffraflow {
         void set_calib_level(int level);
         int get_calib_level();
 
+        uint64_t get_key();
+        void set_key(uint64_t key);
+
     public:
         uint64_t bunch_id;
         vector<bool> alignment_vec;

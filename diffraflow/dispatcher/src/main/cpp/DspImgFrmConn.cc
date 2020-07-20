@@ -27,9 +27,9 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
             LOG4CXX_INFO(logger_, "got an image frame with wrong size " << frame_size << ", skip it.");
             return kSkipped;
         }
-        uint64_t bunch_id = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
-        size_t index = hash_long_(bunch_id) % sender_count_;
-        LOG4CXX_DEBUG(logger_, "received an image frame with bunch_id: " << bunch_id);
+        uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
+        size_t index = hash_long_(key) % sender_count_;
+        LOG4CXX_DEBUG(logger_, "received an image frame with key: " << key);
         if (sender_array_[index]->push(frame_buffer, frame_size)) {
             LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
             return kProcessed;

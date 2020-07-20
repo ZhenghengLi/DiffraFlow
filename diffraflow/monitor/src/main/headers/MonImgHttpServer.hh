@@ -52,8 +52,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        bool request_one_image_(
-            const string bunch_id_string, ImageWithFeature& image_with_feature, string& ingester_id_str);
+        bool request_one_image_(const string key_string, ImageWithFeature& image_with_feature, string& ingester_id_str);
         void do_analysis_(const ImageWithFeature& image_with_feature, ImageAnalysisResult& image_analysis_result);
 
     private:

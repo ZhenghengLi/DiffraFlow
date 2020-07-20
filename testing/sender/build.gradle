@@ -3,6 +3,9 @@ apply from: "$rootDir/gradle/common_cpp_app.gradle"
 application {
     binaries.configureEach {
         linkTask.get().linkerArgs.add('-llog4cxx')
+        linkTask.get().linkerArgs.add('-lcpprest')
+        linkTask.get().linkerArgs.add('-lssl')
+        linkTask.get().linkerArgs.add('-lcrypto')
     }
     dependencies {
         implementation project(":diffraflow:common")

@@ -18,6 +18,8 @@ namespace diffraflow {
 
     private:
         SndDatTran* data_transfer_;
+        char* succ_res_buff_;
+        char* fail_res_buff_;
 
     private:
         static log4cxx::LoggerPtr logger_;

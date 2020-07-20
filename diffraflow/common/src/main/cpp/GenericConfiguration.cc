@@ -36,6 +36,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_list_(
         boost::split(key_value, oneline, boost::is_any_of("="));
         if (key_value.size() < 2) {
             LOG4CXX_ERROR(logger_, "found unknown configuration: " << oneline);
+            conf_file.close();
             return false;
         }
         boost::trim(key_value[0]);
@@ -44,6 +45,7 @@ bool diffraflow::GenericConfiguration::read_conf_KV_list_(
             conf_KV_list.push_back(make_pair(key_value[0], key_value[1]));
         }
     }
+    conf_file.close();
     if (conf_KV_list.size() > 0) {
         return true;
     } else {

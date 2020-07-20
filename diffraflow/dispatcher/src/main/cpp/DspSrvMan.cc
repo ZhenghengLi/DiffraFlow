@@ -175,10 +175,12 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector<pair
         int port_num = atoi(host_port[1].c_str());
         if (port_num <= 0) {
             LOG4CXX_ERROR(logger_, "found unknown address: " << oneline);
+            addr_file.close();
             return false;
         }
         addr_vec.push_back(make_pair(host_str, port_num));
     }
+    addr_file.close();
     if (addr_vec.size() > 0) {
         return true;
     } else {

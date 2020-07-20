@@ -18,7 +18,7 @@ namespace diffraflow {
         bool load(const char* filename) override;
         void print() override;
 
-        bool load_nodemap(const char* filename);
+        bool load_nodemap(const char* filename, const string nodename);
 
     public:
         uint32_t sender_id;

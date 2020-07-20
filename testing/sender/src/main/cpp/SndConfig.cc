@@ -2,6 +2,7 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cstdlib>
 #include <regex>
@@ -13,6 +14,7 @@ using std::endl;
 using std::regex;
 using std::regex_match;
 using std::regex_replace;
+using std::ifstream;
 
 log4cxx::LoggerPtr diffraflow::SndConfig::logger_ = log4cxx::Logger::getLogger("SndConfig");
 
@@ -69,8 +71,6 @@ bool diffraflow::SndConfig::load(const char* filename) {
         }
     }
 
-    // const char* node_name = getenv("NODE_NAME");
-
     // use POD IP as dispatcher_id
     if (sender_id == 0) {
         const char* pod_ip = getenv("POD_IP");
@@ -120,7 +120,47 @@ bool diffraflow::SndConfig::load(const char* filename) {
     return succ_flag;
 }
 
-bool diffraflow::SndConfig::load_nodemap(const char* filename) { return true; }
+bool diffraflow::SndConfig::load_nodemap(const char* filename, const string nodename) {
+    ifstream nodemap_file;
+    nodemap_file.open(filename);
+    if (!nodemap_file.is_open()) {
+        LOG4CXX_ERROR(logger_, "node map file open failed.");
+        return false;
+    }
+    string oneline;
+    bool found_flag = false;
+    while (true) {
+        oneline = "";
+        getline(nodemap_file, oneline);
+        if (nodemap_file.eof()) break;
+        // skip comments
+        boost::trim(oneline);
+        if (oneline[0] == '#') continue;
+        if (oneline.length() == 0) continue;
+        // extract fields formated as "node_name, module_id, dispatcher_host, dispatcher_port"
+        vector<string> fields;
+        boost::split(fields, oneline, boost::is_any_of(","));
+        if (fields.size() < 4) {
+            LOG4CXX_ERROR(logger_, "invalid node map line: " << oneline);
+            nodemap_file.close();
+            return false;
+        }
+        if (boost::trim_copy(fields[0]) == nodename) {
+            module_id = std::stoi(boost::trim_copy(fields[1]));
+            dispatcher_host = boost::trim_copy(fields[2]);
+            dispatcher_port = std::stoi(boost::trim_copy(fields[3]));
+            found_flag = true;
+            break;
+        }
+    }
+    nodemap_file.close();
+    if (found_flag) {
+        return true;
+    } else {
+        LOG4CXX_ERROR(logger_, "there is no node name " << nodename << " in file " << filename << ".");
+        return false;
+    }
+}
 
 void diffraflow::SndConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;

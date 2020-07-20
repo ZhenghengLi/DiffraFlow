@@ -75,7 +75,7 @@ void diffraflow::SndOptMan::print_help_() {
     cout << "Options:" << endl;
     cout << left;
     cout << setw(30) << "  -c, --config=FILE"   << setw(50) << "configuration file" << endl;
-    cout << setw(30) << "  -n, --nodemap=FILE"  << setw(50) << "file containing the map between node name and module id" << endl;
+    cout << setw(30) << "  -n, --nodemap=FILE"  << setw(50) << "node map file" << endl;
     cout << setw(30) << "  -l, --logconf=FILE"  << setw(50) << "log configuration file" << endl;
     cout << setw(30) << "  -v, --version"       << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help"          << setw(50) << "print this help" << endl;

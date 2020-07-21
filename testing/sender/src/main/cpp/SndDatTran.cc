@@ -58,9 +58,6 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
 
     int file_index = event_index / config_obj_->events_per_file;
     int file_offset = (event_index % config_obj_->events_per_file) * FRAME_SIZE;
-    snprintf(string_buffer_, STRING_LEN, "AGIPD-BIN-R0243-M%02d-S%03d.dat", config_obj_->module_id, file_index);
-    bf::path file_path(config_obj_->data_dir);
-    file_path /= string_buffer_;
     if (file_index != current_file_index_) {
         if (current_file_ != nullptr) {
             current_file_->close();
@@ -69,6 +66,9 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         }
         current_file_ = new ifstream();
         current_file_->exceptions(ifstream::failbit | ifstream::badbit | ifstream::eofbit);
+        snprintf(string_buffer_, STRING_LEN, "AGIPD-BIN-R0243-M%02d-S%03d.dat", config_obj_->module_id, file_index);
+        bf::path file_path(config_obj_->data_dir);
+        file_path /= string_buffer_;
         try {
             current_file_->open(file_path.c_str(), std::ios::in | std::ios::binary);
         } catch (std::system_error& e) {
@@ -79,6 +79,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             return false;
         }
         current_file_index_ = file_index;
+        current_file_path_ = file_path.c_str();
     }
     // read one data frame and send
     if (current_file_->tellg() != file_offset) {
@@ -88,11 +89,11 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
     try {
         current_file_->read(frame_buffer_, FRAME_SIZE);
         if (current_file_->gcount() != FRAME_SIZE) {
-            LOG4CXX_WARN(logger_, "read partial frame data from file " << file_path.c_str());
+            LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
             succ_read = false;
         }
     } catch (std::system_error& e) {
-        LOG4CXX_WARN(logger_, "failed read file " << file_path.c_str() << " with error: " << e.code().message());
+        LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << e.code().message());
         succ_read = false;
     }
     if (succ_read) {

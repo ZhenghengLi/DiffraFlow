@@ -7,6 +7,7 @@
 #include "GenericClient.hh"
 
 using std::ifstream;
+using std::string;
 
 namespace diffraflow {
 
@@ -27,6 +28,7 @@ namespace diffraflow {
 
         int current_file_index_;
         ifstream* current_file_;
+        string current_file_path_;
 
     private:
         static log4cxx::LoggerPtr logger_;

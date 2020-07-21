@@ -27,7 +27,6 @@ diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj)
     string_buffer_ = new char[STRING_LEN];
     current_file_ = nullptr;
     current_file_index_ = -1;
-    current_file_offset_ = -1;
 }
 
 diffraflow::SndDatTran::~SndDatTran() {

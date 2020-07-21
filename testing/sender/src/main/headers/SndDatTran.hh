@@ -26,7 +26,6 @@ namespace diffraflow {
         char* string_buffer_;
 
         int current_file_index_;
-        int current_file_offset_;
         ifstream* current_file_;
 
     private:

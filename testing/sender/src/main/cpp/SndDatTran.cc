@@ -71,6 +71,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         file_path /= string_buffer_;
         try {
             current_file_->open(file_path.c_str(), std::ios::in | std::ios::binary);
+            LOG4CXX_INFO(logger_, "successfully opened raw data file " << file_path.c_str());
         } catch (std::system_error& e) {
             LOG4CXX_WARN(logger_, "failed to open file " << file_path.c_str() << " with error: " << e.code().message());
             delete current_file_;

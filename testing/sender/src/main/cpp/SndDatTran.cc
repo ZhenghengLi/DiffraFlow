@@ -57,7 +57,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
     }
 
     int file_index = event_index / config_obj_->events_per_file;
-    int64_t file_offset = (event_index % config_obj_->events_per_file);
+    int64_t file_offset = event_index % config_obj_->events_per_file;
     file_offset *= FRAME_SIZE;
     if (file_index != current_file_index_) {
         if (current_file_ != nullptr) {

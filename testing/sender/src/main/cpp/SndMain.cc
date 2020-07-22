@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cstdlib>
+#include <csignal>
+#include <cstring>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
@@ -7,11 +10,52 @@
 
 #include "SndOptMan.hh"
 #include "SndConfig.hh"
+#include "SndSrvMan.hh"
 
 using namespace std;
 using namespace diffraflow;
 
 SndConfig* gConfiguration = nullptr;
+SndSrvMan* gServerManager = nullptr;
+
+void clean(int signum) {
+    cout << "do cleaning ..." << endl;
+    if (gServerManager != nullptr) {
+        gServerManager->terminate();
+        delete gServerManager;
+        gServerManager = nullptr;
+        cout << "Server is terminated." << endl;
+    }
+    if (gConfiguration != nullptr) {
+        delete gConfiguration;
+        gConfiguration = nullptr;
+    }
+    exit(0);
+}
+
+void init(SndConfig* config_obj) {
+    // register signal action
+    struct sigaction action;
+    // for Ctrl-C
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = &clean;
+    if (sigaction(SIGINT, &action, nullptr)) {
+        perror("sigaction() failed for SIGINT.");
+        exit(1);
+    }
+    // Kubernetes uses SIGTERM to terminate Pod
+    if (sigaction(SIGTERM, &action, nullptr)) {
+        perror("sigaction() failed for SIGTERM.");
+        exit(1);
+    }
+    // ignore SIGPIPE
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &action, nullptr)) {
+        perror("sigaction() failed for ignoring SIGPIPE.");
+        exit(1);
+    }
+}
 
 int main(int argc, char** argv) {
     // process command line parameters
@@ -44,4 +88,15 @@ int main(int argc, char** argv) {
         return 1;
     }
     gConfiguration->print();
+
+    // -----------------------------------------
+    init(gConfiguration);
+
+    gServerManager = new SndSrvMan(gConfiguration);
+    gServerManager->start_run();
+
+    clean(0);
+    // -----------------------------------------
+
+    return 0;
 }

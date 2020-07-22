@@ -11,13 +11,9 @@ namespace diffraflow {
         TrgClient(string sender_host, int sender_port, uint32_t trigger_id);
         ~TrgClient();
 
-        bool trigger();
-        void set_event_index(uint32_t event_index);
-        uint32_t get_event_index();
-        uint32_t next_event_index();
+        bool trigger(const uint32_t event_index);
 
     private:
-        uint32_t current_event_index_;
         char* send_buffer_;
         char* recv_buffer_;
 

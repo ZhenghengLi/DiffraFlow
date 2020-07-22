@@ -108,13 +108,13 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
             return false;
         }
-        if (!send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
+        if (send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
+            LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
+            return true;
+        } else {
             close_connection();
             LOG4CXX_WARN(logger_, "failed to send frame data.");
             return false;
-        } else {
-            LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
-            return true;
         }
     } else {
         current_file_->close();

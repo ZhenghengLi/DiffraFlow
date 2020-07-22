@@ -12,7 +12,9 @@ namespace diffraflow {
         ~TrgClient();
 
         bool trigger();
-        void reset_event_index(uint32_t start_event_index = 0);
+        void set_event_index(uint32_t event_index);
+        uint32_t get_event_index();
+        uint32_t next_event_index();
 
     private:
         uint32_t current_event_index_;

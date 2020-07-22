@@ -30,10 +30,7 @@ bool diffraflow::TrgClient::trigger() {
         }
     }
 
-    uint32_t target_event_index = current_event_index_;
-    current_event_index_++;
-
-    gPS.serializeValue<uint32_t>(target_event_index, send_buffer_, 4);
+    gPS.serializeValue<uint32_t>(current_event_index_, send_buffer_, 4);
 
     if (send_one_(send_buffer_, 4, nullptr, 0)) {
         size_t payload_size = 0;
@@ -45,10 +42,10 @@ bool diffraflow::TrgClient::trigger() {
             }
             uint32_t response_code = gDC.decode_byte<uint32_t>(recv_buffer_, 0, 3);
             if (response_code == 0) {
-                LOG4CXX_INFO(logger_, "successfully sent event " << target_event_index);
+                LOG4CXX_INFO(logger_, "successfully sent event " << current_event_index_);
                 return true;
             } else {
-                LOG4CXX_WARN(logger_, "failed to send event " << target_event_index);
+                LOG4CXX_WARN(logger_, "failed to send event " << current_event_index_);
                 return false;
             }
         } else {
@@ -63,4 +60,8 @@ bool diffraflow::TrgClient::trigger() {
     }
 }
 
-void diffraflow::TrgClient::reset_event_index(uint32_t start_event_index) { current_event_index_ = start_event_index; }
+void diffraflow::TrgClient::set_event_index(uint32_t event_index) { current_event_index_ = event_index; }
+
+uint32_t diffraflow::TrgClient::get_event_index() { return current_event_index_; }
+
+uint32_t diffraflow::TrgClient::next_event_index() { return ++current_event_index_; }

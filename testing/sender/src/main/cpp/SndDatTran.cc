@@ -57,7 +57,8 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
     }
 
     int file_index = event_index / config_obj_->events_per_file;
-    int file_offset = (event_index % config_obj_->events_per_file) * FRAME_SIZE;
+    int64_t file_offset = (event_index % config_obj_->events_per_file);
+    file_offset *= FRAME_SIZE;
     if (file_index != current_file_index_) {
         if (current_file_ != nullptr) {
             current_file_->close();
@@ -72,6 +73,8 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         try {
             current_file_->open(file_path.c_str(), std::ios::in | std::ios::binary);
             LOG4CXX_INFO(logger_, "successfully opened raw data file " << file_path.c_str());
+            current_file_index_ = file_index;
+            current_file_path_ = file_path.c_str();
         } catch (std::exception& e) {
             LOG4CXX_WARN(logger_, "failed to open file " << file_path.c_str() << " with error: " << strerror(errno));
             delete current_file_;
@@ -79,8 +82,6 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             current_file_index_ = -1;
             return false;
         }
-        current_file_index_ = file_index;
-        current_file_path_ = file_path.c_str();
     }
     // read one data frame and send
     if (current_file_->tellg() != file_offset) {

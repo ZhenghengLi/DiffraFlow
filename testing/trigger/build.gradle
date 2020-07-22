@@ -5,7 +5,7 @@ application {
 
     }
     dependencies {
-
+        implementation project(":diffraflow:common")
     }
 }
 

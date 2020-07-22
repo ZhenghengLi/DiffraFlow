@@ -124,7 +124,7 @@ void diffraflow::DspSender::send_remaining() {
 
 void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit, const size_t imgct) {
     // try to connect if lose connection
-    if (client_sock_fd_ < 0) {
+    if (not_connected()) {
         if (connect_to_server()) {
             LOG4CXX_INFO(logger_, "reconnected to combiner.");
         } else {

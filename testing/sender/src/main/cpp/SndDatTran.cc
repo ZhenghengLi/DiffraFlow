@@ -47,7 +47,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
     }
 
     // try to connect if lose connection
-    if (client_sock_fd_ < 0) {
+    if (not_connected()) {
         if (connect_to_server()) {
             LOG4CXX_INFO(logger_, "reconnected to dispatcher.");
         } else {

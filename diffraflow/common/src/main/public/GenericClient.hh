@@ -17,6 +17,7 @@ namespace diffraflow {
         virtual ~GenericClient();
 
         bool connect_to_server();
+        bool not_connected();
         void close_connection();
 
     public:

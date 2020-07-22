@@ -15,6 +15,8 @@
 namespace bf = boost::filesystem;
 namespace bs = boost::system;
 
+using std::lock_guard;
+
 log4cxx::LoggerPtr diffraflow::SndDatTran::logger_ = log4cxx::Logger::getLogger("SndDatTran");
 
 diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj)
@@ -41,6 +43,8 @@ diffraflow::SndDatTran::~SndDatTran() {
 }
 
 bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
+
+    lock_guard<mutex> lg(data_mtx_);
 
     if (event_index >= config_obj_->total_events) {
         return false;

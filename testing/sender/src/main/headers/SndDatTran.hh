@@ -3,11 +3,13 @@
 
 #include <log4cxx/logger.h>
 #include <fstream>
+#include <mutex>
 
 #include "GenericClient.hh"
 
 using std::ifstream;
 using std::string;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -29,6 +31,7 @@ namespace diffraflow {
         int current_file_index_;
         ifstream* current_file_;
         string current_file_path_;
+        mutex data_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

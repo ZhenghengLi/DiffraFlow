@@ -72,8 +72,8 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         try {
             current_file_->open(file_path.c_str(), std::ios::in | std::ios::binary);
             LOG4CXX_INFO(logger_, "successfully opened raw data file " << file_path.c_str());
-        } catch (std::system_error& e) {
-            LOG4CXX_WARN(logger_, "failed to open file " << file_path.c_str() << " with error: " << e.code().message());
+        } catch (std::exception& e) {
+            LOG4CXX_WARN(logger_, "failed to open file " << file_path.c_str() << " with error: " << strerror(errno));
             delete current_file_;
             current_file_ = nullptr;
             current_file_index_ = -1;
@@ -93,8 +93,8 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
             succ_read = false;
         }
-    } catch (std::system_error& e) {
-        LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << e.code().message());
+    } catch (std::exception& e) {
+        LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << strerror(errno));
         succ_read = false;
     }
     if (succ_read) {

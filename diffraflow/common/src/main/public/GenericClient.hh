@@ -19,6 +19,7 @@ namespace diffraflow {
         bool connect_to_server();
         bool not_connected();
         void close_connection();
+        string get_server_address();
 
     public:
         struct {

@@ -8,11 +8,12 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::TrgOptMan::opt_string_[] = "s:e:c:i:d:vh";
+const char diffraflow::TrgOptMan::opt_string_[] = "s:l:e:c:i:d:vh";
 
 // clang-format off
 const option diffraflow::TrgOptMan::long_opts_[] = {
     {"senderlist", required_argument, NULL, 's'},
+    {"logconf", required_argument, NULL, 'l'},
     {"startevent", required_argument, NULL, 'e'},
     {"eventcount", required_argument, NULL, 'c'},
     {"interval", required_argument, NULL, 'i'},
@@ -26,6 +27,7 @@ const option diffraflow::TrgOptMan::long_opts_[] = {
 diffraflow::TrgOptMan::TrgOptMan() : OptionsManager("trigger") {
     // init
     sender_list_file.clear();
+    logconf_file.clear();
     start_event_index = -1;
     event_count = -1;
     interval_microseconds = -1;
@@ -42,6 +44,9 @@ bool diffraflow::TrgOptMan::parse(int argc, char** argv) {
         switch (opt) {
         case 's':
             sender_list_file = optarg;
+            break;
+        case 'l':
+            logconf_file = optarg;
             break;
         case 'e':
             start_event_index = atoi(optarg);
@@ -91,6 +96,7 @@ void diffraflow::TrgOptMan::print_help_() {
     cout << "Options:" << endl;
     cout << left;
     cout << setw(30) << "  -s, --senderlist=FILE"  << setw(50) << "sender list file" << endl;
+    cout << setw(30) << "  -l, --logconf=FILE"     << setw(50) << "log configuration file" << endl;
     cout << setw(30) << "  -e, --startevent=UINT"  << setw(50) << "start event index" << endl;
     cout << setw(30) << "  -c, --eventcount=UINT"  << setw(50) << "event count" << endl;
     cout << setw(30) << "  -i, --interval=UINT"    << setw(50) << "interval microseconds" << endl;

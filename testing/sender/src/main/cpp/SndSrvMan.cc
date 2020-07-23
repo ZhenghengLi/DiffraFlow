@@ -36,7 +36,7 @@ void diffraflow::SndSrvMan::start_run() {
                                                                   << config_obj_->dispatcher_port << ".");
         return;
     }
-    trigger_srv_ = new SndTrgSrv(config_obj_->dispatcher_host, config_obj_->dispatcher_port, data_transfer_);
+    trigger_srv_ = new SndTrgSrv(config_obj_->listen_host, config_obj_->listen_port, data_transfer_);
 
     // multiple servers start from here
     if (trigger_srv_->start()) {

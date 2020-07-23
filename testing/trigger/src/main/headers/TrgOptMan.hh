@@ -9,6 +9,7 @@ namespace diffraflow {
     public:
         // option varables
         string sender_list_file;   // -s, --senderlist=FILE
+        string logconf_file;       // -l, --logconf=FILE
         int start_event_index;     // -e, --startevent=UINT
         int event_count;           // -c, --eventcount=UINT
         int interval_microseconds; // -i, --interval=UINT

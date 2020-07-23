@@ -26,7 +26,6 @@ namespace diffraflow {
         int listen_port;
 
         string data_dir;
-        int max_seq_num;
         int events_per_file;
         int total_events;
 

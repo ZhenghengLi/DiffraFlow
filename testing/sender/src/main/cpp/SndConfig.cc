@@ -24,7 +24,6 @@ diffraflow::SndConfig::SndConfig() {
     listen_port = -1;
 
     data_dir.clear();
-    max_seq_num = 0;
     events_per_file = 10000;
     total_events = 89000;
 
@@ -53,8 +52,6 @@ bool diffraflow::SndConfig::load(const char* filename) {
             sender_id = atoi(value.c_str());
         } else if (key == "data_dir") {
             data_dir = value.c_str();
-        } else if (key == "max_seq_num") {
-            max_seq_num = atoi(value.c_str());
         } else if (key == "events_per_file") {
             events_per_file = atoi(value.c_str());
         } else if (key == "total_events") {
@@ -90,14 +87,8 @@ bool diffraflow::SndConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
-
     if (data_dir.empty()) {
         LOG4CXX_ERROR(logger_, "data_dir is not set.")
-        succ_flag = false;
-    }
-
-    if (max_seq_num < 0) {
-        LOG4CXX_ERROR(logger_, "max_seq_num < 0.");
         succ_flag = false;
     }
     if (events_per_file < 0) {
@@ -168,7 +159,6 @@ void diffraflow::SndConfig::print() {
     cout << " listen_host        = " << listen_host << endl;
     cout << " listen_port        = " << listen_port << endl;
     cout << " data_dir           = " << data_dir << endl;
-    cout << " max_seq_num        = " << max_seq_num << endl;
     cout << " events_per_file    = " << events_per_file << endl;
     cout << " total_events       = " << total_events << endl;
     cout << " dispatcher_host    = " << dispatcher_host << endl;

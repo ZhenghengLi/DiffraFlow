@@ -96,8 +96,8 @@ bool diffraflow::TrgCoordinator::create_trigger_clients(const char* sender_list_
         trigger_flag_arr_[i] = false;
         // start send thread
         trigger_thread_arr_[i] = new thread([this, i]() {
+            unique_lock<mutex> ulk(trigger_mtx_arr_[i]);
             while (running_flag_) {
-                unique_lock<mutex> ulk(trigger_mtx_arr_[i]);
                 trigger_cv_arr_[i].wait(ulk, [this, i]() { return !running_flag_ || trigger_flag_arr_[i]; });
                 if (!running_flag_) break;
                 if (!trigger_client_arr_[i]->trigger(event_index_to_trigger_)) {

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <boost/algorithm/string.hpp>
@@ -14,6 +15,10 @@ using std::string;
 using std::pair;
 using std::unique_lock;
 using std::lock_guard;
+using std::chrono::microseconds;
+using std::chrono::duration;
+using std::chrono::system_clock;
+using std::micro;
 using std::cout;
 using std::endl;
 using std::flush;
@@ -117,7 +122,7 @@ bool diffraflow::TrgCoordinator::create_trigger_clients(const char* sender_list_
 
 bool diffraflow::TrgCoordinator::trigger_one_event(uint32_t event_index) {
     if (!running_flag_) {
-        LOG4CXX_WARN(logger_, "sender clients are not created and running yet.");
+        LOG4CXX_WARN(logger_, "sender clients are not yet created and running.");
         return false;
     }
     unique_lock<mutex> ulk(event_mtx_);
@@ -148,10 +153,25 @@ bool diffraflow::TrgCoordinator::trigger_one_event(uint32_t event_index) {
 }
 
 bool diffraflow::TrgCoordinator::trigger_many_events(
-    uint32_t start_event_index, uint32_t event_count, uint32_t interval_ms) {
-    if (trigger_client_cnt_ == 0) {
-        LOG4CXX_WARN(logger_, "sender clients are not created yet.");
+    uint32_t start_event_index, uint32_t event_count, uint32_t interval_microseconds) {
+    if (!running_flag_) {
+        LOG4CXX_WARN(logger_, "sender clients are not yet created and running.");
         return false;
+    }
+    unique_lock<mutex> wait_lk(wait_mtx_);
+    const uint32_t last_event_index = start_event_index + event_count - 1;
+    for (uint32_t event_index = start_event_index; event_index <= last_event_index; event_index++) {
+        duration<double, micro> start_time = system_clock::now().time_since_epoch();
+        if (!trigger_one_event(event_index)) {
+            LOG4CXX_WARN(logger_, "stop when encountered failed trigger.");
+            return false;
+        }
+        if (last_event_index == event_index) break;
+        duration<double, micro> finish_time = system_clock::now().time_since_epoch();
+        uint32_t time_used = finish_time.count() - start_time.count();
+        if (time_used < interval_microseconds) {
+            wait_cv_.wait_for(wait_lk, microseconds(interval_microseconds - time_used));
+        }
     }
 
     return true;

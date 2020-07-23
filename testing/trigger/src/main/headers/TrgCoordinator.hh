@@ -33,7 +33,7 @@ namespace diffraflow {
         void delete_trigger_clients();
 
         bool trigger_one_event(uint32_t event_index);
-        bool trigger_many_events(uint32_t start_event_index, uint32_t event_count, uint32_t interval_ms);
+        bool trigger_many_events(uint32_t start_event_index, uint32_t event_count, uint32_t interval_microseconds);
 
     private:
         bool read_address_list_(const char* filename, vector<pair<string, int>>& addr_vec);
@@ -56,6 +56,9 @@ namespace diffraflow {
 
         vector<int> fail_mod_ids_vec_;
         mutex fail_mod_ids_mtx_;
+
+        mutex wait_mtx_;
+        condition_variable wait_cv_;
 
     private:
         static log4cxx::LoggerPtr logger_;

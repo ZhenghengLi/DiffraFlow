@@ -132,6 +132,7 @@ bool diffraflow::TrgCoordinator::trigger_one_event(uint32_t event_index) {
     }
     event_cv_.wait(ulk, [this]() { return !running_flag_ || count_down_ <= 0; });
     if (!running_flag_) return false;
+    lock_guard<mutex> fail_mod_ids_lg(fail_mod_ids_mtx_);
     if (fail_mod_ids_vec_.size() > 0) {
         LOG4CXX_WARN(logger_, "event of index " << event_index << " is not fully triggered.");
         cout << "these modules failed to be triggered:";

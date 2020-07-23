@@ -160,8 +160,8 @@ bool diffraflow::DspSrvMan::read_address_list_(const char* filename, vector<pair
         if (addr_file.eof()) break;
         // skip comments
         boost::trim(oneline);
-        if (oneline[0] == '#') continue;
         if (oneline.length() == 0) continue;
+        if (oneline[0] == '#') continue;
         // extract host and port
         vector<string> host_port;
         boost::split(host_port, oneline, boost::is_any_of(":"));

@@ -8,7 +8,11 @@ namespace diffraflow {
     class TrgOptMan : public OptionsManager {
     public:
         // option varables
-        string sender_list_file; // -s, --senderlist=FILE
+        string sender_list_file;   // -s, --senderlist=FILE
+        int start_event_index;     // -e, --startevent=UINT
+        int event_count;           // -c, --eventcount=UINT
+        int interval_microseconds; // -i, --interval=UINT
+        int sender_id;             // -d, --senderid=UINT
 
     public:
         TrgOptMan();

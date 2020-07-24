@@ -108,13 +108,10 @@ bool diffraflow::GenericConnection::start_connection_() {
 void diffraflow::GenericConnection::after_connected_() { LOG4CXX_INFO(logger_, "connection ID: " << connection_id_); }
 
 bool diffraflow::GenericConnection::do_receiving_and_processing_() {
-    if (!NetworkUtils::receive_packet(
-            client_sock_fd_, receiving_head_, buffer_, buffer_size_, buffer_limit_, logger_)) {
+
+    if (!receive_one_(buffer_, buffer_size_, buffer_limit_)) {
         return false;
     }
-
-    network_metrics.total_received_size += buffer_limit_;
-    network_metrics.total_received_counts += 1;
 
     // payload level process
     switch (process_payload_(buffer_, buffer_limit_)) {

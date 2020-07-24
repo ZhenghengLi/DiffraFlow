@@ -109,7 +109,7 @@ int diffraflow::GenericServer::accept_client_() {
     return client_sock_fd;
 }
 
-int diffraflow::GenericServer::serve_() {
+int diffraflow::GenericServer::serve_(bool receiving_dominant) {
     if (server_status_ != kNotStart) {
         return 11;
     }
@@ -172,7 +172,7 @@ int diffraflow::GenericServer::serve_() {
             }
             GenericConnection* conn_object = new_connection_(client_sock_fd);
             thread* conn_thread = new thread([&, conn_object]() {
-                conn_object->run();
+                conn_object->run(receiving_dominant);
                 dead_counts_++;
                 cv_clean_.notify_one();
             });
@@ -211,12 +211,12 @@ void diffraflow::GenericServer::clean_() {
     }
 }
 
-bool diffraflow::GenericServer::start() {
+bool diffraflow::GenericServer::start(bool receiving_dominant) {
     if (!(server_status_ == kNotStart || server_status_ == kClosed)) {
         return false;
     }
     server_status_ = kNotStart;
-    worker_ = async(&GenericServer::serve_, this);
+    worker_ = async(&GenericServer::serve_, this, receiving_dominant);
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return server_status_ != kNotStart; });
     if (server_status_ == kRunning) {

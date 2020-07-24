@@ -34,12 +34,12 @@ namespace diffraflow {
         explicit GenericServer(string sock_path, size_t max_conn = 100);
         virtual ~GenericServer();
 
-        bool start();
+        bool start(bool receiving_dominant = true);
         void wait();
         int stop_and_close();
 
     private:
-        int serve_();
+        int serve_(bool receiving_dominant);
         shared_future<int> worker_;
 
     public:

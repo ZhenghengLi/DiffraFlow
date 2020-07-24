@@ -32,10 +32,10 @@ bool diffraflow::TrgClient::trigger(const uint32_t event_index) {
     gPS.serializeValue<uint32_t>(event_index, send_buffer_, 4);
 
     if (send_one_(send_buffer_, 4, nullptr, 0)) {
-        LOG4CXX_INFO(logger_, "successfully sent event index " << event_index);
+        LOG4CXX_INFO(logger_, "successfully sent event index " << event_index << " to " << get_server_address());
         return true;
     } else {
-        LOG4CXX_ERROR(logger_, "failed to send event index");
+        LOG4CXX_ERROR(logger_, "failed to send event index " << event_index << " to " << get_server_address());
         close_connection();
         return false;
     }

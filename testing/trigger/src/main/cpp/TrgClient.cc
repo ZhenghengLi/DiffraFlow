@@ -19,6 +19,7 @@ diffraflow::TrgClient::~TrgClient() {
 }
 
 bool diffraflow::TrgClient::trigger(const uint32_t event_index) {
+    LOG4CXX_DEBUG(logger_, get_server_address() << "  triggering " << event_index << " ...");
     if (not_connected()) {
         LOG4CXX_INFO(logger_, "connection to sender is lost, try to reconnect.");
         if (connect_to_server()) {

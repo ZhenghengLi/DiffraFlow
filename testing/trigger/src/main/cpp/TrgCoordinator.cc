@@ -52,6 +52,7 @@ void diffraflow::TrgCoordinator::delete_trigger_clients() {
         delete trigger_client_arr_[i];
         trigger_client_arr_[i] = nullptr;
     }
+    event_cv_.notify_all();
     delete[] trigger_thread_arr_;
     trigger_thread_arr_ = nullptr;
     delete[] trigger_client_arr_;
@@ -132,6 +133,7 @@ bool diffraflow::TrgCoordinator::trigger_one_event(uint32_t event_index) {
     event_index_to_trigger_ = event_index;
     fail_mod_ids_vec_.clear();
     for (size_t i = 0; i < trigger_client_cnt_; i++) {
+        lock_guard<mutex> lg(trigger_mtx_arr_[i]);
         trigger_flag_arr_[i] = true;
         trigger_cv_arr_[i].notify_all();
     }

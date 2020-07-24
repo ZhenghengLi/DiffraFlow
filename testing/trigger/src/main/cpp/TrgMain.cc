@@ -3,6 +3,8 @@
 #include <csignal>
 #include <cstring>
 #include <chrono>
+#include <thread>
+#include <future>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/patternlayout.h>
 #include <log4cxx/consoleappender.h>
@@ -86,8 +88,10 @@ int main(int argc, char** argv) {
     }
 
     if (option_man.start_event_index >= 0 && option_man.event_count > 0 && option_man.interval_microseconds >= 0) {
-        gTriggerCoordinator->trigger_many_events(
-            option_man.start_event_index, option_man.event_count, option_man.interval_microseconds);
+        async([&]() {
+            gTriggerCoordinator->trigger_many_events(
+                option_man.start_event_index, option_man.event_count, option_man.interval_microseconds);
+        }).wait();
     } else {
         int event_index;
         while (true) {

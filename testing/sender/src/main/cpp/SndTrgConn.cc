@@ -26,7 +26,12 @@ diffraflow::GenericConnection::ProcessRes diffraflow::SndTrgConn::process_payloa
     const char* payload_buffer, const size_t payload_size) {
     // the whole payload is event index
     uint32_t event_index = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
-    if (data_transfer_->read_and_send(event_index)) {
+
+    // if (data_transfer_->read_and_send(event_index)) {
+
+    LOG4CXX_INFO(logger_, "send event " << event_index);
+    if (true) {
+
         if (send_one_(succ_res_buff_, 4, nullptr, 0)) {
             return kProcessed;
         } else {

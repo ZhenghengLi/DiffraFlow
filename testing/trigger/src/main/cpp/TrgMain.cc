@@ -102,7 +102,8 @@ int main(int argc, char** argv) {
                 continue;
             }
             duration<double, micro> start_time = system_clock::now().time_since_epoch();
-            bool succ_flag = gTriggerCoordinator->trigger_one_event(event_index);
+            bool succ_flag = false;
+            async([&]() { succ_flag = gTriggerCoordinator->trigger_one_event(event_index); }).wait();
             duration<double, micro> finish_time = system_clock::now().time_since_epoch();
             long time_used = finish_time.count() - start_time.count();
             if (succ_flag) {

@@ -150,6 +150,20 @@ bool diffraflow::GenericConnection::send_one_(const char* payload_head_buffer, c
     }
 }
 
+bool diffraflow::GenericConnection::receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size) {
+
+    if (NetworkUtils::receive_packet(client_sock_fd_, receiving_head_, buffer, buffer_size, payload_size, logger_)) {
+
+        network_metrics.total_received_size += 8 + payload_size;
+        // 8 is the size of packet head
+        network_metrics.total_received_counts += 1;
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
 json::value diffraflow::GenericConnection::collect_metrics() {
 
     json::value network_metrics_json;

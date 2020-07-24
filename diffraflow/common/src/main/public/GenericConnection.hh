@@ -50,6 +50,7 @@ namespace diffraflow {
     protected:
         bool send_one_(const char* payload_head_buffer, const size_t payload_head_size, const char* payload_data_buffer,
             const size_t payload_data_size);
+        bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
 
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size);

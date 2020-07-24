@@ -15,7 +15,7 @@ namespace diffraflow {
         GenericConnection(int sock_fd, uint32_t greet_hd, uint32_t recv_hd, uint32_t send_hd, size_t buff_sz);
         virtual ~GenericConnection();
 
-        void run();
+        void run(bool receiving_dominant = true);
         bool done();
         void stop();
 
@@ -55,6 +55,7 @@ namespace diffraflow {
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size);
         virtual void after_connected_();
+        virtual bool do_preparing_and_sending_();
 
     private:
         bool start_connection_();

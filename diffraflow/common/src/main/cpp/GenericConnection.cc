@@ -38,10 +38,15 @@ diffraflow::GenericConnection::GenericConnection(
 
 diffraflow::GenericConnection::~GenericConnection() { delete[] buffer_; }
 
-void diffraflow::GenericConnection::run() {
+void diffraflow::GenericConnection::run(bool receiving_dominant) {
     if (start_connection_()) {
-        while (!done_flag_ && do_receiving_and_processing_())
-            ;
+        if (receiving_dominant) {
+            while (!done_flag_ && do_receiving_and_processing_())
+                ;
+        } else {
+            while (!done_flag_ && do_preparing_and_sending_())
+                ;
+        }
     }
     shutdown(client_sock_fd_, SHUT_RDWR);
     close(client_sock_fd_);
@@ -124,6 +129,12 @@ bool diffraflow::GenericConnection::do_receiving_and_processing_() {
     case kFailed:
         return false;
     }
+}
+
+bool diffraflow::GenericConnection::do_preparing_and_sending_() {
+    // prepare data and send by send_one_() method
+    LOG4CXX_WARN(logger_, "function do_preparing_and_sending_() is used, but is not implemented by subclass.");
+    return false;
 }
 
 diffraflow::GenericConnection::ProcessRes diffraflow::GenericConnection::process_payload_(

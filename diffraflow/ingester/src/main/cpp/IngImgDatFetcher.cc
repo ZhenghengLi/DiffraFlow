@@ -66,18 +66,7 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
     }
 }
 
-diffraflow::IngImgDatFetcher::RequestRes diffraflow::IngImgDatFetcher::request_one_image(ImageData& image_data) {
-    char request_data_buffer[8];
-    gPS.serializeValue<uint32_t>(0xEEEEABCD, request_data_buffer, 4);
-    gPS.serializeValue<uint32_t>(1, request_data_buffer + 4, 4);
-    // send request
-    if (send_one_(request_data_buffer, 8, nullptr, 0)) {
-        LOG4CXX_DEBUG(logger_, "successfully send one image data request.");
-    } else {
-        LOG4CXX_WARN(logger_, "failed to send one image data request.");
-        return kDisconnected;
-    }
-    // receive data
+diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(ImageData& image_data) {
     size_t payload_size = 0;
     if (receive_one_(imgdat_buffer_, imgdat_buffer_size_, payload_size)) {
         LOG4CXX_DEBUG(logger_, "successfully received one image.");
@@ -117,9 +106,9 @@ int diffraflow::IngImgDatFetcher::run_() {
         size_t successive_fail_count_ = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
-            switch (request_one_image(image_with_feature->image_data_raw)) {
+            switch (receive_one_image(image_with_feature->image_data_raw)) {
             case kDisconnected:
-                LOG4CXX_WARN(logger_, "error found when requesting one image from combiner,"
+                LOG4CXX_WARN(logger_, "error found when receiving one image from combiner,"
                                           << " close the connection and try to reconnect.")
                 close_connection();
                 running = false;

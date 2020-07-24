@@ -31,11 +31,11 @@ namespace diffraflow {
 
     public:
         enum WorkerStatus { kNotStart, kRunning, kStopped };
-        enum RequestRes { kSucc, kFail, kDisconnected };
+        enum ReceiveRes { kSucc, kFail, kDisconnected };
 
     private:
         bool connect_to_combiner_();
-        RequestRes request_one_image(ImageData& image_data);
+        ReceiveRes receive_one_image(ImageData& image_data);
 
     private:
         int run_();

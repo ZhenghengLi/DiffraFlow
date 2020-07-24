@@ -72,6 +72,30 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgDatConn::process_pay
     return ProcessRes::kProcessed;
 }
 
+bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
+    // serialize and send image data
+    shared_ptr<ImageData> one_image;
+    if (!image_cache_->take_image(one_image)) {
+        LOG4CXX_WARN(logger_, "image data queue is stopped and empty, close the connection.");
+        return false;
+    }
+    // serialize image data
+    image_buffer_.clear();
+    msgpack::pack(image_buffer_, *one_image);
+    // serialize head
+    char head_buffer[4];
+    gPS.serializeValue<uint32_t>(0xABCDEEEE, head_buffer, 4);
+    // send data
+    if (send_one_(head_buffer, 4, image_buffer_.data(), image_buffer_.size())) {
+        LOG4CXX_DEBUG(logger_, "successfully send one image.");
+        image_metrics.total_sent_images++;
+        return true;
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to send one image.");
+        return false;
+    }
+}
+
 json::value diffraflow::CmbImgDatConn::collect_metrics() {
     json::value root_json = GenericConnection::collect_metrics();
     json::value image_metrics_json;

@@ -53,10 +53,11 @@ namespace diffraflow {
 
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size);
+        virtual void after_connected_();
 
     private:
         bool start_connection_();
-        void before_receiving_();
+
         bool do_receiving_and_processing_();
 
     private:

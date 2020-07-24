@@ -40,7 +40,6 @@ diffraflow::GenericConnection::~GenericConnection() { delete[] buffer_; }
 
 void diffraflow::GenericConnection::run() {
     if (start_connection_()) {
-        before_receiving_();
         while (!done_flag_ && do_receiving_and_processing_())
             ;
     }
@@ -102,10 +101,11 @@ bool diffraflow::GenericConnection::start_connection_() {
             pos += count;
         }
     }
+    after_connected_();
     return true;
 }
 
-void diffraflow::GenericConnection::before_receiving_() { LOG4CXX_INFO(logger_, "connection ID: " << connection_id_); }
+void diffraflow::GenericConnection::after_connected_() { LOG4CXX_INFO(logger_, "connection ID: " << connection_id_); }
 
 bool diffraflow::GenericConnection::do_receiving_and_processing_() {
     if (!NetworkUtils::receive_packet(

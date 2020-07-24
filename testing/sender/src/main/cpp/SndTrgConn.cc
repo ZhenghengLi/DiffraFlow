@@ -27,21 +27,11 @@ diffraflow::GenericConnection::ProcessRes diffraflow::SndTrgConn::process_payloa
     // the whole payload is event index
     uint32_t event_index = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
 
-    // if (data_transfer_->read_and_send(event_index)) {
-
-    LOG4CXX_INFO(logger_, "send event " << event_index);
-    if (true) {
-
-        if (send_one_(succ_res_buff_, 4, nullptr, 0)) {
-            return kProcessed;
-        } else {
-            return kFailed;
-        }
+    if (data_transfer_->read_and_send(event_index)) {
+        LOG4CXX_DEBUG(logger_, "successfully sent event " << event_index);
+        return kProcessed;
     } else {
-        if (send_one_(fail_res_buff_, 4, nullptr, 0)) {
-            return kSkipped;
-        } else {
-            return kFailed;
-        }
+        LOG4CXX_WARN(logger_, "failed to send event " << event_index);
+        return kSkipped;
     }
 }

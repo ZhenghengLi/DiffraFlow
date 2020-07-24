@@ -16,6 +16,7 @@ namespace bf = boost::filesystem;
 namespace bs = boost::system;
 
 using std::lock_guard;
+using std::unique_lock;
 
 log4cxx::LoggerPtr diffraflow::SndDatTran::logger_ = log4cxx::Logger::getLogger("SndDatTran");
 
@@ -44,7 +45,12 @@ diffraflow::SndDatTran::~SndDatTran() {
 
 bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
 
-    lock_guard<mutex> lg(data_mtx_);
+    unique_lock<mutex> data_lk(data_mtx_, std::try_to_lock);
+    if (!data_lk.owns_lock()) {
+        LOG4CXX_WARN(
+            logger_, "data transfer of a previous event is on going, and event " << event_index << " is jumped.");
+        return false;
+    }
 
     if (event_index >= config_obj_->total_events) {
         return false;

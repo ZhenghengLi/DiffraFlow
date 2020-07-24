@@ -111,9 +111,12 @@ bool diffraflow::TrgCoordinator::create_trigger_clients(const char* sender_list_
                     fail_mod_ids_vec_.push_back(i);
                 }
                 trigger_flag_arr_[i] = false;
-                count_down_--;
-                if (count_down_ <= 0) {
-                    event_cv_.notify_all();
+                {
+                    lock_guard<mutex> lg(event_mtx_);
+                    count_down_--;
+                    if (count_down_ <= 0) {
+                        event_cv_.notify_all();
+                    }
                 }
             }
         });

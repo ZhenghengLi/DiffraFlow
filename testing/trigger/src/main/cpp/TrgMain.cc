@@ -107,9 +107,10 @@ int main(int argc, char** argv) {
             duration<double, micro> finish_time = system_clock::now().time_since_epoch();
             long time_used = finish_time.count() - start_time.count();
             if (succ_flag) {
-                cout << "successfully sent event " << event_index << " using " << time_used << " microseconds." << endl;
+                cout << "successfully triggered event " << event_index << " using " << time_used << " microseconds."
+                     << endl;
             } else {
-                cout << "failed to send event " << event_index << " after " << time_used << " microseconds." << endl;
+                cout << "failed to trigger event " << event_index << " after " << time_used << " microseconds." << endl;
             }
         }
     }

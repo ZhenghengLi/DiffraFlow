@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sender-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: sender-{{ .Values.nameSuffix }}
+spec:
+  selector:
+    matchLabels:
+      name: sender-{{ .Values.nameSuffix }}
+  template:
+    metadata:
+      labels:
+        name: sender-{{ .Values.nameSuffix }}
+    spec:
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      containers:
+      - name: sender
+        image: zhenghengli/diffraflow:latest
+        command:
+        - sender
+        - --config=/config/sender.conf
+        - --nodemap=/config/node_map.txt
+        - --logconf=/config/log4cxx.properties
+        ports:
+        - containerPort: {{ .Values.listenPort }}
+          hostPort: {{ .Values.listenPort }}
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      nodeSelector:
+        diffraflow/node-type: service
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - name: config-volume
+        configMap:
+          name: sender-config-{{ .Values.nameSuffix }}

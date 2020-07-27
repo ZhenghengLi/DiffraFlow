@@ -30,6 +30,9 @@ diffraflow::SndConfig::SndConfig() {
     dispatcher_host = "localhost";
     dispatcher_port = -1;
     module_id = -1;
+
+    metrics_pulsar_report_period = 1000;
+    metrics_http_port = -1;
 }
 
 diffraflow::SndConfig::~SndConfig() {}
@@ -62,6 +65,18 @@ bool diffraflow::SndConfig::load(const char* filename) {
             dispatcher_port = atoi(value.c_str());
         } else if (key == "module_id") {
             module_id = atoi(value.c_str());
+        } else if (key == "metrics_pulsar_broker_address") {
+            metrics_pulsar_broker_address = value;
+        } else if (key == "metrics_pulsar_topic_name") {
+            metrics_pulsar_topic_name = value;
+        } else if (key == "metrics_pulsar_message_key") {
+            metrics_pulsar_message_key = value;
+        } else if (key == "metrics_pulsar_report_period") {
+            metrics_pulsar_report_period = atoi(value.c_str());
+        } else if (key == "metrics_http_host") {
+            metrics_http_host = value;
+        } else if (key == "metrics_http_port") {
+            metrics_http_port = atoi(value.c_str());
         } else {
             LOG4CXX_WARN(logger_,
                 "Found unknown configuration which is ignored: " << key << " = " << value << " in " << filename);
@@ -79,6 +94,20 @@ bool diffraflow::SndConfig::load(const char* filename) {
                 sender_id += atoi(ip_nums[i].c_str());
             }
         }
+    }
+
+    // replace the NODE_NAME in pulsar_message_key
+    if (!metrics_pulsar_message_key.empty()) {
+        const char* node_name = getenv("NODE_NAME");
+        if (node_name != NULL && regex_match(metrics_pulsar_message_key, regex(".*NODE_NAME.*"))) {
+            metrics_pulsar_message_key = regex_replace(metrics_pulsar_message_key, regex("NODE_NAME"), node_name);
+        }
+    }
+
+    // correction
+    if (metrics_pulsar_report_period < 500) {
+        LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
+        metrics_pulsar_report_period = 500;
     }
 
     // check
@@ -165,4 +194,13 @@ void diffraflow::SndConfig::print() {
     cout << " dispatcher_port    = " << dispatcher_port << endl;
     cout << " module_id          = " << module_id << endl;
     cout << " ---- Configuration Dump End ----" << endl;
+}
+
+bool diffraflow::SndConfig::metrics_pulsar_params_are_set() {
+    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
+            !metrics_pulsar_message_key.empty());
+}
+
+bool diffraflow::SndConfig::metrics_http_params_are_set() {
+    return (!metrics_http_host.empty() && metrics_http_port > 0);
 }

@@ -214,6 +214,12 @@ void diffraflow::SndConfig::print() {
     cout << " dispatcher_host    = " << dispatcher_host << endl;
     cout << " dispatcher_port    = " << dispatcher_port << endl;
     cout << " module_id          = " << module_id << endl;
+    cout << " metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
+    cout << " metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
+    cout << " metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;
+    cout << " metrics_pulsar_report_period = " << metrics_pulsar_report_period << endl;
+    cout << " metrics_http_host = " << metrics_http_host << endl;
+    cout << " metrics_http_port = " << metrics_http_port << endl;
     cout << " ---- Configuration Dump End ----" << endl;
 }
 

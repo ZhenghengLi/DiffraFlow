@@ -7,6 +7,8 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsReporter.hh"
+
 using std::atomic_bool;
 
 namespace diffraflow {
@@ -29,6 +31,8 @@ namespace diffraflow {
 
         SndTrgSrv* trigger_srv_;
         atomic_bool running_flag_;
+
+        MetricsReporter metrics_reporter_;
 
     private:
         static log4cxx::LoggerPtr logger_;

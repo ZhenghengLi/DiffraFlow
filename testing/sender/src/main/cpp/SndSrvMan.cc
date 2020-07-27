@@ -46,6 +46,28 @@ void diffraflow::SndSrvMan::start_run() {
         return;
     }
 
+    // start metrics reporter
+    metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("trigger_server", trigger_srv_);
+    if (config_obj_->metrics_pulsar_params_are_set()) {
+        if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,
+                config_obj_->metrics_pulsar_topic_name, config_obj_->metrics_pulsar_message_key,
+                config_obj_->metrics_pulsar_report_period)) {
+            LOG4CXX_INFO(logger_, "Successfully started pulsar producer to periodically report metrics.");
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to start pulsar producer to periodically report metrics.");
+            return;
+        }
+    }
+    if (config_obj_->metrics_http_params_are_set()) {
+        if (metrics_reporter_.start_http_server(config_obj_->metrics_http_host, config_obj_->metrics_http_port)) {
+            LOG4CXX_INFO(logger_, "Successfully started http server for metrics service.");
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to start http server for metrics service.");
+            return;
+        }
+    }
+
     running_flag_ = true;
 
     // wait for finishing
@@ -54,6 +76,11 @@ void diffraflow::SndSrvMan::start_run() {
 
 void diffraflow::SndSrvMan::terminate() {
     if (!running_flag_) return;
+
+    // stop metrics reporter
+    metrics_reporter_.stop_http_server();
+    metrics_reporter_.stop_msg_producer();
+    metrics_reporter_.clear();
 
     // stop and delete trigger server
     int result = trigger_srv_->stop_and_close();

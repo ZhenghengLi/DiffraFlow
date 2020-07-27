@@ -30,6 +30,14 @@ diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj)
     string_buffer_ = new char[STRING_LEN];
     current_file_ = nullptr;
     current_file_index_ = -1;
+
+    transfer_metrics.invoke_counts = 0;
+    transfer_metrics.busy_counts = 0;
+    transfer_metrics.large_index_counts = 0;
+    transfer_metrics.reconnect_counts = 0;
+    transfer_metrics.read_succ_counts = 0;
+    transfer_metrics.key_match_counts = 0;
+    transfer_metrics.send_succ_counts = 0;
 }
 
 diffraflow::SndDatTran::~SndDatTran() {
@@ -45,19 +53,26 @@ diffraflow::SndDatTran::~SndDatTran() {
 
 bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
 
+    transfer_metrics.invoke_counts++;
+
     unique_lock<mutex> data_lk(data_mtx_, std::try_to_lock);
     if (!data_lk.owns_lock()) {
         LOG4CXX_WARN(
             logger_, "data transfer of a previous event is on going, and event " << event_index << " is jumped.");
+        transfer_metrics.busy_counts++;
         return false;
     }
 
     if (event_index >= config_obj_->total_events) {
+        LOG4CXX_WARN(
+            logger_, "event index " << event_index << " is larger than total events" << config_obj_->total_events);
+        transfer_metrics.large_index_counts++;
         return false;
     }
 
     // try to connect if lose connection
     if (not_connected()) {
+        transfer_metrics.reconnect_counts++;
         if (connect_to_server()) {
             LOG4CXX_INFO(logger_, "reconnected to dispatcher.");
         } else {
@@ -109,13 +124,17 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         succ_read = false;
     }
     if (succ_read) {
+        transfer_metrics.read_succ_counts++;
         uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer_, 12, 19);
-        if (key != event_index) {
+        if (key == event_index) {
+            transfer_metrics.key_match_counts++;
+        } else {
             LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
             return false;
         }
         if (send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
             LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
+            transfer_metrics.send_succ_counts++;
             return true;
         } else {
             close_connection();
@@ -129,4 +148,22 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         current_file_index_ = 0;
         return false;
     }
+}
+
+json::value diffraflow::SndDatTran::collect_metrics() {
+
+    json::value root_json = GenericClient::collect_metrics();
+
+    json::value transfer_metrics_json;
+    transfer_metrics_json["invoke_counts"] = json::value::number(transfer_metrics.invoke_counts);
+    transfer_metrics_json["busy_counts"] = json::value::number(transfer_metrics.busy_counts);
+    transfer_metrics_json["large_index_counts"] = json::value::number(transfer_metrics.large_index_counts);
+    transfer_metrics_json["reconnect_counts"] = json::value::number(transfer_metrics.reconnect_counts);
+    transfer_metrics_json["read_succ_counts"] = json::value::number(transfer_metrics.read_succ_counts);
+    transfer_metrics_json["key_match_counts"] = json::value::number(transfer_metrics.key_match_counts);
+    transfer_metrics_json["send_succ_counts"] = json::value::number(transfer_metrics.send_succ_counts);
+
+    root_json["transfer_stat"] = transfer_metrics_json;
+
+    return root_json;
 }

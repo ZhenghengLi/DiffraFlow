@@ -48,6 +48,7 @@ void diffraflow::SndSrvMan::start_run() {
 
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("data_transfer", data_transfer_);
     metrics_reporter_.add("trigger_server", trigger_srv_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
         if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,

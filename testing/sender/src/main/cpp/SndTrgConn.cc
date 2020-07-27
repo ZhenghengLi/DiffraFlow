@@ -11,16 +11,9 @@ log4cxx::LoggerPtr diffraflow::SndTrgConn::logger_ = log4cxx::Logger::getLogger(
 diffraflow::SndTrgConn::SndTrgConn(int sock_fd, SndDatTran* dat_tran)
     : GenericConnection(sock_fd, 0xBBFF1234, 0xBBB22FFF, 0xFFF22BBB, 1024) {
     data_transfer_ = dat_tran;
-    succ_res_buff_ = new char[4];
-    gPS.serializeValue<uint32_t>(0, succ_res_buff_, 4);
-    fail_res_buff_ = new char[4];
-    gPS.serializeValue<uint32_t>(1, fail_res_buff_, 4);
 }
 
-diffraflow::SndTrgConn::~SndTrgConn() {
-    delete succ_res_buff_;
-    delete fail_res_buff_;
-}
+diffraflow::SndTrgConn::~SndTrgConn() {}
 
 diffraflow::GenericConnection::ProcessRes diffraflow::SndTrgConn::process_payload_(
     const char* payload_buffer, const size_t payload_size) {

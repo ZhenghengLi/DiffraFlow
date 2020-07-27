@@ -13,9 +13,6 @@ namespace diffraflow {
         CmbImgFrmSrv(string host, int port, CmbImgCache* img_cache);
         ~CmbImgFrmSrv();
 
-    public:
-        json::value collect_metrics() override;
-
     protected:
         GenericConnection* new_connection_(int client_sock_fd);
 

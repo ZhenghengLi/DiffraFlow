@@ -137,7 +137,28 @@ bool diffraflow::SndConfig::load(const char* filename) {
         succ_flag = false;
     }
 
-    return succ_flag;
+    if (succ_flag) {
+        // static config
+        static_config_json_["sender_id"] = json::value::number(sender_id);
+        static_config_json_["listen_host"] = json::value::string(listen_host);
+        static_config_json_["listen_port"] = json::value::number(listen_port);
+        static_config_json_["data_dir"] = json::value::string(data_dir);
+        static_config_json_["events_per_file"] = json::value::number(events_per_file);
+        static_config_json_["total_events"] = json::value::number(total_events);
+        static_config_json_["dispatcher_host"] = json::value::string(dispatcher_host);
+        static_config_json_["dispatcher_port"] = json::value::number(dispatcher_port);
+        static_config_json_["module_id"] = json::value::number(module_id);
+        // metrics config
+        metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
+        metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
+        metrics_config_json_["metrics_pulsar_message_key"] = json::value::string(metrics_pulsar_message_key);
+        metrics_config_json_["metrics_pulsar_report_period"] = json::value::number(metrics_pulsar_report_period);
+        metrics_config_json_["metrics_http_host"] = json::value::string(metrics_http_host);
+        metrics_config_json_["metrics_http_port"] = json::value::number(metrics_http_port);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool diffraflow::SndConfig::load_nodemap(const char* filename, const string nodename) {
@@ -194,6 +215,13 @@ void diffraflow::SndConfig::print() {
     cout << " dispatcher_port    = " << dispatcher_port << endl;
     cout << " module_id          = " << module_id << endl;
     cout << " ---- Configuration Dump End ----" << endl;
+}
+
+json::value diffraflow::SndConfig::collect_metrics() {
+    json::value config_json;
+    config_json["static_config"] = static_config_json_;
+    config_json["metrics_config"] = metrics_config_json_;
+    return config_json;
 }
 
 bool diffraflow::SndConfig::metrics_pulsar_params_are_set() {

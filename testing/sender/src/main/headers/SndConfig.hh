@@ -6,11 +6,13 @@
 #include <string>
 #include <map>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using std::map;
 
 namespace diffraflow {
-    class SndConfig : public GenericConfiguration {
+    class SndConfig : public GenericConfiguration, public MetricsProvider {
     public:
         SndConfig();
         ~SndConfig();
@@ -23,6 +25,9 @@ namespace diffraflow {
     public:
         bool metrics_pulsar_params_are_set();
         bool metrics_http_params_are_set();
+
+    public:
+        json::value collect_metrics() override;
 
     public:
         uint32_t sender_id;
@@ -43,6 +48,10 @@ namespace diffraflow {
         int metrics_pulsar_report_period;
         string metrics_http_host;
         int metrics_http_port;
+
+    private:
+        json::value static_config_json_;
+        json::value metrics_config_json_;
 
     private:
         static log4cxx::LoggerPtr logger_;

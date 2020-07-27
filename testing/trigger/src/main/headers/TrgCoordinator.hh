@@ -42,21 +42,6 @@ namespace diffraflow {
         TrgClient** trigger_client_arr_;
         size_t trigger_client_cnt_;
 
-        atomic_bool running_flag_;
-
-        atomic_bool* trigger_flag_arr_;
-        mutex* trigger_mtx_arr_;
-        condition_variable* trigger_cv_arr_;
-        thread** trigger_thread_arr_;
-
-        atomic<uint32_t> event_index_to_trigger_;
-        atomic_int count_down_;
-        mutex event_mtx_;
-        condition_variable event_cv_;
-
-        vector<int> fail_mod_ids_vec_;
-        mutex fail_mod_ids_mtx_;
-
         mutex wait_mtx_;
         condition_variable wait_cv_;
 

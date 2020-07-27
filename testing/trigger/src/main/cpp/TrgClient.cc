@@ -12,18 +12,17 @@ log4cxx::LoggerPtr diffraflow::TrgClient::logger_ = log4cxx::Logger::getLogger("
 
 diffraflow::TrgClient::TrgClient(string sender_host, int sender_port, uint32_t trigger_id)
     : GenericClient(sender_host, sender_port, trigger_id, 0xBBFF1234, 0xBBB22FFF, 0xFFF22BBB) {
-    send_buffer_ = new char[4];
-    recv_buffer_ = new char[4];
+    buffer_ = new char[4];
 
+    worker_ = nullptr;
     running_flag_ = true;
     trigger_flag_ = false;
     target_event_index_ = 0;
-    worker_ = nullptr;
 }
 
 diffraflow::TrgClient::~TrgClient() {
-    delete[] send_buffer_;
-    delete[] recv_buffer_;
+    stop();
+    delete[] buffer_;
 }
 
 bool diffraflow::TrgClient::start() {
@@ -88,9 +87,9 @@ bool diffraflow::TrgClient::send_event_index_(const uint32_t event_index) {
         }
     }
 
-    gPS.serializeValue<uint32_t>(event_index, send_buffer_, 4);
+    gPS.serializeValue<uint32_t>(event_index, buffer_, 4);
 
-    if (send_one_(send_buffer_, 4, nullptr, 0)) {
+    if (send_one_(buffer_, 4, nullptr, 0)) {
         LOG4CXX_INFO(logger_, "successfully sent event index " << event_index << " to " << get_server_address());
         return true;
     } else {

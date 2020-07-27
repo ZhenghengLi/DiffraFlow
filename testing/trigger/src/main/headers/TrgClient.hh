@@ -30,8 +30,7 @@ namespace diffraflow {
         bool send_event_index_(const uint32_t event_index);
 
     private:
-        char* send_buffer_;
-        char* recv_buffer_;
+        char* buffer_;
 
         thread* worker_;
         mutex trigger_mtx_;

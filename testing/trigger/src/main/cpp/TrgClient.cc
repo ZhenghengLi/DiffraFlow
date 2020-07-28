@@ -44,6 +44,7 @@ bool diffraflow::TrgClient::start() {
             wait_cv_.notify_all();
         }
     });
+    return true;
 }
 
 void diffraflow::TrgClient::stop() {

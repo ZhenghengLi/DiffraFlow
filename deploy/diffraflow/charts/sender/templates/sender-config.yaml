@@ -11,6 +11,9 @@ data:
     data_dir = /raw-data
     events_per_file = 10000
     total_events = 89000
+    # http server
+    metrics_http_host = 0.0.0.0
+    metrics_http_port = {{ .Values.httpListenPort }}
   node_map.txt: {{ .Values.nodeMap | quote }}
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console

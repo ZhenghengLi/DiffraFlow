@@ -30,6 +30,8 @@ spec:
         ports:
         - containerPort: {{ .Values.listenPort }}
           hostPort: {{ .Values.listenPort }}
+        - containerPort: {{ .Values.httpListenPort }}
+          hostPort: {{ .Values.httpListenPort }}
         env:
         - name: POD_IP
           valueFrom:
@@ -42,6 +44,8 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /config
+        - name: raw-data
+          mountPath: /raw-data
       nodeSelector:
         diffraflow/node-type: service
       tolerations:
@@ -51,3 +55,6 @@ spec:
       - name: config-volume
         configMap:
           name: sender-config-{{ .Values.nameSuffix }}
+      - name: raw-data
+        hostPath:
+          path: {{ .Values.rawDataDir }}

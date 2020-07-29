@@ -29,6 +29,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
         }
         uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
         LOG4CXX_DEBUG(logger_, "received event with key " << key);
+        return kProcessed;
         // size_t index = hash_long_(key) % sender_count_;
         // LOG4CXX_DEBUG(logger_, "received an image frame with key: " << key);
         // if (sender_array_[index]->push(frame_buffer, frame_size)) {

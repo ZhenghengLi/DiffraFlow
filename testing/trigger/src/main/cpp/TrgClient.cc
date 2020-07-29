@@ -52,6 +52,7 @@ void diffraflow::TrgClient::stop() {
         lock_guard<mutex> lg(trigger_mtx_);
         running_flag_ = false;
         trigger_cv_.notify_all();
+        close_connection();
     }
     if (worker_ != nullptr) {
         worker_->join();

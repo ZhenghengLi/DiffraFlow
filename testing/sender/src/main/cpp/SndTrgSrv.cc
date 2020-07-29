@@ -2,7 +2,7 @@
 #include "SndDatTran.hh"
 #include "SndTrgConn.hh"
 
-diffraflow::SndTrgSrv::SndTrgSrv(string host, int port, SndDatTran* dat_tran) : GenericServer(host, port, 1) {
+diffraflow::SndTrgSrv::SndTrgSrv(string host, int port, SndDatTran* dat_tran) : GenericServer(host, port, 100) {
     data_transfer_ = dat_tran;
 }
 

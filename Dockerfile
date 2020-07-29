@@ -117,8 +117,8 @@ RUN set -x \
 ## set root password for runtime debug
 && echo "root:20180427" | chpasswd \
 ## use a non-root user for normal work
-&& groupadd diffraflow --gid=42700 \
-&& useradd -m -g diffraflow --uid=42700 diffraflow -s /bin/bash
+&& groupadd diffraflow --gid=1010 \
+&& useradd -m -g diffraflow --uid=1017 diffraflow -s /bin/bash
 
 USER diffraflow
 

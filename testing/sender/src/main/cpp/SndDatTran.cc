@@ -84,6 +84,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
     int file_index = event_index / config_obj_->events_per_file;
     int64_t file_offset = event_index % config_obj_->events_per_file;
     file_offset *= FRAME_SIZE;
+    // open file if necessary
     if (file_index != current_file_index_) {
         if (current_file_ != nullptr) {
             current_file_->close();
@@ -108,51 +109,50 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             return false;
         }
     }
+    // seek position if necessary
+    if (current_file_->tellg() != file_offset) {
+        current_file_->seekg(file_offset);
+    }
     // read one data frame and send
-
     bool succ_read = true;
-
-    if (event_index == 0) {
-        if (current_file_->tellg() != file_offset) {
-            current_file_->seekg(file_offset);
-        }
-        try {
-            current_file_->read(frame_buffer_, FRAME_SIZE);
-            if (current_file_->gcount() != FRAME_SIZE) {
-                LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
-                succ_read = false;
-            }
-        } catch (std::exception& e) {
-            LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << strerror(errno));
+    try {
+        current_file_->read(frame_buffer_, FRAME_SIZE);
+        if (current_file_->gcount() != FRAME_SIZE) {
+            LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
             succ_read = false;
         }
+    } catch (std::exception& e) {
+        LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << strerror(errno));
+        succ_read = false;
     }
 
-    if (succ_read) {
-        transfer_metrics.read_succ_counts++;
-        // uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer_, 12, 19);
-        // if (key == event_index) {
-        //     transfer_metrics.key_match_counts++;
-        // } else {
-        //     LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
-        //     return false;
-        // }
-        if (send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
-            LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
-            transfer_metrics.send_succ_counts++;
-            return true;
-        } else {
-            close_connection();
-            LOG4CXX_WARN(logger_, "failed to send frame data.");
-            return false;
-        }
-    } else {
-        current_file_->close();
-        delete current_file_;
-        current_file_ = nullptr;
-        current_file_index_ = 0;
-        return false;
-    }
+    return true;
+
+    // if (succ_read) {
+    //     transfer_metrics.read_succ_counts++;
+    //     uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer_, 12, 19);
+    //     if (key == event_index) {
+    //         transfer_metrics.key_match_counts++;
+    //     } else {
+    //         LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
+    //         return false;
+    //     }
+    //     if (send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
+    //         LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
+    //         transfer_metrics.send_succ_counts++;
+    //         return true;
+    //     } else {
+    //         close_connection();
+    //         LOG4CXX_WARN(logger_, "failed to send frame data.");
+    //         return false;
+    //     }
+    // } else {
+    //     current_file_->close();
+    //     delete current_file_;
+    //     current_file_ = nullptr;
+    //     current_file_index_ = 0;
+    //     return false;
+    // }
 }
 
 json::value diffraflow::SndDatTran::collect_metrics() {

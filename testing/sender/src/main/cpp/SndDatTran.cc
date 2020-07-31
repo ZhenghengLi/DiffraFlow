@@ -109,20 +109,25 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         }
     }
     // read one data frame and send
-    if (current_file_->tellg() != file_offset) {
-        current_file_->seekg(file_offset);
-    }
+
     bool succ_read = true;
-    try {
-        current_file_->read(frame_buffer_, FRAME_SIZE);
-        if (current_file_->gcount() != FRAME_SIZE) {
-            LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
+
+    if (event_index == 0) {
+        if (current_file_->tellg() != file_offset) {
+            current_file_->seekg(file_offset);
+        }
+        try {
+            current_file_->read(frame_buffer_, FRAME_SIZE);
+            if (current_file_->gcount() != FRAME_SIZE) {
+                LOG4CXX_WARN(logger_, "read partial frame data from file " << current_file_path_);
+                succ_read = false;
+            }
+        } catch (std::exception& e) {
+            LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << strerror(errno));
             succ_read = false;
         }
-    } catch (std::exception& e) {
-        LOG4CXX_WARN(logger_, "failed read file " << current_file_path_ << " with error: " << strerror(errno));
-        succ_read = false;
     }
+
     if (succ_read) {
         transfer_metrics.read_succ_counts++;
         uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer_, 12, 19);

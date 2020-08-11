@@ -9,7 +9,7 @@ data:
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
     compress_method = None
-    compress_level = 10
+    compress_level = 3
     # http
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

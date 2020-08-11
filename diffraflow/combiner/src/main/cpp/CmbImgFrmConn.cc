@@ -120,17 +120,20 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
             LOG4CXX_WARN(logger_, "got zero image frame size, close the connection.");
             return kFailed;
         }
+
         current_position += 4;
-        ImageFramePtr image_frame(new ImageFrame());
-        image_frame->decode(current_buffer + current_position, current_size);
+
+        // ImageFramePtr image_frame(new ImageFrame());
+        // image_frame->decode(current_buffer + current_position, current_size);
+
         current_position += current_size;
 
-        if (image_cache_->push_frame(image_frame)) {
-            LOG4CXX_DEBUG(logger_, "successfully pushed image frame into image cache.");
-        } else {
-            LOG4CXX_WARN(logger_, "image cache is stopped, close the connection.");
-            return kFailed;
-        }
+        // if (image_cache_->push_frame(image_frame)) {
+        //     LOG4CXX_DEBUG(logger_, "successfully pushed image frame into image cache.");
+        // } else {
+        //     LOG4CXX_WARN(logger_, "image cache is stopped, close the connection.");
+        //     return kFailed;
+        // }
 
         frame_metrics.total_processed_frame_size += current_size;
         frame_metrics.total_processed_frame_counts += 1;

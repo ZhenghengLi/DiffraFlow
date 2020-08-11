@@ -28,17 +28,18 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
             return kSkipped;
         }
         uint64_t key = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
-        LOG4CXX_DEBUG(logger_, "received event with key " << key);
-        return kProcessed;
-        // size_t index = hash_long_(key) % sender_count_;
-        // LOG4CXX_DEBUG(logger_, "received an image frame with key: " << key);
-        // if (sender_array_[index]->push(frame_buffer, frame_size)) {
-        //     LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
-        //     return kProcessed;
-        // } else {
-        //     LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
-        //     return kFailed;
-        // }
+        LOG4CXX_DEBUG(logger_, "received an image frame with key: " << key);
+        // return kProcessed;
+
+        size_t index = hash_long_(key) % sender_count_;
+        if (sender_array_[index]->push(frame_buffer, frame_size)) {
+            LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
+            return kProcessed;
+        } else {
+            LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
+            return kFailed;
+        }
+
     } break;
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");

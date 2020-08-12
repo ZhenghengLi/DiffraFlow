@@ -105,6 +105,10 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         if (!do_alignment_(image_data, false)) {
             break;
         }
+
+        // debug
+        break;
+
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
             alignment_metrics.total_late_arrived++;
@@ -142,10 +146,11 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     return true;
 }
 
-bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData> image_data, bool force_flag) {
+bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData>& image_data, bool force_flag) {
     if (num_of_empty_ == imgfrm_queues_len_) {
         return false;
     }
+
     if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
         force_flag) {
         uint64_t key_target = key_min_;

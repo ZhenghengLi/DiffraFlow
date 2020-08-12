@@ -11,6 +11,8 @@
 #include <condition_variable>
 #include <log4cxx/logger.h>
 
+#include <list>
+
 using std::queue;
 using std::mutex;
 using std::condition_variable;
@@ -19,6 +21,7 @@ using std::atomic;
 using std::shared_ptr;
 using std::make_shared;
 using std::thread;
+using std::list;
 
 namespace diffraflow {
 
@@ -50,7 +53,7 @@ namespace diffraflow {
 
     private:
         size_t imgfrm_queues_len_;
-        OrderedQueue<ImageFramePtr, int64_t>* imgfrm_queues_arr_;
+        list<ImageFramePtr>* imgfrm_queues_arr_;
         BlockingQueue<shared_ptr<ImageData>> imgdat_queue_;
 
         mutex data_mtx_;

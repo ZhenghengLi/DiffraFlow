@@ -26,7 +26,7 @@ void diffraflow::ImageData::set_key(uint64_t key) { bunch_id = key; }
 bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
     if (index >= image_frame_vec.size()) return false;
     alignment_vec[index] = true;
-    // image_frame_vec[index] = imgfrm;
+    image_frame_vec[index] = imgfrm;
     return true;
 }
 

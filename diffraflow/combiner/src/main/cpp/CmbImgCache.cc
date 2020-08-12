@@ -151,6 +151,17 @@ bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData>& image_data, b
         return false;
     }
 
+    // debug
+    if (num_of_empty_ <= 0) {
+        for (size_t i = 0; i < imgfrm_queues_len_; i++) {
+            imgfrm_queues_arr_[i].pop();
+            if (imgfrm_queues_arr_[i].empty()) {
+                num_of_empty_++;
+            }
+        }
+    }
+    return false;
+
     if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
         force_flag) {
         uint64_t key_target = key_min_;

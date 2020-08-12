@@ -88,6 +88,13 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         num_of_empty_--;
     }
     imgfrm_queues_arr_[image_frame->module_id].push(image_frame);
+
+    // debug
+    if (imgfrm_queues_arr_[image_frame->module_id].size() > 400) {
+        imgfrm_queues_arr_[image_frame->module_id].pop();
+    }
+    return true;
+
     int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].distance();
     size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
     if (distance_current > distance_max_) {

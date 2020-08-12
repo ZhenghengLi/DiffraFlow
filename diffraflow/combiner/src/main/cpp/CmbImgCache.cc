@@ -120,7 +120,7 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         }
 
         // for debug
-        image_data->print();
+        // image_data->print();
 
         // LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
         // if (imgdat_queue_.push(image_data)) {
@@ -208,7 +208,7 @@ void diffraflow::CmbImgCache::clear_cache_() {
         }
 
         // for debug
-        image_data->print();
+        // image_data->print();
 
         // LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
         // if (imgdat_queue_.offer(image_data)) {

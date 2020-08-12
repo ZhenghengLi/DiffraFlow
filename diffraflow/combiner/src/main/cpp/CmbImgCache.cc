@@ -118,15 +118,17 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
                 break;
             }
         }
+
         // for debug
         image_data->print();
-        LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
-        if (imgdat_queue_.push(image_data)) {
-            LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
-        } else {
-            LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
-            return false;
-        }
+
+        // LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
+        // if (imgdat_queue_.push(image_data)) {
+        //     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
+        // } else {
+        //     LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
+        //     return false;
+        // }
     }
 
     duration<double, milli> current_time = system_clock::now().time_since_epoch();
@@ -204,15 +206,17 @@ void diffraflow::CmbImgCache::clear_cache_() {
             image_data->late_arrived = false;
             key_last_ = image_data->get_key();
         }
+
         // for debug
         image_data->print();
-        LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
-        if (imgdat_queue_.offer(image_data)) {
-            LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
-        } else {
-            LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
-            break;
-        }
+
+        // LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
+        // if (imgdat_queue_.offer(image_data)) {
+        //     LOG4CXX_DEBUG(logger_, "offerred one image into imgdat_queue_.");
+        // } else {
+        //     LOG4CXX_INFO(logger_, "failed to offer image data, as imgdat_queue_ is full.");
+        //     break;
+        // }
     }
 }
 

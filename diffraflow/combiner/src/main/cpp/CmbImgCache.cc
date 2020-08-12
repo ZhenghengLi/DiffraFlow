@@ -101,28 +101,28 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     alignment_metrics.total_pushed_frames++;
 
     while (true) {
-        shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
-        if (!do_alignment_(image_data, false)) {
+        // shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
+        if (!do_alignment_(false)) {
             break;
         }
 
         // debug
         break;
 
-        if (image_data->get_key() < key_last_) {
-            image_data->late_arrived = true;
-            alignment_metrics.total_late_arrived++;
-        } else {
-            image_data->late_arrived = false;
-            key_last_ = image_data->get_key();
-        }
-        alignment_metrics.total_aligned_images++;
-        for (const bool& item : image_data->alignment_vec) {
-            if (!item) {
-                alignment_metrics.total_partial_images++;
-                break;
-            }
-        }
+        // if (image_data->get_key() < key_last_) {
+        //     image_data->late_arrived = true;
+        //     alignment_metrics.total_late_arrived++;
+        // } else {
+        //     image_data->late_arrived = false;
+        //     key_last_ = image_data->get_key();
+        // }
+        // alignment_metrics.total_aligned_images++;
+        // for (const bool& item : image_data->alignment_vec) {
+        //     if (!item) {
+        //         alignment_metrics.total_partial_images++;
+        //         break;
+        //     }
+        // }
 
         // for debug
         // image_data->print();
@@ -146,7 +146,7 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     return true;
 }
 
-bool diffraflow::CmbImgCache::do_alignment_(shared_ptr<ImageData>& image_data, bool force_flag) {
+bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
     if (num_of_empty_ == imgfrm_queues_len_) {
         return false;
     }
@@ -213,16 +213,16 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
 
 void diffraflow::CmbImgCache::clear_cache_() {
     while (true) {
-        shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
-        if (!do_alignment_(image_data, true)) {
+        // shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
+        if (!do_alignment_(true)) {
             break;
         }
-        if (image_data->get_key() < key_last_) {
-            image_data->late_arrived = true;
-        } else {
-            image_data->late_arrived = false;
-            key_last_ = image_data->get_key();
-        }
+        // if (image_data->get_key() < key_last_) {
+        //     image_data->late_arrived = true;
+        // } else {
+        //     image_data->late_arrived = false;
+        //     key_last_ = image_data->get_key();
+        // }
 
         // for debug
         // image_data->print();

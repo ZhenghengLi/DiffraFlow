@@ -1,6 +1,6 @@
 #include "CmbImgFrmConn.hh"
 #include "CmbImgCache.hh"
-#include "ImageFramePtr.hh"
+#include "ImageFrame.hh"
 #include "Decoder.hh"
 
 #include <unistd.h>
@@ -123,7 +123,7 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
         current_position += 4;
 
-        ImageFramePtr image_frame(new ImageFrame());
+        shared_ptr<ImageFrame> image_frame = make_shared<ImageFrame>();
         if (image_frame->decode(current_buffer + current_position, current_size)) {
             // image_frame->print();
         } else {

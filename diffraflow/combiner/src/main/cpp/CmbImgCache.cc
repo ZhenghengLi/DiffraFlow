@@ -1,5 +1,5 @@
 #include "CmbImgCache.hh"
-#include "ImageFramePtr.hh"
+#include "ImageFrame.hh"
 #include "ImageData.hh"
 
 #include <log4cxx/logger.h>
@@ -19,7 +19,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int max_lt) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new list<ImageFramePtr>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new list<shared_ptr<ImageFrame>>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
 
     key_min_ = numeric_limits<uint64_t>::max();
@@ -71,7 +71,7 @@ diffraflow::CmbImgCache::~CmbImgCache() {
     delete clear_worker_;
 }
 
-bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
+bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_frame) {
     if (stopped_) return false;
 
     if (image_frame->module_id < 0 || image_frame->module_id >= (int)imgfrm_queues_len_) {
@@ -89,8 +89,8 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     }
     imgfrm_queues_arr_[image_frame->module_id].push_back(image_frame);
 
-    int64_t distance_current =
-        imgfrm_queues_arr_[image_frame->module_id].back() - imgfrm_queues_arr_[image_frame->module_id].front();
+    int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].back()->get_key() -
+                               imgfrm_queues_arr_[image_frame->module_id].front()->get_key();
     size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
     if (distance_current > distance_max_) {
         distance_max_ = distance_current;
@@ -162,7 +162,7 @@ shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool fo
                 continue;
             }
             if (imgfrm_queues_arr_[i].front()->get_key() == key_target) {
-                image_data->put_imgfrm(i, *imgfrm_queues_arr_[i].front());
+                image_data->put_imgfrm(i, imgfrm_queues_arr_[i].front());
                 imgfrm_queues_arr_[i].pop_front();
             }
             if (imgfrm_queues_arr_[i].empty()) {
@@ -173,7 +173,8 @@ shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool fo
             if (key_current < key_min_) {
                 key_min_ = key_current;
             }
-            int64_t distance_current = imgfrm_queues_arr_[i].back() - imgfrm_queues_arr_[i].front();
+            int64_t distance_current =
+                imgfrm_queues_arr_[i].back()->get_key() - imgfrm_queues_arr_[i].front()->get_key();
             size_t queue_size_current = imgfrm_queues_arr_[i].size();
             if (distance_current > distance_max_) {
                 distance_max_ = distance_current;

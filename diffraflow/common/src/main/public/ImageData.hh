@@ -3,12 +3,14 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 #include <msgpack.hpp>
 
 #include "ImageFrame.hh"
 
 using std::vector;
 using std::ostream;
+using std::shared_ptr;
 
 namespace diffraflow {
 
@@ -17,7 +19,7 @@ namespace diffraflow {
         explicit ImageData(uint32_t numOfMod = 1);
         ~ImageData();
 
-        bool put_imgfrm(size_t index, const ImageFrame& imgfrm);
+        bool put_imgfrm(size_t index, const shared_ptr<ImageFrame>& imgfrm);
         void print(ostream& out = std::cout) const;
 
         void set_defined();
@@ -32,7 +34,7 @@ namespace diffraflow {
     public:
         uint64_t bunch_id;
         vector<bool> alignment_vec;
-        vector<ImageFrame> image_frame_vec;
+        vector<shared_ptr<ImageFrame>> image_frame_vec;
         bool late_arrived;
 
     private:

@@ -23,7 +23,7 @@ uint64_t diffraflow::ImageData::get_key() { return bunch_id; }
 
 void diffraflow::ImageData::set_key(uint64_t key) { bunch_id = key; }
 
-bool diffraflow::ImageData::put_imgfrm(size_t index, const ImageFrame& imgfrm) {
+bool diffraflow::ImageData::put_imgfrm(size_t index, const shared_ptr<ImageFrame>& imgfrm) {
     if (index >= image_frame_vec.size()) return false;
     alignment_vec[index] = true;
     image_frame_vec[index] = imgfrm;
@@ -53,6 +53,6 @@ void diffraflow::ImageData::print(ostream& out) const {
     out << "]" << endl;
     if (image_frame_vec.size() > 0) {
         out << "image_frame_vec[0]:" << endl;
-        image_frame_vec[0].print(out);
+        image_frame_vec[0]->print(out);
     }
 }

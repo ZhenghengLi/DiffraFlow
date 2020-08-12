@@ -36,8 +36,8 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
         // alignment, cell_id, status
         if (i < imgdat_obj.alignment_vec.size()) {
             imgdat_st.alignment[i] = imgdat_obj.alignment_vec[i];
-            imgdat_st.cell_id[i] = imgdat_obj.image_frame_vec[i].cell_id;
-            imgdat_st.status[i] = imgdat_obj.image_frame_vec[i].status;
+            imgdat_st.cell_id[i] = imgdat_obj.image_frame_vec[i]->cell_id;
+            imgdat_st.status[i] = imgdat_obj.image_frame_vec[i]->status;
         } else {
             imgdat_st.alignment[i] = 0;
             imgdat_st.cell_id[i] = -1;
@@ -49,8 +49,8 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
             for (size_t w = 0; w < IMAGE_W; w++) {
                 size_t pos = h * 128 + w;
                 if (i < imgdat_obj.image_frame_vec.size() && pos < 65536) {
-                    imgdat_st.pixel_data[i][h][w] = imgdat_obj.image_frame_vec[i].pixel_data[pos];
-                    imgdat_st.gain_level[i][h][w] = imgdat_obj.image_frame_vec[i].gain_level[pos];
+                    imgdat_st.pixel_data[i][h][w] = imgdat_obj.image_frame_vec[i]->pixel_data[pos];
+                    imgdat_st.gain_level[i][h][w] = imgdat_obj.image_frame_vec[i]->gain_level[pos];
                 } else {
                     imgdat_st.pixel_data[i][h][w] = 0;
                     imgdat_st.gain_level[i][h][w] = 0;

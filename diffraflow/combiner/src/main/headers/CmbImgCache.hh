@@ -25,7 +25,7 @@ using std::list;
 
 namespace diffraflow {
 
-    class ImageFramePtr;
+    class ImageFrame;
     class ImageData;
 
     class CmbImgCache : public MetricsProvider {
@@ -33,7 +33,7 @@ namespace diffraflow {
         explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100, int max_lt = 30000);
         ~CmbImgCache();
 
-        bool push_frame(const ImageFramePtr& image_frame);
+        bool push_frame(const shared_ptr<ImageFrame>& image_frame);
         bool take_image(shared_ptr<ImageData>& image_data);
         void stop(int wait_time = 0 /* millisecond */);
 
@@ -53,7 +53,7 @@ namespace diffraflow {
 
     private:
         size_t imgfrm_queues_len_;
-        list<ImageFramePtr>* imgfrm_queues_arr_;
+        list<shared_ptr<ImageFrame>>* imgfrm_queues_arr_;
         BlockingQueue<shared_ptr<ImageData>> imgdat_queue_;
 
         mutex data_mtx_;

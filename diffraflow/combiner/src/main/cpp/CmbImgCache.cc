@@ -40,7 +40,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
 
     clear_worker_ = new thread([this]() {
         while (!stopped_) {
-            unique_lock<mutex> ulk(data_mtx_);
+            unique_lock<mutex> ulk(clear_mtx_);
             if (clear_flag_) {
                 clear_cv_.wait(ulk, [&]() { return stopped_ || !clear_flag_; });
                 if (stopped_) break;
@@ -48,6 +48,7 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
             duration<double, milli> current_time = system_clock::now().time_since_epoch();
             double linger_time = current_time.count() - latest_push_time_;
             if (linger_time >= max_linger_time_) {
+                lock_guard<mutex> data_lk(data_mtx_);
                 clear_cache_();
                 clear_flag_ = true;
             } else {
@@ -131,12 +132,13 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
         // }
     }
 
-    // duration<double, milli> current_time = system_clock::now().time_since_epoch();
-    // latest_push_time_ = current_time.count();
-    // if (clear_flag_) {
-    //     clear_flag_ = false;
-    //     clear_cv_.notify_all();
-    // }
+    lock_guard<mutex> clear_lk(clear_mtx_);
+    duration<double, milli> current_time = system_clock::now().time_since_epoch();
+    latest_push_time_ = current_time.count();
+    if (clear_flag_) {
+        clear_flag_ = false;
+        clear_cv_.notify_all();
+    }
 
     return true;
 }

@@ -74,6 +74,7 @@ namespace diffraflow {
         double latest_push_time_;
         double max_linger_time_; // milliseconds
         bool clear_flag_;
+        mutex clear_mtx_;
         condition_variable clear_cv_;
         thread* clear_worker_;
 

@@ -19,7 +19,7 @@ using std::copy;
 log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_ = log4cxx::Logger::getLogger("CmbImgFrmConn");
 
 diffraflow::CmbImgFrmConn::CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_)
-    : GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 4 * 1024 * 1024) {
+    : GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 6 * 1024 * 1024) {
     image_cache_ = img_cache_;
     // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
     buffer_uncompress_ = new char[buffer_size_];

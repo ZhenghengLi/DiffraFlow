@@ -20,16 +20,17 @@ log4cxx::LoggerPtr diffraflow::DspSender::logger_ = log4cxx::Logger::getLogger("
 
 diffraflow::DspSender::DspSender(string hostname, int port, int id, CompressMethod compr_method, int compr_level)
     : GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD) {
-    buffer_size_ = 1024 * 1024 * 4 - 16; // 4 MiB - 16 B
-    size_threshold_ = 1024 * 1024;       // 1 MiB
-    time_threshold_ = 100;               // 0.1 second
+    buffer_size_ = 1024 * 1024 * 4; // 4 MiB
+    size_threshold_ = 1024 * 1024;  // 1 MiB
+    time_threshold_ = 100;          // 0.1 second
     buffer_A_ = new char[buffer_size_];
     buffer_A_limit_ = 0;
     buffer_A_imgct_ = 0;
     buffer_B_ = new char[buffer_size_];
     buffer_B_limit_ = 0;
     buffer_B_imgct_ = 0;
-    buffer_compress_ = new char[buffer_size_];
+    buffer_compress_size_ = 1024 * 1024 * 5; // 5 MiB
+    buffer_compress_ = new char[buffer_compress_size_];
     buffer_compress_limit_ = 0;
     sending_thread_ = nullptr;
     run_flag_ = false;
@@ -142,7 +143,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
     switch (compress_method_) {
     case kLZ4: // Compress by LZ4
         payload_type = 0xABCDFF01;
-        buffer_compress_limit_ = LZ4_compress_default(buffer, buffer_compress_, limit, buffer_size_);
+        buffer_compress_limit_ = LZ4_compress_default(buffer, buffer_compress_, limit, buffer_compress_size_);
         if (buffer_compress_limit_ == 0) {
             LOG4CXX_WARN(logger_, "failed to compress data by LZ4, discard data in buffer.");
             return;
@@ -158,7 +159,7 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
         break;
     case kZSTD: // Compress by ZSTD
         payload_type = 0xABCDFF03;
-        buffer_compress_limit_ = ZSTD_compress(buffer_compress_, buffer_size_, buffer, limit, compress_level_);
+        buffer_compress_limit_ = ZSTD_compress(buffer_compress_, buffer_compress_size_, buffer, limit, compress_level_);
         if (ZSTD_isError(buffer_compress_limit_)) {
             LOG4CXX_WARN(logger_, "failed to compress data by ZSTD with error: "
                                       << ZSTD_getErrorName(buffer_compress_limit_) << ", discard data in buffer.");

@@ -48,7 +48,7 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     private:
-        bool do_alignment_(bool force_flag = false);
+        shared_ptr<ImageData> do_alignment_(bool force_flag = false);
         void clear_cache_();
 
     private:

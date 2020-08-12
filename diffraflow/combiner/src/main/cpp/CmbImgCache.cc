@@ -89,40 +89,35 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     }
     imgfrm_queues_arr_[image_frame->module_id].push_back(image_frame);
 
-    // int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].distance();
-    // size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
-    // if (distance_current > distance_max_) {
-    //     distance_max_ = distance_current;
-    // }
-    // if (queue_size_current > queue_size_max_) {
-    //     queue_size_max_ = queue_size_current;
-    // }
+    int64_t distance_current =
+        imgfrm_queues_arr_[image_frame->module_id].back() - imgfrm_queues_arr_[image_frame->module_id].front();
+    size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
+    if (distance_current > distance_max_) {
+        distance_max_ = distance_current;
+    }
+    if (queue_size_current > queue_size_max_) {
+        queue_size_max_ = queue_size_current;
+    }
 
     alignment_metrics.total_pushed_frames++;
 
     while (true) {
-        // shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
-        if (!do_alignment_(false)) {
-            break;
+        shared_ptr<ImageData> image_data = do_alignment_(false);
+        if (!image_data) break;
+        if (image_data->get_key() < key_last_) {
+            image_data->late_arrived = true;
+            alignment_metrics.total_late_arrived++;
+        } else {
+            image_data->late_arrived = false;
+            key_last_ = image_data->get_key();
         }
-
-        // debug
-        break;
-
-        // if (image_data->get_key() < key_last_) {
-        //     image_data->late_arrived = true;
-        //     alignment_metrics.total_late_arrived++;
-        // } else {
-        //     image_data->late_arrived = false;
-        //     key_last_ = image_data->get_key();
-        // }
-        // alignment_metrics.total_aligned_images++;
-        // for (const bool& item : image_data->alignment_vec) {
-        //     if (!item) {
-        //         alignment_metrics.total_partial_images++;
-        //         break;
-        //     }
-        // }
+        alignment_metrics.total_aligned_images++;
+        for (const bool& item : image_data->alignment_vec) {
+            if (!item) {
+                alignment_metrics.total_partial_images++;
+                break;
+            }
+        }
 
         // for debug
         // image_data->print();
@@ -146,61 +141,53 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     return true;
 }
 
-bool diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
+shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
     if (num_of_empty_ == imgfrm_queues_len_) {
-        return false;
+        return shared_ptr<ImageData>();
     }
+    if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
+        force_flag) {
 
-    // debug
-    if (num_of_empty_ <= 0) {
+        uint64_t key_target = key_min_;
+        key_min_ = numeric_limits<uint64_t>::max();
+        num_of_empty_ = 0;
+        distance_max_ = 0;
+        queue_size_max_ = 0;
+
+        shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
+
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
-            imgfrm_queues_arr_[i].pop_front();
             if (imgfrm_queues_arr_[i].empty()) {
                 num_of_empty_++;
+                continue;
+            }
+            if (imgfrm_queues_arr_[i].front()->get_key() == key_target) {
+                image_data->put_imgfrm(i, *imgfrm_queues_arr_[i].front());
+                imgfrm_queues_arr_[i].pop_front();
+            }
+            if (imgfrm_queues_arr_[i].empty()) {
+                num_of_empty_++;
+                continue;
+            }
+            uint64_t key_current = imgfrm_queues_arr_[i].front()->get_key();
+            if (key_current < key_min_) {
+                key_min_ = key_current;
+            }
+            int64_t distance_current = imgfrm_queues_arr_[i].back() - imgfrm_queues_arr_[i].front();
+            size_t queue_size_current = imgfrm_queues_arr_[i].size();
+            if (distance_current > distance_max_) {
+                distance_max_ = distance_current;
+            }
+            if (queue_size_current > queue_size_max_) {
+                queue_size_max_ = queue_size_current;
             }
         }
+        image_data->set_key(key_target);
+        image_data->set_defined();
+        return image_data;
+    } else {
+        return shared_ptr<ImageData>();
     }
-    return false;
-
-    // if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
-    //     force_flag) {
-    //     uint64_t key_target = key_min_;
-    //     key_min_ = numeric_limits<uint64_t>::max();
-    //     num_of_empty_ = 0;
-    //     distance_max_ = 0;
-    //     queue_size_max_ = 0;
-    //     for (size_t i = 0; i < imgfrm_queues_len_; i++) {
-    //         if (imgfrm_queues_arr_[i].empty()) {
-    //             num_of_empty_++;
-    //             continue;
-    //         }
-    //         if (imgfrm_queues_arr_[i].top()->get_key() == key_target) {
-    //             image_data->put_imgfrm(i, *imgfrm_queues_arr_[i].top());
-    //             imgfrm_queues_arr_[i].pop();
-    //         }
-    //         if (imgfrm_queues_arr_[i].empty()) {
-    //             num_of_empty_++;
-    //             continue;
-    //         }
-    //         uint64_t key_current = imgfrm_queues_arr_[i].top()->get_key();
-    //         if (key_current < key_min_) {
-    //             key_min_ = key_current;
-    //         }
-    //         int64_t distance_current = imgfrm_queues_arr_[i].distance();
-    //         size_t queue_size_current = imgfrm_queues_arr_[i].size();
-    //         if (distance_current > distance_max_) {
-    //             distance_max_ = distance_current;
-    //         }
-    //         if (queue_size_current > queue_size_max_) {
-    //             queue_size_max_ = queue_size_current;
-    //         }
-    //     }
-    //     image_data->set_key(key_target);
-    //     image_data->set_defined();
-    //     return true;
-    // } else {
-    //     return false;
-    // }
 }
 
 bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
@@ -213,16 +200,14 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
 
 void diffraflow::CmbImgCache::clear_cache_() {
     while (true) {
-        // shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
-        if (!do_alignment_(true)) {
-            break;
+        shared_ptr<ImageData> image_data = do_alignment_(true);
+        if (!image_data) break;
+        if (image_data->get_key() < key_last_) {
+            image_data->late_arrived = true;
+        } else {
+            image_data->late_arrived = false;
+            key_last_ = image_data->get_key();
         }
-        // if (image_data->get_key() < key_last_) {
-        //     image_data->late_arrived = true;
-        // } else {
-        //     image_data->late_arrived = false;
-        //     key_last_ = image_data->get_key();
-        // }
 
         // for debug
         // image_data->print();

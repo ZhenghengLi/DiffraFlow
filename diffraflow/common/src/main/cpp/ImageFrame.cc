@@ -20,9 +20,6 @@ diffraflow::ImageFrame::ImageFrame() {
     module_id = -1;
     cell_id = -1;
     status = 0;
-
-    gain_level.resize(65536);
-    pixel_data.resize(65536);
 }
 
 diffraflow::ImageFrame::~ImageFrame() {}
@@ -48,6 +45,8 @@ bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     }
     cell_id = gDC.decode_byte<uint16_t>(buffer, 8, 9);
 
+    gain_level.resize(65536);
+    pixel_data.resize(65536);
     for (size_t i = 0; i < 65536; i++) {
         size_t offset = 20 + i * 2;
         gain_level[i] = gDC.decode_bit<uint8_t>(buffer + offset, 0, 1);

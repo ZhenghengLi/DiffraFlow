@@ -89,12 +89,6 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
     }
     imgfrm_queues_arr_[image_frame->module_id].push(image_frame);
 
-    // debug
-    if (imgfrm_queues_arr_[image_frame->module_id].size() > 400) {
-        imgfrm_queues_arr_[image_frame->module_id].pop();
-    }
-    return true;
-
     int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].distance();
     size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
     if (distance_current > distance_max_) {
@@ -138,12 +132,12 @@ bool diffraflow::CmbImgCache::push_frame(const ImageFramePtr& image_frame) {
         // }
     }
 
-    duration<double, milli> current_time = system_clock::now().time_since_epoch();
-    latest_push_time_ = current_time.count();
-    if (clear_flag_) {
-        clear_flag_ = false;
-        clear_cv_.notify_all();
-    }
+    // duration<double, milli> current_time = system_clock::now().time_since_epoch();
+    // latest_push_time_ = current_time.count();
+    // if (clear_flag_) {
+    //     clear_flag_ = false;
+    //     clear_cv_.notify_all();
+    // }
 
     return true;
 }

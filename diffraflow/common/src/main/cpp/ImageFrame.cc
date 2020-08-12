@@ -30,7 +30,15 @@ diffraflow::ImageFrame::~ImageFrame() {}
 uint64_t diffraflow::ImageFrame::get_key() { return bunch_id; }
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
-    if (size <= 131096) return false;
+    if (size < 131096) {
+        LOG4CXX_WARN(logger_, "frame size is less than 131096, stop decoding.")
+        return false;
+    }
+    uint32_t header = gDC.decode_byte<uint32_t>(buffer, 0, 3);
+    if (header != 0xDEFAF127) {
+        LOG4CXX_WARN(logger_, "header (" << header << ") is wrong, stop decoding.");
+        return false;
+    }
 
     bunch_id = gDC.decode_byte<uint64_t>(buffer, 12, 19);
     module_id = gDC.decode_byte<uint16_t>(buffer, 6, 7);
@@ -62,13 +70,13 @@ void diffraflow::ImageFrame::print(ostream& out) const {
         out << ", " << pixel_data[i];
     }
     out << "]" << endl;
-    out << " gain_level: [";
+    out << "  gain_level: [";
     for (size_t i = 0; i < 5; i++) {
-        out << gain_level[i] << ", ";
+        out << (int)gain_level[i] << ", ";
     }
     out << "...";
     for (size_t i = 65531; i < 65536; i++) {
-        out << ", " << gain_level[i];
+        out << ", " << (int)gain_level[i];
     }
     out << "]" << endl;
 }

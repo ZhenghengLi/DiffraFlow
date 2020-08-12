@@ -123,8 +123,13 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
 
         current_position += 4;
 
-        // ImageFramePtr image_frame(new ImageFrame());
-        // image_frame->decode(current_buffer + current_position, current_size);
+        ImageFramePtr image_frame(new ImageFrame());
+        if (image_frame->decode(current_buffer + current_position, current_size)) {
+            // image_frame->print();
+        } else {
+            LOG4CXX_WARN(logger_, "failed to decode image frame, skip it.");
+            return kSkipped;
+        }
 
         current_position += current_size;
 

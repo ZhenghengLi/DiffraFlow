@@ -96,7 +96,10 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
         return false;
     }
 
-    lock_guard<mutex> lk(data_mtx_);
+    unique_lock<mutex> data_lk(data_mtx_);
+    push_cv_.wait(data_lk,
+        [&]() { return stopped_ || imgfrm_queues_arr_[image_frame->module_id].size() < queue_size_threshold_; });
+    if (stopped_) return false;
 
     if (image_frame->get_key() < key_min_) {
         key_min_ = image_frame->get_key();
@@ -145,6 +148,8 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
         //     LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
         //     return false;
         // }
+
+        push_cv_.notify_all();
     }
 
     lock_guard<mutex> clear_lk(clear_mtx_);
@@ -242,6 +247,8 @@ void diffraflow::CmbImgCache::clear_cache_() {
 
 void diffraflow::CmbImgCache::stop(int wait_time) {
     stopped_ = true;
+    clear_cv_.notify_all();
+    push_cv_.notify_all();
 
     imgdat_queue_.stop();
 

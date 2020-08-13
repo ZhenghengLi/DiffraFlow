@@ -60,6 +60,7 @@ namespace diffraflow {
         BlockingQueue<shared_ptr<ImageData>> imgdat_queue_;
 
         mutex data_mtx_;
+        condition_variable push_cv_;
 
         atomic_bool stopped_;
         mutex stop_mtx_;

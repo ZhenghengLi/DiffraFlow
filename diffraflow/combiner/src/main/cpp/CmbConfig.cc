@@ -3,9 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <limits>
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
+using std::numeric_limits;
 using std::ifstream;
 using std::stringstream;
 using std::cout;
@@ -24,6 +26,8 @@ diffraflow::CmbConfig::CmbConfig() {
     imgdat_listen_port = -1;
     imgdat_queue_capacity = 100;
     max_linger_time = 30000; // 30 seconds
+    distance_threshold = numeric_limits<int64_t>::max();
+    queue_size_threshold = numeric_limits<size_t>::max();
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -52,6 +56,10 @@ bool diffraflow::CmbConfig::load(const char* filename) {
             imgdat_queue_capacity = atoi(value.c_str());
         } else if (key == "max_linger_time") {
             max_linger_time = atoi(value.c_str());
+        } else if (key == "distance_threshold") {
+            distance_threshold = std::stol(value.c_str());
+        } else if (key == "queue_size_threshold") {
+            queue_size_threshold = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -79,6 +87,17 @@ bool diffraflow::CmbConfig::load(const char* filename) {
     }
 
     // correction
+
+    if (distance_threshold < 500) {
+        LOG4CXX_WARN(logger_, "distance_threshold < 500, use 500 instead.");
+        distance_threshold = 500;
+    }
+
+    if (queue_size_threshold < 500) {
+        LOG4CXX_WARN(logger_, "queue_size_threshold < 500, use 500 instead.");
+        queue_size_threshold = 500;
+    }
+
     if (metrics_pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
         metrics_pulsar_report_period = 500;
@@ -111,6 +130,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
         static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
         static_config_json_["max_linger_time"] = json::value::number(max_linger_time);
+        static_config_json_["distance_threshold"] = json::value::number(distance_threshold);
+        static_config_json_["queue_size_threshold"] = json::value::number((uint32_t)queue_size_threshold);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -133,6 +154,8 @@ void diffraflow::CmbConfig::print() {
     cout << "  imgdat_listen_port = " << imgdat_listen_port << endl;
     cout << "  imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
     cout << "  max_linger_time = " << max_linger_time << endl;
+    cout << "  distance_threshold = " << distance_threshold << endl;
+    cout << "  queue_size_threshold = " << queue_size_threshold << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
     cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;

@@ -72,6 +72,22 @@ diffraflow::CmbImgCache::~CmbImgCache() {
     delete clear_worker_;
 }
 
+void diffraflow::CmbImgCache::set_distance_threshold(int64_t distance) {
+    if (distance < 100) {
+        LOG4CXX_WARN(logger_, "distance (" << distance << ") is too small (< 100), keep it unchanged.");
+    } else {
+        distance_max_ = distance;
+    }
+}
+
+void diffraflow::CmbImgCache::set_queue_size_threshold(size_t queue_size) {
+    if (queue_size < 100) {
+        LOG4CXX_WARN(logger_, "queue_size (" << queue_size << ") is too small (< 100), keep it unchanged.");
+    } else {
+        queue_size_threshold_ = queue_size;
+    }
+}
+
 bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_frame) {
     if (stopped_) return false;
 

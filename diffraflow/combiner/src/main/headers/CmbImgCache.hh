@@ -33,6 +33,9 @@ namespace diffraflow {
         explicit CmbImgCache(size_t num_of_dets, size_t img_q_ms = 100, int max_lt = 30000);
         ~CmbImgCache();
 
+        void set_distance_threshold(int64_t distance);
+        void set_queue_size_threshold(size_t queue_size);
+
         bool push_frame(const shared_ptr<ImageFrame>& image_frame);
         bool take_image(shared_ptr<ImageData>& image_data);
         void stop(int wait_time = 0 /* millisecond */);

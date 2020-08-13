@@ -20,6 +20,8 @@ void diffraflow::CmbSrvMan::start_run() {
     if (running_flag_) return;
 
     image_cache_ = new CmbImgCache(16, config_obj_->imgdat_queue_capacity, config_obj_->max_linger_time);
+    image_cache_->set_distance_threshold(config_obj_->distance_threshold);
+    image_cache_->set_queue_size_threshold(config_obj_->queue_size_threshold);
 
     imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->imgfrm_listen_host, config_obj_->imgfrm_listen_port, image_cache_);
     imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_listen_host, config_obj_->imgdat_listen_port, image_cache_);

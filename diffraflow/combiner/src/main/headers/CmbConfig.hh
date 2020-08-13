@@ -35,6 +35,9 @@ namespace diffraflow {
         size_t imgdat_queue_capacity;
         int max_linger_time; // milliseconds
 
+        int64_t distance_threshold;
+        size_t queue_size_threshold;
+
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;
         string metrics_pulsar_message_key;

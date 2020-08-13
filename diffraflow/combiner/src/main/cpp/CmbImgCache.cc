@@ -102,9 +102,8 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
 
     alignment_metrics.total_pushed_frames++;
 
-    while (true) {
-        shared_ptr<ImageData> image_data = do_alignment_(false);
-        if (!image_data) break;
+    shared_ptr<ImageData> image_data = do_alignment_(false);
+    if (image_data) {
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
             alignment_metrics.total_late_arrived++;

@@ -256,8 +256,6 @@ void diffraflow::CmbImgCache::stop(int wait_time) {
         unique_lock<mutex> ulk(stop_mtx_);
         stop_cv_.wait_for(ulk, std::chrono::milliseconds(wait_time), [this]() { return imgdat_queue_.empty(); });
     }
-
-    clear_cv_.notify_all();
 }
 
 json::value diffraflow::CmbImgCache::collect_metrics() {

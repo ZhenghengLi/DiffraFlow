@@ -36,9 +36,6 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     image_buffer_.clear();
     msgpack::pack(image_buffer_, *one_image);
 
-    // debug
-    return true;
-
     // serialize head
     char head_buffer[4];
     gPS.serializeValue<uint32_t>(0xABCDEEEE, head_buffer, 4);

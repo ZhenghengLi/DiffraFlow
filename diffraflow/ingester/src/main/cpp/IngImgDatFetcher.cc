@@ -84,6 +84,10 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
         LOG4CXX_WARN(logger_, "got unknown payload head: " << payload_head);
         return kFail;
     }
+
+    // debug
+    return kSucc;
+
     // deserialize
     try {
         msgpack::unpack(imgdat_buffer_ + 4, payload_size - 4).get().convert(image_data);

@@ -52,6 +52,28 @@ diffraflow::DspSender::~DspSender() {
     delete[] buffer_compress_;
 }
 
+bool diffraflow::DspSender::send(const char* data, const size_t len) {
+
+    lock_guard<mutex> lg(mtx_send_);
+
+    // try to connect if lose connection
+    if (not_connected()) {
+        if (connect_to_server()) {
+            LOG4CXX_INFO(logger_, "reconnected to combiner.");
+        } else {
+            LOG4CXX_WARN(logger_, "failed to reconnect to combiner, discard data in buffer.");
+            return false;
+        }
+    }
+
+    if (send_one_(data, len, nullptr, 0)) {
+        return true;
+    } else {
+        close_connection();
+        return false;
+    }
+}
+
 bool diffraflow::DspSender::push(const char* data, const size_t len) {
     if (!run_flag_) return false;
 
@@ -112,6 +134,8 @@ void diffraflow::DspSender::send_() {
 }
 
 void diffraflow::DspSender::send_remaining() {
+    return;
+
     // do this only after stopping and before deleting
     lock_guard<mutex> lk_send(mtx_send_);
     lock_guard<mutex> lk(mtx_swap_);
@@ -189,6 +213,8 @@ void diffraflow::DspSender::send_buffer_(const char* buffer, const size_t limit,
 }
 
 void diffraflow::DspSender::start() {
+    return;
+
     if (run_flag_) return;
     run_flag_ = true;
     if (sending_thread_ != nullptr) return;
@@ -200,6 +226,8 @@ void diffraflow::DspSender::start() {
 }
 
 void diffraflow::DspSender::stop() {
+    return;
+
     if (!run_flag_) return;
     run_flag_ = false;
     if (sending_thread_ != nullptr) {

@@ -30,6 +30,8 @@ namespace diffraflow {
         DspSender(string hostname, int port, int id, CompressMethod compr_method = kNone, int compr_level = 1);
         ~DspSender();
 
+        bool send(const char* data, const size_t len);
+
         // push to buffer_A and block on buffer full
         bool push(const char* data, const size_t len);
         void send_remaining();

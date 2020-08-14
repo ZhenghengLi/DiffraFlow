@@ -32,13 +32,21 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
         // return kProcessed;
 
         size_t index = hash_long_(key) % sender_count_;
-        if (sender_array_[index]->push(frame_buffer, frame_size)) {
-            LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
+        if (sender_array_[index]->send(payload_buffer, payload_size)) {
+            LOG4CXX_DEBUG(logger_, "send one image frame by sender[" << index << "].");
             return kProcessed;
         } else {
             LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
             return kFailed;
         }
+
+        // if (sender_array_[index]->push(frame_buffer, frame_size)) {
+        //     LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
+        //     return kProcessed;
+        // } else {
+        //     LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
+        //     return kFailed;
+        // }
 
     } break;
     default:

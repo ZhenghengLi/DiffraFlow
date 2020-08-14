@@ -116,6 +116,7 @@ void diffraflow::IngPipeline::start_run() {
 
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("image_data_fetcher", image_data_fetcher_);
     metrics_reporter_.add("image_filter", image_filter_);
     metrics_reporter_.add("image_writer", image_writer_);
     metrics_reporter_.add("image_http_server", image_http_server_);

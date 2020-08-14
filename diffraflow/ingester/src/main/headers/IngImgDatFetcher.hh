@@ -18,7 +18,7 @@ using std::shared_future;
 using std::async;
 
 namespace diffraflow {
-    class IngImgDatFetcher : private GenericClient {
+    class IngImgDatFetcher : public GenericClient {
     public:
         IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue);
         ~IngImgDatFetcher();

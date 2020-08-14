@@ -42,10 +42,9 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     // TODO: send one_image without data copy
 
     char meta_buffer[11];
-    one_image->serialize_meta(meta_buffer, 11);
+    uint32_t image_size = one_image->serialize_meta(meta_buffer, 11);
 
     // (1) calcaulte size
-    uint32_t image_size = 11;
     for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
         if (one_image->alignment_vec[i]) {
             image_size += one_image->image_frame_vec[i]->size();

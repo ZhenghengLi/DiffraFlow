@@ -2,12 +2,17 @@
 #define GenericConnection_H
 
 #include <iostream>
+#include <memory>
+#include <vector>
 #include <atomic>
 #include <log4cxx/logger.h>
 
 #include "MetricsProvider.hh"
 
 using std::atomic;
+using std::shared_ptr;
+using std::make_shared;
+using std::vector;
 
 namespace diffraflow {
     class GenericConnection : public MetricsProvider {
@@ -51,16 +56,16 @@ namespace diffraflow {
         bool send_one_(const char* payload_head_buffer, const size_t payload_head_size, const char* payload_data_buffer,
             const size_t payload_data_size);
         bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
+        bool receive_one_(uint32_t& payload_type, shared_ptr<vector<char>>& payload_data);
 
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size);
         virtual void after_connected_();
         virtual bool do_preparing_and_sending_();
+        virtual bool do_receiving_and_processing_();
 
     private:
         bool start_connection_();
-
-        bool do_receiving_and_processing_();
 
     private:
         static log4cxx::LoggerPtr logger_;

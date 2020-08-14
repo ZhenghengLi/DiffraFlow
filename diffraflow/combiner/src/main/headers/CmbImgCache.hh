@@ -25,8 +25,8 @@ using std::list;
 
 namespace diffraflow {
 
-    class ImageFrame;
-    class ImageData;
+    class ImageFrameRaw;
+    class ImageDataRaw;
 
     class CmbImgCache : public MetricsProvider {
     public:
@@ -36,8 +36,8 @@ namespace diffraflow {
         void set_distance_threshold(int64_t distance);
         void set_queue_size_threshold(size_t queue_size);
 
-        bool push_frame(const shared_ptr<ImageFrame>& image_frame);
-        bool take_image(shared_ptr<ImageData>& image_data);
+        bool push_frame(const shared_ptr<ImageFrameRaw>& image_frame);
+        bool take_image(shared_ptr<ImageDataRaw>& image_data);
         void stop(int wait_time = 0 /* millisecond */);
 
     public:
@@ -51,13 +51,13 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     private:
-        shared_ptr<ImageData> do_alignment_(bool force_flag = false);
+        shared_ptr<ImageDataRaw> do_alignment_(bool force_flag = false);
         void clear_cache_();
 
     private:
         size_t imgfrm_queues_len_;
-        list<shared_ptr<ImageFrame>>* imgfrm_queues_arr_;
-        BlockingQueue<shared_ptr<ImageData>> imgdat_queue_;
+        list<shared_ptr<ImageFrameRaw>>* imgfrm_queues_arr_;
+        BlockingQueue<shared_ptr<ImageDataRaw>> imgdat_queue_;
 
         mutex data_mtx_;
 

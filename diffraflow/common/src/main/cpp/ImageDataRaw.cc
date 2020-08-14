@@ -8,6 +8,8 @@ diffraflow::ImageDataRaw::ImageDataRaw(uint32_t numOfMod) {
     late_arrived = false;
 }
 
+diffraflow::ImageDataRaw::~ImageDataRaw() {}
+
 uint64_t diffraflow::ImageDataRaw::get_key() { return bunch_id; }
 
 void diffraflow::ImageDataRaw::set_key(uint64_t key) { bunch_id = key; }

@@ -1,6 +1,6 @@
 #include "CmbImgDatConn.hh"
 #include "CmbImgCache.hh"
-#include "ImageData.hh"
+#include "ImageDataRaw.hh"
 #include "Decoder.hh"
 #include "PrimitiveSerializer.hh"
 
@@ -27,14 +27,16 @@ diffraflow::CmbImgDatConn::~CmbImgDatConn() {}
 
 bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     // serialize and send image data
-    shared_ptr<ImageData> one_image;
+    shared_ptr<ImageDataRaw> one_image;
     if (!image_cache_->take_image(one_image)) {
         LOG4CXX_WARN(logger_, "image data queue is stopped and empty, close the connection.");
         return false;
     }
     // serialize image data
-    image_buffer_.clear();
-    msgpack::pack(image_buffer_, *one_image);
+    // image_buffer_.clear();
+    // msgpack::pack(image_buffer_, *one_image);
+
+    return true;
 
     // serialize head
     char head_buffer[4];

@@ -1,6 +1,6 @@
 #include "CmbImgCache.hh"
-#include "ImageFrame.hh"
-#include "ImageData.hh"
+#include "ImageFrameRaw.hh"
+#include "ImageDataRaw.hh"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
@@ -19,7 +19,7 @@ log4cxx::LoggerPtr diffraflow::CmbImgCache::logger_ = log4cxx::Logger::getLogger
 
 diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int max_lt) {
     imgfrm_queues_len_ = num_of_dets;
-    imgfrm_queues_arr_ = new list<shared_ptr<ImageFrame>>[imgfrm_queues_len_];
+    imgfrm_queues_arr_ = new list<shared_ptr<ImageFrameRaw>>[imgfrm_queues_len_];
     imgdat_queue_.set_maxsize(img_q_ms);
 
     key_min_ = numeric_limits<uint64_t>::max();
@@ -88,7 +88,7 @@ void diffraflow::CmbImgCache::set_queue_size_threshold(size_t queue_size) {
     }
 }
 
-bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_frame) {
+bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrameRaw>& image_frame) {
     if (stopped_) return false;
 
     if (image_frame->module_id < 0 || image_frame->module_id >= (int)imgfrm_queues_len_) {
@@ -118,7 +118,7 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
 
     alignment_metrics.total_pushed_frames++;
 
-    shared_ptr<ImageData> image_data = do_alignment_(false);
+    shared_ptr<ImageDataRaw> image_data = do_alignment_(false);
     if (image_data) {
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
@@ -134,9 +134,6 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
                 break;
             }
         }
-
-        // for debug
-        // image_data->print();
 
         LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
         if (imgdat_queue_.push(image_data)) {
@@ -158,9 +155,9 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
     return true;
 }
 
-shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
+shared_ptr<diffraflow::ImageDataRaw> diffraflow::CmbImgCache::do_alignment_(bool force_flag) {
     if (num_of_empty_ == imgfrm_queues_len_) {
-        return shared_ptr<ImageData>();
+        return shared_ptr<ImageDataRaw>();
     }
     if (num_of_empty_ <= 0 || distance_max_ > distance_threshold_ || queue_size_max_ > queue_size_threshold_ ||
         force_flag) {
@@ -171,7 +168,7 @@ shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool fo
         distance_max_ = 0;
         queue_size_max_ = 0;
 
-        shared_ptr<ImageData> image_data = make_shared<ImageData>(imgfrm_queues_len_);
+        shared_ptr<ImageDataRaw> image_data = make_shared<ImageDataRaw>(imgfrm_queues_len_);
 
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
             if (imgfrm_queues_arr_[i].empty()) {
@@ -201,14 +198,13 @@ shared_ptr<diffraflow::ImageData> diffraflow::CmbImgCache::do_alignment_(bool fo
             }
         }
         image_data->set_key(key_target);
-        image_data->set_defined();
         return image_data;
     } else {
-        return shared_ptr<ImageData>();
+        return shared_ptr<ImageDataRaw>();
     }
 }
 
-bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
+bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageDataRaw>& image_data) {
     bool result = imgdat_queue_.take(image_data);
     if (stopped_ && imgdat_queue_.empty()) {
         stop_cv_.notify_all();
@@ -218,7 +214,7 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageData>& image_data) {
 
 void diffraflow::CmbImgCache::clear_cache_() {
     while (true) {
-        shared_ptr<ImageData> image_data = do_alignment_(true);
+        shared_ptr<ImageDataRaw> image_data = do_alignment_(true);
         if (!image_data) break;
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
@@ -226,9 +222,6 @@ void diffraflow::CmbImgCache::clear_cache_() {
             image_data->late_arrived = false;
             key_last_ = image_data->get_key();
         }
-
-        // for debug
-        image_data->print();
 
         LOG4CXX_DEBUG(logger_, "before offer into imgdat_queue_.");
         if (imgdat_queue_.offer(image_data)) {

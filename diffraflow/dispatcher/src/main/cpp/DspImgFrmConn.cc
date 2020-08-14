@@ -39,15 +39,6 @@ diffraflow::GenericConnection::ProcessRes diffraflow::DspImgFrmConn::process_pay
             LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
             return kFailed;
         }
-
-        // if (sender_array_[index]->push(frame_buffer, frame_size)) {
-        //     LOG4CXX_DEBUG(logger_, "pushed the image frame into sender[" << index << "].");
-        //     return kProcessed;
-        // } else {
-        //     LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
-        //     return kFailed;
-        // }
-
     } break;
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");

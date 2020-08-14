@@ -24,67 +24,13 @@ using std::atomic_bool;
 namespace diffraflow {
     class DspSender : public GenericClient {
     public:
-        enum CompressMethod { kNone, kLZ4, kSnappy, kZSTD };
-
-    public:
-        DspSender(string hostname, int port, int id, CompressMethod compr_method = kNone, int compr_level = 1);
+        DspSender(string hostname, int port, int id);
         ~DspSender();
 
         bool send(const char* data, const size_t len);
 
-        // push to buffer_A and block on buffer full
-        bool push(const char* data, const size_t len);
-        void send_remaining();
-
-        // use a background thread sending data
-        void start();
-        void stop();
-
-    public:
-        struct {
-            atomic<uint64_t> total_pushed_frame_size;
-            atomic<uint64_t> total_pushed_frame_counts;
-        } sender_metrics;
-
-        struct {
-            // for calculating compression ratio
-            atomic<uint64_t> total_uncompressed_size;
-            atomic<uint64_t> total_compressed_size;
-        } compression_metrics;
-
-        json::value collect_metrics() override;
-
     private:
-        // swap buffer_A and buffer_B with lock
-        bool swap_();
-        // send buffer_B over TCP
-        void send_();
-        // help function
-        void send_buffer_(const char* buffer, const size_t limit, const size_t num_of_imgs);
-
-    private:
-        // buffer
-        size_t buffer_size_;
-        char* buffer_A_;
-        size_t buffer_A_limit_;
-        size_t buffer_A_imgct_;
-        char* buffer_B_;
-        size_t buffer_B_limit_;
-        size_t buffer_B_imgct_;
-        size_t buffer_compress_size_;
-        char* buffer_compress_;
-        size_t buffer_compress_limit_;
-        size_t size_threshold_;
-        size_t time_threshold_; // ms
-        // sending thread
-        thread* sending_thread_;
-        mutex mtx_swap_;
         mutex mtx_send_;
-        condition_variable cv_push_;
-        condition_variable cv_swap_;
-        atomic_bool run_flag_;
-        CompressMethod compress_method_;
-        int compress_level_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -20,7 +20,6 @@ diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
     listen_host = "0.0.0.0";
     listen_port = -1;
-    compress_method = DspSender::kNone;
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -44,18 +43,6 @@ bool diffraflow::DspConfig::load(const char* filename) {
             listen_port = atoi(value.c_str());
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
-        } else if (key == "compress_method") {
-            if (value == "LZ4") {
-                compress_method = DspSender::kLZ4;
-            } else if (value == "Snappy") {
-                compress_method = DspSender::kSnappy;
-            } else if (value == "ZSTD") {
-                compress_method = DspSender::kZSTD;
-            } else {
-                compress_method = DspSender::kNone;
-            }
-        } else if (key == "compress_level") {
-            compress_level = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -105,29 +92,11 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
-    if (compress_method == DspSender::kZSTD && (compress_level < 1 || compress_level >= 20)) {
-        LOG4CXX_ERROR(logger_, "compress level for ZSTD compress method is out of range, it should be >= 1 and < 20.");
-        succ_flag = false;
-    }
 
     if (succ_flag) {
         static_config_json_["dispatcher_id"] = json::value::number(dispatcher_id);
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
-        switch (compress_method) {
-        case DspSender::kLZ4:
-            static_config_json_["compress_method"] = json::value::string("LZ4");
-            break;
-        case DspSender::kSnappy:
-            static_config_json_["compress_method"] = json::value::string("Snappy");
-            break;
-        case DspSender::kZSTD:
-            static_config_json_["compress_method"] = json::value::string("ZSTD");
-            break;
-        default:
-            static_config_json_["compress_method"] = json::value::string("None");
-        }
-        static_config_json_["compress_level"] = json::value::number(compress_level);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -147,20 +116,6 @@ void diffraflow::DspConfig::print() {
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
     cout << "  compress_method = " << flush;
-    switch (compress_method) {
-    case DspSender::kLZ4:
-        cout << "LZ4" << endl;
-        break;
-    case DspSender::kSnappy:
-        cout << "Snappy" << endl;
-        break;
-    case DspSender::kZSTD:
-        cout << "ZSTD (" << compress_level << ")" << endl;
-        break;
-    default:
-        cout << "None" << endl;
-    }
-    cout << "  compress_level = " << compress_level << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
     cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;

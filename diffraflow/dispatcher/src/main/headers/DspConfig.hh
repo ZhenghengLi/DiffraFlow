@@ -5,7 +5,6 @@
 #include <log4cxx/logger.h>
 #include <string>
 
-#include "DspSender.hh"
 #include "MetricsProvider.hh"
 
 using std::string;
@@ -30,8 +29,6 @@ namespace diffraflow {
         uint32_t dispatcher_id;
         string listen_host;
         int listen_port;
-        DspSender::CompressMethod compress_method;
-        int compress_level;
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

@@ -13,7 +13,7 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
     worker_status_ = kNotStart;
-    imgdat_buffer_size_ = 8 * 1024 * 1024; // 8MiB
+    imgdat_buffer_size_ = 16 * 1024 * 1024; // 16MiB
     imgdat_buffer_ = new char[imgdat_buffer_size_];
 }
 

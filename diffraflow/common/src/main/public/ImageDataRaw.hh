@@ -21,11 +21,13 @@ namespace diffraflow {
         uint64_t get_key();
         void set_key(uint64_t key);
 
+        size_t serialize_meta(char* buffer, size_t len);
+
     public:
         uint64_t bunch_id;
         vector<bool> alignment_vec;
-        vector<shared_ptr<ImageFrameRaw>> image_frame_vec;
         bool late_arrived;
+        vector<shared_ptr<ImageFrameRaw>> image_frame_vec;
     };
 } // namespace diffraflow
 

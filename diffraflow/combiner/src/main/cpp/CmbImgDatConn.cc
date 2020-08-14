@@ -1,6 +1,7 @@
 #include "CmbImgDatConn.hh"
 #include "CmbImgCache.hh"
 #include "ImageDataRaw.hh"
+#include "ImageFrameRaw.hh"
 #include "Decoder.hh"
 #include "PrimitiveSerializer.hh"
 
@@ -37,6 +38,33 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     // msgpack::pack(image_buffer_, *one_image);
 
     return true;
+
+    // TODO: send one_image without data copy
+
+    char meta_buffer[11];
+    one_image->serialize_meta(meta_buffer, 11);
+
+    // (1) calcaulte size
+    uint32_t image_size = 11;
+    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+        if (one_image->alignment_vec[i]) {
+            image_size += one_image->image_frame_vec[i]->size();
+        }
+    }
+    // (2) send head and size => send_head_(uint32_t size);
+    // send_head_(image_size);
+
+    // (3) send meta-data of one_image => send_segment_(const char* buffer, size_t len)
+    // send_segment_(meta_buffer, 11);
+
+    // (4) send each image_frame one by one
+    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+        if (one_image->alignment_vec[i]) {
+            // send_segment_(one_image->image_frame_vec[i]->data(), one_image->image_frame_vec[i]->size());
+        }
+    }
+
+    // the following code is not needed.
 
     // serialize head
     char head_buffer[4];

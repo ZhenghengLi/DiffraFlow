@@ -52,6 +52,12 @@ diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_pay
             LOG4CXX_WARN(logger_, "failed to copy image frame, skip it.");
             return kSkipped;
         }
+        if (image_cache_->push_frame(image_frame)) {
+            LOG4CXX_DEBUG(logger_, "successfully pushed image frame into image cache.");
+        } else {
+            LOG4CXX_WARN(logger_, "failed to push image frame into image cache, skip it.");
+            return kSkipped;
+        }
     } break;
     default:
         LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");

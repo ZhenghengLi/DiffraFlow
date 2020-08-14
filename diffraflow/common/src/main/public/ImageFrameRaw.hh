@@ -1,7 +1,12 @@
 #ifndef __ImageFrameRaw_H__
 #define __ImageFrameRaw_H__
 
-#include <string>
+#include <vector>
+#include <memory>
+
+using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 
 namespace diffraflow {
     class ImageFrameRaw {
@@ -9,7 +14,7 @@ namespace diffraflow {
         ImageFrameRaw();
         ~ImageFrameRaw();
 
-        bool set_data(const char* buffer, const size_t len);
+        bool set_data(const shared_ptr<vector<char>>& buffer);
 
         uint64_t get_key();
         char* data();
@@ -20,8 +25,7 @@ namespace diffraflow {
         int16_t module_id; // 0 -- 15
 
     private:
-        char* data_buffer_;
-        size_t data_size_;
+        shared_ptr<vector<char>> data_buffer_;
     };
 } // namespace diffraflow
 

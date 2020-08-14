@@ -34,36 +34,37 @@ diffraflow::CmbImgFrmConn::CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_)
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() { delete[] buffer_uncompress_; }
 
-diffraflow::GenericConnection::ProcessRes diffraflow::CmbImgFrmConn::process_payload_(
-    const char* payload_buffer, const size_t payload_size) {
+bool diffraflow::CmbImgFrmConn::do_receiving_and_processing_() {
+    uint32_t payload_type = 0;
 
-    uint32_t payload_type = gDC.decode_byte<uint32_t>(payload_buffer, 0, 3);
+    shared_ptr<vector<char>> payload_data;
+    if (!receive_one_(payload_type, payload_data)) {
+        return false;
+    }
+
     switch (payload_type) {
     case 0xABCDFFFF: {
-        const char* frame_buffer = payload_buffer + 4;
-        size_t frame_size = payload_size - 4;
-        if (frame_size != 131096) {
-            LOG4CXX_INFO(logger_, "got an image frame with wrong size " << frame_size << ", skip it.");
-            return kSkipped;
+        if (payload_data->size() != 131096) {
+            LOG4CXX_INFO(logger_, "got an image frame with wrong size " << payload_data->size() << ", skip it.");
+            return true;
         }
         shared_ptr<ImageFrameRaw> image_frame = make_shared<ImageFrameRaw>();
-        if (!image_frame->set_data(frame_buffer, frame_size)) {
-            LOG4CXX_WARN(logger_, "failed to copy image frame, skip it.");
-            return kSkipped;
+        if (!image_frame->set_data(payload_data)) {
+            LOG4CXX_WARN(logger_, "failed to set image frame, skip it.");
+            return true;
         }
         if (image_cache_->push_frame(image_frame)) {
             LOG4CXX_DEBUG(logger_, "successfully pushed image frame into image cache.");
         } else {
             LOG4CXX_WARN(logger_, "failed to push image frame into image cache, skip it.");
-            return kSkipped;
+            return true;
         }
     } break;
     default:
-        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
-        return kSkipped;
+        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.")
     }
 
-    return kProcessed;
+    return true;
 }
 
 json::value diffraflow::CmbImgFrmConn::collect_metrics() {

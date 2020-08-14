@@ -167,7 +167,7 @@ bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const ui
         LOG4CXX_INFO(logger, "got too short packet, close the connection.");
         return false;
     }
-    // read payload size
+    // read payload type
     char payload_type_buffer[4];
     for (size_t pos = 0; pos < 4;) {
         int count = read(client_sock_fd, payload_type_buffer + pos, 4 - pos);
@@ -185,7 +185,7 @@ bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const ui
     // read payload_data
     uint32_t payload_size = pkt_size - 4;
     payload_data = make_shared<vector<char>>(payload_size);
-    for (size_t pos = 0; pos < 4;) {
+    for (size_t pos = 0; pos < payload_size;) {
         int count = read(client_sock_fd, payload_data->data() + pos, payload_size - pos);
         if (count < 0) {
             LOG4CXX_WARN(logger, "error found when receiving data: " << strerror(errno));

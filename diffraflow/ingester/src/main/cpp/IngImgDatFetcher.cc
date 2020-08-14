@@ -117,7 +117,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                 successive_fail_count_ = 0;
 
                 // for debug
-                image_with_feature->image_data_raw.print();
+                // image_with_feature->image_data_raw.print();
 
                 // if (imgWthFtrQue_raw_->push(image_with_feature)) {
                 //     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");

@@ -136,7 +136,7 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrame>& image_fra
         }
 
         // for debug
-        image_data->print();
+        // image_data->print();
 
         LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
         if (imgdat_queue_.push(image_data)) {

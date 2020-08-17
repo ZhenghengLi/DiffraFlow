@@ -86,7 +86,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     }
     // decode
     if (image_data.decode(imgdat_buffer_ + 4, payload_size - 4)) {
-        image_data.print();
+        // image_data.print();
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");

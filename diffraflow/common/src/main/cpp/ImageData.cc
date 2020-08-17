@@ -79,8 +79,11 @@ void diffraflow::ImageData::print(ostream& out) const {
         out << alignment_vec[i];
     }
     out << "]" << endl;
-    if (image_frame_vec.size() > 0) {
-        out << "image_frame_vec[0]:" << endl;
-        image_frame_vec[0]->print(out);
+    for (size_t i = 0; i < 16; i++) {
+        if (alignment_vec[i]) {
+            out << "image_frame_vec[" << i << "]:" << endl;
+            image_frame_vec[0]->print(out);
+            return;
+        }
     }
 }

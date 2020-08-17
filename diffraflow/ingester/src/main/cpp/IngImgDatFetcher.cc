@@ -84,30 +84,14 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
         LOG4CXX_WARN(logger_, "got unknown payload head: " << payload_head);
         return kFail;
     }
-
-    // debug
-    return kSucc;
-
-    if (image_data.decode(imgdat_buffer_, payload_size)) {
+    // decode
+    if (image_data.decode(imgdat_buffer_ + 4, payload_size - 4)) {
         image_data.print();
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");
         return kFail;
     }
-
-    // deserialize
-    // try {
-    //     msgpack::unpack(imgdat_buffer_ + 4, payload_size - 4).get().convert(image_data);
-    //     if (!image_data.get_defined()) {
-    //         LOG4CXX_WARN(logger_, "the received image data is undefined.");
-    //         return kFail;
-    //     }
-    // } catch (std::exception& e) {
-    //     LOG4CXX_WARN(logger_, "failed to deserialize image data with exception: " << e.what());
-    //     return kFail;
-    // }
-    // return kSucc;
 }
 
 int diffraflow::IngImgDatFetcher::run_() {

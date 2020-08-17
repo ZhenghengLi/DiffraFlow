@@ -27,56 +27,50 @@ diffraflow::CmbImgDatConn::CmbImgDatConn(int sock_fd, CmbImgCache* image_cache, 
 diffraflow::CmbImgDatConn::~CmbImgDatConn() {}
 
 bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
-    // serialize and send image data
+    // take one_image from queue
     shared_ptr<ImageDataRaw> one_image;
     if (!image_cache_->take_image(one_image)) {
         LOG4CXX_WARN(logger_, "image data queue is stopped and empty, close the connection.");
         return false;
     }
-    // serialize image data
-    // image_buffer_.clear();
-    // msgpack::pack(image_buffer_, *one_image);
-
-    return true;
-
-    // TODO: send one_image without data copy
-
-    char meta_buffer[11];
-    uint32_t image_size = one_image->serialize_meta(meta_buffer, 11);
-
-    // (1) calcaulte size
+    // send one_image without data copy
+    // (1) serialize meta-data of one_image
+    char meta_buffer[15];
+    // - payload head
+    gPS.serializeValue<uint32_t>(0xABCDEEEE, meta_buffer, 4);
+    // - met-data
+    one_image->serialize_meta(meta_buffer + 4, 11);
+    // (2) calcaulte size
+    uint32_t image_size = 15;
     for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
         if (one_image->alignment_vec[i]) {
             image_size += one_image->image_frame_vec[i]->size();
         }
     }
-    // (2) send head and size => send_head_(uint32_t size);
-    // send_head_(image_size);
-
-    // (3) send meta-data of one_image => send_segment_(const char* buffer, size_t len)
-    // send_segment_(meta_buffer, 11);
-
-    // (4) send each image_frame one by one
+    // (3) send head and size
+    if (!send_head_(image_size)) {
+        LOG4CXX_ERROR(logger_, "failed to send head.");
+        return false;
+    }
+    // (4) send meta-data of one_image
+    if (!send_segment_(meta_buffer, 15)) {
+        LOG4CXX_ERROR(logger_, "failed to send meta data of image");
+        return false;
+    }
+    // (5) send each image_frame one by one
     for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
         if (one_image->alignment_vec[i]) {
-            // send_segment_(one_image->image_frame_vec[i]->data(), one_image->image_frame_vec[i]->size());
+            if (!send_segment_(one_image->image_frame_vec[i]->data(), one_image->image_frame_vec[i]->size())) {
+                LOG4CXX_ERROR(logger_, "failed to send image frame of module " << i << ".");
+                return false;
+            }
         }
     }
 
-    // the following code is not needed.
+    LOG4CXX_DEBUG(logger_, "successfully send one image.");
+    image_metrics.total_sent_images++;
 
-    // serialize head
-    char head_buffer[4];
-    gPS.serializeValue<uint32_t>(0xABCDEEEE, head_buffer, 4);
-    // send data
-    if (send_one_(head_buffer, 4, image_buffer_.data(), image_buffer_.size())) {
-        LOG4CXX_DEBUG(logger_, "successfully send one image.");
-        image_metrics.total_sent_images++;
-        return true;
-    } else {
-        LOG4CXX_ERROR(logger_, "failed to send one image.");
-        return false;
-    }
+    return true;
 }
 
 json::value diffraflow::CmbImgDatConn::collect_metrics() {

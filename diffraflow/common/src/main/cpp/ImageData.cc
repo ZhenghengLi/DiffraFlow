@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+#define FRAME_SIZE 131096
+
 using std::endl;
 using std::string;
 
@@ -42,6 +44,7 @@ void diffraflow::ImageData::set_calib_level(int level) { calib_level_ = level; }
 int diffraflow::ImageData::get_calib_level() { return calib_level_; }
 
 bool diffraflow::ImageData::decode(const char* buffer, const size_t len) {
+    if (len < 11) return false;
     bunch_id = gDC.decode_byte<uint64_t>(buffer, 0, 7);
     uint16_t alignment_bits = gDC.decode_byte<uint16_t>(buffer, 8, 9);
     alignment_vec.resize(16, false);
@@ -53,10 +56,10 @@ bool diffraflow::ImageData::decode(const char* buffer, const size_t len) {
     size_t current_pos = 11;
     for (size_t i = 0; i < 16; i++) {
         if (alignment_vec[i]) {
-            if (len - current_pos < 131096) return false;
+            if (len - current_pos < FRAME_SIZE) return false;
             image_frame_vec[i] = make_shared<ImageFrame>();
-            image_frame_vec[i]->decode(buffer + current_pos, 131096);
-            current_pos += 131096;
+            image_frame_vec[i]->decode(buffer + current_pos, FRAME_SIZE);
+            current_pos += FRAME_SIZE;
         }
     }
     is_defined_ = true;

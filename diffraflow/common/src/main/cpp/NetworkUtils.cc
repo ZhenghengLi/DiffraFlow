@@ -76,6 +76,58 @@ bool diffraflow::NetworkUtils::send_packet(const int client_sock_fd, const uint3
     return true;
 }
 
+bool diffraflow::NetworkUtils::send_packet_head(
+    const int client_sock_fd, const uint32_t packet_head, const uint32_t packet_size, log4cxx::LoggerPtr logger) {
+    if (client_sock_fd < 0) {
+        LOG4CXX_ERROR(logger, "invalid client_sock_fd");
+        return false;
+    }
+
+    // serialize packet head
+    char head_buffer[8];
+    gPS.serializeValue<uint32_t>(packet_head, head_buffer, 4);
+    gPS.serializeValue<uint32_t>(packet_size, head_buffer + 4, 4);
+
+    // send packet head
+    for (size_t pos = 0; pos < 8;) {
+        int count = write(client_sock_fd, head_buffer + pos, 8 - pos);
+        if (count < 0) {
+            LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
+            return false;
+        } else {
+            pos += count;
+        }
+    }
+    LOG4CXX_DEBUG(logger, "done a write for packet head.");
+    return true;
+}
+
+bool diffraflow::NetworkUtils::send_packet_segment(const int client_sock_fd, const char* segment_data_buffer,
+    const size_t segment_data_size, log4cxx::LoggerPtr logger) {
+    if (client_sock_fd < 0) {
+        LOG4CXX_ERROR(logger, "invalid client_sock_fd");
+        return false;
+    }
+
+    if (segment_data_buffer == nullptr) {
+        LOG4CXX_ERROR(logger, "null segment_data_buffer pointer.");
+        return false;
+    }
+
+    for (size_t pos = 0; pos < segment_data_size;) {
+        int count = write(client_sock_fd, segment_data_buffer + pos, segment_data_size - pos);
+        if (count < 0) {
+            LOG4CXX_WARN(logger, "error found when sending data: " << strerror(errno));
+            return false;
+        } else {
+            pos += count;
+        }
+    }
+    LOG4CXX_DEBUG(logger, "done a write for segment data.");
+
+    return true;
+}
+
 bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const uint32_t packet_head, char* buffer,
     const size_t buffer_size, size_t& packet_size, log4cxx::LoggerPtr logger) {
 

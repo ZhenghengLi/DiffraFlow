@@ -158,6 +158,29 @@ bool diffraflow::GenericConnection::send_one_(const char* payload_head_buffer, c
     }
 }
 
+bool diffraflow::GenericConnection::send_head_(const uint32_t packet_size) {
+    if (NetworkUtils::send_packet_head(client_sock_fd_, sending_head_, packet_size, logger_)) {
+
+        network_metrics.total_sent_size += 8;
+        network_metrics.total_sent_counts += 1;
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool diffraflow::GenericConnection::send_segment_(const char* segment_data_buffer, const size_t segment_data_size) {
+    if (NetworkUtils::send_packet_segment(client_sock_fd_, segment_data_buffer, segment_data_size, logger_)) {
+
+        network_metrics.total_sent_size += segment_data_size;
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool diffraflow::GenericConnection::receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size) {
 
     if (NetworkUtils::receive_packet(client_sock_fd_, receiving_head_, buffer, buffer_size, payload_size, logger_)) {

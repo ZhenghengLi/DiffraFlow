@@ -11,6 +11,8 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 
+#include "ImageData.hh"
+
 using std::copy;
 using std::shared_ptr;
 
@@ -50,23 +52,29 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
 
     LOG4CXX_DEBUG(logger_, "debug: after serialize_meta.");
 
-    // (2) calcaulte size
-    uint32_t image_size = 15;
-    // for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
-    //     if (one_image->alignment_vec[i]) {
-    //         image_size += one_image->image_frame_vec[i]->size();
-    //     }
-    // }
-    // (3) send head and size
-    if (!send_head_(image_size)) {
-        LOG4CXX_ERROR(logger_, "failed to send head.");
-        return false;
-    }
-    // (4) send meta-data of one_image
-    if (!send_segment_(meta_buffer, 15)) {
-        LOG4CXX_ERROR(logger_, "failed to send meta data of image");
-        return false;
-    }
+    ImageData image_data;
+    image_data.decode(meta_buffer + 4, 11);
+    image_data.print();
+
+    LOG4CXX_DEBUG(logger_, "debug: after image_data decode and print.");
+
+    //    // (2) calcaulte size
+    //    uint32_t image_size = 15;
+    //    // for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+    //    //     if (one_image->alignment_vec[i]) {
+    //    //         image_size += one_image->image_frame_vec[i]->size();
+    //    //     }
+    //    // }
+    //    // (3) send head and size
+    //    if (!send_head_(image_size)) {
+    //        LOG4CXX_ERROR(logger_, "failed to send head.");
+    //        return false;
+    //    }
+    //    // (4) send meta-data of one_image
+    //    if (!send_segment_(meta_buffer, 15)) {
+    //        LOG4CXX_ERROR(logger_, "failed to send meta data of image");
+    //        return false;
+    //    }
 
     return true;
 

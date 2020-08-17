@@ -44,11 +44,11 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     one_image->serialize_meta(meta_buffer + 4, 11);
     // (2) calcaulte size
     uint32_t image_size = 15;
-    // for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
-    //     if (one_image->alignment_vec[i]) {
-    //         image_size += one_image->image_frame_vec[i]->size();
-    //     }
-    // }
+    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+        if (one_image->alignment_vec[i]) {
+            image_size += one_image->image_frame_vec[i]->size();
+        }
+    }
     // (3) send head and size
     if (!send_head_(image_size)) {
         LOG4CXX_ERROR(logger_, "failed to send head.");
@@ -59,23 +59,20 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
         LOG4CXX_ERROR(logger_, "failed to send meta data of image");
         return false;
     }
+    // (5) send each image_frame one by one
+    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+        if (one_image->alignment_vec[i]) {
+            if (!send_segment_(one_image->image_frame_vec[i]->data(), one_image->image_frame_vec[i]->size())) {
+                LOG4CXX_ERROR(logger_, "failed to send image frame of module " << i << ".");
+                return false;
+            }
+        }
+    }
+
+    LOG4CXX_DEBUG(logger_, "successfully send one image.");
+    image_metrics.total_sent_images++;
 
     return true;
-
-    //    // (5) send each image_frame one by one
-    //    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
-    //        if (one_image->alignment_vec[i]) {
-    //            if (!send_segment_(one_image->image_frame_vec[i]->data(), one_image->image_frame_vec[i]->size())) {
-    //                LOG4CXX_ERROR(logger_, "failed to send image frame of module " << i << ".");
-    //                return false;
-    //            }
-    //        }
-    //    }
-
-    //    LOG4CXX_DEBUG(logger_, "successfully send one image.");
-    //    image_metrics.total_sent_images++;
-
-    //    return true;
 }
 
 json::value diffraflow::CmbImgDatConn::collect_metrics() {

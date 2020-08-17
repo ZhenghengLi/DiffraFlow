@@ -2,6 +2,9 @@
 #include "ImageFrameRaw.hh"
 #include "PrimitiveSerializer.hh"
 
+using std::endl;
+using std::string;
+
 diffraflow::ImageDataRaw::ImageDataRaw(uint32_t numOfMod) {
     bunch_id = 0;
     alignment_vec.resize(numOfMod, false);
@@ -13,6 +16,7 @@ diffraflow::ImageDataRaw::~ImageDataRaw() {}
 
 size_t diffraflow::ImageDataRaw::serialize_meta(char* buffer, size_t len) {
     if (len < 11) return 0;
+    if (alignment_vec.size() != 16) return 0;
     size_t current_pos = 0;
     // bunch_id
     gPS.serializeValue<uint64_t>(bunch_id, buffer + current_pos, 8);
@@ -41,4 +45,15 @@ bool diffraflow::ImageDataRaw::put_imgfrm(size_t index, const shared_ptr<ImageFr
     alignment_vec[index] = true;
     image_frame_vec[index] = imgfrm;
     return true;
+}
+
+void diffraflow::ImageDataRaw::print(ostream& out) const {
+    out << "bunch_id: " << bunch_id << endl;
+    out << "late_arrived: " << late_arrived << endl;
+    out << "alignment_vec: [";
+    for (size_t i = 0; i < alignment_vec.size(); i++) {
+        if (i > 0) out << ", ";
+        out << alignment_vec[i];
+    }
+    out << "]" << endl;
 }

@@ -1,11 +1,13 @@
 #ifndef __ImageDataRaw_H__
 #define __ImageDataRaw_H__
 
+#include <iostream>
 #include <vector>
 #include <memory>
 
 using std::vector;
 using std::shared_ptr;
+using std::ostream;
 
 namespace diffraflow {
 
@@ -17,6 +19,7 @@ namespace diffraflow {
         ~ImageDataRaw();
 
         bool put_imgfrm(size_t index, const shared_ptr<ImageFrameRaw>& imgfrm);
+        void print(ostream& out = std::cout) const;
 
         uint64_t get_key();
         void set_key(uint64_t key);

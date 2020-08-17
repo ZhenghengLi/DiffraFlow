@@ -3,6 +3,7 @@
 #include "PrimitiveSerializer.hh"
 
 using std::endl;
+using std::cout;
 using std::string;
 
 diffraflow::ImageDataRaw::ImageDataRaw(uint32_t numOfMod) {
@@ -14,7 +15,7 @@ diffraflow::ImageDataRaw::ImageDataRaw(uint32_t numOfMod) {
 
 diffraflow::ImageDataRaw::~ImageDataRaw() {}
 
-size_t diffraflow::ImageDataRaw::serialize_meta(char* buffer, size_t len) {
+size_t diffraflow::ImageDataRaw::serialize_meta(char* buffer, size_t len) const {
     if (len < 11) return 0;
     if (alignment_vec.size() != 16) return 0;
     size_t current_pos = 0;
@@ -25,13 +26,13 @@ size_t diffraflow::ImageDataRaw::serialize_meta(char* buffer, size_t len) {
     buffer[current_pos] = 0;
     buffer[current_pos + 1] = 0;
     for (size_t i = 0; i < 16; i++) {
-        current_pos += i / 8;
-        int current_bit = i % 8;
+        size_t pos = current_pos + i / 8;
+        size_t bit = i % 8;
         if (alignment_vec[i]) {
-            buffer[current_pos] |= (1 << (7 - current_bit));
+            buffer[pos] |= (1 << (7 - bit));
         }
     }
-    current_pos += 1;
+    current_pos += 2;
     // late_arrived
     gPS.serializeValue<uint8_t>((uint8_t)late_arrived, buffer + current_pos, 1);
     current_pos += 1;

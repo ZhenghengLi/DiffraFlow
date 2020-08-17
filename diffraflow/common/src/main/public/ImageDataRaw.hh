@@ -24,7 +24,7 @@ namespace diffraflow {
         uint64_t get_key();
         void set_key(uint64_t key);
 
-        size_t serialize_meta(char* buffer, size_t len);
+        size_t serialize_meta(char* buffer, size_t len) const;
 
     public:
         uint64_t bunch_id;

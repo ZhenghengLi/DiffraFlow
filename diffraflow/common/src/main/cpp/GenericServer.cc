@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -95,9 +96,16 @@ bool diffraflow::GenericServer::create_ipc_sock_() {
     server_addr.sun_family = AF_UNIX;
     strcpy(server_addr.sun_path, server_sock_path_.c_str());
     // remove sock_path if it exists
-    unlink(server_sock_path_.c_str());
+    struct stat stat_buffer;
+    if (stat(server_sock_path_.c_str(), &stat_buffer) == 0) {
+        if (unlink(server_sock_path_.c_str()) != 0) {
+            LOG4CXX_ERROR(logger_, "unlink: " << strerror(errno));
+            return false;
+        }
+    }
     // do the bind
     if (bind(server_sock_fd_, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        LOG4CXX_ERROR(logger_, "bind: " << strerror(errno));
         return false;
     }
     listen(server_sock_fd_, 5);

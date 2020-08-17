@@ -40,35 +40,36 @@ bool diffraflow::CmbImgDatConn::do_preparing_and_sending_() {
     LOG4CXX_DEBUG(logger_, "debug: after take_image(one_image).");
     one_image->print();
 
+    // send one_image without data copy
+    // (1) serialize meta-data of one_image
+    char meta_buffer[15];
+    // - payload head
+    gPS.serializeValue<uint32_t>(0xABCDEEEE, meta_buffer, 4);
+    // - met-data
+    one_image->serialize_meta(meta_buffer + 4, 11);
+
+    LOG4CXX_DEBUG(logger_, "debug: after serialize_meta.");
+
+    // (2) calcaulte size
+    uint32_t image_size = 15;
+    // for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
+    //     if (one_image->alignment_vec[i]) {
+    //         image_size += one_image->image_frame_vec[i]->size();
+    //     }
+    // }
+    // (3) send head and size
+    if (!send_head_(image_size)) {
+        LOG4CXX_ERROR(logger_, "failed to send head.");
+        return false;
+    }
+    // (4) send meta-data of one_image
+    if (!send_segment_(meta_buffer, 15)) {
+        LOG4CXX_ERROR(logger_, "failed to send meta data of image");
+        return false;
+    }
+
     return true;
 
-    //    // send one_image without data copy
-    //    // (1) serialize meta-data of one_image
-    //    char meta_buffer[15];
-    //    // - payload head
-    //    gPS.serializeValue<uint32_t>(0xABCDEEEE, meta_buffer, 4);
-    //    // - met-data
-    //    one_image->serialize_meta(meta_buffer + 4, 11);
-
-    //    LOG4CXX_DEBUG(logger_, "debug: after serialize_meta.");
-
-    //    // (2) calcaulte size
-    //    uint32_t image_size = 15;
-    //    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
-    //        if (one_image->alignment_vec[i]) {
-    //            image_size += one_image->image_frame_vec[i]->size();
-    //        }
-    //    }
-    //    // (3) send head and size
-    //    if (!send_head_(image_size)) {
-    //        LOG4CXX_ERROR(logger_, "failed to send head.");
-    //        return false;
-    //    }
-    //    // (4) send meta-data of one_image
-    //    if (!send_segment_(meta_buffer, 15)) {
-    //        LOG4CXX_ERROR(logger_, "failed to send meta data of image");
-    //        return false;
-    //    }
     //    // (5) send each image_frame one by one
     //    for (size_t i = 0; i < one_image->alignment_vec.size(); i++) {
     //        if (one_image->alignment_vec[i]) {

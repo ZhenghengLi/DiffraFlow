@@ -22,6 +22,8 @@ size_t diffraflow::ImageDataRaw::serialize_meta(char* buffer, size_t len) {
     gPS.serializeValue<uint64_t>(bunch_id, buffer + current_pos, 8);
     current_pos += 8;
     // alignment_vec
+    buffer[current_pos] = 0;
+    buffer[current_pos + 1] = 0;
     for (size_t i = 0; i < 16; i++) {
         current_pos += i / 8;
         int current_bit = i % 8;

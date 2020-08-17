@@ -53,15 +53,15 @@ bool diffraflow::ImageData::decode(const char* buffer, const size_t len) {
         alignment_vec[i] = (1 << (15 - i)) & alignment_bits;
     }
     late_arrived = gDC.decode_byte<uint8_t>(buffer, 10, 10);
-    size_t current_pos = 11;
-    for (size_t i = 0; i < 16; i++) {
-        if (alignment_vec[i]) {
-            if (len - current_pos < FRAME_SIZE) return false;
-            image_frame_vec[i] = make_shared<ImageFrame>();
-            image_frame_vec[i]->decode(buffer + current_pos, FRAME_SIZE);
-            current_pos += FRAME_SIZE;
-        }
-    }
+    // size_t current_pos = 11;
+    // for (size_t i = 0; i < 16; i++) {
+    //     if (alignment_vec[i]) {
+    //         if (len - current_pos < FRAME_SIZE) return false;
+    //         image_frame_vec[i] = make_shared<ImageFrame>();
+    //         image_frame_vec[i]->decode(buffer + current_pos, FRAME_SIZE);
+    //         current_pos += FRAME_SIZE;
+    //     }
+    // }
     is_defined_ = true;
     return true;
 }
@@ -79,11 +79,11 @@ void diffraflow::ImageData::print(ostream& out) const {
         out << alignment_vec[i];
     }
     out << "]" << endl;
-    for (size_t i = 0; i < 16; i++) {
-        if (alignment_vec[i]) {
-            out << "image_frame_vec[" << i << "]:" << endl;
-            image_frame_vec[0]->print(out);
-            return;
-        }
-    }
+    // for (size_t i = 0; i < 16; i++) {
+    //     if (alignment_vec[i]) {
+    //         out << "image_frame_vec[" << i << "]:" << endl;
+    //         image_frame_vec[0]->print(out);
+    //         return;
+    //     }
+    // }
 }

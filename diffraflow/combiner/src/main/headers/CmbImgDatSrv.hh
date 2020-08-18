@@ -11,6 +11,7 @@ namespace diffraflow {
     class CmbImgDatSrv : public GenericServer {
     public:
         CmbImgDatSrv(string host, int port, CmbImgCache* img_cache);
+        CmbImgDatSrv(string sock_path, CmbImgCache* img_cache);
         ~CmbImgDatSrv();
 
     protected:

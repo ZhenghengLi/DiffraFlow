@@ -6,6 +6,10 @@ diffraflow::CmbImgDatSrv::CmbImgDatSrv(string host, int port, CmbImgCache* img_c
     image_cache_ = img_cache;
 }
 
+diffraflow::CmbImgDatSrv::CmbImgDatSrv(string sock_path, CmbImgCache* img_cache) : GenericServer(sock_path) {
+    image_cache_ = img_cache;
+}
+
 diffraflow::CmbImgDatSrv::~CmbImgDatSrv() {}
 
 diffraflow::GenericConnection* diffraflow::CmbImgDatSrv::new_connection_(int client_sock_fd) {

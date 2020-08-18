@@ -24,7 +24,11 @@ void diffraflow::CmbSrvMan::start_run() {
     image_cache_->set_queue_size_threshold(config_obj_->queue_size_threshold);
 
     imgfrm_srv_ = new CmbImgFrmSrv(config_obj_->imgfrm_listen_host, config_obj_->imgfrm_listen_port, image_cache_);
-    imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_listen_host, config_obj_->imgdat_listen_port, image_cache_);
+    if (config_obj_->imgdat_sock_path.empty()) {
+        imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_listen_host, config_obj_->imgdat_listen_port, image_cache_);
+    } else {
+        imgdat_srv_ = new CmbImgDatSrv(config_obj_->imgdat_sock_path, image_cache_);
+    }
 
     // multiple servers start from here
     if (imgfrm_srv_->start()) {

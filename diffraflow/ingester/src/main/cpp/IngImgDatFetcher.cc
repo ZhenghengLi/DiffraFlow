@@ -17,6 +17,17 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(
     imgdat_buffer_ = new char[imgdat_buffer_size_];
 }
 
+diffraflow::IngImgDatFetcher::IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue)
+    : GenericClient(combiner_sock, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
+    imgWthFtrQue_raw_ = queue;
+    recnxn_wait_time_ = 0;
+    recnxn_max_count_ = 0;
+    max_successive_fail_count_ = 5;
+    worker_status_ = kNotStart;
+    imgdat_buffer_size_ = 16 * 1024 * 1024; // 16MiB
+    imgdat_buffer_ = new char[imgdat_buffer_size_];
+}
+
 diffraflow::IngImgDatFetcher::~IngImgDatFetcher() {
     stop();
     delete[] imgdat_buffer_;

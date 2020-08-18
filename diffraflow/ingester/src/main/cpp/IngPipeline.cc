@@ -40,8 +40,13 @@ void diffraflow::IngPipeline::start_run() {
     // create all queues and workers
     //// image fetcher
     imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
-    image_data_fetcher_ = new IngImgDatFetcher(
-        config_obj_->combiner_host, config_obj_->combiner_port, config_obj_->ingester_id, imgWthFtrQue_raw_);
+    if (config_obj_->combiner_sock.empty()) {
+        image_data_fetcher_ = new IngImgDatFetcher(
+            config_obj_->combiner_host, config_obj_->combiner_port, config_obj_->ingester_id, imgWthFtrQue_raw_);
+    } else {
+        image_data_fetcher_ =
+            new IngImgDatFetcher(config_obj_->combiner_sock, config_obj_->ingester_id, imgWthFtrQue_raw_);
+    }
 
     //// calibration worker
     imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);

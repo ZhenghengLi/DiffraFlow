@@ -161,6 +161,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
         succ_flag = false;
     }
+    if (combiner_sock.length() > 100) {
+        LOG4CXX_ERROR(logger_, "combiner_sock is too long.");
+        succ_flag = false;
+    }
     if (combiner_sock.empty() && combiner_port < 0) {
         LOG4CXX_ERROR(logger_, "combiner_sock or combiner_port is not set.");
         succ_flag = false;

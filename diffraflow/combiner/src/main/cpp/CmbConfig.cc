@@ -111,6 +111,10 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid imgfrm_listen_port: " << imgfrm_listen_port);
         succ_flag = false;
     }
+    if (imgdat_sock_path.length() > 100) {
+        LOG4CXX_ERROR(logger_, "imgdat_sock_path is too long.");
+        succ_flag = false;
+    }
     if (imgdat_sock_path.empty() && imgdat_listen_port < 0) {
         LOG4CXX_ERROR(logger_, "imgdat_sock_path or imgdat_listen_port is not set.");
         succ_flag = false;

@@ -52,6 +52,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
             imgdat_listen_host = value;
         } else if (key == "imgdat_listen_port") {
             imgdat_listen_port = atoi(value.c_str());
+        } else if (key == "imgdat_sock_path") {
+            imgdat_sock_path = value;
         } else if (key == "imgdat_queue_capacity") {
             imgdat_queue_capacity = atoi(value.c_str());
         } else if (key == "max_linger_time") {
@@ -109,8 +111,8 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid imgfrm_listen_port: " << imgfrm_listen_port);
         succ_flag = false;
     }
-    if (imgdat_listen_port < 0) {
-        LOG4CXX_ERROR(logger_, "invalid imgdat_listen_port: " << imgdat_listen_port);
+    if (imgdat_sock_path.empty() && imgdat_listen_port < 0) {
+        LOG4CXX_ERROR(logger_, "imgdat_sock_path or imgdat_listen_port is not set.");
         succ_flag = false;
     }
     if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {

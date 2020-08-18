@@ -36,7 +36,7 @@ diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     server_sock_fd_ = -1;
     server_status_ = kNotStart;
     server_sock_host_ = "";
-    server_sock_port_ = 0;
+    server_sock_port_ = -1;
     server_sock_path_ = sock_path;
     is_ipc_ = true;
     max_conn_counts_ = max_conn;

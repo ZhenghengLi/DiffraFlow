@@ -31,6 +31,7 @@ namespace diffraflow {
 
         string imgdat_listen_host;
         int imgdat_listen_port;
+        string imgdat_sock_path;
 
         size_t imgdat_queue_capacity;
         int max_linger_time; // milliseconds

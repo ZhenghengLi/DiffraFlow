@@ -82,7 +82,9 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     if (receive_one_(imgdat_buffer_, imgdat_buffer_size_, payload_size)) {
         LOG4CXX_DEBUG(logger_, "successfully received one image.");
     } else {
-        LOG4CXX_WARN(logger_, "failed to receive one image.");
+        if (worker_status_ != kStopped) {
+            LOG4CXX_WARN(logger_, "failed to receive one image.");
+        }
         return kDisconnected;
     }
     // check
@@ -115,6 +117,10 @@ int diffraflow::IngImgDatFetcher::run_() {
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
             switch (receive_one_image(image_with_feature->image_data_raw)) {
             case kDisconnected:
+                if (worker_status_ == kStopped) {
+                    result = 0;
+                    break;
+                }
                 LOG4CXX_WARN(logger_, "error found when receiving one image from combiner,"
                                           << " close the connection and try to reconnect.")
                 close_connection();

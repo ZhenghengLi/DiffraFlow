@@ -127,6 +127,13 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
 void diffraflow::DspSrvMan::delete_senders_() {
     // note: stop DspImgFrmSrv before doing this,
     if (sender_arr_ != nullptr) {
+        for (size_t i = 0; i < sender_cnt_; i++) {
+            if (sender_arr_[i] != nullptr) {
+                sender_arr_[i]->close_connection();
+                delete sender_arr_[i];
+                sender_arr_[i] = nullptr;
+            }
+        }
         delete[] sender_arr_;
         sender_arr_ = nullptr;
     }

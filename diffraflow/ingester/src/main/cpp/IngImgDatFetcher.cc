@@ -68,11 +68,11 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
         }
     }
     if (result) {
-        LOG4CXX_INFO(logger_, "successfully connected to combiner " << dest_host_ << ":" << dest_port_);
+        LOG4CXX_INFO(logger_, "successfully connected to combiner: " << get_server_address());
         return true;
     } else {
-        LOG4CXX_WARN(logger_, "failed to connect to combiner " << dest_host_ << ":" << dest_port_ << " after "
-                                                               << recnxn_max_count_ << " retry counts.");
+        LOG4CXX_WARN(logger_, "failed to connect to combiner " << get_server_address() << " after " << recnxn_max_count_
+                                                               << " retry counts.");
         return false;
     }
 }

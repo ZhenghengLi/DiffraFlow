@@ -14,13 +14,14 @@ data:
 
     ## static parameters
     ingester_id = {{ .Values.ingesterID }}
-    combiner_host = NODE_IP
-    combiner_port = {{ .Values.combinerPort }}
+    # combiner_host = NODE_IP
+    # combiner_port = {{ .Values.combinerPort }}
+    combiner_sock = /sock/{{ .Values.combinerSock }}
     image_http_host = 0.0.0.0
     image_http_port = {{ .Values.imageHttpPort }}
     recnxn_wait_time = 1000
     recnxn_max_count = 5
-    imgdat_queue_capacity = 1000
+    imgdat_queue_capacity = 100
 
     # storage_dir = /ingester-data
     hdf5_chunk_size = 10
@@ -46,7 +47,7 @@ data:
     metrics_pulsar_report_period = 1000
 
   log4cxx.properties: |
-    log4j.rootLogger = DEBUG, Console
+    log4j.rootLogger = WARN, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender
     log4j.appender.Console.layout = org.apache.log4j.PatternLayout
     log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n

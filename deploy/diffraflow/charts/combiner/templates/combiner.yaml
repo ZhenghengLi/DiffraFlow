@@ -18,32 +18,37 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       imagePullSecrets:
-      - name: docker-hub-zhenghengli
+        - name: docker-hub-zhenghengli
       containers:
-      - name: combiner
-        image: zhenghengli/diffraflow:latest
-        command:
-        - combiner
-        - --config=/config/combiner.conf
-        - --logconf=/config/log4cxx.properties
-        ports:
-        - containerPort: {{ .Values.imgfrmListenPort }}
-          hostPort: {{ .Values.imgfrmListenPort }}
-        - containerPort: {{ .Values.imgdatListenPort }}
-          hostPort: {{ .Values.imgdatListenPort }}
-        - containerPort: {{ .Values.httpListenPort }}
-          hostPort: {{ .Values.httpListenPort }}
-        env:
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        volumeMounts:
-        - name: config-volume
-          mountPath: /config
+        - name: combiner
+          image: zhenghengli/diffraflow:latest
+          command:
+            - combiner
+            - --config=/config/combiner.conf
+            - --logconf=/config/log4cxx.properties
+          ports:
+            - containerPort: {{.Values.imgfrmListenPort}}
+              hostPort: {{.Values.imgfrmListenPort}}
+            - containerPort: {{.Values.imgdatListenPort}}
+              hostPort: {{.Values.imgdatListenPort}}
+            - containerPort: {{.Values.httpListenPort}}
+              hostPort: {{.Values.httpListenPort}}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+            - name: sock-volume
+              mountPath: /sock
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
-      - name: config-volume
-        configMap:
-          name: combiner-config-{{ .Values.nameSuffix }}
+        - name: config-volume
+          configMap:
+            name: combiner-config-{{ .Values.nameSuffix }}
+        - name: sock-volume
+          hostPath:
+            path: /kubernetes/data/lizhh1/diffraflow/run

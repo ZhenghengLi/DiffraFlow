@@ -1,5 +1,6 @@
 nameSuffix: "01"
 ingesterID: 1
 combinerPort: 27112
+combinerSock: combiner-1.sock
 imageHttpPort: 27311
 metricsHttpPort: 27312

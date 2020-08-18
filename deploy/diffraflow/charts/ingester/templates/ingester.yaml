@@ -18,50 +18,55 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       imagePullSecrets:
-      - name: docker-hub-zhenghengli
-      initContainers:
-      - name: combiner-cnxn-checker
-        image: zhenghengli/diffraflow:latest
-        command:
-        - check_cnxn_address.sh
-        - "$(NODE_IP):{{ .Values.combinerPort }}"
-        env:
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
+        - name: docker-hub-zhenghengli
+      # initContainers:
+      #   - name: combiner-cnxn-checker
+      #     image: zhenghengli/diffraflow:latest
+      #     command:
+      #       - check_cnxn_address.sh
+      #       - "$(NODE_IP):{{ .Values.combinerPort }}"
+      #     env:
+      #       - name: NODE_IP
+      #         valueFrom:
+      #           fieldRef:
+      #             fieldPath: status.hostIP
       containers:
-      - name: ingester
-        image: zhenghengli/diffraflow:latest
-        command:
-        - ingester
-        - --config=/config/ingester.conf
-        - --logconf=/config/log4cxx.properties
-        ports:
-        - containerPort: {{ .Values.imageHttpPort }}
-          hostPort: {{ .Values.imageHttpPort }}
-        - containerPort: {{ .Values.metricsHttpPort }}
-          hostPort: {{ .Values.metricsHttpPort }}
-        env:
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        volumeMounts:
-        - name: config-volume
-          mountPath: /config
-        - name: ingester-data
-          mountPath: /ingester-data
+        - name: ingester
+          image: zhenghengli/diffraflow:latest
+          command:
+            - ingester
+            - --config=/config/ingester.conf
+            - --logconf=/config/log4cxx.properties
+          ports:
+            - containerPort: {{.Values.imageHttpPort}}
+              hostPort: {{.Values.imageHttpPort}}
+            - containerPort: {{.Values.metricsHttpPort}}
+              hostPort: {{.Values.metricsHttpPort}}
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+            - name: sock-volume
+              mountPath: /sock
+            - name: ingester-data
+              mountPath: /ingester-data
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
-      - name: config-volume
-        configMap:
-          name: ingester-config-{{ .Values.nameSuffix }}
-      - name: ingester-data
-        hostPath:
-          path: "/data-ib/home/lizhh1/diffraflow/ingester"
+        - name: config-volume
+          configMap:
+            name: ingester-config-{{ .Values.nameSuffix }}
+        - name: sock-volume
+          hostPath:
+            path: /kubernetes/data/lizhh1/diffraflow/run
+        - name: ingester-data
+          hostPath:
+            path: /data-ib/home/lizhh1/diffraflow/ingester

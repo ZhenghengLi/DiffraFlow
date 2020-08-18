@@ -200,7 +200,13 @@ void diffraflow::GenericClient::close_connection() {
 
 bool diffraflow::GenericClient::not_connected() { return (client_sock_fd_ < 0); }
 
-string diffraflow::GenericClient::get_server_address() { return dest_host_ + ":" + std::to_string(dest_port_); }
+string diffraflow::GenericClient::get_server_address() {
+    if (is_ipc_) {
+        return dest_sock_path_;
+    } else {
+        return dest_host_ + ":" + std::to_string(dest_port_);
+    }
+}
 
 bool diffraflow::GenericClient::send_one_(const char* payload_head_buffer, const size_t payload_head_size,
     const char* payload_data_buffer, const size_t payload_data_size) {

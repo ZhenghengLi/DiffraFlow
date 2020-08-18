@@ -6,6 +6,8 @@
 #include <log4cxx/ndc.h>
 
 #include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
@@ -15,14 +17,39 @@ log4cxx::LoggerPtr diffraflow::GenericClient::logger_ = log4cxx::Logger::getLogg
 
 diffraflow::GenericClient::GenericClient(
     string hostname, int port, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd) {
+    is_ipc_ = false;
+    dest_sock_path_ = "";
     dest_host_ = hostname;
     dest_port_ = port;
+
     client_id_ = id;
     greeting_head_ = greet_hd;
     sending_head_ = send_hd;
     receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
 
+    init_metrics_();
+}
+
+diffraflow::GenericClient::GenericClient(
+    string sock_path, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd) {
+    is_ipc_ = true;
+    dest_sock_path_ = sock_path;
+    dest_host_ = "";
+    dest_port_ = -1;
+
+    client_id_ = id;
+    greeting_head_ = greet_hd;
+    sending_head_ = send_hd;
+    receiving_head_ = recv_hd;
+    client_sock_fd_ = -1;
+
+    init_metrics_();
+}
+
+diffraflow::GenericClient::~GenericClient() { close_connection(); }
+
+void diffraflow::GenericClient::init_metrics_() {
     network_metrics.connected = false;
     network_metrics.connecting_action_counts = 0;
     network_metrics.total_sent_size = 0;
@@ -31,12 +58,42 @@ diffraflow::GenericClient::GenericClient(
     network_metrics.total_received_counts = 0;
 }
 
-diffraflow::GenericClient::~GenericClient() { close_connection(); }
-
 bool diffraflow::GenericClient::connect_to_server() {
 
     network_metrics.connecting_action_counts++;
 
+    if (is_ipc_) {
+        if (!connect_to_server_ipc_()) {
+            LOG4CXX_ERROR(logger_, "Failed to connect to server running on sock file " << dest_sock_path_);
+            return false;
+        }
+    } else {
+        if (!connect_to_server_tcp_()) {
+            LOG4CXX_ERROR(logger_, "Failed to connect to server running on " << dest_host_ << ":" << dest_port_);
+            return false;
+        }
+    }
+
+    if (greet_to_server_()) {
+        if (is_ipc_) {
+            LOG4CXX_INFO(logger_, "Successfully connected to server running on sock file " << dest_sock_path_);
+        } else {
+            LOG4CXX_INFO(logger_, "Successfully connected to server running on " << dest_host_ << ":" << dest_port_);
+        }
+        network_metrics.connected = true;
+        return true;
+    } else {
+        LOG4CXX_ERROR(logger_, "Failed to greet to server, close the connection.")
+        close_connection();
+        return false;
+    }
+}
+
+bool diffraflow::GenericClient::connect_to_server_tcp_() {
+    if (client_sock_fd_ >= 0) {
+        LOG4CXX_WARN(logger_, "connection to server is already set up.");
+        return true;
+    }
     addrinfo hints, *infoptr;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -47,16 +104,58 @@ bool diffraflow::GenericClient::connect_to_server() {
     }
     client_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (client_sock_fd_ < 0) {
-        LOG4CXX_ERROR(logger_, "Socket creationg error");
+        LOG4CXX_ERROR(logger_, "Socket creationg error: " << strerror(errno));
         return false;
     }
     ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(dest_port_);
     if (connect(client_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen)) {
         close_connection();
-        LOG4CXX_ERROR(logger_, "Connection to " << dest_host_ << ":" << dest_port_ << " failed.");
+        LOG4CXX_ERROR(logger_, "Connection to " << dest_host_ << ":" << dest_port_ << " failed: " << strerror(errno));
+        freeaddrinfo(infoptr);
+        return false;
+    } else {
+        freeaddrinfo(infoptr);
+        return true;
+    }
+}
+
+bool diffraflow::GenericClient::connect_to_server_ipc_() {
+    if (client_sock_fd_ >= 0) {
+        LOG4CXX_WARN(logger_, "connection to server is already set up.");
+        return true;
+    }
+    if (dest_sock_path_.length() > 100) {
+        LOG4CXX_ERROR(logger_, "server sock path is too long: " << dest_sock_path_);
         return false;
     }
-    freeaddrinfo(infoptr);
+    struct stat stat_buffer;
+    if (stat(dest_sock_path_.c_str(), &stat_buffer) != 0) {
+        LOG4CXX_ERROR(logger_, "sock file " << dest_sock_path_ << " does not exist.");
+        return false;
+    }
+    sockaddr_un server_addr;
+    client_sock_fd_ = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (client_sock_fd_ < 0) {
+        LOG4CXX_ERROR(logger_, "Socket creationg error: " << strerror(errno));
+        return false;
+    }
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sun_family = AF_UNIX;
+    strcpy(server_addr.sun_path, dest_sock_path_.c_str());
+    if (connect(client_sock_fd_, (struct sockaddr*)&server_addr, sizeof(server_addr))) {
+        close_connection();
+        LOG4CXX_ERROR(logger_, "Connection to sock " << dest_sock_path_ << " failed: " << strerror(errno));
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool diffraflow::GenericClient::greet_to_server_() {
+    if (client_sock_fd_ < 0) {
+        LOG4CXX_ERROR(logger_, "initial connection to server is not set up.");
+        return false;
+    }
     // send greeting message for varification
     char buffer[12];
     gPS.serializeValue<uint32_t>(greeting_head_, buffer, 4);
@@ -67,8 +166,7 @@ bool diffraflow::GenericClient::connect_to_server() {
         if (count > 0) {
             pos += count;
         } else {
-            close_connection();
-            LOG4CXX_ERROR(logger_, "error found when doing the first write.");
+            LOG4CXX_ERROR(logger_, "error found when doing the first write: " << strerror(errno));
             return false;
         }
     }
@@ -77,20 +175,16 @@ bool diffraflow::GenericClient::connect_to_server() {
         if (count > 0) {
             pos += count;
         } else {
-            close_connection();
-            LOG4CXX_ERROR(logger_, "error found when doing the first read.");
+            LOG4CXX_ERROR(logger_, "error found when doing the first read: " << strerror(errno));
             return false;
         }
     }
     int response_code = 0;
     gPS.deserializeValue<int32_t>(&response_code, buffer, 4);
     if (response_code != 1234) {
-        close_connection();
         LOG4CXX_ERROR(logger_, "Got wrong response code, close the connection.");
         return false;
     } else {
-        LOG4CXX_INFO(logger_, "Successfully connected to server running on " << dest_host_ << ":" << dest_port_);
-        network_metrics.connected = true;
         return true;
     }
 }

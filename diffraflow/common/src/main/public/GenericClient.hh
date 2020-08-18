@@ -14,12 +14,19 @@ namespace diffraflow {
     class GenericClient : public MetricsProvider {
     public:
         GenericClient(string hostname, int port, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
+        GenericClient(string sock_path, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
         virtual ~GenericClient();
 
         bool connect_to_server();
         bool not_connected();
         void close_connection();
         string get_server_address();
+
+    private:
+        bool connect_to_server_ipc_();
+        bool connect_to_server_tcp_();
+        bool greet_to_server_();
+        void init_metrics_();
 
     public:
         struct {
@@ -40,8 +47,11 @@ namespace diffraflow {
         bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
 
     protected:
+        int is_ipc_;
         string dest_host_;
         int dest_port_;
+        string dest_sock_path_;
+
         uint32_t client_id_;
         int client_sock_fd_;
 

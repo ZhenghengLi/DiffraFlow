@@ -87,6 +87,10 @@ bool diffraflow::GenericServer::create_tcp_sock_() {
 }
 
 bool diffraflow::GenericServer::create_ipc_sock_() {
+    if (server_sock_path_.length() > 100) {
+        LOG4CXX_ERROR(logger_, "server sock path is too long: " << server_sock_path_);
+        return false;
+    }
     sockaddr_un server_addr;
     server_sock_fd_ = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_sock_fd_ < 0) {
@@ -98,8 +102,12 @@ bool diffraflow::GenericServer::create_ipc_sock_() {
     // remove sock_path if it exists
     struct stat stat_buffer;
     if (stat(server_sock_path_.c_str(), &stat_buffer) == 0) {
-        if (unlink(server_sock_path_.c_str()) != 0) {
-            LOG4CXX_ERROR(logger_, "unlink: " << strerror(errno));
+        LOG4CXX_WARN(logger_, "sock file " << server_sock_path_ << " exists, try to remove it.");
+        if (unlink(server_sock_path_.c_str()) == 0) {
+            LOG4CXX_WARN(logger_, "sock file " << server_sock_path_ << " is removed and will be recreated.");
+        } else {
+            LOG4CXX_ERROR(
+                logger_, "failed to remove sock file " << server_sock_path_ << " with error: " << strerror(errno));
             return false;
         }
     }

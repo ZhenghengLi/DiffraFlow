@@ -49,6 +49,8 @@ namespace diffraflow {
 
         string combiner_host;
         int combiner_port;
+        string combiner_sock;
+
         string image_http_host;
         int image_http_port;
         size_t recnxn_wait_time;

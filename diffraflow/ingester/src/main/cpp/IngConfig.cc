@@ -84,6 +84,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
             combiner_host = value;
         } else if (key == "combiner_port") {
             combiner_port = atoi(value.c_str());
+        } else if (key == "combiner_sock") {
+            combiner_sock = value;
         } else if (key == "image_http_host") {
             image_http_host = value;
         } else if (key == "image_http_port") {
@@ -159,8 +161,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid ingester_id: " << ingester_id);
         succ_flag = false;
     }
-    if (combiner_port < 0) {
-        LOG4CXX_ERROR(logger_, "invalid combiner_port: " << combiner_port);
+    if (combiner_sock.empty() && combiner_port < 0) {
+        LOG4CXX_ERROR(logger_, "combiner_sock or combiner_port is not set.");
         succ_flag = false;
     }
     if (image_http_port < 0) {
@@ -188,6 +190,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
         static_config_json_["combiner_host"] = json::value::string(combiner_host);
         static_config_json_["combiner_port"] = json::value::number(combiner_port);
+        static_config_json_["combiner_sock"] = json::value::string(combiner_sock);
         static_config_json_["image_http_host"] = json::value::string(image_http_host);
         static_config_json_["image_http_port"] = json::value::number(image_http_port);
 
@@ -237,6 +240,7 @@ void diffraflow::IngConfig::print() {
     cout << "- ingester_id = " << ingester_id << endl;
     cout << "- combiner_host = " << combiner_host << endl;
     cout << "- combiner_port = " << combiner_port << endl;
+    cout << "- combiner_sock = " << combiner_sock << endl;
     cout << "- recnxn_wait_time = " << recnxn_wait_time << endl;
     cout << "- recnxn_max_count = " << recnxn_max_count << endl;
     cout << "dynamic parameters:" << endl;

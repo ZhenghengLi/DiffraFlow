@@ -130,6 +130,7 @@ bool diffraflow::CmbConfig::load(const char* filename) {
         static_config_json_["imgfrm_listen_port"] = json::value::number(imgfrm_listen_port);
         static_config_json_["imgdat_listen_host"] = json::value::string(imgdat_listen_host);
         static_config_json_["imgdat_listen_port"] = json::value::number(imgdat_listen_port);
+        static_config_json_["imgdat_sock_path"] = json::value::string(imgdat_sock_path);
         static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
         static_config_json_["max_linger_time"] = json::value::number(max_linger_time);
         static_config_json_["distance_threshold"] = json::value::number(distance_threshold);
@@ -154,6 +155,7 @@ void diffraflow::CmbConfig::print() {
     cout << "  imgfrm_listen_port = " << imgfrm_listen_port << endl;
     cout << "  imgdat_listen_host = " << imgdat_listen_host << endl;
     cout << "  imgdat_listen_port = " << imgdat_listen_port << endl;
+    cout << "  imgdat_sock_path = " << imgdat_sock_path << endl;
     cout << "  imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
     cout << "  max_linger_time = " << max_linger_time << endl;
     cout << "  distance_threshold = " << distance_threshold << endl;

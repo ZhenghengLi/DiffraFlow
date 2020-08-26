@@ -55,7 +55,7 @@ int diffraflow::IngCalibrationWorker::run_() {
         do_calib_(image_with_feature->image_data_raw, image_with_feature->image_data_calib);
 
         // debug
-        image_with_feature->image_data_calib.print();
+        // image_with_feature->image_data_calib.print();
 
         // if (image_queue_out_->push(image_with_feature)) {
         //     LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");

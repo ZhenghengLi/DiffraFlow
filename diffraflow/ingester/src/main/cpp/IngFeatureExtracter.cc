@@ -12,7 +12,7 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
 
 diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 
-void diffraflow::IngFeatureExtracter::extract_feature_(const ImageData& imgdat_raw, ImageFeature& image_feature) {
+void diffraflow::IngFeatureExtracter::extract_feature_(const ImageData& imgdat_calib, ImageFeature& image_feature) {
 
     // some example code
     image_feature.peak_counts = 1;

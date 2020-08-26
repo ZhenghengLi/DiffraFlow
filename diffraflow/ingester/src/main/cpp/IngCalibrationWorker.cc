@@ -14,8 +14,34 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}
 
 void diffraflow::IngCalibrationWorker::do_calib_(const ImageData& imgdat_raw, ImageData& imgdat_calib) {
 
-    // currently do nothing, just copy the raw data.
-    imgdat_calib = imgdat_raw;
+    imgdat_calib.bunch_id = imgdat_raw.bunch_id;
+    imgdat_calib.late_arrived = imgdat_raw.late_arrived;
+    imgdat_calib.alignment_vec = imgdat_raw.alignment_vec;
+    imgdat_calib.image_frame_vec.resize(imgdat_raw.image_frame_vec.size());
+    for (size_t i = 0; i < imgdat_raw.alignment_vec.size(); i++) {
+        if (imgdat_raw.alignment_vec[i]) {
+
+            imgdat_calib.image_frame_vec[i] = make_shared<ImageFrame>();
+
+            // copy meta-data
+            imgdat_calib.image_frame_vec[i]->bunch_id = imgdat_raw.image_frame_vec[i]->bunch_id;
+            imgdat_calib.image_frame_vec[i]->module_id = imgdat_raw.image_frame_vec[i]->module_id;
+            imgdat_calib.image_frame_vec[i]->cell_id = imgdat_raw.image_frame_vec[i]->cell_id;
+            imgdat_calib.image_frame_vec[i]->status = imgdat_raw.image_frame_vec[i]->status;
+
+            // copy gain level
+            imgdat_calib.image_frame_vec[i]->gain_level.resize(imgdat_raw.image_frame_vec[i]->gain_level.size());
+            for (size_t j = 0; j < imgdat_raw.image_frame_vec[i]->gain_level.size(); j++) {
+                imgdat_calib.image_frame_vec[i]->gain_level[j] = imgdat_raw.image_frame_vec[i]->gain_level[j];
+            }
+
+            // calibrate pixel data, currently just copy
+            imgdat_calib.image_frame_vec[i]->pixel_data.resize(imgdat_raw.image_frame_vec[i]->pixel_data.size());
+            for (size_t j = 0; j < imgdat_raw.image_frame_vec[i]->pixel_data.size(); j++) {
+                imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+            }
+        }
+    }
 }
 
 int diffraflow::IngCalibrationWorker::run_() {
@@ -25,11 +51,15 @@ int diffraflow::IngCalibrationWorker::run_() {
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
         do_calib_(image_with_feature->image_data_raw, image_with_feature->image_data_calib);
-        if (image_queue_out_->push(image_with_feature)) {
-            LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
-        } else {
-            break;
-        }
+
+        // debug
+        image_with_feature->image_data_calib.print();
+
+        // if (image_queue_out_->push(image_with_feature)) {
+        //     LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
+        // } else {
+        //     break;
+        // }
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();

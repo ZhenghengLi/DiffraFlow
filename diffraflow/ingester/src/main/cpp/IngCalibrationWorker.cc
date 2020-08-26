@@ -69,11 +69,11 @@ int diffraflow::IngCalibrationWorker::run_() {
         // debug
         // image_with_feature->image_data_calib.print();
 
-        // if (image_queue_out_->push(image_with_feature)) {
-        //     LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
-        // } else {
-        //     break;
-        // }
+        if (image_queue_out_->push(image_with_feature)) {
+            LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
+        } else {
+            break;
+        }
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();

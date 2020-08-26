@@ -29,8 +29,8 @@ diffraflow::IngConfig::IngConfig() {
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
 
-    hdf5_chunk_size = 100;
-    hdf5_buffer_size = 100;
+    hdf5_chunk_size = 10;
+    hdf5_buffer_size = 10;
     hdf5_compress_level = 0;
     hdf5_swmr_mode = true;
     file_imgcnt_limit = 1000;

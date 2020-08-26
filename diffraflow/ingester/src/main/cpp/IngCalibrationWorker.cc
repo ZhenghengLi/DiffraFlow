@@ -42,6 +42,8 @@ void diffraflow::IngCalibrationWorker::do_calib_(const ImageData& imgdat_raw, Im
             }
         }
     }
+    imgdat_calib.set_calib_level(1);
+    imgdat_calib.set_defined();
 }
 
 int diffraflow::IngCalibrationWorker::run_() {

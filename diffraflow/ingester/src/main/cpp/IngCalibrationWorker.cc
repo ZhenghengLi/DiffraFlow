@@ -38,7 +38,19 @@ void diffraflow::IngCalibrationWorker::do_calib_(const ImageData& imgdat_raw, Im
             // calibrate pixel data, currently just copy
             imgdat_calib.image_frame_vec[i]->pixel_data.resize(imgdat_raw.image_frame_vec[i]->pixel_data.size());
             for (size_t j = 0; j < imgdat_raw.image_frame_vec[i]->pixel_data.size(); j++) {
-                imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+                switch (imgdat_raw.image_frame_vec[i]->gain_level[j]) {
+                case 0:
+                    imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+                    break;
+                case 1:
+                    imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+                    break;
+                case 2:
+                    imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+                    break;
+                default:
+                    imgdat_calib.image_frame_vec[i]->pixel_data[j] = imgdat_raw.image_frame_vec[i]->pixel_data[j];
+                }
             }
         }
     }

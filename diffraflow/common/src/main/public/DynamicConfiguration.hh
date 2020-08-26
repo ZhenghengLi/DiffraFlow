@@ -54,6 +54,7 @@ namespace diffraflow {
         int zookeeper_get_children(const char* config_path, vector<string>& children_list);
         // for reader
         void zookeeper_sync_config();
+        void zookeeper_sync_wait();
         // print setting
         void zookeeper_print_setting();
 
@@ -100,10 +101,15 @@ namespace diffraflow {
         // lock for each zookeeper operation
         mutex zookeeper_operation_mtx_;
 
-        // zookeeper connectiong status
+        // zookeeper connection status
         bool zookeeper_connected_;
         mutex zookeeper_connected_mtx_;
         condition_variable zookeeper_connected_cv_;
+
+        // zookeeper connection status
+        bool zookeeper_synchronized_;
+        mutex zookeeper_synchronized_mtx_;
+        condition_variable zookeeper_synchronized_cv_;
 
         // zookeeper operation results
         CallbackRes_ zookeeper_auth_res_;

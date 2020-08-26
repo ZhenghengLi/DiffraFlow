@@ -24,6 +24,7 @@ log4cxx::LoggerPtr diffraflow::DynamicConfiguration::logger_ = log4cxx::Logger::
 diffraflow::DynamicConfiguration::DynamicConfiguration() {
     zookeeper_handle_ = nullptr;
     zookeeper_connected_ = false;
+    zookeeper_synchronized_ = false;
     zookeeper_auth_res_ = kUnknown;
     zookeeper_expiration_time_ = 10000;
     zookeeper_is_updater_ = false;
@@ -439,11 +440,21 @@ void diffraflow::DynamicConfiguration::zookeeper_sync_config() {
 
     lock_guard<mutex> op_lg(zookeeper_operation_mtx_);
 
+    {
+        lock_guard<mutex> sync_lg(zookeeper_synchronized_mtx_);
+        zookeeper_synchronized_ = false;
+    }
+
     // wait for re-connected
     zookeeper_connection_wait_();
     // check existence and watch
     zoo_awexists(zookeeper_handle_, zookeeper_config_path_.c_str(), zookeeper_config_watcher_, this,
         zookeeper_stat_completion_, this);
+}
+
+void diffraflow::DynamicConfiguration::zookeeper_sync_wait() {
+    unique_lock<mutex> sync_lk(zookeeper_synchronized_mtx_);
+    zookeeper_synchronized_cv_.wait(sync_lk, [this]() { return zookeeper_synchronized_; });
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_add_auth_() {
@@ -571,6 +582,12 @@ void diffraflow::DynamicConfiguration::zookeeper_stat_completion_(int rc, const 
         LOG4CXX_WARN(logger_, "error found when checking existence of path " << the_obj->zookeeper_config_path_
                                                                              << " with error code: " << rc);
     }
+
+    if (rc == ZNONODE) {
+        lock_guard<mutex> sync_lg(the_obj->zookeeper_synchronized_mtx_);
+        the_obj->zookeeper_synchronized_ = true;
+        the_obj->zookeeper_synchronized_cv_.notify_all();
+    }
 }
 
 void diffraflow::DynamicConfiguration::zookeeper_data_completion_(
@@ -633,5 +650,11 @@ void diffraflow::DynamicConfiguration::zookeeper_data_completion_(
     default:
         LOG4CXX_WARN(
             logger_, "error found when reading path " << the_obj->zookeeper_config_path_ << " with error code: " << rc);
+    }
+
+    if (rc == ZOK || rc == ZNONODE) {
+        lock_guard<mutex> sync_lg(the_obj->zookeeper_synchronized_mtx_);
+        the_obj->zookeeper_synchronized_ = true;
+        the_obj->zookeeper_synchronized_cv_.notify_all();
     }
 }

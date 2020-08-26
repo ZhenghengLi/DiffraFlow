@@ -89,6 +89,7 @@ int main(int argc, char** argv) {
         gConfiguration->zookeeper_start();
         cout << "start to sync configurations with zookeeper ..." << endl;
         gConfiguration->zookeeper_sync_config();
+        gConfiguration->zookeeper_sync_wait();
     }
 
     // ------------------------------------------------------

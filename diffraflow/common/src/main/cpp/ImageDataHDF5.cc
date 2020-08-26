@@ -48,7 +48,7 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
         for (size_t h = 0; h < IMAGE_H; h++) {
             for (size_t w = 0; w < IMAGE_W; w++) {
                 size_t pos = h * 128 + w;
-                if (i < imgdat_obj.image_frame_vec.size() && pos < 65536) {
+                if (i < imgdat_obj.image_frame_vec.size() && pos < 65536 && imgdat_obj.alignment_vec[i]) {
                     imgdat_st.pixel_data[i][h][w] = imgdat_obj.image_frame_vec[i]->pixel_data[pos];
                     imgdat_st.gain_level[i][h][w] = imgdat_obj.image_frame_vec[i]->gain_level[pos];
                 } else {

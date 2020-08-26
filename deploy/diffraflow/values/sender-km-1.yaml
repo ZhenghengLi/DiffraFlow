@@ -1,9 +1,0 @@
-nameSuffix: "1"
-listenPort: 27611
-httpListenPort: 27612
-rawDataDir: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/converted
-nodeMap: |
-  kube-master-0, 0, 10.15.86.23, 27211
-  kube-worker-1, 1, 10.15.86.24, 27211
-  kube-worker-2, 2, 10.15.86.25, 27211
-  kube-worker-3, 3, 10.15.86.26, 27211

@@ -114,7 +114,7 @@ bool diffraflow::ImageFileHDF5W::append(const ImageData& image_data) {
         image_counts_++;
     }
     if (buffer_limit_ == buffer_size_) {
-        return flush();
+        return flush_op_();
     }
     if (buffer_limit_ > buffer_size_) {
         // this is impossible
@@ -164,6 +164,7 @@ bool diffraflow::ImageFileHDF5W::flush_op_() {
         // advance position
         imgdat_dset_pos_ += buffer_limit_;
         buffer_limit_ = 0;
+        LOG4CXX_DEBUG(logger_, "done a flush.");
         return true;
     } catch (H5::Exception& e) {
         LOG4CXX_ERROR(logger_, "found error when flushing data : " << e.getDetailMsg());

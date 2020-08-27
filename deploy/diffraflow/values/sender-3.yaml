@@ -1,7 +1,7 @@
 nameSuffix: "3"
 listenPort: 27631
 httpListenPort: 27632
-rawDataDir: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/converted
+rawDataDir: /kubernetes/data/lizhh1/diffraflow/sender
 nodeMap: |
   kube-master-0, 8, 10.15.85.32, 27211
   kube-worker-1, 9, 10.15.85.33, 27211

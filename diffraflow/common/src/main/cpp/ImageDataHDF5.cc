@@ -1,4 +1,8 @@
 #include "ImageDataHDF5.hh"
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 diffraflow::ImageDataHDF5::ImageDataHDF5() : H5::CompType(sizeof(Field)) {
     //// bunch_id
@@ -27,6 +31,8 @@ diffraflow::ImageDataHDF5::ImageDataHDF5() : H5::CompType(sizeof(Field)) {
 diffraflow::ImageDataHDF5::~ImageDataHDF5() {}
 
 void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field& imgdat_st) {
+
+    cout << "debug: begin of convert_image." << endl;
 
     // bunch_id
     imgdat_st.bunch_id = imgdat_obj.bunch_id;
@@ -61,4 +67,6 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
 
     // late_arrived
     imgdat_st.late_arrived = imgdat_obj.late_arrived;
+
+    cout << "debug: end of convert_image." << endl;
 }

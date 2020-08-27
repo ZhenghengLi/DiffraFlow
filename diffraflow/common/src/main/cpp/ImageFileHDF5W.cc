@@ -108,15 +108,11 @@ bool diffraflow::ImageFileHDF5W::append(const ImageData& image_data) {
         return false;
     }
 
-    LOG4CXX_INFO(logger_, "debug: before convert_image.");
-
     if (buffer_limit_ < buffer_size_) {
         ImageDataHDF5::convert_image(image_data, image_buffer_[buffer_limit_]);
         buffer_limit_++;
         image_counts_++;
     }
-
-    LOG4CXX_INFO(logger_, "debug: after convert_image.");
 
     if (buffer_limit_ == buffer_size_) {
         return flush_op_();

@@ -34,6 +34,9 @@ int diffraflow::IngImageWriter::run_() {
     worker_status_ = kRunning;
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
+
+    LOG4CXX_INFO(logger_, "debug: before run loop.");
+
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
 
         // debug

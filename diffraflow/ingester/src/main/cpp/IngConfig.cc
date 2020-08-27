@@ -139,13 +139,13 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
         metrics_pulsar_report_period = 500;
     }
-    if (hdf5_buffer_size < 10) {
-        LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 10), use 10 instead.");
-        hdf5_buffer_size = 10;
+    if (hdf5_buffer_size < 1) {
+        LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 1), use 1 instead.");
+        hdf5_buffer_size = 1;
     }
-    if (hdf5_chunk_size < 10) {
-        LOG4CXX_WARN(logger_, "hdf5_chunk_size is too small (< 10), use 10 instead.");
-        hdf5_chunk_size = 10;
+    if (hdf5_chunk_size < 1) {
+        LOG4CXX_WARN(logger_, "hdf5_chunk_size is too small (< 1), use 1 instead.");
+        hdf5_chunk_size = 1;
     }
     if (hdf5_compress_level > 9) {
         LOG4CXX_WARN(logger_, "hdf5_compress_level is too high (> 9), use 9 instead.");

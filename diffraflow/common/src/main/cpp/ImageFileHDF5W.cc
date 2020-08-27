@@ -15,7 +15,7 @@ log4cxx::LoggerPtr diffraflow::ImageFileHDF5W::logger_ = log4cxx::Logger::getLog
 const string diffraflow::ImageFileHDF5W::inprogress_suffix_ = ".inprogress";
 
 diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t buffer_size, size_t chunk_size, bool swmr) {
-    buffer_size_ = (buffer_size > 10 ? buffer_size : 10);
+    buffer_size_ = (buffer_size > 1 ? buffer_size : 1);
     chunk_size_ = (chunk_size >= buffer_size ? chunk_size : buffer_size);
 
     image_buffer_ = new ImageDataHDF5::Field[buffer_size_];

@@ -32,10 +32,6 @@ diffraflow::ImageDataHDF5::~ImageDataHDF5() {}
 
 void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field& imgdat_st) {
 
-    cout << "debug: begin of convert_image." << endl;
-
-    imgdat_obj.print();
-
     // bunch_id
     imgdat_st.bunch_id = imgdat_obj.bunch_id;
 
@@ -44,8 +40,13 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
         // alignment, cell_id, status
         if (i < imgdat_obj.alignment_vec.size()) {
             imgdat_st.alignment[i] = imgdat_obj.alignment_vec[i];
-            imgdat_st.cell_id[i] = imgdat_obj.image_frame_vec[i]->cell_id;
-            imgdat_st.status[i] = imgdat_obj.image_frame_vec[i]->status;
+            if (imgdat_obj.alignment_vec[i]) {
+                imgdat_st.cell_id[i] = imgdat_obj.image_frame_vec[i]->cell_id;
+                imgdat_st.status[i] = imgdat_obj.image_frame_vec[i]->status;
+            } else {
+                imgdat_st.cell_id[i] = -1;
+                imgdat_st.status[i] = 0;
+            }
         } else {
             imgdat_st.alignment[i] = 0;
             imgdat_st.cell_id[i] = -1;
@@ -55,8 +56,8 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
         // pixel_data, gain_level
         for (size_t h = 0; h < IMAGE_H; h++) {
             for (size_t w = 0; w < IMAGE_W; w++) {
-                size_t pos = h * 128 + w;
-                if (i < imgdat_obj.image_frame_vec.size() && pos < 65536 && imgdat_obj.alignment_vec[i]) {
+                size_t pos = h * IMAGE_W + w;
+                if (i < imgdat_obj.alignment_vec.size() && imgdat_obj.alignment_vec[i] && pos < 65536) {
                     imgdat_st.pixel_data[i][h][w] = imgdat_obj.image_frame_vec[i]->pixel_data[pos];
                     imgdat_st.gain_level[i][h][w] = imgdat_obj.image_frame_vec[i]->gain_level[pos];
                 } else {
@@ -69,6 +70,4 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
 
     // late_arrived
     imgdat_st.late_arrived = imgdat_obj.late_arrived;
-
-    cout << "debug: end of convert_image." << endl;
 }

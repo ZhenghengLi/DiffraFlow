@@ -17,7 +17,7 @@ namespace diffraflow {
         ~DspImgFrmConn();
 
     protected:
-        ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size) override;
+        bool do_receiving_and_processing_() override;
 
     private:
         uint32_t hash_long_(uint64_t value);

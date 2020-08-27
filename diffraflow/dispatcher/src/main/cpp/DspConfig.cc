@@ -20,6 +20,7 @@ diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
     listen_host = "0.0.0.0";
     listen_port = -1;
+    max_queue_size = 1000;
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -43,6 +44,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             listen_port = atoi(value.c_str());
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
+        } else if (key == "max_queue_size") {
+            max_queue_size = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -82,6 +85,10 @@ bool diffraflow::DspConfig::load(const char* filename) {
     }
 
     // correction
+    if (max_queue_size < 100) {
+        LOG4CXX_WARN(logger_, "max_queue_size is too small (<100), use 100 instead.");
+        max_queue_size = 100;
+    }
     if (metrics_pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
         metrics_pulsar_report_period = 500;
@@ -97,6 +104,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
         static_config_json_["dispatcher_id"] = json::value::number(dispatcher_id);
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
+        static_config_json_["max_queue_size"] = json::value::number(max_queue_size);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -115,7 +123,7 @@ void diffraflow::DspConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
-    cout << "  compress_method = " << flush;
+    cout << "  max_queue_size = " << max_queue_size << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
     cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;

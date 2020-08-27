@@ -29,6 +29,7 @@ namespace diffraflow {
         uint32_t dispatcher_id;
         string listen_host;
         int listen_port;
+        int max_queue_size;
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

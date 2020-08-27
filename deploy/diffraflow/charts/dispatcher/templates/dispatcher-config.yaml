@@ -8,8 +8,7 @@ data:
     listen_host = 0.0.0.0
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
-    compress_method = None
-    compress_level = 3
+    max_queue_size = 1000
     # http
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

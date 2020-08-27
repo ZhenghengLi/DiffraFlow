@@ -42,6 +42,9 @@ int diffraflow::IngImageWriter::run_() {
         if (config_obj_->storage_dir.empty()) {
             continue;
         }
+
+        LOG4CXX_INFO(logger_, "debug: before run_number check.");
+
         // if run number is changed, create new folders
         int new_run_number = config_obj_->get_dy_run_number();
         if (new_run_number != current_run_number_.load()) {
@@ -57,6 +60,9 @@ int diffraflow::IngImageWriter::run_() {
                 LOG4CXX_WARN(logger_, "failed to open data files after run number changed.");
             }
         }
+
+        LOG4CXX_INFO(logger_, "debug: before save_image_.");
+
         if (save_image_(image_with_feature)) {
             if (current_saved_counts_.load() >= config_obj_->file_imgcnt_limit) {
                 LOG4CXX_INFO(logger_, "file limit reached, reopen new files.");
@@ -64,6 +70,8 @@ int diffraflow::IngImageWriter::run_() {
                 open_files_();
             }
         }
+
+        LOG4CXX_INFO(logger_, "debug: after save_image_.");
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();

@@ -11,6 +11,10 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, size_t max_q
     : GenericClient(hostname, port, id, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD) {
     sending_thread_ = nullptr;
     imgfrm_queue_.set_maxsize(max_qs);
+
+    sender_metrics.total_pushed_counts = 0;
+    sender_metrics.total_send_succ_counts = 0;
+    sender_metrics.total_send_fail_counts = 0;
 }
 
 diffraflow::DspSender::~DspSender() {}
@@ -36,7 +40,11 @@ bool diffraflow::DspSender::send_imgfrm_(const shared_ptr<ImageFrameRaw>& image_
 }
 
 bool diffraflow::DspSender::push(const shared_ptr<ImageFrameRaw>& image_frame) {
-    return imgfrm_queue_.push(image_frame);
+    bool result = imgfrm_queue_.push(image_frame);
+
+    sender_metrics.total_pushed_counts++;
+
+    return result;
 }
 
 bool diffraflow::DspSender::start() {
@@ -55,8 +63,10 @@ bool diffraflow::DspSender::start() {
         while (imgfrm_queue_.take(image_frame)) {
             if (send_imgfrm_(image_frame)) {
                 LOG4CXX_DEBUG(logger_, "successfully send one image frame.");
+                sender_metrics.total_send_succ_counts++;
             } else {
                 LOG4CXX_DEBUG(logger_, "failed to send one image frame.");
+                sender_metrics.total_send_fail_counts++;
             }
         }
     });
@@ -70,4 +80,19 @@ void diffraflow::DspSender::stop() {
     delete sending_thread_;
     sending_thread_ = nullptr;
     close_connection();
+}
+
+json::value diffraflow::DspSender::collect_metrics() {
+
+    json::value root_json = GenericClient::collect_metrics();
+
+    json::value sender_metrics_json;
+    sender_metrics_json["total_pushed_counts"] = json::value::number(sender_metrics.total_pushed_counts);
+    sender_metrics_json["total_send_succ_counts"] = json::value::number(sender_metrics.total_send_succ_counts);
+    sender_metrics_json["total_send_fail_counts"] = json::value::number(sender_metrics.total_send_fail_counts);
+    sender_metrics_json["current_queue_size"] = json::value::number((uint64_t)imgfrm_queue_.size());
+
+    root_json["sender_stats"] = sender_metrics_json;
+
+    return root_json;
 }

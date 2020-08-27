@@ -38,6 +38,15 @@ namespace diffraflow {
         bool start();
         void stop();
 
+    public:
+        struct {
+            atomic<uint64_t> total_pushed_counts;
+            atomic<uint64_t> total_send_succ_counts;
+            atomic<uint64_t> total_send_fail_counts;
+        } sender_metrics;
+
+        json::value collect_metrics() override;
+
     private:
         bool send_imgfrm_(const shared_ptr<ImageFrameRaw>& image_frame);
 

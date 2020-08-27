@@ -34,6 +34,8 @@ void diffraflow::ImageDataHDF5::convert_image(const ImageData& imgdat_obj, Field
 
     cout << "debug: begin of convert_image." << endl;
 
+    imgdat_obj.print();
+
     // bunch_id
     imgdat_st.bunch_id = imgdat_obj.bunch_id;
 

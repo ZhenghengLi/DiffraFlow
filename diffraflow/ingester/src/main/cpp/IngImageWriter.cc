@@ -46,8 +46,6 @@ int diffraflow::IngImageWriter::run_() {
             continue;
         }
 
-        LOG4CXX_INFO(logger_, "debug: before run_number check.");
-
         // if run number is changed, create new folders
         int new_run_number = config_obj_->get_dy_run_number();
         if (new_run_number != current_run_number_.load()) {

@@ -118,6 +118,7 @@ bool diffraflow::ImageFileHDF5W::append(const ImageData& image_data) {
     }
     if (buffer_limit_ > buffer_size_) {
         // this is impossible
+        LOG4CXX_ERROR(logger_, "impossible buffer_limit_ > buffer_size_.");
         assert(false);
     }
     return true;
@@ -141,6 +142,7 @@ bool diffraflow::ImageFileHDF5W::flush_op_() {
     }
     if (buffer_limit_ > buffer_size_) {
         // this is impossible
+        LOG4CXX_ERROR(logger_, "impossible buffer_limit_ > buffer_size_.");
         assert(false);
     }
     try {

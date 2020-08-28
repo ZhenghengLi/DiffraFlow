@@ -18,13 +18,13 @@ void diffraflow::IngCalibrationWorker::do_calib_(ImageDataType::Field& image_dat
                 for (size_t w = 0; w < FRAME_W; w++) {
                     switch (image_data.gain_level[i][h][w]) {
                     case 0:
-                        image_data.pixel_data[i][h][w] = image_data.pixel_data[i][h][w] * 1 + 0.0;
+                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
                         break;
                     case 1:
-                        image_data.pixel_data[i][h][w] = image_data.pixel_data[i][h][w] * 1 + 0.0;
+                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
                         break;
                     case 2:
-                        image_data.pixel_data[i][h][w] = image_data.pixel_data[i][h][w] * 1 + 0.0;
+                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
                         break;
                     }
                 }

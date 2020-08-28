@@ -17,9 +17,9 @@ diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t chunk_size, bool swmr) {
     chunk_size_ = (chunk_size > 1 ? chunk_size : 1);
     swmr_mode_ = swmr;
     if (swmr_mode_) {
-        inprogress_suffix_ = ".inprogress";
-    } else {
         inprogress_suffix_ = ".inprogress_swmr";
+    } else {
+        inprogress_suffix_ = ".inprogress";
     }
 }
 

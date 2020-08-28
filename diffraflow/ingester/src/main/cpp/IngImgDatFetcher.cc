@@ -130,16 +130,16 @@ int diffraflow::IngImgDatFetcher::run_() {
                 successive_fail_count_ = 0;
 
                 // for debug
-                ImageDataType::print(image_with_feature->image_data);
+                // ImageDataType::print(image_with_feature->image_data);
 
-                // if (imgWthFtrQue_raw_->push(image_with_feature)) {
-                //     LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
-                // } else {
-                //     LOG4CXX_WARN(logger_, "raw image data queue is stopped, close the connection and stop running.");
-                //     close_connection();
-                //     worker_status_ = kStopped;
-                //     running = false;
-                // }
+                if (imgWthFtrQue_raw_->push(image_with_feature)) {
+                    LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
+                } else {
+                    LOG4CXX_WARN(logger_, "raw image data queue is stopped, close the connection and stop running.");
+                    close_connection();
+                    worker_status_ = kStopped;
+                    running = false;
+                }
 
                 break;
             case kFail:

@@ -7,6 +7,8 @@
 #include <future>
 #include <log4cxx/logger.h>
 
+#include "IngImgWthFtrQueue.hh"
+
 using std::mutex;
 using std::condition_variable;
 using std::atomic_bool;
@@ -16,11 +18,6 @@ using std::shared_future;
 using std::async;
 
 namespace diffraflow {
-
-    class IngImgWthFtrQueue;
-    class ImageData;
-    class ImageFeature;
-
     class IngFeatureExtracter {
     public:
         IngFeatureExtracter(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out);
@@ -35,7 +32,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void extract_feature_(const ImageData& imgdat_calib, ImageFeature& image_feature);
+        void extract_feature_(const ImageDataType::Field& image_data, ImageFeature& image_feature);
 
     private:
         int run_();

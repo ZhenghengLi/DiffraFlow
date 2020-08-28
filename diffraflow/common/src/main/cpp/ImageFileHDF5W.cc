@@ -12,26 +12,18 @@ using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::ImageFileHDF5W::logger_ = log4cxx::Logger::getLogger("ImageFileHDF5W");
 
-const string diffraflow::ImageFileHDF5W::inprogress_suffix_ = ".inprogress";
-
-diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t buffer_size, size_t chunk_size, bool swmr) {
-    buffer_size_ = (buffer_size > 1 ? buffer_size : 1);
-    chunk_size_ = (chunk_size >= buffer_size ? chunk_size : buffer_size);
-
-    image_buffer_ = new ImageDataHDF5::Field[buffer_size_];
-    buffer_limit_ = 0;
-
+diffraflow::ImageFileHDF5W::ImageFileHDF5W(size_t chunk_size, bool swmr) {
     h5file_ = nullptr;
+    chunk_size_ = (chunk_size > 1 ? chunk_size : 1);
     swmr_mode_ = swmr;
-
-    image_counts_ = 0;
+    if (swmr_mode_) {
+        inprogress_suffix_ = ".inprogress";
+    } else {
+        inprogress_suffix_ = ".inprogress_swmr";
+    }
 }
 
-diffraflow::ImageFileHDF5W::~ImageFileHDF5W() {
-    close();
-    delete[] image_buffer_;
-    image_buffer_ = nullptr;
-}
+diffraflow::ImageFileHDF5W::~ImageFileHDF5W() { close(); }
 
 bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) {
 
@@ -74,11 +66,9 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
         string now_time_string = boost::trim_copy(string(ctime(&now_time)));
         file_create_time.write(string_type, H5std_string(now_time_string));
         // create dataset for image data
-        imgdat_dset_ = h5file_->createDataSet("image_data", image_data_hdf5_, imgdat_file_space, imgdat_dset_crtpars);
+        imgdat_dset_ = h5file_->createDataSet("image_data", image_data_type_, imgdat_file_space, imgdat_dset_crtpars);
         imgdat_dset_id_ = imgdat_dset_.getId();
         imgdat_dset_pos_ = 0;
-        buffer_limit_ = 0;
-        image_counts_ = 0;
         // swmr needs close and reopen
         if (swmr_mode_) {
             h5file_->close();
@@ -99,34 +89,17 @@ bool diffraflow::ImageFileHDF5W::open(const char* filename, int compress_level) 
     return true;
 }
 
-bool diffraflow::ImageFileHDF5W::append(const ImageData& image_data) {
-
+bool diffraflow::ImageFileHDF5W::flush() {
     lock_guard<mutex> lg(file_op_mtx_);
-
     if (h5file_ == nullptr) {
         LOG4CXX_ERROR(logger_, "hdf5 file is not opened.");
         return false;
     }
-
-    if (buffer_limit_ < buffer_size_) {
-        ImageDataHDF5::convert_image(image_data, image_buffer_[buffer_limit_]);
-        buffer_limit_++;
-        image_counts_++;
-    }
-
-    if (buffer_limit_ == buffer_size_) {
-        return flush_op_();
-    }
-    if (buffer_limit_ > buffer_size_) {
-        // this is impossible
-        LOG4CXX_ERROR(logger_, "impossible buffer_limit_ > buffer_size_.");
-        assert(false);
-    }
+    h5file_->flush(H5F_SCOPE_LOCAL);
     return true;
 }
 
-bool diffraflow::ImageFileHDF5W::flush() {
-
+bool diffraflow::ImageFileHDF5W::write(const ImageDataType::Field& image_data) {
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (h5file_ == nullptr) {
@@ -134,39 +107,25 @@ bool diffraflow::ImageFileHDF5W::flush() {
         return false;
     }
 
-    return flush_op_();
-}
-
-bool diffraflow::ImageFileHDF5W::flush_op_() {
-    if (buffer_limit_ == 0) {
-        return true;
-    }
-    if (buffer_limit_ > buffer_size_) {
-        // this is impossible
-        LOG4CXX_ERROR(logger_, "impossible buffer_limit_ > buffer_size_.");
-        assert(false);
-    }
     try {
-        // extend file space
+        // extend file space for one image
         hsize_t imgdat_dset_size[1];
-        imgdat_dset_size[0] = imgdat_dset_pos_ + buffer_limit_;
+        imgdat_dset_size[0] = imgdat_dset_pos_ + 1;
         imgdat_dset_.extend(imgdat_dset_size);
-        // write data in buffer
+        // write the image data
         hsize_t file_offset[1];
         file_offset[0] = imgdat_dset_pos_;
-        hsize_t memory_dim[1];
-        memory_dim[0] = buffer_limit_;
+        hsize_t memory_dim[1] = {1};
         H5::DataSpace file_space = imgdat_dset_.getSpace();
         file_space.selectHyperslab(H5S_SELECT_SET, memory_dim, file_offset);
         H5::DataSpace memory_space(1, memory_dim);
-        imgdat_dset_.write(image_buffer_, image_data_hdf5_, memory_space, file_space);
+        imgdat_dset_.write(&image_data, image_data_type_, memory_space, file_space);
         // SWMR flush
         if (swmr_mode_) {
             H5Dflush(imgdat_dset_id_);
         }
         // advance position
-        imgdat_dset_pos_ += buffer_limit_;
-        buffer_limit_ = 0;
+        imgdat_dset_pos_++;
         LOG4CXX_DEBUG(logger_, "done a flush.");
         return true;
     } catch (H5::Exception& e) {
@@ -183,7 +142,6 @@ void diffraflow::ImageFileHDF5W::close() {
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (h5file_ != nullptr) {
-        flush_op_();
         h5file_->flush(H5F_SCOPE_LOCAL);
         h5file_->close();
         delete h5file_;
@@ -202,4 +160,7 @@ void diffraflow::ImageFileHDF5W::close() {
     }
 }
 
-size_t diffraflow::ImageFileHDF5W::size() { return image_counts_.load(); }
+size_t diffraflow::ImageFileHDF5W::size() {
+    lock_guard<mutex> lg(file_op_mtx_);
+    return imgdat_dset_pos_;
+}

@@ -7,7 +7,6 @@
 #include <future>
 #include <log4cxx/logger.h>
 #include "ImageFileHDF5W.hh"
-#include "ImageFileRawW.hh"
 #include "MetricsProvider.hh"
 
 using std::mutex;
@@ -54,11 +53,8 @@ namespace diffraflow {
 
     private:
         bool create_directories_();
-        bool open_hdf5_file_();
-        bool open_raw_file_();
-
-        bool open_files_();
-        void close_files_();
+        bool open_file_();
+        void close_file_();
 
         bool save_image_(const shared_ptr<ImageWithFeature>& image_with_feature);
 
@@ -68,7 +64,6 @@ namespace diffraflow {
 
         // files:
         ImageFileHDF5W* image_file_hdf5_;
-        ImageFileRawW* image_file_raw_;
 
         // file path:
         // storage_dir/R0000/NODENAME_N00/T00/R0000_NODENAME_N00_T00_S0000.h5

@@ -13,7 +13,7 @@ namespace diffraflow {
         int int_result;
         float float_result;
 
-        MSGPACK_DEFINE_MAP(image_with_feature, int_result, float_result);
+        MSGPACK_DEFINE_MAP(int_result, float_result);
     };
 } // namespace diffraflow
 

@@ -1,6 +1,9 @@
 #include "ImageDataType.hh"
 #include "Decoder.hh"
 
+using std::endl;
+using std::string;
+
 diffraflow::ImageDataType::ImageDataType() : H5::CompType(sizeof(Field)) {
     //// bunch_id
     insertMember("bunch_id", HOFFSET(Field, bunch_id), H5::PredType::NATIVE_UINT64);
@@ -29,7 +32,7 @@ diffraflow::ImageDataType::ImageDataType() : H5::CompType(sizeof(Field)) {
 
 diffraflow::ImageDataType::~ImageDataType() {}
 
-bool diffraflow::ImageDataType::decode(ImageDataType::Field& image_data, const char* buffer, const size_t len) {
+bool diffraflow::ImageDataType::decode(Field& image_data, const char* buffer, const size_t len) {
 
     if (len < 11) return false;
 
@@ -101,4 +104,15 @@ bool diffraflow::ImageDataType::decode(ImageDataType::Field& image_data, const c
     image_data.calib_level = 0;
 
     return true;
+}
+
+void diffraflow::ImageDataType::print(const Field& image_data, ostream& out) {
+    out << "bunch_id: " << image_data.bunch_id << endl;
+    out << "late_arrived: " << image_data.late_arrived << endl;
+    out << "alignment: [";
+    for (size_t i = 0; i < MOD_CNT; i++) {
+        if (i > 0) out << ", ";
+        out << image_data.alignment[i];
+    }
+    out << "]" << endl;
 }

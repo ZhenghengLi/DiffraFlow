@@ -48,6 +48,11 @@ namespace diffraflow {
             atomic<uint64_t> total_partial_images;
         } alignment_metrics;
 
+        struct {
+            atomic<uint64_t> image_data_queue_push_counts;
+            atomic<uint64_t> image_data_queue_take_counts;
+        } queue_metrics;
+
         json::value collect_metrics() override;
 
     private:

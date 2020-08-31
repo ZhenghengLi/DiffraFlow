@@ -63,6 +63,9 @@ diffraflow::CmbImgCache::CmbImgCache(size_t num_of_dets, size_t img_q_ms, int ma
     alignment_metrics.total_aligned_images = 0;
     alignment_metrics.total_late_arrived = 0;
     alignment_metrics.total_partial_images = 0;
+
+    queue_metrics.image_data_queue_push_counts = 0;
+    queue_metrics.image_data_queue_take_counts = 0;
 }
 
 diffraflow::CmbImgCache::~CmbImgCache() {
@@ -137,6 +140,7 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrameRaw>& image_
 
         LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
         if (imgdat_queue_.push(image_data)) {
+            queue_metrics.image_data_queue_push_counts++;
             LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
         } else {
             LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
@@ -209,6 +213,9 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageDataRaw>& image_data) {
     if (stopped_ && imgdat_queue_.empty()) {
         stop_cv_.notify_all();
     }
+    if (result) {
+        queue_metrics.image_data_queue_take_counts++;
+    }
     return result;
 }
 
@@ -263,6 +270,10 @@ json::value diffraflow::CmbImgCache::collect_metrics() {
     {
         lock_guard<mutex> lg(data_mtx_);
         queue_metrics_json["image_data_queue_size"] = json::value::number((uint32_t)imgdat_queue_.size());
+        queue_metrics_json["image_data_queue_push_counts"] =
+            json::value::number(queue_metrics.image_data_queue_push_counts.load());
+        queue_metrics_json["image_data_queue_take_counts"] =
+            json::value::number(queue_metrics.image_data_queue_take_counts.load());
         json::value image_frame_queue_sizes;
         for (size_t i = 0; i < imgfrm_queues_len_; i++) {
             image_frame_queue_sizes[i] = json::value::number((uint32_t)imgfrm_queues_arr_[i].size());

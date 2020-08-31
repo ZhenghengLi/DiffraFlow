@@ -37,7 +37,7 @@ namespace diffraflow {
         int stop();
 
         void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
-        bool get_current_image(ImageWithFeature& image_with_feature);
+        shared_ptr<ImageWithFeature> get_current_image();
 
     public:
         struct {

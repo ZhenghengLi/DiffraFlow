@@ -1,6 +1,7 @@
 #include "IngImageFilter.hh"
 #include "IngImgWthFtrQueue.hh"
 #include "IngConfig.hh"
+#include "ImageWithFeature.hh"
 
 log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_ = log4cxx::Logger::getLogger("IngImageFilter");
 
@@ -88,14 +89,9 @@ void diffraflow::IngImageFilter::set_current_image(const shared_ptr<ImageWithFea
     }
 }
 
-bool diffraflow::IngImageFilter::get_current_image(ImageWithFeature& image_with_feature) {
+shared_ptr<diffraflow::ImageWithFeature> diffraflow::IngImageFilter::get_current_image() {
     lock_guard<mutex> lg(current_image_mtx_);
-    if (current_image_) {
-        image_with_feature = *current_image_;
-        return true;
-    } else {
-        return false;
-    }
+    return current_image_;
 }
 
 json::value diffraflow::IngImageFilter::collect_metrics() {

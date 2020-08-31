@@ -1,6 +1,6 @@
 #include "MonImgHttpServer.hh"
 #include "MonConfig.hh"
-#include "ImageWithFeature.hh"
+#include "ImageDataFeature.hh"
 #include "ImageAnalysisResult.hh"
 
 #include <fstream>
@@ -130,7 +130,7 @@ bool diffraflow::MonImgHttpServer::create_ingester_clients(const char* filename,
 }
 
 bool diffraflow::MonImgHttpServer::request_one_image_(
-    const string key_string, ImageWithFeature& image_with_feature, string& ingester_id_str) {
+    const string key_string, ImageDataFeature& image_data_feature, string& ingester_id_str) {
 
     lock_guard<mutex> lg(mtx_client_);
 
@@ -165,9 +165,9 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
     //         }
     //         vector<unsigned char> body_vec = response.extract_vector().get();
     //         try {
-    //             msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_with_feature);
+    //             msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_data_feature);
     //         } catch (std::exception& e) {
-    //             LOG4CXX_WARN(logger_, "failed to deserialize image_with_feature data with exception: " << e.what());
+    //             LOG4CXX_WARN(logger_, "failed to deserialize image_data_feature data with exception: " << e.what());
     //             return false;
     //         }
     //         current_index_ = addr_idx;
@@ -179,8 +179,8 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
 }
 
 void diffraflow::MonImgHttpServer::do_analysis_(
-    const ImageWithFeature& image_with_feature, ImageAnalysisResult& image_analysis_result) {
-    image_analysis_result.image_with_feature = image_with_feature;
+    const ImageDataFeature& image_data_feature, ImageAnalysisResult& image_analysis_result) {
+    image_analysis_result.image_data_feature = image_data_feature;
     // do some heavy analysis here and save result into image_analysis_result
 }
 
@@ -209,13 +209,13 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
     message.reply(status_codes::NotFound);
 
-    // ImageWithFeature image_with_feature;
+    // ImageDataFeature image_data_feature;
     // string ingester_id_str;
     // string monitor_id_str = std::to_string(config_obj_->monitor_id);
-    // if (request_one_image_(key_string, image_with_feature, ingester_id_str)) {
-    //     string key_str = std::to_string(image_with_feature.image_data_raw.get_key());
+    // if (request_one_image_(key_string, image_data_feature, ingester_id_str)) {
+    //     string key_str = std::to_string(image_data_feature.image_data_raw.get_key());
     //     ImageAnalysisResult image_analysis_result;
-    //     do_analysis_(image_with_feature, image_analysis_result);
+    //     do_analysis_(image_data_feature, image_analysis_result);
     //     msgpack::pack(image_sbuff, image_analysis_result);
     //     response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
     //     response.set_body(response_data_vec);

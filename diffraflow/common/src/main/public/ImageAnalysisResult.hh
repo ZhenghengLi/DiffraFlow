@@ -1,19 +1,22 @@
 #ifndef __ImageAnalysisResult_H__
 #define __ImageAnalysisResult_H__
 
-#include "ImageWithFeature.hh"
+#include "ImageDataFeature.hh"
 
 #include <msgpack.hpp>
 
 namespace diffraflow {
     struct ImageAnalysisResult {
 
-        ImageWithFeature image_with_feature;
+        ImageDataFeature image_data_feature;
         // analysis results
-        int int_result;
-        float float_result;
+        struct {
+            int int_result;
+            float float_result;
+            MSGPACK_DEFINE_MAP(int_result, float_result);
+        } analysis_result;
 
-        MSGPACK_DEFINE_MAP(int_result, float_result);
+        MSGPACK_DEFINE_MAP(image_data_feature, analysis_result);
     };
 } // namespace diffraflow
 

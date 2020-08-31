@@ -42,7 +42,6 @@ namespace diffraflow {
         string node_name;
         int ingester_id;
         int hdf5_chunk_size;
-        int hdf5_buffer_size;
         int hdf5_compress_level;
         bool hdf5_swmr_mode;
         int file_imgcnt_limit;

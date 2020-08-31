@@ -29,8 +29,7 @@ diffraflow::IngConfig::IngConfig() {
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
 
-    hdf5_chunk_size = 10;
-    hdf5_buffer_size = 10;
+    hdf5_chunk_size = 1;
     hdf5_compress_level = 0;
     hdf5_swmr_mode = true;
     file_imgcnt_limit = 1000;
@@ -72,8 +71,6 @@ bool diffraflow::IngConfig::load(const char* filename) {
             storage_dir = value;
         } else if (key == "hdf5_chunk_size") {
             hdf5_chunk_size = atoi(value.c_str());
-        } else if (key == "hdf5_buffer_size") {
-            hdf5_buffer_size = atoi(value.c_str());
         } else if (key == "hdf5_compress_level") {
             hdf5_compress_level = atoi(value.c_str());
         } else if (key == "hdf5_swmr_mode") {
@@ -139,10 +136,6 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
         metrics_pulsar_report_period = 500;
     }
-    if (hdf5_buffer_size < 1) {
-        LOG4CXX_WARN(logger_, "hdf5_buffer_size is too small (< 1), use 1 instead.");
-        hdf5_buffer_size = 1;
-    }
     if (hdf5_chunk_size < 1) {
         LOG4CXX_WARN(logger_, "hdf5_chunk_size is too small (< 1), use 1 instead.");
         hdf5_chunk_size = 1;
@@ -187,7 +180,6 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["storage_dir"] = json::value::string(storage_dir);
         static_config_json_["node_name"] = json::value::string(node_name);
         static_config_json_["ingester_id"] = json::value::number(ingester_id);
-        static_config_json_["hdf5_buffer_size"] = json::value::number(hdf5_buffer_size);
         static_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
         static_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
         static_config_json_["hdf5_swmr_mode"] = json::value::number(hdf5_swmr_mode);

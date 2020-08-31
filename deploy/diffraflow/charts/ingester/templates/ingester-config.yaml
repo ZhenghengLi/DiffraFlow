@@ -24,8 +24,7 @@ data:
     imgdat_queue_capacity = 100
 
     storage_dir = /ingester-data
-    hdf5_chunk_size = 10
-    hdf5_buffer_size = 1
+    hdf5_chunk_size = 1
     hdf5_compress_level = 0
     hdf5_swmr_mode = true
     file_imgcnt_limit = 1000

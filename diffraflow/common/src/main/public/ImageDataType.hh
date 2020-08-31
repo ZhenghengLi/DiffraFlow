@@ -14,6 +14,8 @@ using std::ostream;
 
 namespace diffraflow {
 
+    class ImageData;
+
     class ImageDataType : public H5::CompType {
     public:
         ImageDataType();
@@ -34,6 +36,7 @@ namespace diffraflow {
     public:
         static bool decode(Field& image_data, const char* buffer, const size_t len);
         static void print(const Field& image_data, ostream& out = std::cout);
+        static void convert(const Field& image_data_arr, ImageData& image_data_obj);
     };
 } // namespace diffraflow
 

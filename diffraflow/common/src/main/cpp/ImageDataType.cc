@@ -1,4 +1,6 @@
 #include "ImageDataType.hh"
+#include "ImageData.hh"
+#include "ImageFrame.hh"
 #include "Decoder.hh"
 
 using std::endl;
@@ -115,4 +117,32 @@ void diffraflow::ImageDataType::print(const Field& image_data, ostream& out) {
         out << image_data.alignment[i];
     }
     out << "]" << endl;
+}
+
+void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& image_data_obj) {
+    image_data_obj.bunch_id = image_data_arr.bunch_id;
+    image_data_obj.late_arrived = image_data_arr.late_arrived;
+    image_data_obj.calib_level = image_data_arr.calib_level;
+    image_data_obj.alignment_vec.resize(MOD_CNT);
+    for (size_t i = 0; i < MOD_CNT; i++) {
+        image_data_obj.alignment_vec[i] = image_data_arr.alignment[i];
+        if (image_data_arr.alignment[i]) {
+            image_data_obj.image_frame_vec[i] = make_shared<ImageFrame>();
+            image_data_obj.image_frame_vec[i]->bunch_id = image_data_arr.bunch_id;
+            image_data_obj.image_frame_vec[i]->module_id = i;
+            image_data_obj.image_frame_vec[i]->cell_id = image_data_arr.cell_id[i];
+            image_data_obj.image_frame_vec[i]->status = image_data_arr.status[i];
+            image_data_obj.image_frame_vec[i]->pixel_data.resize(FRAME_L);
+            image_data_obj.image_frame_vec[i]->gain_level.resize(FRAME_L);
+            for (size_t h = 0; h < FRAME_H; h++) {
+                for (size_t w = 0; w < FRAME_W; w++) {
+                    size_t pos = h * FRAME_W + w;
+                    image_data_obj.image_frame_vec[i]->pixel_data[pos] = image_data_arr.pixel_data[i][h][w];
+                    image_data_obj.image_frame_vec[i]->gain_level[pos] = image_data_arr.gain_level[i][h][w];
+                }
+            }
+        } else {
+            image_data_obj.image_frame_vec[i] = nullptr;
+        }
+    }
 }

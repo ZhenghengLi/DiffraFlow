@@ -78,28 +78,22 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
 }
 
 diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(
-    ImageDataType::Field& image_data) {
-    size_t payload_size = 0;
-    if (receive_one_(imgdat_buffer_, imgdat_buffer_size_, payload_size)) {
-        LOG4CXX_DEBUG(logger_, "successfully received one image.");
-    } else {
-        if (worker_status_ != kStopped) {
-            LOG4CXX_WARN(logger_, "failed to receive one image.");
-        }
-        return kDisconnected;
-    }
-    // check
-    if (payload_size <= 4) {
-        LOG4CXX_WARN(logger_, "got too short image data packet.");
+    shared_ptr<ImageWithFeature>& image_with_feature) {
+
+    uint32_t payload_type = 0;
+    shared_ptr<vector<char>> payload_data;
+    if (!receive_one_(payload_type, payload_data, 3145728 /* 3MiB */)) {
         return kFail;
     }
-    uint32_t payload_head = gDC.decode_byte<uint32_t>(imgdat_buffer_, 0, 3);
-    if (payload_head != 0xABCDEEEE) {
-        LOG4CXX_WARN(logger_, "got unknown payload head: " << payload_head);
+
+    if (payload_type != 0xABCDEEEE) {
+        LOG4CXX_WARN(logger_, "got unknown payload type: " << payload_type);
         return kFail;
     }
+
     // decode
-    if (ImageDataType::decode(image_data, imgdat_buffer_ + 4, payload_size - 4)) {
+    if (ImageDataType::decode(image_with_feature->image_data, payload_data->data(), payload_data->size())) {
+        image_with_feature->image_data_raw = payload_data;
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");
@@ -115,7 +109,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         size_t successive_fail_count_ = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
-            switch (receive_one_image(image_with_feature->image_data)) {
+            switch (receive_one_image(image_with_feature)) {
             case kDisconnected:
                 if (worker_status_ == kStopped) {
                     result = 0;

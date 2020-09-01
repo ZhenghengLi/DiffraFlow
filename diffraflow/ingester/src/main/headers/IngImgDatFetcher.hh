@@ -36,7 +36,7 @@ namespace diffraflow {
 
     private:
         bool connect_to_combiner_();
-        ReceiveRes receive_one_image(ImageDataType::Field& image_data);
+        ReceiveRes receive_one_image(shared_ptr<ImageWithFeature>& image_with_feature);
 
     private:
         int run_();

@@ -5,6 +5,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <future>
+#include <memory>
 #include <log4cxx/logger.h>
 
 #include "IngImgWthFtrQueue.hh"
@@ -15,6 +16,7 @@ using std::atomic_bool;
 using std::atomic;
 using std::future;
 using std::shared_future;
+using std::shared_ptr;
 using std::async;
 
 namespace diffraflow {
@@ -32,7 +34,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void do_calib_(ImageDataType::Field& image_data);
+        void do_calib_(shared_ptr<ImageWithFeature>& image_with_feature);
 
     private:
         int run_();

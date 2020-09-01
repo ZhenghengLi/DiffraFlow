@@ -11,7 +11,10 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
 
 diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}
 
-void diffraflow::IngCalibrationWorker::do_calib_(ImageDataType::Field& image_data) {
+void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& image_with_feature) {
+
+    ImageDataType::Field& image_data = *image_with_feature->image_data;
+
     for (size_t i = 0; i < MOD_CNT; i++) {
         if (image_data.alignment[i]) {
             for (size_t h = 0; h < FRAME_H; h++) {
@@ -31,6 +34,7 @@ void diffraflow::IngCalibrationWorker::do_calib_(ImageDataType::Field& image_dat
             }
         }
     }
+
     image_data.calib_level = 1;
 }
 
@@ -40,7 +44,7 @@ int diffraflow::IngCalibrationWorker::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        do_calib_(*image_with_feature->image_data);
+        do_calib_(image_with_feature);
 
         // debug
         // image_with_feature->image_data_calib.print();

@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <atomic>
+#include <memory>
 #include <condition_variable>
 #include <future>
 #include <log4cxx/logger.h>
@@ -15,6 +16,7 @@ using std::atomic_bool;
 using std::atomic;
 using std::future;
 using std::shared_future;
+using std::shared_ptr;
 using std::async;
 
 namespace diffraflow {
@@ -32,7 +34,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void extract_feature_(const ImageDataType::Field& image_data, ImageFeature& image_feature);
+        void extract_feature_(shared_ptr<ImageWithFeature>& image_with_feature);
 
     private:
         int run_();

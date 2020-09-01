@@ -53,9 +53,6 @@ namespace diffraflow {
 
         IngImgWthFtrQueue* imgWthFtrQue_raw_;
 
-        char* imgdat_buffer_;
-        size_t imgdat_buffer_size_;
-
         mutex cnxn_mtx_;
         condition_variable cnxn_cv_;
 

@@ -126,7 +126,7 @@ bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>&
     if (image_file_hdf5_ == nullptr) {
         return false;
     }
-    if (image_file_hdf5_->write(image_with_feature->image_data)) {
+    if (image_file_hdf5_->write(*image_with_feature->image_data)) {
         LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
         current_saved_counts_++;
         total_saved_counts_++;

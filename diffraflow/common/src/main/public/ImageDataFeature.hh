@@ -4,7 +4,10 @@
 #include "ImageData.hh"
 #include "ImageFeature.hh"
 
+#include <memory>
 #include <msgpack.hpp>
+
+using std::shared_ptr;
 
 namespace diffraflow {
 
@@ -19,12 +22,15 @@ namespace diffraflow {
 
     public:
         // image data
-        ImageData image_data;
+        shared_ptr<ImageData> image_data;
         // image feature
-        ImageFeature image_feature;
+        shared_ptr<ImageFeature> image_feature;
 
     public:
         MSGPACK_DEFINE_MAP(image_data, image_feature);
+
+    private:
+        void copy_from_(const ImageWithFeature& image_with_feature);
     };
 } // namespace diffraflow
 

@@ -11,13 +11,13 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
 
 diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 
-void diffraflow::IngFeatureExtracter::extract_feature_(
-    const ImageDataType::Field& image_data, ImageFeature& image_feature) {
+void diffraflow::IngFeatureExtracter::extract_feature_(shared_ptr<ImageWithFeature>& image_with_feature) {
 
     // some example code
-    image_feature.peak_counts = 1;
-    image_feature.global_rms = 2;
-    image_feature.set_defined();
+    image_with_feature->image_feature = make_shared<ImageFeature>();
+    image_with_feature->image_feature->peak_counts = 1;
+    image_with_feature->image_feature->global_rms = 2;
+    image_with_feature->image_feature->set_defined();
 }
 
 int diffraflow::IngFeatureExtracter::run_() {
@@ -26,7 +26,7 @@ int diffraflow::IngFeatureExtracter::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        extract_feature_(image_with_feature->image_data, image_with_feature->image_feature);
+        extract_feature_(image_with_feature);
         if (image_queue_out_->push(image_with_feature)) {
             LOG4CXX_DEBUG(logger_, "pushed the feature data into queue.");
         } else {

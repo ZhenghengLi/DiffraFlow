@@ -3,6 +3,9 @@
 #include "Decoder.hh"
 #include <msgpack.hpp>
 
+// 3 MiB
+#define MAX_PAYLOAD_SIZE 3145728
+
 log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_ = log4cxx::Logger::getLogger("IngImgDatFetcher");
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
@@ -13,8 +16,6 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
     worker_status_ = kNotStart;
-    imgdat_buffer_size_ = 16 * 1024 * 1024; // 16MiB
-    imgdat_buffer_ = new char[imgdat_buffer_size_];
 }
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue)
@@ -24,14 +25,9 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(string combiner_sock, uint32_t in
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
     worker_status_ = kNotStart;
-    imgdat_buffer_size_ = 16 * 1024 * 1024; // 16MiB
-    imgdat_buffer_ = new char[imgdat_buffer_size_];
 }
 
-diffraflow::IngImgDatFetcher::~IngImgDatFetcher() {
-    stop();
-    delete[] imgdat_buffer_;
-}
+diffraflow::IngImgDatFetcher::~IngImgDatFetcher() { stop(); }
 
 void diffraflow::IngImgDatFetcher::set_recnxn_policy(size_t wait_time, size_t max_count) {
     recnxn_wait_time_ = wait_time;
@@ -82,7 +78,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
 
     uint32_t payload_type = 0;
     shared_ptr<vector<char>> payload_data;
-    if (!receive_one_(payload_type, payload_data, 3145728 /* 3MiB */)) {
+    if (!receive_one_(payload_type, payload_data, MAX_PAYLOAD_SIZE)) {
         return kFail;
     }
 
@@ -92,7 +88,8 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     }
 
     // decode
-    if (ImageDataType::decode(image_with_feature->image_data, payload_data->data(), payload_data->size())) {
+    image_with_feature->image_data = make_shared<ImageDataType::Field>();
+    if (ImageDataType::decode(*image_with_feature->image_data, payload_data->data(), payload_data->size())) {
         image_with_feature->image_data_raw = payload_data;
         return kSucc;
     } else {

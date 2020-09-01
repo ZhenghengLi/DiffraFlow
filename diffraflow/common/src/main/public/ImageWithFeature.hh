@@ -15,9 +15,9 @@ namespace diffraflow {
         // raw image data
         shared_ptr<vector<char>> image_data_raw;
         // image data
-        ImageDataType::Field image_data;
+        shared_ptr<ImageDataType::Field> image_data;
         // image feature
-        ImageFeature image_feature;
+        shared_ptr<ImageFeature> image_feature;
     };
 } // namespace diffraflow
 

@@ -10,6 +10,8 @@
 
 #include "IngImgWthFtrQueue.hh"
 
+#define LEVEL_CNT 3
+
 using std::mutex;
 using std::condition_variable;
 using std::atomic_bool;
@@ -29,6 +31,12 @@ namespace diffraflow {
         bool start();
         void wait();
         int stop();
+
+        bool read_calib_file(const char* calib_file);
+
+    private:
+        float calib_gain_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W];
+        float calib_pedestal_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W];
 
     public:
         enum WorkerStatus { kNotStart, kRunning, kStopped };

@@ -1,4 +1,5 @@
 #include "IngCalibrationWorker.hh"
+#include "H5Cpp.h"
 
 log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
@@ -7,6 +8,55 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
     image_queue_in_ = img_queue_in;
     image_queue_out_ = img_queue_out;
     worker_status_ = kNotStart;
+
+    // init calibration parameters
+    for (size_t m = 0; m < MOD_CNT; m++) {
+        for (size_t l = 0; l < LEVEL_CNT; l++) {
+            for (size_t h = 0; h < FRAME_H; h++) {
+                for (size_t w = 0; w < FRAME_W; w++) {
+                    calib_gain_[m][l][h][w] = 1.0;
+                    calib_pedestal_[m][l][h][w] = 0.0;
+                }
+            }
+        }
+    }
+}
+
+bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
+
+    H5::Exception::dontPrint();
+
+    try {
+        H5::H5File* h5file = new H5::H5File(calib_file, H5F_ACC_RDONLY);
+
+        // gain
+        H5::DataSet gain_dset = h5file->openDataSet("gain");
+        H5::DataSpace gain_file_space = gain_dset.getSpace();
+        hsize_t gain_mem_dim[] = {MOD_CNT, LEVEL_CNT, FRAME_H, FRAME_W};
+        hsize_t gain_offset[] = {0, 0, 0, 0};
+        gain_file_space.selectHyperslab(H5S_SELECT_SET, gain_mem_dim, gain_offset);
+        H5::DataSpace gain_mem_space(4, gain_mem_dim);
+        gain_dset.read(calib_gain_, H5::PredType::NATIVE_FLOAT, gain_mem_space, gain_file_space);
+
+        // pedestal
+        H5::DataSet pedestal_dset = h5file->openDataSet("pedestal");
+        H5::DataSpace pedestal_file_space = pedestal_dset.getSpace();
+        hsize_t pedestal_mem_dim[] = {MOD_CNT, LEVEL_CNT, FRAME_H, FRAME_W};
+        hsize_t pedestal_offset[] = {0, 0, 0, 0};
+        pedestal_file_space.selectHyperslab(H5S_SELECT_SET, pedestal_mem_dim, pedestal_offset);
+        H5::DataSpace pedestal_mem_space(4, pedestal_mem_dim);
+        pedestal_dset.read(calib_pedestal_, H5::PredType::NATIVE_FLOAT, pedestal_mem_space, pedestal_file_space);
+
+    } catch (H5::Exception& e) {
+        LOG4CXX_ERROR(logger_, "found error when reading calibration parameters from HDF5 file " << calib_file << " : "
+                                                                                                 << e.getDetailMsg());
+        return false;
+    } catch (...) {
+        LOG4CXX_ERROR(logger_, "found unknown error when read calibration parameters from HDF5 file: " << calib_file);
+        return false;
+    }
+
+    return true;
 }
 
 diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}

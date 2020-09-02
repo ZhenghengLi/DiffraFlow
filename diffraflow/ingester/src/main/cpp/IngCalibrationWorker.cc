@@ -47,6 +47,10 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         H5::DataSpace pedestal_mem_space(4, pedestal_mem_dim);
         pedestal_dset.read(calib_pedestal_, H5::PredType::NATIVE_FLOAT, pedestal_mem_space, pedestal_file_space);
 
+        h5file->close();
+        delete h5file;
+        h5file = nullptr;
+
     } catch (H5::Exception& e) {
         LOG4CXX_ERROR(logger_, "found error when reading calibration parameters from HDF5 file " << calib_file << " : "
                                                                                                  << e.getDetailMsg());

@@ -58,6 +58,8 @@ spec:
               mountPath: /sock
             - name: ingester-data
               mountPath: /ingester-data
+            - name: calib-data
+              mountPath: /calib-data
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
@@ -70,3 +72,6 @@ spec:
         - name: ingester-data
           hostPath:
             path: /data-ib/home/lizhh1/diffraflow/ingester
+        - name: calib-data
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files

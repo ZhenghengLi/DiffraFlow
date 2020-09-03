@@ -23,6 +23,8 @@ data:
     recnxn_max_count = 5
     imgdat_queue_capacity = 100
 
+    calib_param_file = /calib-data/calib-rand-s0.h5
+
     storage_dir = /ingester-data
     hdf5_chunk_size = 1
     hdf5_compress_level = 0

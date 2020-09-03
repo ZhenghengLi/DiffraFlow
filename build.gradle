@@ -57,6 +57,7 @@ def copyScripts = copySpec {
         include "alignment_index_proc.py"
         include "event_select_proc.py"
         include "raw_data_gen.py"
+        include "copy_sender_data.sh"
     }
 }
 

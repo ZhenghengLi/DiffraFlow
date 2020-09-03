@@ -171,11 +171,11 @@ void diffraflow::MetricsReporter::handleGet_(http_request message) {
         paths_json[0] = json::value::string("/stat");
         json::value root_json;
         root_json["paths"] = paths_json;
-        message.reply(status_codes::OK, root_json);
+        message.reply(status_codes::OK, root_json).get();
     } else if (relative_path == "/stat") {
-        message.reply(status_codes::OK, aggregate_metrics_());
+        message.reply(status_codes::OK, aggregate_metrics_()).get();
     } else {
-        message.reply(status_codes::NotFound);
+        message.reply(status_codes::NotFound).get();
     }
 }
 

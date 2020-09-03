@@ -9,10 +9,10 @@ helm -n diffraflow uninstall ingester-01
 helm -n diffraflow uninstall ingester-02
 helm -n diffraflow uninstall ingester-03
 helm -n diffraflow uninstall ingester-04
-helm -n diffraflow uninstall ingester-05
-helm -n diffraflow uninstall ingester-06
-helm -n diffraflow uninstall ingester-07
-helm -n diffraflow uninstall ingester-08
+# helm -n diffraflow uninstall ingester-05
+# helm -n diffraflow uninstall ingester-06
+# helm -n diffraflow uninstall ingester-07
+# helm -n diffraflow uninstall ingester-08
 helm -n diffraflow uninstall dispatcher-1
 helm -n diffraflow uninstall combiner-1
 

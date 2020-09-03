@@ -93,6 +93,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
             recnxn_max_count = atoi(value.c_str());
         } else if (key == "imgdat_queue_capacity") {
             imgdat_queue_capacity = atoi(value.c_str());
+        } else if (key == "calib_param_file") {
+            calib_param_file = value.c_str();
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -189,6 +191,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["combiner_sock"] = json::value::string(combiner_sock);
         static_config_json_["image_http_host"] = json::value::string(image_http_host);
         static_config_json_["image_http_port"] = json::value::number(image_http_port);
+        static_config_json_["recnxn_wait_time"] = json::value::number((uint32_t)recnxn_wait_time);
+        static_config_json_["recnxn_max_count"] = json::value::number((uint32_t)recnxn_max_count);
+        static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
+        static_config_json_["calib_param_file"] = json::value::string(calib_param_file);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -237,8 +243,12 @@ void diffraflow::IngConfig::print() {
     cout << "- combiner_host = " << combiner_host << endl;
     cout << "- combiner_port = " << combiner_port << endl;
     cout << "- combiner_sock = " << combiner_sock << endl;
+    cout << "- image_http_host = " << image_http_host << endl;
+    cout << "- image_http_port = " << image_http_port << endl;
     cout << "- recnxn_wait_time = " << recnxn_wait_time << endl;
     cout << "- recnxn_max_count = " << recnxn_max_count << endl;
+    cout << "- imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
+    cout << "- calib_param_file = " << calib_param_file << endl;
     cout << "dynamic parameters:" << endl;
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;

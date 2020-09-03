@@ -73,6 +73,16 @@ void diffraflow::IngPipeline::start_run() {
 
     //// calibration worker
     //// read calibraion parameters files here
+    if (!config_obj_->calib_param_file.empty()) {
+        if (calibration_worker_->read_calib_file(config_obj_->calib_param_file.c_str())) {
+            LOG4CXX_INFO(
+                logger_, "successfully read calibration parameters from file: " << config_obj_->calib_param_file);
+        } else {
+            LOG4CXX_ERROR(
+                logger_, "failed to read calibration parameters from file: " << config_obj_->calib_param_file);
+            return;
+        }
+    }
 
     //======================================================
     // start workers in turn

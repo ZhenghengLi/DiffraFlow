@@ -35,8 +35,8 @@ namespace diffraflow {
         bool read_calib_file(const char* calib_file);
 
     private:
-        float calib_gain_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W];
-        float calib_pedestal_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W];
+        float calib_gain_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W];     // keV/ADC
+        float calib_pedestal_[MOD_CNT][LEVEL_CNT][FRAME_H][FRAME_W]; // ADC
 
     public:
         enum WorkerStatus { kNotStart, kRunning, kStopped };

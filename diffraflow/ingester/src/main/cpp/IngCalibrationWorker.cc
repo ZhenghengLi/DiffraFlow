@@ -60,6 +60,25 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         return false;
     }
 
+    // change the unit of gain from ADC/keV to keV/ADC.
+    for (size_t m = 0; m < MOD_CNT; m++) {
+        for (size_t l = 0; l < LEVEL_CNT; l++) {
+            for (size_t h = 0; h < FRAME_H; h++) {
+                for (size_t w = 0; w < FRAME_W; w++) {
+                    if (calib_gain_[m][l][h][w] > 0) {
+                        calib_gain_[m][l][h][w] = 1.0 / calib_gain_[m][l][h][w];
+                    } else {
+                        calib_gain_[m][l][h][w] = 1.0;
+                        LOG4CXX_ERROR(logger_, "found invalid gain: calib_gain_[" << m << "][" << l << "][" << h << "]["
+                                                                                  << w
+                                                                                  << "] = " << calib_gain_[m][l][h][w]);
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
     return true;
 }
 
@@ -69,20 +88,14 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
 
     ImageDataType::Field& image_data = *image_with_feature->image_data;
 
-    for (size_t i = 0; i < MOD_CNT; i++) {
-        if (image_data.alignment[i]) {
+    for (size_t m = 0; m < MOD_CNT; m++) {
+        if (image_data.alignment[m]) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
-                    switch (image_data.gain_level[i][h][w]) {
-                    case 0:
-                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
-                        break;
-                    case 1:
-                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
-                        break;
-                    case 2:
-                        image_data.pixel_data[i][h][w] = (image_data.pixel_data[i][h][w] - 0.1) * 1.1;
-                        break;
+                    size_t l = image_data.gain_level[m][h][w];
+                    if (l < LEVEL_CNT) {
+                        image_data.pixel_data[m][h][w] =
+                            (image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w]) * calib_gain_[m][l][h][w];
                     }
                 }
             }

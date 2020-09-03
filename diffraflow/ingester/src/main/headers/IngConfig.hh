@@ -56,6 +56,8 @@ namespace diffraflow {
         size_t recnxn_max_count;
         size_t imgdat_queue_capacity;
 
+        string calib_param_file;
+
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;
         string metrics_pulsar_message_key;

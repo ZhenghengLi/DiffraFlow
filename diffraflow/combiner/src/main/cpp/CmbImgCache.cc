@@ -121,8 +121,8 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrameRaw>& image_
 
     alignment_metrics.total_pushed_frames++;
 
-    shared_ptr<ImageDataRaw> image_data = do_alignment_(false);
-    if (image_data) {
+    shared_ptr<ImageDataRaw> image_data;
+    while (image_data = do_alignment_(false)) {
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
             alignment_metrics.total_late_arrived++;
@@ -220,9 +220,8 @@ bool diffraflow::CmbImgCache::take_image(shared_ptr<ImageDataRaw>& image_data) {
 }
 
 void diffraflow::CmbImgCache::clear_cache_() {
-    while (true) {
-        shared_ptr<ImageDataRaw> image_data = do_alignment_(true);
-        if (!image_data) break;
+    shared_ptr<ImageDataRaw> image_data;
+    while (image_data = do_alignment_(true)) {
         if (image_data->get_key() < key_last_) {
             image_data->late_arrived = true;
         } else {

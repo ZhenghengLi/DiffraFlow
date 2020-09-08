@@ -1,6 +1,7 @@
 {
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/diffraflow/**",
+        "${workspaceFolder}/testing/**",
         "/usr/include/hdf5/serial"
     ]
 }

@@ -47,6 +47,8 @@ namespace diffraflow {
     protected:
         bool send_one_(const char* payload_head_buffer, const size_t payload_head_size, const char* payload_data_buffer,
             const size_t payload_data_size);
+        bool send_head_(const uint32_t packet_size);
+        bool send_segment_(const char* segment_data_buffer, const size_t segment_data_size);
 
         bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
         bool receive_one_(

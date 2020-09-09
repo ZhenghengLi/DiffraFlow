@@ -2,7 +2,7 @@
 # maintainer: Zhengheng Li <zhenghenge@gmail.com>
 
 # build ############################################################
-FROM zhenghengli/ubuntu-devel:18.04 AS builder
+FROM zhenghengli/ubuntu-devel:20.04 AS builder
 
 # build and install
 ARG SOURCE_DIR=/opt/diffraflow_src
@@ -21,7 +21,7 @@ RUN set -x \
     && rm -rf $SOURCE_DIR
 
 # deploy ############################################################
-FROM zhenghengli/ubuntu-runtime:18.04
+FROM zhenghengli/ubuntu-runtime:20.04
 
 # copy from builder
 ARG INSTALL_DIR=/opt/diffraflow

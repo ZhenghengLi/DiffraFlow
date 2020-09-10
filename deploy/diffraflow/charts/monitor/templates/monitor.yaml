@@ -18,49 +18,49 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       imagePullSecrets:
-      - name: docker-hub-zhenghengli
+        - name: docker-hub-zhenghengli
       initContainers:
-      - name: ingester-cnxn-checker
-        image: zhenghengli/diffraflow:latest
-        command:
-        - check_cnxn_addrlist.sh
-        - /config/ingester_addresses.txt
-        env:
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
-        volumeMounts:
-        - name: config-volume
-          mountPath: /config
+        - name: ingester-cnxn-checker
+          image: zhenghengli/diffraflow:latest
+          command:
+            - check_cnxn_addrlist.sh
+            - /config/ingester_addresses.txt
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
       containers:
-      - name: monitor
-        image: zhenghengli/diffraflow:latest
-        command:
-        - monitor
-        - --config=/config/monitor.conf
-        - --ingaddr=/config/ingester_addresses.txt
-        - --logconf=/config/log4cxx.properties
-        ports:
-        - containerPort: {{ .Values.imageHttpPort }}
-          hostPort: {{ .Values.imageHttpPort }}
-        - containerPort: {{ .Values.metricsHttpPort }}
-          hostPort: {{ .Values.metricsHttpPort }}
-        env:
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        volumeMounts:
-        - name: config-volume
-          mountPath: /config
+        - name: monitor
+          image: zhenghengli/diffraflow:latest
+          command:
+            - monitor
+            - --config=/config/monitor.conf
+            - --ingaddr=/config/ingester_addresses.txt
+            - --logconf=/config/log4cxx.properties
+          ports:
+            - containerPort: {{.Values.imageHttpPort}}
+              hostPort: {{.Values.imageHttpPort}}
+            - containerPort: {{.Values.metricsHttpPort}}
+              hostPort: {{.Values.metricsHttpPort}}
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
-      - name: config-volume
-        configMap:
-          name: monitor-config-{{ .Values.nameSuffix }}
+        - name: config-volume
+          configMap:
+            name: monitor-config-{{ .Values.nameSuffix }}

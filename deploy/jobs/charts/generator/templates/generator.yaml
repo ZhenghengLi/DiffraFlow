@@ -15,34 +15,34 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       imagePullSecrets:
-      - name: docker-hub-zhenghengli
+        - name: docker-hub-zhenghengli
       containers:
-      - name: generator
-        image: zhenghengli/diffraflow:latest
-        command:
-        - generator
-        - --datdir=/input-data
-        - --modid={{ .Values.moduleID }}
-        - --outdir=/converted
-        - --calib=/aux-files/calib-rand-s0.h5
-        - --align=/aux-files/alignment-index-r0243_0-5.h5
-        - --event=/aux-files/event-num-r0243_0-5.h5
-        - --maxevt=10000
-        volumeMounts:
-        - name: input-data
-          mountPath: /input-data
-        - name: aux-files
-          mountPath: /aux-files
-        - name: converted
-          mountPath: /converted
+        - name: generator
+          image: zhenghengli/diffraflow:latest
+          command:
+            - generator
+            - --datdir=/input-data
+            - --modid={{ .Values.moduleID }}
+            - --outdir=/converted
+            - --calib=/aux-files/calib-rand-s0.h5
+            - --align=/aux-files/alignment-index-r0243_0-5.h5
+            - --event=/aux-files/event-num-r0243_0-5.h5
+            - --maxevt=10000
+          volumeMounts:
+            - name: input-data
+              mountPath: /input-data
+            - name: aux-files
+              mountPath: /aux-files
+            - name: converted
+              mountPath: /converted
       volumes:
-      - name: input-data
-        hostPath:
-          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243/proc
-      - name: aux-files
-        hostPath:
-          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
-      - name: converted
-        hostPath:
-          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/converted
+        - name: input-data
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243/proc
+        - name: aux-files
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
+        - name: converted
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/converted
       restartPolicy: Never

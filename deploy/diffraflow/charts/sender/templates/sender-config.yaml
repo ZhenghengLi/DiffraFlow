@@ -14,10 +14,9 @@ data:
     # http server
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}
-  node_map.txt: {{ .Values.nodeMap | quote }}
+  node_map.txt: {{.Values.nodeMap | quote}}
   log4cxx.properties: |
     log4j.rootLogger = WARN, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender
     log4j.appender.Console.layout = org.apache.log4j.PatternLayout
     log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n
-

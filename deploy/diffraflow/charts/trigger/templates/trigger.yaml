@@ -10,19 +10,19 @@ spec:
     runAsUser: 1017
     runAsGroup: 1010
   imagePullSecrets:
-  - name: docker-hub-zhenghengli
+    - name: docker-hub-zhenghengli
   containers:
-  - name: trigger
-    image: zhenghengli/diffraflow:latest
-    command:
-    - sleep
-    - "36000"
-    volumeMounts:
-    - name: config-volume
-      mountPath: /config
+    - name: trigger
+      image: zhenghengli/diffraflow:latest
+      command:
+        - sleep
+        - "36000"
+      volumeMounts:
+        - name: config-volume
+          mountPath: /config
   nodeSelector:
     diffraflow/node-type: service
   volumes:
-  - name: config-volume
-    configMap:
-      name: trigger-config-{{ .Values.nameSuffix }}
+    - name: config-volume
+      configMap:
+        name: trigger-config-{{ .Values.nameSuffix }}

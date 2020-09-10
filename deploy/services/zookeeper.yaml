@@ -10,14 +10,14 @@ spec:
   selector:
     name: zookeeper
   ports:
-  - name: client
-    port: 2181
-  - name: server
-    port: 2888
-  - name: leader-election
-    port: 3888
-  - name: admin-server
-    port: 2180
+    - name: client
+      port: 2181
+    - name: server
+      port: 2888
+    - name: leader-election
+      port: 3888
+    - name: admin-server
+      port: 2180
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -38,52 +38,52 @@ spec:
       nodeSelector:
         diffraflow/zookeeper: present
       volumes:
-      - name: zookeeper-data
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/zookeeper/data"
-      - name: zookeeper-data-log
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/zookeeper/dataLog"
-      - name: zookeeper-logs
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/zookeeper/logs"
+        - name: zookeeper-data
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/zookeeper/data"
+        - name: zookeeper-data-log
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/zookeeper/dataLog"
+        - name: zookeeper-logs
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/zookeeper/logs"
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
       containers:
-      - name: zookeeper
-        image: zhenghengli/zookeeper:3.5.7
-        imagePullPolicy: Always
-        args:
-        - zkServer.sh
-        - start-foreground
-        env:
-        - name: ZK_SERVER_HEAP
-          value: "512"
-        - name: ZOO_STANDALONE_ENABLED
-          value: "false"
-        - name: ZOO_SERVERS
-          value: >-
-            server.1=10.15.39.21:2888:3888;2181
-            server.2=10.15.39.22:2888:3888;2181
-            server.3=10.15.39.23:2888:3888;2181
-        volumeMounts:
-        - name: zookeeper-data
-          mountPath: "/zookeeper/data"
-        - name: zookeeper-data-log
-          mountPath: "/zookeeper/datalog"
-        - name: zookeeper-logs
-          mountPath: "/zookeeper/logs"
-        ports:
-        - name: client
-          containerPort: 2181
-          hostPort: 2181
-        - name: server
-          containerPort: 2888
-          hostPort: 2888
-        - name: leader-election
-          containerPort: 3888
-          hostPort: 3888
-        - name: admin-server
-          containerPort: 2180
-          hostPort: 2180
+        - name: zookeeper
+          image: zhenghengli/zookeeper:3.5.7
+          imagePullPolicy: Always
+          args:
+            - zkServer.sh
+            - start-foreground
+          env:
+            - name: ZK_SERVER_HEAP
+              value: "512"
+            - name: ZOO_STANDALONE_ENABLED
+              value: "false"
+            - name: ZOO_SERVERS
+              value: >-
+                server.1=10.15.39.21:2888:3888;2181
+                server.2=10.15.39.22:2888:3888;2181
+                server.3=10.15.39.23:2888:3888;2181
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: "/zookeeper/data"
+            - name: zookeeper-data-log
+              mountPath: "/zookeeper/datalog"
+            - name: zookeeper-logs
+              mountPath: "/zookeeper/logs"
+          ports:
+            - name: client
+              containerPort: 2181
+              hostPort: 2181
+            - name: server
+              containerPort: 2888
+              hostPort: 2888
+            - name: leader-election
+              containerPort: 3888
+              hostPort: 3888
+            - name: admin-server
+              containerPort: 2180
+              hostPort: 2180

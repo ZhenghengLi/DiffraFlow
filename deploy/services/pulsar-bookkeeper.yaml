@@ -10,10 +10,10 @@ spec:
   selector:
     name: pulsar-bookkeeper
   ports:
-  - name: bookie
-    port: 3181
-  - name: http-server
-    port: 3180
+    - name: bookie
+      port: 3181
+    - name: http-server
+      port: 3180
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -34,66 +34,66 @@ spec:
       nodeSelector:
         diffraflow/node-type: service
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+        - key: node-role.kubernetes.io/master
+          operator: Exists
       volumes:
-      - name: bookkeeper-data-journal
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/pulsar/bkDataJournal"
-      - name: bookkeeper-data-ledger
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/pulsar/bkDataLedger"
-      - name: bookkeeper-logs
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/pulsar/bkLogs"
+        - name: bookkeeper-data-journal
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/pulsar/bkDataJournal"
+        - name: bookkeeper-data-ledger
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/pulsar/bkDataLedger"
+        - name: bookkeeper-logs
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/pulsar/bkLogs"
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
       initContainers:
-      - name: zookeeper-cnxn-checker
-        image: zhenghengli/bookkeeper:4.9.2
-        imagePullPolicy: Always
-        command:
-        - check_cnxn_address.sh
-        - "10.15.39.21:2181"
-        - "10.15.39.22:2181"
-        - "10.15.39.23:2181"
+        - name: zookeeper-cnxn-checker
+          image: zhenghengli/bookkeeper:4.9.2
+          imagePullPolicy: Always
+          command:
+            - check_cnxn_address.sh
+            - "10.15.39.21:2181"
+            - "10.15.39.22:2181"
+            - "10.15.39.23:2181"
       containers:
-      - name: pulsar-bookkeeper
-        image: zhenghengli/bookkeeper:4.9.2
-        imagePullPolicy: Always
-        args:
-        - bookkeeper
-        - bookie
-        env:
-        - name: BOOKIE_MIN_HEAP_MEMORY
-          value: "512m"
-        - name: BOOKIE_MAX_HEAP_MEMORY
-          value: "1024m"
-        - name: BOOKIE_MAX_DIRECT_MEMORY
-          value: "2048m"
-        - name: BOOKIE_ADVERTISE_ADDRESS
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
-        - name: ZK_SERVERS
-          value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
-        - name: ZK_CHROOT
-          value: "pulsar/ledgers"
-        volumeMounts:
-        - name: bookkeeper-data-journal
-          mountPath: "/bookkeeper/dataJournal"
-        - name: bookkeeper-data-ledger
-          mountPath: "/bookkeeper/dataLedger"
-        - name: bookkeeper-logs
-          mountPath: "/bookkeeper/logs"
-        ports:
-        - name: bookie
-          containerPort: 3181
-          hostPort: 3181
-        - name: http-server
-          containerPort: 3180
-          hostPort: 3180
+        - name: pulsar-bookkeeper
+          image: zhenghengli/bookkeeper:4.9.2
+          imagePullPolicy: Always
+          args:
+            - bookkeeper
+            - bookie
+          env:
+            - name: BOOKIE_MIN_HEAP_MEMORY
+              value: "512m"
+            - name: BOOKIE_MAX_HEAP_MEMORY
+              value: "1024m"
+            - name: BOOKIE_MAX_DIRECT_MEMORY
+              value: "2048m"
+            - name: BOOKIE_ADVERTISE_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: ZK_SERVERS
+              value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
+            - name: ZK_CHROOT
+              value: "pulsar/ledgers"
+          volumeMounts:
+            - name: bookkeeper-data-journal
+              mountPath: "/bookkeeper/dataJournal"
+            - name: bookkeeper-data-ledger
+              mountPath: "/bookkeeper/dataLedger"
+            - name: bookkeeper-logs
+              mountPath: "/bookkeeper/logs"
+          ports:
+            - name: bookie
+              containerPort: 3181
+              hostPort: 3181
+            - name: http-server
+              containerPort: 3180
+              hostPort: 3180
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -118,29 +118,29 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       initContainers:
-      - name: zookeeper-cnxn-checker
-        image: zhenghengli/bookkeeper:4.9.2
-        imagePullPolicy: Always
-        command:
-        - check_cnxn_address.sh
-        - "10.15.39.21:2181"
-        - "10.15.39.22:2181"
-        - "10.15.39.23:2181"
+        - name: zookeeper-cnxn-checker
+          image: zhenghengli/bookkeeper:4.9.2
+          imagePullPolicy: Always
+          command:
+            - check_cnxn_address.sh
+            - "10.15.39.21:2181"
+            - "10.15.39.22:2181"
+            - "10.15.39.23:2181"
       containers:
-      - name: bookkeeper
-        image: zhenghengli/bookkeeper:4.9.2
-        imagePullPolicy: Always
-        args:
-        - bookkeeper
-        - autorecovery
-        env:
-        - name: BOOKIE_MIN_HEAP_MEMORY
-          value: "512m"
-        - name: BOOKIE_MAX_HEAP_MEMORY
-          value: "1024m"
-        - name: BOOKIE_MAX_DIRECT_MEMORY
-          value: "2048m"
-        - name: ZK_SERVERS
-          value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
-        - name: ZK_CHROOT
-          value: "pulsar/ledgers"
+        - name: bookkeeper
+          image: zhenghengli/bookkeeper:4.9.2
+          imagePullPolicy: Always
+          args:
+            - bookkeeper
+            - autorecovery
+          env:
+            - name: BOOKIE_MIN_HEAP_MEMORY
+              value: "512m"
+            - name: BOOKIE_MAX_HEAP_MEMORY
+              value: "1024m"
+            - name: BOOKIE_MAX_DIRECT_MEMORY
+              value: "2048m"
+            - name: ZK_SERVERS
+              value: "10.15.39.21:2181;10.15.39.22:2181;10.15.39.23:2181"
+            - name: ZK_CHROOT
+              value: "pulsar/ledgers"

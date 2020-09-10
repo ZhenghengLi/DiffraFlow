@@ -10,10 +10,10 @@ spec:
   selector:
     name: pulsar-broker
   ports:
-  - name: broker-service
-    port: 6650
-  - name: web-service
-    port: 6680
+    - name: broker-service
+      port: 6650
+    - name: web-service
+      port: 6680
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -34,57 +34,57 @@ spec:
       nodeSelector:
         diffraflow/node-type: service
       tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
+        - key: node-role.kubernetes.io/master
+          operator: Exists
       volumes:
-      - name: broker-logs
-        hostPath:
-          path: "/kubernetes/data/lizhh1/services/pulsar/psLogs"
+        - name: broker-logs
+          hostPath:
+            path: "/kubernetes/data/lizhh1/services/pulsar/psLogs"
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
       initContainers:
-      - name: zookeeper-cnxn-checker
-        image: zhenghengli/pulsar:2.5.2
-        imagePullPolicy: Always
-        command:
-        - check_cnxn_address.sh
-        - "10.15.39.21:2181"
-        - "10.15.39.22:2181"
-        - "10.15.39.23:2181"
-        - "10.15.39.20:3181"
-        - "10.15.39.21:3181"
-        - "10.15.39.22:3181"
-        - "10.15.39.23:3181"
+        - name: zookeeper-cnxn-checker
+          image: zhenghengli/pulsar:2.5.2
+          imagePullPolicy: Always
+          command:
+            - check_cnxn_address.sh
+            - "10.15.39.21:2181"
+            - "10.15.39.22:2181"
+            - "10.15.39.23:2181"
+            - "10.15.39.20:3181"
+            - "10.15.39.21:3181"
+            - "10.15.39.22:3181"
+            - "10.15.39.23:3181"
       containers:
-      - name: pulsar-broker
-        image: zhenghengli/pulsar:2.5.2
-        imagePullPolicy: Always
-        args:
-        - pulsar
-        - broker
-        env:
-        - name: PULSAR_MEM
-          value: "-Xms768m -Xmx1536m -XX:MaxDirectMemorySize=2048m"
-        - name: PULSAR_CLUSTER_NAME
-          value: pulsar-cluster
-        - name: PULSAR_ADVERTISED_ADDRESS
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
-        - name: PULSAR_ALLOW_AUTO_TOPIC_CREATION
-          value: "false"
-        - name: ZK_SERVERS
-          value: "10.15.39.21:2181,10.15.39.22:2181,10.15.39.23:2181"
-        - name: ZK_CHROOT
-          value: "pulsar"
-        volumeMounts:
-        - name: broker-logs
-          mountPath: "/pulsar/logs"
-        ports:
-        - name: broker-service
-          containerPort: 6650
-          hostPort: 6650
-        - name: web-server
-          containerPort: 6680
-          hostPort: 6680
+        - name: pulsar-broker
+          image: zhenghengli/pulsar:2.5.2
+          imagePullPolicy: Always
+          args:
+            - pulsar
+            - broker
+          env:
+            - name: PULSAR_MEM
+              value: "-Xms768m -Xmx1536m -XX:MaxDirectMemorySize=2048m"
+            - name: PULSAR_CLUSTER_NAME
+              value: pulsar-cluster
+            - name: PULSAR_ADVERTISED_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: PULSAR_ALLOW_AUTO_TOPIC_CREATION
+              value: "false"
+            - name: ZK_SERVERS
+              value: "10.15.39.21:2181,10.15.39.22:2181,10.15.39.23:2181"
+            - name: ZK_CHROOT
+              value: "pulsar"
+          volumeMounts:
+            - name: broker-logs
+              mountPath: "/pulsar/logs"
+          ports:
+            - name: broker-service
+              containerPort: 6650
+              hostPort: 6650
+            - name: web-server
+              containerPort: 6680
+              hostPort: 6680

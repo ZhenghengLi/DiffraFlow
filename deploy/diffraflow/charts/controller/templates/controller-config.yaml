@@ -14,7 +14,7 @@ data:
     zookeeper_expiration_time = 10000
     zookeeper_auth_string = diffraflow:controller
     zookeeper_log_level = warn
-  monitor_addresses.txt: {{ .Values.monitorAddresses | quote }}
+  monitor_addresses.txt: {{.Values.monitorAddresses | quote}}
   log4cxx.properties: |
     log4j.rootLogger = DEBUG, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender

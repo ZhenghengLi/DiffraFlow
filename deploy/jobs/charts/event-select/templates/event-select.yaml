@@ -15,26 +15,26 @@ spec:
         runAsUser: 1017
         runAsGroup: 1010
       imagePullSecrets:
-      - name: docker-hub-zhenghengli
+        - name: docker-hub-zhenghengli
       containers:
-      - name: event-select
-        image: zhenghengli/diffraflow:latest
-        command:
-        - event_select_proc.py
-        - -s 6
-        - /input-data
-        - /aux-files/alignment-index-r0243_0-5.h5
-        - /aux-files/event-num-r0243_0-5.h5
-        volumeMounts:
-        - name: input-data
-          mountPath: /input-data
-        - name: aux-files
-          mountPath: /aux-files
+        - name: event-select
+          image: zhenghengli/diffraflow:latest
+          command:
+            - event_select_proc.py
+            - -s 6
+            - /input-data
+            - /aux-files/alignment-index-r0243_0-5.h5
+            - /aux-files/event-num-r0243_0-5.h5
+          volumeMounts:
+            - name: input-data
+              mountPath: /input-data
+            - name: aux-files
+              mountPath: /aux-files
       volumes:
-      - name: input-data
-        hostPath:
-          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243/proc
-      - name: aux-files
-        hostPath:
-          path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
+        - name: input-data
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243/proc
+        - name: aux-files
+          hostPath:
+            path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
       restartPolicy: Never

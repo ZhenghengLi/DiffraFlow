@@ -17,10 +17,9 @@ data:
     metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/dispatcher
     metrics_pulsar_message_key = dispatcher-{{ .Values.nameSuffix }}@NODE_NAME
     metrics_pulsar_report_period = 1000
-  combiner_addresses.txt: {{ .Values.combinerAddresses | quote }}
+  combiner_addresses.txt: {{.Values.combinerAddresses | quote}}
   log4cxx.properties: |
     log4j.rootLogger = WARN, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender
     log4j.appender.Console.layout = org.apache.log4j.PatternLayout
     log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n
-

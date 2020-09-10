@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
+#define DGRAM_MSIZE 1500
+
 using std::unique_lock;
 
 log4cxx::LoggerPtr diffraflow::GenericDgramReceiver::logger_ = log4cxx::Logger::getLogger("GenericDgramReceiver");

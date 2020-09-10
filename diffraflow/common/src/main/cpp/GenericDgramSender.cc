@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
+#define DGRAM_MSIZE 1500
+
 log4cxx::LoggerPtr diffraflow::GenericDgramSender::logger_ = log4cxx::Logger::getLogger("GenericDgramSender");
 
 diffraflow::GenericDgramSender::GenericDgramSender() {
@@ -61,6 +63,10 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
 bool diffraflow::GenericDgramSender::send_datagram(const char* buffer, size_t len) {
     if (sender_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "sender is not initialized.");
+        return false;
+    }
+    if (len > DGRAM_MSIZE) {
+        LOG4CXX_ERROR(logger_, "size of datagram to send is larger than " << DGRAM_MSIZE);
         return false;
     }
     int sndlen = sendto(sender_sock_fd_, buffer, len, 0, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_));

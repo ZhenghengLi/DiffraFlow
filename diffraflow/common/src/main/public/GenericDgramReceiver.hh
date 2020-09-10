@@ -11,8 +11,6 @@
 #include <vector>
 #include <memory>
 
-#define DGRAM_MSIZE 1500
-
 using std::string;
 using std::future;
 using std::shared_future;

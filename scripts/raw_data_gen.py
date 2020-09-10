@@ -3,18 +3,20 @@
 import argparse
 import h5py
 import numpy as np
-import sys, os, zlib
+import sys
+import os
+import zlib
 
 from cxidb_euxfel_utils import get_image_dset, compose_image
 
 parser = argparse.ArgumentParser(description='generate raw data files for one module')
-parser.add_argument("data_dir", help = "directory that contains input data files")
-parser.add_argument("mod_id", help = "module ID (0 -- 15)", type=int)
-parser.add_argument("output_dir", help = "output directory")
-parser.add_argument("-a", dest = "align_file", help = "alignment file", required = True)
-parser.add_argument("-e", dest = "event_file", help = "event number file", required = True)
-parser.add_argument("-c", dest = "calib_file", help = "calibration file", required = True)
-parser.add_argument("-m", dest = "max_events", help = "maximum events per binary file", default = 10000, type = int)
+parser.add_argument("data_dir", help="directory that contains input data files")
+parser.add_argument("mod_id", help="module ID (0 -- 15)", type=int)
+parser.add_argument("output_dir", help="output directory")
+parser.add_argument("-a", dest="align_file", help="alignment file", required=True)
+parser.add_argument("-e", dest="event_file", help="event number file", required=True)
+parser.add_argument("-c", dest="calib_file", help="calibration file", required=True)
+parser.add_argument("-m", dest="max_events", help="maximum events per binary file", default=10000, type=int)
 args = parser.parse_args()
 
 # check module ID
@@ -73,7 +75,8 @@ for x in range(event_num_len):
         binary_outfile = open(binary_fn, 'wb')
         event_counts = 0
     if current_file_idx != index_vec[0]:
-        if h5file_data: h5file_data.close()
+        if h5file_data:
+            h5file_data.close()
         h5file_data_fn = os.path.join(args.data_dir, 'CORR-R0243-AGIPD%02d-S%05d.h5' % (args.mod_id, index_vec[0]))
         try:
             h5file_data = h5py.File(h5file_data_fn, 'r')
@@ -103,14 +106,19 @@ for x in range(event_num_len):
     ADC_data = [image_data * gain_data[x] + pedestal_data[x] for x in range(3)]
     for [idx, [row, col]] in enumerate(np.ndindex(512, 128)):
         gain = 0
-        if image_data[row, col] < threshold_data[0, row, col]: gain = 0
-        elif image_data[row, col] < threshold_data[1, row, col]: gain = 1
-        else: gain = 2
+        if image_data[row, col] < threshold_data[0, row, col]:
+            gain = 0
+        elif image_data[row, col] < threshold_data[1, row, col]:
+            gain = 1
+        else:
+            gain = 2
         ADC = int(np.round(ADC_data[gain][row, col]))
-        if ADC < 0: ADC = 0
-        if ADC > 16383: ADC = 16383
+        if ADC < 0:
+            ADC = 0
+        if ADC > 16383:
+            ADC = 16383
         pixel = (gain << 14) | ADC
-        one_frame[20 + idx * 2 : 20 + idx * 2 + 2] = pixel.to_bytes(2, 'big')
+        one_frame[20 + idx * 2: 20 + idx * 2 + 2] = pixel.to_bytes(2, 'big')
     # CRC
     crc = zlib.crc32(one_frame[4:131092])
     one_frame[131092:131096] = crc.to_bytes(4, 'big')
@@ -120,5 +128,7 @@ for x in range(event_num_len):
 
 h5file_event.close()
 h5file_align.close()
-if h5file_data: h5file_data.close()
-if binary_outfile: binary_outfile.close()
+if h5file_data:
+    h5file_data.close()
+if binary_outfile:
+    binary_outfile.close()

@@ -51,6 +51,7 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
     // create socket
     sender_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (sender_sock_fd_ < 0) {
+        LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));
         return false;
     }
 

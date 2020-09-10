@@ -43,6 +43,7 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     // create socket
     receiver_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (receiver_sock_fd_ < 0) {
+        LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));
         return false;
     }
     if (bind(receiver_sock_fd_, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_)) < 0) {

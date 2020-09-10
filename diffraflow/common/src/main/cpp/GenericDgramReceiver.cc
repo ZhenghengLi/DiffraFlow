@@ -23,7 +23,7 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     sender_addr_len_ = 0;
 }
 
-diffraflow::GenericDgramReceiver::~GenericDgramReceiver() {}
+diffraflow::GenericDgramReceiver::~GenericDgramReceiver() { stop_and_close(); }
 
 bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     // prepare address

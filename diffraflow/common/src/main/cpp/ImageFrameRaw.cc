@@ -51,6 +51,11 @@ bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<vector<char>>& dgram) {
         dgram_mod_id = gDC.decode_byte<uint8_t>(dgram->data(), 0, 0);
         dgram_frm_sn = gDC.decode_byte<uint16_t>(dgram->data(), 1, 2);
         dgram_seg_sn = gDC.decode_byte<uint8_t>(dgram->data(), 3, 3);
+        if (dgram_seg_sn != 0) {
+            return false;
+        }
+        bunch_id = gDC.decode_byte<uint64_t>(dgram->data() + 4, 12, 19);
+        module_id = gDC.decode_byte<uint16_t>(dgram->data() + 4, 6, 7);
     }
     dgram_list_.push_back(dgram);
     return true;
@@ -116,7 +121,7 @@ int diffraflow::ImageFrameRaw::check_dgrams_integrity() {
 }
 
 void diffraflow::ImageFrameRaw::sort_dgrams() {
-    //
+    // implement this method when dgram disorder may occur.
 }
 
 shared_ptr<vector<char>>& diffraflow::ImageFrameRaw::get_dgram(size_t index) { return dgram_list_[index]; }

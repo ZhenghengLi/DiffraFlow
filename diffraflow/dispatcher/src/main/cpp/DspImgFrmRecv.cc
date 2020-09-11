@@ -24,16 +24,18 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
         return;
     }
     uint8_t dgram_mod_id = gDC.decode_byte<uint8_t>(datagram->data(), 0, 0);
-    if (dgram_mod_id >= MOD_CNT) {
-        return;
-    }
-    shared_ptr<ImageFrameRaw>& image_frame = image_frame_arr_[dgram_mod_id];
     uint16_t dgram_frm_sn = gDC.decode_byte<uint16_t>(datagram->data(), 1, 2);
     uint8_t dgram_seg_sn = gDC.decode_byte<uint8_t>(datagram->data(), 3, 3);
 
     LOG4CXX_DEBUG(logger_, "received one datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                << dgram_mod_id << ", " << dgram_frm_sn << ", " << dgram_seg_sn << ", "
                                << datagram->size() << ")");
+
+    if (dgram_mod_id >= MOD_CNT) {
+        return;
+    }
+
+    shared_ptr<ImageFrameRaw>& image_frame = image_frame_arr_[dgram_mod_id];
 
     if (dgram_seg_sn == 0) {
         if (image_frame) {

@@ -42,7 +42,13 @@ bool diffraflow::DspSender::send_imgfrm_(const shared_ptr<ImageFrameRaw>& image_
         // (1) calculate size
         size_t frame_size = 4;
         for (size_t i = 0; i < image_frame->get_dgram_count(); i++) {
-            frame_size += image_frame->get_dgram(i)->size() - 4;
+            size_t current_size = image_frame->get_dgram(i)->size();
+            if (current_size > 4) {
+                frame_size += current_size - 4;
+            } else {
+                LOG4CXX_ERROR(logger_, "frame segment of index " << i << " is too short.");
+                return false;
+            }
         }
         // (2) send head and size
         if (!send_head_(frame_size)) {

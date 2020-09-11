@@ -31,10 +31,42 @@ bool diffraflow::DspSender::send_imgfrm_(const shared_ptr<ImageFrameRaw>& image_
     }
     char payload_type_buffer[4];
     gPS.serializeValue<uint32_t>(0xABCDFFFF, payload_type_buffer, 4);
-    if (send_one_(payload_type_buffer, 4, image_frame->data(), image_frame->size())) {
+    if (image_frame->data()) {
+        if (send_one_(payload_type_buffer, 4, image_frame->data(), image_frame->size())) {
+            return true;
+        } else {
+            close_connection();
+            return false;
+        }
+    } else if (image_frame->get_dgram_count() > 0) {
+        // (1) calculate size
+        size_t frame_size = 4;
+        for (size_t i = 0; i < image_frame->get_dgram_count(); i++) {
+            frame_size += image_frame->get_dgram(i)->size() - 4;
+        }
+        // (2) send head and size
+        if (!send_head_(frame_size)) {
+            LOG4CXX_ERROR(logger_, "failed to send head.");
+            close_connection();
+            return false;
+        }
+        // (3) send payload type
+        if (!send_segment_(payload_type_buffer, 4)) {
+            LOG4CXX_ERROR(logger_, "failed to send payload type.");
+            close_connection();
+            return false;
+        }
+        // (4) send each frame segment
+        for (size_t i = 0; i < image_frame->get_dgram_count(); i++) {
+            if (!send_segment_(image_frame->get_dgram(i)->data() + 4, image_frame->get_dgram(i)->size() - 4)) {
+                LOG4CXX_ERROR(logger_, "failed to send frame segment of index " << i << ".");
+                close_connection();
+                return false;
+            }
+        }
         return true;
     } else {
-        close_connection();
+        LOG4CXX_ERROR(logger_, "cannot send empty image frame.");
         return false;
     }
 }

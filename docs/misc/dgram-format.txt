@@ -1,0 +1,10 @@
+Offset      Length      Type                    Content
+0           1           uint8                   Module ID
+1           2           uint16                  Frame Sequence Number
+3           1           uint8                   Segment Sequence Number
+
+4           1376        uint8[]                 First Frame Segment
+4           1380        uint8[]                 Other Frame Segment
+
+------------------------------------------------
+131096 = 1376 + 94 * 1380

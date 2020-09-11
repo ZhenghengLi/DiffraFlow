@@ -39,3 +39,29 @@ size_t diffraflow::ImageFrameRaw::size() {
         return 0;
     }
 }
+
+bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<vector<char>>& dgram) {
+    if (dgram->size() < 24) {
+        return false;
+    }
+    if (dgram_list_.empty()) {
+        dgram_mod_id = gDC.decode_byte<uint8_t>(dgram->data(), 0, 0);
+        dgram_frm_sn = gDC.decode_byte<uint16_t>(dgram->data(), 1, 2);
+        dgram_seg_sn = gDC.decode_byte<uint8_t>(dgram->data(), 3, 3);
+    }
+    dgram_list_.push_back(dgram);
+    return true;
+}
+
+int diffraflow::ImageFrameRaw::check_dgrams_integrity() {
+    //
+    return -1;
+}
+
+void diffraflow::ImageFrameRaw::sort_dgrams() {
+    //
+}
+
+shared_ptr<vector<char>>& diffraflow::ImageFrameRaw::get_dgram(size_t index) { return dgram_list_[index]; }
+
+size_t diffraflow::ImageFrameRaw::get_dgram_count() { return dgram_list_.size(); }

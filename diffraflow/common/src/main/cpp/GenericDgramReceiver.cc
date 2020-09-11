@@ -85,14 +85,14 @@ int diffraflow::GenericDgramReceiver::run_() {
         }
         if (recvlen > 0) {
             datagram->resize(recvlen);
-            process_datagram(datagram);
+            process_datagram_(datagram);
         }
     }
 
     return result;
 }
 
-void diffraflow::GenericDgramReceiver::process_datagram(shared_ptr<vector<char>>& datagram) {
+void diffraflow::GenericDgramReceiver::process_datagram_(shared_ptr<vector<char>>& datagram) {
     // this method should be implemented by subclasses
 }
 

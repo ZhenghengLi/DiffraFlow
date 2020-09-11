@@ -42,7 +42,7 @@ namespace diffraflow {
     protected:
         bool create_udp_sock_();
 
-        virtual void process_datagram(shared_ptr<vector<char>>& datagram);
+        virtual void process_datagram_(shared_ptr<vector<char>>& datagram);
 
     protected:
         string receiver_sock_host_;

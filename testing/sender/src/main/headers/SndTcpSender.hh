@@ -5,7 +5,7 @@
 #include <log4cxx/logger.h>
 
 namespace diffraflow {
-    class SndTcpSender : GenericClient {
+    class SndTcpSender : public GenericClient {
     public:
         SndTcpSender(string dispatcher_host, int dispatcher_port, uint32_t sender_id);
         ~SndTcpSender();

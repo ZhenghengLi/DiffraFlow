@@ -18,6 +18,7 @@ namespace diffraflow {
         ~GenericDgramSender();
 
         bool init_addr_sock(string host, int port);
+        string get_receiver_address();
         bool send_datagram(const char* buffer, size_t len);
         void close_sock();
 

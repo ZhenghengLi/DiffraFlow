@@ -28,6 +28,10 @@ diffraflow::GenericDgramSender::GenericDgramSender() {
 
 diffraflow::GenericDgramSender::~GenericDgramSender() { close_sock(); }
 
+string diffraflow::GenericDgramSender::get_receiver_address() {
+    return receiver_sock_host_ + ":" + std::to_string(receiver_sock_port_);
+}
+
 bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
     // check
     if (sender_sock_fd_ >= 0) {

@@ -6,7 +6,7 @@
 #include <mutex>
 #include <atomic>
 
-#include "GenericClient.hh"
+#include "MetricsProvider.hh"
 
 using std::ifstream;
 using std::string;
@@ -16,31 +16,41 @@ using std::atomic;
 namespace diffraflow {
 
     class SndConfig;
+    class SndTcpSender;
+    class SndUdpSender;
 
-    class SndDatTran : public GenericClient {
+    class SndDatTran : public MetricsProvider {
     public:
         explicit SndDatTran(SndConfig* conf_obj);
         ~SndDatTran();
 
+        bool create_tcp_sender(string dispatcher_host, int dispatcher_port, uint32_t sender_id);
+        bool create_udp_sender(string dispatcher_host, int dispatcher_port);
+        void delete_sender();
+
         bool read_and_send(uint32_t event_index);
 
     public:
-        json::value collect_metrics() override;
+        enum SenderType { kTCP, kUDP, kNotSet };
 
     public:
         struct {
             atomic<uint64_t> invoke_counts;
             atomic<uint64_t> busy_counts;
             atomic<uint64_t> large_index_counts;
-            atomic<uint64_t> reconnect_counts;
             atomic<uint64_t> read_succ_counts;
             atomic<uint64_t> key_match_counts;
             atomic<uint64_t> send_succ_counts;
         } transfer_metrics;
 
+        json::value collect_metrics() override;
+
     private:
+        SenderType sender_type_;
+        SndTcpSender* tcp_sender_;
+        SndUdpSender* udp_sender_;
+
         SndConfig* config_obj_;
-        char* head_buffer_;
         char* frame_buffer_;
         char* string_buffer_;
 

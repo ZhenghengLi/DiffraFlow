@@ -22,6 +22,7 @@ diffraflow::SndConfig::SndConfig() {
     sender_id = 0;
     listen_host = "0.0.0.0";
     listen_port = -1;
+    sender_type = "TCP";
 
     data_dir.clear();
     events_per_file = 10000;
@@ -51,6 +52,8 @@ bool diffraflow::SndConfig::load(const char* filename) {
             listen_host = value;
         } else if (key == "listen_port") {
             listen_port = atoi(value.c_str());
+        } else if (key == "sender_type") {
+            sender_type = value.c_str();
         } else if (key == "sender_id") {
             sender_id = atoi(value.c_str());
         } else if (key == "data_dir") {
@@ -112,6 +115,10 @@ bool diffraflow::SndConfig::load(const char* filename) {
 
     // check
     bool succ_flag = true;
+    if (!(sender_type == "TCP" || sender_type == "UDP")) {
+        LOG4CXX_ERROR(logger_, "sender_type must be TCP or UDP, currently it is " << sender_type);
+        succ_flag = false;
+    }
     if (listen_port < 0) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;

@@ -26,19 +26,38 @@ diffraflow::SndSrvMan::~SndSrvMan() {}
 
 void diffraflow::SndSrvMan::start_run() {
     if (running_flag_) return;
+
     // create data transfer
     data_transfer_ = new SndDatTran(config_obj_);
-    if (data_transfer_->connect_to_server()) {
-        LOG4CXX_INFO(logger_, "successfully connected to dispatcher " << config_obj_->dispatcher_host << ":"
-                                                                      << config_obj_->dispatcher_port << ".");
-    } else {
-        LOG4CXX_ERROR(logger_, "failed to connect to dispatcher " << config_obj_->dispatcher_host << ":"
-                                                                  << config_obj_->dispatcher_port << ".");
-        return;
-    }
+    // create trigger server
     trigger_srv_ = new SndTrgSrv(config_obj_->listen_host, config_obj_->listen_port, data_transfer_);
 
-    // multiple servers start from here
+    // prepare data transfer
+    if (config_obj_->sender_type == "TCP") {
+        if (data_transfer_->create_tcp_sender(
+                config_obj_->dispatcher_host, config_obj_->dispatcher_port, config_obj_->sender_id)) {
+            LOG4CXX_INFO(logger_, "successfully created TCP sender for dispatcher "
+                                      << config_obj_->dispatcher_host << ":" << config_obj_->dispatcher_port);
+        } else {
+            LOG4CXX_ERROR(logger_, "failed to create TCP sender for dispatcher " << config_obj_->dispatcher_host << ":"
+                                                                                 << config_obj_->dispatcher_port);
+            return;
+        }
+    } else if (config_obj_->sender_type == "UDP") {
+        if (data_transfer_->create_udp_sender(config_obj_->dispatcher_host, config_obj_->dispatcher_port)) {
+            LOG4CXX_INFO(logger_, "successfully created UDP sender for dispatcher "
+                                      << config_obj_->dispatcher_host << ":" << config_obj_->dispatcher_port);
+        } else {
+            LOG4CXX_ERROR(logger_, "failed to create UDP sender for dispatcher " << config_obj_->dispatcher_host << ":"
+                                                                                 << config_obj_->dispatcher_port);
+            return;
+        }
+    } else {
+        LOG4CXX_ERROR(logger_, "wrong sender type: " << config_obj_->sender_type);
+        return;
+    }
+
+    // start trigger server
     if (trigger_srv_->start()) {
         LOG4CXX_INFO(logger_, "successfully started trigger server.")
     } else {
@@ -94,6 +113,10 @@ void diffraflow::SndSrvMan::terminate() {
     }
     delete trigger_srv_;
     trigger_srv_ = nullptr;
+
+    data_transfer_->delete_sender();
+    delete data_transfer_;
+    data_transfer_ = nullptr;
 
     running_flag_ = false;
 }

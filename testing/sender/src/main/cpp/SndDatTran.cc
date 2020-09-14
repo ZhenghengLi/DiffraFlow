@@ -2,13 +2,14 @@
 #include "SndConfig.hh"
 #include "PrimitiveSerializer.hh"
 #include "Decoder.hh"
+#include "SndTcpSender.hh"
+#include "SndUdpSender.hh"
 
 #include <cstdio>
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <boost/filesystem.hpp>
 
-#define HEAD_SIZE 4
 #define FRAME_SIZE 131096
 #define STRING_LEN 512
 
@@ -20,12 +21,11 @@ using std::unique_lock;
 
 log4cxx::LoggerPtr diffraflow::SndDatTran::logger_ = log4cxx::Logger::getLogger("SndDatTran");
 
-diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj)
-    : GenericClient(conf_obj->dispatcher_host, conf_obj->dispatcher_port, conf_obj->sender_id, 0xFFDD1234, 0xFFF22DDD,
-          0xDDD22FFF) {
+diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj) {
     config_obj_ = conf_obj;
-    head_buffer_ = new char[HEAD_SIZE];
-    gPS.serializeValue<uint32_t>(0xABCDFFFF, head_buffer_, HEAD_SIZE);
+    sender_type_ = kNotSet;
+    tcp_sender_ = nullptr;
+    udp_sender_ = nullptr;
     frame_buffer_ = new char[FRAME_SIZE];
     string_buffer_ = new char[STRING_LEN];
     current_file_ = nullptr;
@@ -34,14 +34,12 @@ diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj)
     transfer_metrics.invoke_counts = 0;
     transfer_metrics.busy_counts = 0;
     transfer_metrics.large_index_counts = 0;
-    transfer_metrics.reconnect_counts = 0;
     transfer_metrics.read_succ_counts = 0;
     transfer_metrics.key_match_counts = 0;
     transfer_metrics.send_succ_counts = 0;
 }
 
 diffraflow::SndDatTran::~SndDatTran() {
-    delete[] head_buffer_;
     delete[] frame_buffer_;
     delete[] string_buffer_;
     if (current_file_ != nullptr) {
@@ -49,11 +47,57 @@ diffraflow::SndDatTran::~SndDatTran() {
         delete current_file_;
         current_file_ = nullptr;
     }
+    delete_sender();
+}
+
+bool diffraflow::SndDatTran::create_tcp_sender(string dispatcher_host, int dispatcher_port, uint32_t sender_id) {
+    tcp_sender_ = new SndTcpSender(dispatcher_host, dispatcher_port, sender_id);
+    if (tcp_sender_->connect_to_server()) {
+        LOG4CXX_INFO(logger_, "successfully connected to dispatcher: " << tcp_sender_->get_server_address());
+        sender_type_ = kTCP;
+        return true;
+    } else {
+        LOG4CXX_WARN(logger_, "failed to connect to dispatcher: " << tcp_sender_->get_server_address());
+        return false;
+    }
+}
+
+bool diffraflow::SndDatTran::create_udp_sender(string dispatcher_host, int dispatcher_port) {
+    udp_sender_ = new SndUdpSender();
+    if (udp_sender_->init_addr_sock(dispatcher_host, dispatcher_port)) {
+        LOG4CXX_INFO(
+            logger_, "successfully initialized udp socket for dispatcher: " << udp_sender_->get_receiver_address());
+        sender_type_ = kUDP;
+        return true;
+    } else {
+        LOG4CXX_WARN(
+            logger_, "failed to initialize udp socket for dispatcher: " << udp_sender_->get_receiver_address());
+        return false;
+    }
+}
+
+void diffraflow::SndDatTran::delete_sender() {
+    if (tcp_sender_ != nullptr) {
+        tcp_sender_->close_connection();
+        delete tcp_sender_;
+        tcp_sender_ = nullptr;
+    }
+    if (udp_sender_ != nullptr) {
+        udp_sender_->close_sock();
+        delete udp_sender_;
+        udp_sender_ = nullptr;
+    }
+    sender_type_ = kNotSet;
 }
 
 bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
 
     transfer_metrics.invoke_counts++;
+
+    if (sender_type_ == kNotSet) {
+        LOG4CXX_WARN(logger_, "TCP or UDP sender is not created.");
+        return false;
+    }
 
     unique_lock<mutex> data_lk(data_mtx_, std::try_to_lock);
     if (!data_lk.owns_lock()) {
@@ -68,17 +112,6 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             logger_, "event index " << event_index << " is larger than total events" << config_obj_->total_events);
         transfer_metrics.large_index_counts++;
         return false;
-    }
-
-    // try to connect if lose connection
-    if (not_connected()) {
-        transfer_metrics.reconnect_counts++;
-        if (connect_to_server()) {
-            LOG4CXX_INFO(logger_, "reconnected to dispatcher.");
-        } else {
-            LOG4CXX_WARN(logger_, "failed to reconnect to dispatcher.");
-            return false;
-        }
     }
 
     int file_index = event_index / config_obj_->events_per_file;
@@ -135,14 +168,26 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
             return false;
         }
-        if (send_one_(head_buffer_, HEAD_SIZE, frame_buffer_, FRAME_SIZE)) {
-            LOG4CXX_DEBUG(logger_, "successfully send one frame of index " << event_index);
-            transfer_metrics.send_succ_counts++;
-            return true;
-        } else {
-            close_connection();
-            LOG4CXX_WARN(logger_, "failed to send frame data.");
-            return false;
+
+        if (sender_type_ == kTCP) {
+            if (tcp_sender_->send_frame(frame_buffer_, FRAME_SIZE)) {
+                LOG4CXX_DEBUG(logger_, "tcp: successfully send one frame of index " << event_index);
+                transfer_metrics.send_succ_counts++;
+                return true;
+            } else {
+                tcp_sender_->close_connection();
+                LOG4CXX_WARN(logger_, "tcp: failed to send frame data.");
+                return false;
+            }
+        } else if (sender_type_ == kUDP) {
+            if (udp_sender_->send_frame(frame_buffer_, FRAME_SIZE)) {
+                LOG4CXX_DEBUG(logger_, "udp: successfully send one frame of index " << event_index);
+                transfer_metrics.send_succ_counts++;
+                return true;
+            } else {
+                LOG4CXX_WARN(logger_, "udp: failed to send frame data.");
+                return false;
+            }
         }
     } else {
         current_file_->close();
@@ -155,18 +200,21 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
 
 json::value diffraflow::SndDatTran::collect_metrics() {
 
-    json::value root_json = GenericClient::collect_metrics();
-
     json::value transfer_metrics_json;
     transfer_metrics_json["invoke_counts"] = json::value::number(transfer_metrics.invoke_counts);
     transfer_metrics_json["busy_counts"] = json::value::number(transfer_metrics.busy_counts);
     transfer_metrics_json["large_index_counts"] = json::value::number(transfer_metrics.large_index_counts);
-    transfer_metrics_json["reconnect_counts"] = json::value::number(transfer_metrics.reconnect_counts);
     transfer_metrics_json["read_succ_counts"] = json::value::number(transfer_metrics.read_succ_counts);
     transfer_metrics_json["key_match_counts"] = json::value::number(transfer_metrics.key_match_counts);
     transfer_metrics_json["send_succ_counts"] = json::value::number(transfer_metrics.send_succ_counts);
 
+    json::value root_json;
     root_json["transfer_stat"] = transfer_metrics_json;
+    if (sender_type_ == kTCP) {
+        root_json["tcp_sender_stat"] = tcp_sender_->collect_metrics();
+    } else if (sender_type_ == kUDP) {
+        root_json["udp_sender_stat"] = udp_sender_->collect_metrics();
+    }
 
     return root_json;
 }

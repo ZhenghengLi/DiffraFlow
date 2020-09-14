@@ -146,6 +146,7 @@ bool diffraflow::SndConfig::load(const char* filename) {
 
     if (succ_flag) {
         // static config
+        static_config_json_["sender_type"] = json::value::string(sender_type);
         static_config_json_["sender_id"] = json::value::number(sender_id);
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
@@ -212,6 +213,7 @@ bool diffraflow::SndConfig::load_nodemap(const char* filename, const string node
 
 void diffraflow::SndConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
+    cout << " sender_type        = " << sender_type << endl;
     cout << " sender_id          = " << sender_id << endl;
     cout << " listen_host        = " << listen_host << endl;
     cout << " listen_port        = " << listen_port << endl;

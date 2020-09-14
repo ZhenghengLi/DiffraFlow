@@ -1,13 +1,21 @@
 #ifndef __SndUdpSender_H__
 #define __SndUdpSender_H__
 
+#include "GenericDgramSender.hh"
 #include <log4cxx/logger.h>
 
 namespace diffraflow {
-    class SndUdpSender {
+    class SndUdpSender : public GenericDgramSender {
     public:
         SndUdpSender();
         ~SndUdpSender();
+
+        bool send_frame(const char* buffer, size_t len);
+
+    private:
+        char* dgram_buffer_;
+        uint16_t frame_sequence_number_;
+        uint8_t segment_sequence_number_;
 
     private:
         static log4cxx::LoggerPtr logger_;

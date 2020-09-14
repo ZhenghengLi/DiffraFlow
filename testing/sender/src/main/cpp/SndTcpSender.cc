@@ -11,7 +11,10 @@ diffraflow::SndTcpSender::SndTcpSender(string dispatcher_host, int dispatcher_po
     gPS.serializeValue<uint32_t>(0xABCDFFFF, head_buffer_, 4);
 }
 
-diffraflow::SndTcpSender::~SndTcpSender() { delete[] head_buffer_; }
+diffraflow::SndTcpSender::~SndTcpSender() {
+    delete[] head_buffer_;
+    head_buffer_ = nullptr;
+}
 
 bool diffraflow::SndTcpSender::send_frame(const char* buffer, size_t len) {
     // try to connect if lose connection

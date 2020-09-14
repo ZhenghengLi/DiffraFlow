@@ -43,13 +43,13 @@ bool diffraflow::SndUdpSender::send_frame(const char* buffer, size_t len) {
     memcpy(dgram_buffer_ + 4, buffer, 1376);
     if (send_datagram(dgram_buffer_, 1380)) {
         LOG4CXX_DEBUG(logger_, "successfully sent datagram: (mod_id, frm_sn, seg_sn, size) = ("
-                                   << module_id << ", " << frame_sequence_number_ << ", " << segment_sequence_number_
-                                   << ", " << 1380 << ")");
+                                   << module_id << ", " << frame_sequence_number_ << ", "
+                                   << (int)segment_sequence_number_ << ", " << 1380 << ")");
     } else {
         succ_flag = false;
         LOG4CXX_WARN(logger_, "failed to send datagram: (mod_id, frm_sn, seg_sn, size) = ("
-                                  << module_id << ", " << frame_sequence_number_ << ", " << segment_sequence_number_
-                                  << ", " << 1380 << ")");
+                                  << module_id << ", " << frame_sequence_number_ << ", "
+                                  << (int)segment_sequence_number_ << ", " << 1380 << ")");
     }
 
     // send subsequent segments
@@ -61,13 +61,13 @@ bool diffraflow::SndUdpSender::send_frame(const char* buffer, size_t len) {
         if (send_datagram(dgram_buffer_, 1384)) {
             LOG4CXX_DEBUG(logger_, "successfully sent datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                        << module_id << ", " << frame_sequence_number_ << ", "
-                                       << segment_sequence_number_ << ", " << 1384 << ")");
+                                       << (int)segment_sequence_number_ << ", " << 1384 << ")");
 
         } else {
             succ_flag = false;
             LOG4CXX_WARN(logger_, "failed to send datagram: (mod_id, frm_sn, seg_sn, size) = ("
-                                      << module_id << ", " << frame_sequence_number_ << ", " << segment_sequence_number_
-                                      << ", " << 1384 << ")");
+                                      << module_id << ", " << frame_sequence_number_ << ", "
+                                      << (int)segment_sequence_number_ << ", " << 1384 << ")");
         }
     }
 

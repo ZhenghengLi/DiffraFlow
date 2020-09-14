@@ -20,6 +20,7 @@ namespace diffraflow {
     class DspConfig;
     class DspSender;
     class DspImgFrmSrv;
+    class DspImgFrmRecv;
 
     class DspSrvMan {
     public:
@@ -40,6 +41,7 @@ namespace diffraflow {
         size_t sender_cnt_;
 
         DspImgFrmSrv* imgfrm_srv_;
+        DspImgFrmRecv* imgfrm_recv_;
         atomic_bool running_flag_;
 
         string combiner_address_file_;

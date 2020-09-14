@@ -2,6 +2,7 @@
 #include "DspConfig.hh"
 #include "DspSender.hh"
 #include "DspImgFrmSrv.hh"
+#include "DspImgFrmRecv.hh"
 
 #include <fstream>
 #include <string>
@@ -21,6 +22,7 @@ diffraflow::DspSrvMan::DspSrvMan(DspConfig* config, const char* cmbaddr_file) {
     sender_arr_ = nullptr;
     sender_cnt_ = 0;
     imgfrm_srv_ = nullptr;
+    imgfrm_recv_ = nullptr;
     running_flag_ = false;
 }
 
@@ -36,19 +38,32 @@ void diffraflow::DspSrvMan::start_run() {
         return;
     }
     // create receiving server
+    // TCP receiver
     imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_host, config_obj_->listen_port, sender_arr_, sender_cnt_);
+    // UDP receiver
+    imgfrm_recv_ = new DspImgFrmRecv(config_obj_->listen_host, config_obj_->listen_port, sender_arr_, sender_cnt_);
 
     // multiple servers start from here
+    // TCP receiver
     if (imgfrm_srv_->start()) {
-        LOG4CXX_INFO(logger_, "successfully started image frame server.")
+        LOG4CXX_INFO(logger_, "successfully started image frame TCP receiver.")
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image frame server.")
+        LOG4CXX_ERROR(logger_, "failed to start image frame TCP receiver.")
+        return;
+    }
+    // UDP receiver
+    imgfrm_recv_->start_checker();
+    if (imgfrm_recv_->start()) {
+        LOG4CXX_INFO(logger_, "successfully started image frame UDP receiver.")
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start image frame UDP receiver.")
         return;
     }
 
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
-    metrics_reporter_.add("image_frame_server", imgfrm_srv_);
+    metrics_reporter_.add("image_frame_tcp_receiver", imgfrm_srv_);
+    metrics_reporter_.add("image_frame_udp_receiver", imgfrm_recv_);
     metrics_reporter_.add("image_frame_senders", (MetricsProvider**)sender_arr_, sender_cnt_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
         if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,
@@ -83,17 +98,30 @@ void diffraflow::DspSrvMan::terminate() {
     metrics_reporter_.stop_msg_producer();
     metrics_reporter_.clear();
 
-    // stop and delete receiving server
+    // stop and delete TCP receiver
     int result = imgfrm_srv_->stop_and_close();
     if (result == 0) {
-        LOG4CXX_INFO(logger_, "image frame server is normally terminated.");
+        LOG4CXX_INFO(logger_, "image frame TCP receiver is normally terminated.");
     } else if (result > 0) {
-        LOG4CXX_WARN(logger_, "image frame server is abnormally terminated with error code: " << result);
+        LOG4CXX_WARN(logger_, "image frame TCP receiver is abnormally terminated with error code: " << result);
     } else {
-        LOG4CXX_WARN(logger_, "image frame server has not yet been started or already been closed.");
+        LOG4CXX_WARN(logger_, "image frame TCP receiver has not yet been started or already been closed.");
     }
     delete imgfrm_srv_;
     imgfrm_srv_ = nullptr;
+
+    // stop and delete UDP receiver
+    result = imgfrm_recv_->stop_and_close();
+    if (result == 0) {
+        LOG4CXX_INFO(logger_, "image frame UDP receiver is normally terminated.");
+    } else if (result > 0) {
+        LOG4CXX_WARN(logger_, "image frame UDP receiver is abnormally terminated with error code: " << result);
+    } else {
+        LOG4CXX_WARN(logger_, "image frame UDP receiver has not yet been started or already been closed.");
+    }
+    imgfrm_recv_->stop_checker();
+    delete imgfrm_recv_;
+    imgfrm_recv_ = nullptr;
 
     // delete senders
     delete_senders_();

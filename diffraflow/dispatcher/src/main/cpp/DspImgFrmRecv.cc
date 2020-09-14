@@ -31,7 +31,7 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
     uint8_t dgram_seg_sn = gDC.decode_byte<uint8_t>(datagram->data(), 3, 3);
 
     LOG4CXX_DEBUG(logger_, "received one datagram: (mod_id, frm_sn, seg_sn, size) = ("
-                               << dgram_mod_id << ", " << dgram_frm_sn << ", " << dgram_seg_sn << ", "
+                               << (int)dgram_mod_id << ", " << (int)dgram_frm_sn << ", " << (int)dgram_seg_sn << ", "
                                << datagram->size() << ")");
 
     if (dgram_mod_id >= MOD_CNT) {

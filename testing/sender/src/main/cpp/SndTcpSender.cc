@@ -12,3 +12,24 @@ diffraflow::SndTcpSender::SndTcpSender(string dispatcher_host, int dispatcher_po
 }
 
 diffraflow::SndTcpSender::~SndTcpSender() { delete[] head_buffer_; }
+
+bool diffraflow::SndTcpSender::send_frame(const char* buffer, size_t len) {
+    // try to connect if lose connection
+    if (not_connected()) {
+        if (connect_to_server()) {
+            LOG4CXX_INFO(logger_, "reconnected to dispatcher.");
+        } else {
+            LOG4CXX_WARN(logger_, "failed to reconnect to dispatcher.");
+            return false;
+        }
+    }
+    // send image frame
+    if (send_one_(head_buffer_, 4, buffer, len)) {
+        LOG4CXX_DEBUG(logger_, "successfully send one image frame.")
+        return true;
+    } else {
+        close_connection();
+        LOG4CXX_WARN(logger_, "failed to send one image frame.");
+        return false;
+    }
+}

@@ -10,6 +10,8 @@ namespace diffraflow {
         SndTcpSender(string dispatcher_host, int dispatcher_port, uint32_t sender_id);
         ~SndTcpSender();
 
+        bool send_frame(const char* buffer, size_t len);
+
     private:
         char* head_buffer_;
 

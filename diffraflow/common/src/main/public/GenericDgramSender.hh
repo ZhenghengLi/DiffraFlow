@@ -4,11 +4,15 @@
 #include <string>
 #include <arpa/inet.h>
 #include <log4cxx/logger.h>
+#include <atomic>
+
+#include "MetricsProvider.hh"
 
 using std::string;
+using std::atomic;
 
 namespace diffraflow {
-    class GenericDgramSender {
+    class GenericDgramSender : public MetricsProvider {
     public:
         GenericDgramSender();
         ~GenericDgramSender();
@@ -16,6 +20,17 @@ namespace diffraflow {
         bool init_addr_sock(string host, int port);
         bool send_datagram(const char* buffer, size_t len);
         void close_sock();
+
+    public:
+        struct {
+            atomic<uint64_t> total_send_count;
+            atomic<uint64_t> total_succ_count;
+            atomic<uint64_t> total_error_count;
+            atomic<uint64_t> total_zero_count;
+            atomic<uint64_t> total_partial_count;
+        } dgram_metrics;
+
+        virtual json::value collect_metrics() override;
 
     protected:
         string receiver_sock_host_;

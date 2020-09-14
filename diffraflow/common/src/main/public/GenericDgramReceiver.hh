@@ -36,10 +36,10 @@ namespace diffraflow {
 
     public:
         struct {
-            atomic<uint64_t> total_recv_counts;
+            atomic<uint64_t> total_recv_count;
             atomic<uint64_t> total_recv_size;
-            atomic<uint64_t> total_error_counts;
-            atomic<uint64_t> total_processed_counts;
+            atomic<uint64_t> total_error_count;
+            atomic<uint64_t> total_processed_count;
         } dgram_metrics;
 
         virtual json::value collect_metrics() override;

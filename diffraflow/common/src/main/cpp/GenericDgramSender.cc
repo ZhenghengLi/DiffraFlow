@@ -18,6 +18,12 @@ diffraflow::GenericDgramSender::GenericDgramSender() {
     receiver_sock_port_ = -1;
     sender_sock_fd_ = -1;
     memset(&receiver_addr_, 0, sizeof(receiver_addr_));
+    // init metrics
+    dgram_metrics.total_send_count = 0;
+    dgram_metrics.total_succ_count = 0;
+    dgram_metrics.total_error_count = 0;
+    dgram_metrics.total_zero_count = 0;
+    dgram_metrics.total_partial_count = 0;
 }
 
 diffraflow::GenericDgramSender::~GenericDgramSender() { close_sock(); }
@@ -69,17 +75,22 @@ bool diffraflow::GenericDgramSender::send_datagram(const char* buffer, size_t le
         LOG4CXX_ERROR(logger_, "size of datagram to send is larger than " << DGRAM_MSIZE);
         return false;
     }
+    dgram_metrics.total_send_count++;
     int sndlen = sendto(sender_sock_fd_, buffer, len, 0, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_));
     if (sndlen < 0) {
+        dgram_metrics.total_error_count++;
         LOG4CXX_WARN(logger_, "found error when sending datagram: " << strerror(errno));
         return false;
     } else if (sndlen == 0) {
+        dgram_metrics.total_zero_count++;
         LOG4CXX_WARN(logger_, "datagram is not sent.");
         return false;
     } else if (sndlen != len) {
+        dgram_metrics.total_partial_count++;
         LOG4CXX_WARN(logger_, "partial datagram is sent.");
         return false;
     } else {
+        dgram_metrics.total_succ_count++;
         LOG4CXX_DEBUG(logger_, "datagram is successfully sent.");
         return true;
     }
@@ -91,4 +102,19 @@ void diffraflow::GenericDgramSender::close_sock() {
         close(sender_sock_fd_);
         sender_sock_fd_ = -1;
     }
+}
+
+json::value diffraflow::GenericDgramSender::collect_metrics() {
+
+    json::value dgram_metrics_json;
+    dgram_metrics_json["total_send_count"] = json::value::number(dgram_metrics.total_send_count.load());
+    dgram_metrics_json["total_succ_count"] = json::value::number(dgram_metrics.total_succ_count.load());
+    dgram_metrics_json["total_error_count"] = json::value::number(dgram_metrics.total_error_count.load());
+    dgram_metrics_json["total_zero_count"] = json::value::number(dgram_metrics.total_zero_count.load());
+    dgram_metrics_json["total_partial_count"] = json::value::number(dgram_metrics.total_partial_count.load());
+
+    json::value root_json;
+    root_json["dgram_stats"] = dgram_metrics_json;
+
+    return root_json;
 }

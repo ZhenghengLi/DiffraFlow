@@ -47,6 +47,10 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
         }
         image_frame = make_shared<ImageFrameRaw>();
         image_frame->add_dgram(datagram);
+        if (image_frame->get_dgram_count() == 95) {
+            imgfrm_queue_.push(image_frame);
+            image_frame = nullptr;
+        }
     } else {
         if (image_frame) {
             if (dgram_frm_sn == image_frame->dgram_frm_sn) {

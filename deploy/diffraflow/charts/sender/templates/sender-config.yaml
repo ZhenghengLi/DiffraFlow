@@ -5,6 +5,7 @@ metadata:
   namespace: diffraflow
 data:
   sender.conf: |
+    sender_type = {{ .Values.senderType }}
     sender_id = 0
     listen_host = 0.0.0.0
     listen_port = {{ .Values.listenPort }}

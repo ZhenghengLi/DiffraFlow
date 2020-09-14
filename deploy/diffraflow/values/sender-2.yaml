@@ -1,4 +1,5 @@
 nameSuffix: "2"
+senderType: TCP
 listenPort: 27621
 httpListenPort: 27622
 rawDataDir: /kubernetes/data/lizhh1/diffraflow/sender

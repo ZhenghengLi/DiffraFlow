@@ -39,6 +39,10 @@ spec:
           ports:
             - containerPort: {{.Values.listenPort}}
               hostPort: {{.Values.listenPort}}
+              protocol: TCP
+            - containerPort: {{.Values.listenPort}}
+              hostPort: {{.Values.listenPort}}
+              protocol: UDP
             - containerPort: {{.Values.httpListenPort}}
               hostPort: {{.Values.httpListenPort}}
           env:

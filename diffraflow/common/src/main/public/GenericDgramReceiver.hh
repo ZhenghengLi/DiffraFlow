@@ -11,6 +11,8 @@
 #include <vector>
 #include <memory>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using std::future;
 using std::shared_future;
@@ -23,7 +25,7 @@ using std::shared_ptr;
 using std::make_shared;
 
 namespace diffraflow {
-    class GenericDgramReceiver {
+    class GenericDgramReceiver : public MetricsProvider {
     public:
         GenericDgramReceiver(string host, int port);
         ~GenericDgramReceiver();
@@ -31,6 +33,16 @@ namespace diffraflow {
         bool start();
         void wait();
         int stop_and_close();
+
+    public:
+        struct {
+            atomic<uint64_t> total_recv_counts;
+            atomic<uint64_t> total_recv_size;
+            atomic<uint64_t> total_error_counts;
+            atomic<uint64_t> total_processed_counts;
+        } dgram_metrics;
+
+        virtual json::value collect_metrics() override;
 
     private:
         int run_();

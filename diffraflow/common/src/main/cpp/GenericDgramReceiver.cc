@@ -23,6 +23,12 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     memset(&receiver_addr_, 0, sizeof(receiver_addr_));
     memset(&sender_addr_, 0, sizeof(sender_addr_));
     sender_addr_len_ = 0;
+
+    // init metrics
+    dgram_metrics.total_recv_counts = 0;
+    dgram_metrics.total_recv_size = 0;
+    dgram_metrics.total_error_counts = 0;
+    dgram_metrics.total_processed_counts = 0;
 }
 
 diffraflow::GenericDgramReceiver::~GenericDgramReceiver() { stop_and_close(); }
@@ -79,13 +85,17 @@ int diffraflow::GenericDgramReceiver::run_() {
         int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), MSG_WAITALL,
             (struct sockaddr*)&sender_addr_, &sender_addr_len_);
         if (receiver_status_ != kRunning) break;
+        dgram_metrics.total_recv_counts++;
         if (recvlen < 0) {
             LOG4CXX_WARN(logger_, "found error when receiving datagram: " << strerror(errno));
             // do not stop, continue to receive next datagram
+            dgram_metrics.total_error_counts++;
         }
         if (recvlen > 0) {
+            dgram_metrics.total_recv_size += recvlen;
             datagram->resize(recvlen);
             process_datagram_(datagram);
+            dgram_metrics.total_processed_counts++;
         }
     }
 
@@ -140,4 +150,18 @@ int diffraflow::GenericDgramReceiver::stop_and_close() {
     }
     LOG4CXX_INFO(logger_, "datagram receiver is closed.");
     return result;
+}
+
+json::value diffraflow::GenericDgramReceiver::collect_metrics() {
+
+    json::value dgram_metrics_json;
+    dgram_metrics_json["total_recv_counts"] = json::value::number(dgram_metrics.total_recv_counts.load());
+    dgram_metrics_json["total_recv_size"] = json::value::number(dgram_metrics.total_recv_size.load());
+    dgram_metrics_json["total_error_counts"] = json::value::number(dgram_metrics.total_error_counts.load());
+    dgram_metrics_json["total_processed_counts"] = json::value::number(dgram_metrics.total_processed_counts.load());
+
+    json::value root_json;
+    root_json["dgram_stats"] = dgram_metrics_json;
+
+    return root_json;
 }

@@ -26,6 +26,14 @@ namespace diffraflow {
         void start_checker();
         void stop_checker();
 
+    public:
+        struct {
+            atomic<uint64_t> total_received_count;
+            atomic<uint64_t> total_checked_count;
+        } frame_metrics;
+
+        json::value collect_metrics() override;
+
     protected:
         void process_datagram_(shared_ptr<vector<char>>& datagram) override;
 

@@ -13,6 +13,9 @@ diffraflow::DspImgFrmRecv::DspImgFrmRecv(string host, int port, DspSender** send
     sender_count_ = sender_cnt;
     imgfrm_queue_.set_maxsize(1000);
     checker_thread_ = nullptr;
+    // init metrics
+    frame_metrics.total_received_count = 0;
+    frame_metrics.total_checked_count = 0;
 }
 
 diffraflow::DspImgFrmRecv::~DspImgFrmRecv() { stop_checker(); }
@@ -40,6 +43,7 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
     if (dgram_seg_sn == 0) {
         if (image_frame) {
             imgfrm_queue_.push(image_frame);
+            frame_metrics.total_received_count++;
         }
         image_frame = make_shared<ImageFrameRaw>();
         image_frame->add_dgram(datagram);
@@ -50,6 +54,7 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
             } else {
                 imgfrm_queue_.push(image_frame);
                 image_frame = nullptr;
+                frame_metrics.total_received_count++;
             }
         }
     }
@@ -64,6 +69,7 @@ void diffraflow::DspImgFrmRecv::start_checker() {
         while (imgfrm_queue_.take(image_frame)) {
             int check_res = image_frame->check_dgrams_integrity();
             if (check_res > 0) {
+                frame_metrics.total_checked_count++;
                 LOG4CXX_DEBUG(logger_, "successfully checked one image frame with size: " << check_res);
                 size_t index = hash_long_(image_frame->get_key()) % sender_count_;
                 if (sender_array_[index]->push(image_frame)) {
@@ -91,3 +97,16 @@ void diffraflow::DspImgFrmRecv::stop_checker() {
 }
 
 uint32_t diffraflow::DspImgFrmRecv::hash_long_(uint64_t value) { return (uint32_t)(value ^ (value >> 32)); }
+
+json::value diffraflow::DspImgFrmRecv::collect_metrics() {
+
+    json::value root_json = GenericDgramReceiver::collect_metrics();
+
+    json::value frame_metrics_json;
+    frame_metrics_json["total_received_count"] = json::value::number(frame_metrics.total_received_count.load());
+    frame_metrics_json["total_checked_count"] = json::value::number(frame_metrics.total_checked_count.load());
+
+    root_json["frame_stats"] = frame_metrics_json;
+
+    return root_json;
+}

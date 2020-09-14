@@ -1,0 +1,8 @@
+nameSuffix: "3"
+listenPort: 27231
+httpListenPort: 27232
+combinerAddresses: |
+  10.15.39.24:27111
+  10.15.39.25:27111
+  10.15.39.26:27111
+  10.15.39.27:27111

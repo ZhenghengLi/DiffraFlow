@@ -1,0 +1,10 @@
+nameSuffix: "1"
+senderType: UDP
+listenPort: 27611
+httpListenPort: 27612
+rawDataDir: /kubernetes/data/lizhh1/diffraflow/sender
+nodeMap: |
+  kube-master-0, 0, 10.15.85.32, 27211
+  kube-worker-1, 1, 10.15.85.33, 27211
+  kube-worker-2, 2, 10.15.85.34, 27211
+  kube-worker-3, 3, 10.15.85.35, 27211

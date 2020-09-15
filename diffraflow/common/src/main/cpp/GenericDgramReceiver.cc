@@ -54,6 +54,10 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
         LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));
         return false;
     }
+    // set larger receive buffer
+    int rcvbufsize = 1048576; // 1 MiB
+    setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&rcvbufsize, sizeof(rcvbufsize));
+    // bind address
     if (bind(receiver_sock_fd_, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_)) < 0) {
         LOG4CXX_ERROR(logger_, "bind: " << strerror(errno));
         return false;

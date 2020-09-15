@@ -67,42 +67,44 @@ int diffraflow::ImageFrameRaw::check_dgrams_integrity() {
         // -1: wrong dgram count
         return -1;
     }
-    // (2) check size of each dgram
-    for (size_t i = 0; i < dgram_list_.size(); i++) {
-        if (i == 0) {
-            if (dgram_list_[i]->size() != 1380) {
-                // -2: wrong first dgram size
-                return -2;
-            }
-        } else {
-            if (dgram_list_[i]->size() != 1384) {
-                // -3: wrong other dgram size
-                return -3;
-            }
-        }
-    }
-    // (3) check dgram order
-    uint8_t target_mod_id = 0;
-    uint16_t target_frm_sn = 0;
-    uint8_t previous_seg_sn = 0;
-    for (size_t i = 0; i < dgram_list_.size(); i++) {
-        if (i == 0) {
-            target_mod_id = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 0, 0);
-            target_frm_sn = gDC.decode_byte<uint16_t>(dgram_list_[i]->data(), 1, 2);
-            previous_seg_sn = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 3, 3);
-        } else {
-            uint8_t current_mod_id = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 0, 0);
-            uint16_t current_frm_sn = gDC.decode_byte<uint16_t>(dgram_list_[i]->data(), 1, 2);
-            uint8_t current_seg_sn = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 3, 3);
-            if (current_mod_id == target_mod_id && current_frm_sn == target_frm_sn &&
-                current_seg_sn == previous_seg_sn + 1) {
-                previous_seg_sn = current_seg_sn;
-            } else {
-                // -4: found wrong order or mismatched dgrams
-                return -4;
-            }
-        }
-    }
+
+    // // (2) check size of each dgram
+    // for (size_t i = 0; i < dgram_list_.size(); i++) {
+    //     if (i == 0) {
+    //         if (dgram_list_[i]->size() != 1380) {
+    //             // -2: wrong first dgram size
+    //             return -2;
+    //         }
+    //     } else {
+    //         if (dgram_list_[i]->size() != 1384) {
+    //             // -3: wrong other dgram size
+    //             return -3;
+    //         }
+    //     }
+    // }
+
+    // // (3) check dgram order
+    // uint8_t target_mod_id = 0;
+    // uint16_t target_frm_sn = 0;
+    // uint8_t previous_seg_sn = 0;
+    // for (size_t i = 0; i < dgram_list_.size(); i++) {
+    //     if (i == 0) {
+    //         target_mod_id = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 0, 0);
+    //         target_frm_sn = gDC.decode_byte<uint16_t>(dgram_list_[i]->data(), 1, 2);
+    //         previous_seg_sn = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 3, 3);
+    //     } else {
+    //         uint8_t current_mod_id = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 0, 0);
+    //         uint16_t current_frm_sn = gDC.decode_byte<uint16_t>(dgram_list_[i]->data(), 1, 2);
+    //         uint8_t current_seg_sn = gDC.decode_byte<uint8_t>(dgram_list_[i]->data(), 3, 3);
+    //         if (current_mod_id == target_mod_id && current_frm_sn == target_frm_sn &&
+    //             current_seg_sn == previous_seg_sn + 1) {
+    //             previous_seg_sn = current_seg_sn;
+    //         } else {
+    //             // -4: found wrong order or mismatched dgrams
+    //             return -4;
+    //         }
+    //     }
+    // }
 
     // // (4) check crc
     // crc_32_type crc_32;

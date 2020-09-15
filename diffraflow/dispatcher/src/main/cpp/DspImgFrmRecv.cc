@@ -78,11 +78,9 @@ void diffraflow::DspImgFrmRecv::start_checker() {
                 LOG4CXX_DEBUG(logger_, "successfully checked one image frame with size: " << check_res);
                 size_t index = hash_long_(image_frame->get_key()) % sender_count_;
                 if (sender_array_[index]->push(image_frame)) {
-                    LOG4CXX_DEBUG(logger_, "push one image frame into sender[" << index << "].");
-                    return true;
+                    LOG4CXX_DEBUG(logger_, "pushed one image frame into sender[" << index << "].");
                 } else {
-                    LOG4CXX_WARN(logger_, "sender[" << index << "] is stopped, close the connection.");
-                    return false;
+                    LOG4CXX_WARN(logger_, "unable to push one image frame into sender[" << index << "].");
                 }
             } else {
                 LOG4CXX_DEBUG(logger_, "received bad image frame with checking error code: " << check_res);

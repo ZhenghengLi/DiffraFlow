@@ -91,7 +91,7 @@ int diffraflow::GenericDgramReceiver::run_() {
         LOG4CXX_DEBUG(logger_, "waiting datagram ...");
 
         shared_ptr<vector<char>> datagram = make_shared<vector<char>>(DGRAM_MSIZE);
-        int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), MSG_WAITALL,
+        int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), 0,
             (struct sockaddr*)&sender_addr_, &sender_addr_len_);
 
         LOG4CXX_DEBUG(logger_, "received one datagram of size: " << recvlen);

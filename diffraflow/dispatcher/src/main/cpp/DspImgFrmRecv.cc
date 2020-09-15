@@ -24,9 +24,6 @@ void diffraflow::DspImgFrmRecv::set_max_queue_size(size_t max_qs) { imgfrm_queue
 
 void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& datagram) {
 
-    // debug: test dgram receive only
-    return;
-
     if (datagram->size() < 100) {
         return;
     }
@@ -37,6 +34,9 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
     LOG4CXX_DEBUG(logger_, "received one datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                << (int)dgram_mod_id << ", " << (int)dgram_frm_sn << ", " << (int)dgram_seg_sn << ", "
                                << datagram->size() << ")");
+
+    // debug: test dgram receive only
+    return;
 
     if (dgram_mod_id >= MOD_CNT) {
         return;

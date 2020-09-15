@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#define DGRAM_MSIZE 1500
+#define DGRAM_MSIZE 8210
 
 log4cxx::LoggerPtr diffraflow::GenericDgramSender::logger_ = log4cxx::Logger::getLogger("GenericDgramSender");
 

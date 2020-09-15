@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#define DGRAM_MSIZE 1500
+#define DGRAM_MSIZE 8210
 
 using std::unique_lock;
 

@@ -3,6 +3,8 @@
 #include "Decoder.hh"
 #include "DspSender.hh"
 
+#include "ImageFrameDgram.hh"
+
 using std::make_shared;
 
 log4cxx::LoggerPtr diffraflow::DspImgFrmRecv::logger_ = log4cxx::Logger::getLogger("DspImgFrmRecv");
@@ -55,7 +57,7 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
         if (image_frame) {
             if (dgram_frm_sn == image_frame->dgram_frm_sn) {
                 image_frame->add_dgram(datagram);
-                if (image_frame->get_dgram_count() == 95) {
+                if (image_frame->get_dgram_count() == BODY_COUNT + 1) {
                     imgfrm_queue_.push(image_frame);
                     image_frame = nullptr;
                     frame_metrics.total_received_count++;

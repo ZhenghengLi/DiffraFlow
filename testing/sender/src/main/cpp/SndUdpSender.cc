@@ -4,9 +4,7 @@
 #include "Decoder.hh"
 #include "PrimitiveSerializer.hh"
 #include <cstring>
-
-#define DGRAM_MSIZE 8210
-#define FRAME_SIZE 131096
+#include "ImageFrameDgram.hh"
 
 log4cxx::LoggerPtr diffraflow::SndUdpSender::logger_ = log4cxx::Logger::getLogger("SndUdpSender");
 
@@ -39,36 +37,35 @@ bool diffraflow::SndUdpSender::send_frame(const char* buffer, size_t len) {
     gPS.serializeValue<uint8_t>((uint8_t)module_id, dgram_buffer_, 1);
     gPS.serializeValue<uint16_t>(frame_sequence_number_, dgram_buffer_ + 1, 2);
     gPS.serializeValue<uint8_t>(segment_sequence_number_, dgram_buffer_ + 3, 1);
-    segment_sequence_number_++;
-    memcpy(dgram_buffer_ + 4, buffer, 8096);
-    if (send_datagram(dgram_buffer_, 8100)) {
+    memcpy(dgram_buffer_ + 4, buffer, HEAD_SIZE);
+    if (send_datagram(dgram_buffer_, HEAD_SIZE + 4)) {
         LOG4CXX_DEBUG(logger_, "successfully sent datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                    << module_id << ", " << frame_sequence_number_ << ", "
-                                   << (int)segment_sequence_number_ << ", " << 8100 << ")");
+                                   << (int)segment_sequence_number_ << ", " << HEAD_SIZE + 4 << ")");
     } else {
         succ_flag = false;
         LOG4CXX_WARN(logger_, "failed to send datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                   << module_id << ", " << frame_sequence_number_ << ", "
-                                  << (int)segment_sequence_number_ << ", " << 8100 << ")");
+                                  << (int)segment_sequence_number_ << ", " << HEAD_SIZE + 4 << ")");
     }
+    segment_sequence_number_++;
 
     // send subsequent segments
-    for (size_t i = 0; succ_flag && i < 15; i++) {
+    for (size_t i = 0; succ_flag && i < BODY_COUNT; i++) {
         gPS.serializeValue<uint8_t>(segment_sequence_number_, dgram_buffer_ + 3, 1);
-        segment_sequence_number_++;
-        size_t offset = 8096 + i * 8200;
-        memcpy(dgram_buffer_ + 4, buffer + offset, 8200);
-        if (send_datagram(dgram_buffer_, 8204)) {
+        size_t offset = HEAD_SIZE + i * BODY_SIZE;
+        memcpy(dgram_buffer_ + 4, buffer + offset, BODY_SIZE);
+        if (send_datagram(dgram_buffer_, BODY_SIZE + 4)) {
             LOG4CXX_DEBUG(logger_, "successfully sent datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                        << module_id << ", " << frame_sequence_number_ << ", "
-                                       << (int)segment_sequence_number_ << ", " << 8204 << ")");
-
+                                       << (int)segment_sequence_number_ << ", " << BODY_SIZE + 4 << ")");
         } else {
             succ_flag = false;
             LOG4CXX_WARN(logger_, "failed to send datagram: (mod_id, frm_sn, seg_sn, size) = ("
                                       << module_id << ", " << frame_sequence_number_ << ", "
-                                      << (int)segment_sequence_number_ << ", " << 8204 << ")");
+                                      << (int)segment_sequence_number_ << ", " << BODY_SIZE + 4 << ")");
         }
+        segment_sequence_number_++;
     }
 
     frame_sequence_number_++;

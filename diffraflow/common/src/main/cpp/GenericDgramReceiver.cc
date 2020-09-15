@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#define DGRAM_MSIZE 8210
+#include "ImageFrameDgram.hh"
 
 using std::unique_lock;
 

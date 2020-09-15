@@ -3,7 +3,7 @@
 #include <cstring>
 #include <boost/crc.hpp>
 
-#define FRAME_SIZE 131096
+#include "ImageFrameDgram.hh"
 
 using boost::crc_32_type;
 
@@ -63,7 +63,7 @@ bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<vector<char>>& dgram) {
 
 int diffraflow::ImageFrameRaw::check_dgrams_integrity() {
     // (1) check dgram count
-    if (dgram_list_.size() != 95) {
+    if (dgram_list_.size() != BODY_COUNT + 1) {
         // -1: wrong dgram count
         return -1;
     }

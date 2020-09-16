@@ -64,7 +64,7 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
     sender_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
 
     // set larger sender buffer
-    int sndbufsize = 24 * 1024 * 1024; // 24 MiB
+    int sndbufsize = 4 * 1024 * 1024; // 4 MiB
     setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sndbufsize, sizeof(sndbufsize));
 
     if (sender_sock_fd_ < 0) {

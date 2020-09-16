@@ -69,8 +69,6 @@ namespace diffraflow {
         mutex mtx_status_;
         condition_variable cv_status_;
 
-        char* dgram_buffer_;
-
     private:
         static log4cxx::LoggerPtr logger_;
     };

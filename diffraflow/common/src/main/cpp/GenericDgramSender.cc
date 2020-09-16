@@ -62,6 +62,11 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
 
     // create socket
     sender_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
+
+    // set larger sender buffer
+    int sndbufsize = 4194304; // 4 MiB
+    setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sndbufsize, sizeof(sndbufsize));
+
     if (sender_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));
         return false;

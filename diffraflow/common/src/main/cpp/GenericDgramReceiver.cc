@@ -24,6 +24,8 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     memset(&sender_addr_, 0, sizeof(sender_addr_));
     sender_addr_len_ = 0;
 
+    dgram_buffer_ = new char[DGRAM_MSIZE];
+
     // init metrics
     dgram_metrics.total_recv_count = 0;
     dgram_metrics.total_recv_size = 0;
@@ -31,7 +33,11 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     dgram_metrics.total_processed_count = 0;
 }
 
-diffraflow::GenericDgramReceiver::~GenericDgramReceiver() { stop_and_close(); }
+diffraflow::GenericDgramReceiver::~GenericDgramReceiver() {
+    stop_and_close();
+    delete[] dgram_buffer_;
+    dgram_buffer_ = nullptr;
+}
 
 bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     // prepare address
@@ -88,11 +94,14 @@ int diffraflow::GenericDgramReceiver::run_() {
 
     while (receiver_status_ == kRunning) {
 
-        LOG4CXX_DEBUG(logger_, "waiting datagram ...");
+        LOG4CXX_DEBUG(logger_, "waiting for datagram ...");
 
-        shared_ptr<vector<char>> datagram = make_shared<vector<char>>(DGRAM_MSIZE);
-        int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), 0,
-            (struct sockaddr*)&sender_addr_, &sender_addr_len_);
+        // shared_ptr<vector<char>> datagram = make_shared<vector<char>>(DGRAM_MSIZE);
+        // int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), 0,
+        //     (struct sockaddr*)&sender_addr_, &sender_addr_len_);
+
+        int recvlen = recvfrom(
+            receiver_sock_fd_, dgram_buffer_, DGRAM_MSIZE, 0, (struct sockaddr*)&sender_addr_, &sender_addr_len_);
 
         LOG4CXX_DEBUG(logger_, "received one datagram of size: " << recvlen);
 
@@ -105,8 +114,10 @@ int diffraflow::GenericDgramReceiver::run_() {
         }
         if (recvlen > 0) {
             dgram_metrics.total_recv_size += recvlen;
-            datagram->resize(recvlen);
-            process_datagram_(datagram);
+
+            // datagram->resize(recvlen);
+            // process_datagram_(datagram);
+
             dgram_metrics.total_processed_count++;
         }
     }

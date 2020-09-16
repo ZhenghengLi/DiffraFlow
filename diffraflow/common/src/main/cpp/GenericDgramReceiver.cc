@@ -56,7 +56,7 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     }
 
     // set larger receive buffer
-    int rcvbufsize = 4194304; // 4 MiB
+    int rcvbufsize = 24 * 1024 * 1024; // 24 MiB
     setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&rcvbufsize, sizeof(rcvbufsize));
 
     // bind address

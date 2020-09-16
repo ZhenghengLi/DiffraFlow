@@ -14,6 +14,7 @@ spec:
       labels:
         name: sender-{{ .Values.nameSuffix }}
     spec:
+      hostNetwork: true
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
@@ -27,11 +28,6 @@ spec:
             - --config=/config/sender.conf
             - --nodemap=/config/node_map.txt
             - --logconf=/config/log4cxx.properties
-          ports:
-            - containerPort: {{.Values.listenPort}}
-              hostPort: {{.Values.listenPort}}
-            - containerPort: {{.Values.httpListenPort}}
-              hostPort: {{.Values.httpListenPort}}
           env:
             - name: POD_IP
               valueFrom:

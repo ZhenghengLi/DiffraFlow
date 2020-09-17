@@ -8,6 +8,7 @@ data:
     listen_host = 0.0.0.0
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
+    dgram_recv_cpu_id = {{ .Values.dgramRecvCpuId }}
     max_queue_size = 5000
     # http
     metrics_http_host = 0.0.0.0

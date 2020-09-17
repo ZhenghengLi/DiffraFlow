@@ -59,7 +59,7 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     }
 
     // set larger receive buffer
-    int rcvbufsize = 64 * 1024 * 1024; // 512 MiB
+    int rcvbufsize = 24 * 1024 * 1024; // 24 MiB
     setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&rcvbufsize, sizeof(rcvbufsize));
 
     // bind address
@@ -205,7 +205,6 @@ int diffraflow::GenericDgramReceiver::stop_and_close() {
         close(receiver_sock_fd_);
         receiver_sock_fd_ = -1;
     }
-    receiver_status_ = kClosed;
     // wait worker to finish
     int result = wait();
     // delete worker
@@ -214,6 +213,8 @@ int diffraflow::GenericDgramReceiver::stop_and_close() {
         delete worker_thread_;
         worker_thread_ = nullptr;
     }
+
+    receiver_status_ = kClosed;
 
     LOG4CXX_INFO(logger_, "datagram receiver is closed.");
     return result;

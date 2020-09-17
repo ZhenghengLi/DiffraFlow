@@ -1,4 +1,5 @@
 nameSuffix: "4"
+senderCpuId: 4
 senderType: TCP
 listenPort: 27641
 httpListenPort: 27642

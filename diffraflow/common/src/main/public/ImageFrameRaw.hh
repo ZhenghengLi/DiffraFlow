@@ -32,7 +32,6 @@ namespace diffraflow {
 
         uint8_t dgram_mod_id;
         uint16_t dgram_frm_sn;
-        uint8_t dgram_seg_sn;
 
     private:
         shared_ptr<vector<char>> data_buffer_;

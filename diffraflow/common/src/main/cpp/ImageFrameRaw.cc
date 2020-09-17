@@ -50,10 +50,12 @@ bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<vector<char>>& dgram) {
     if (dgram_list_.empty()) {
         dgram_mod_id = gDC.decode_byte<uint8_t>(dgram->data(), 0, 0);
         dgram_frm_sn = gDC.decode_byte<uint16_t>(dgram->data(), 1, 2);
-        dgram_seg_sn = gDC.decode_byte<uint8_t>(dgram->data(), 3, 3);
+
+        uint8_t dgram_seg_sn = gDC.decode_byte<uint8_t>(dgram->data(), 3, 3);
         if (dgram_seg_sn != 0) {
             return false;
         }
+
         bunch_id = gDC.decode_byte<uint64_t>(dgram->data() + 4, 12, 19);
         module_id = gDC.decode_byte<uint16_t>(dgram->data() + 4, 6, 7);
     }

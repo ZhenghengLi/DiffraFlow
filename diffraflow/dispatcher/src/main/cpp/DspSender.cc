@@ -20,10 +20,6 @@ diffraflow::DspSender::DspSender(string hostname, int port, int id, size_t max_q
 diffraflow::DspSender::~DspSender() {}
 
 bool diffraflow::DspSender::send_imgfrm_(const shared_ptr<ImageFrameRaw>& image_frame) {
-
-    // debug udp data transfer
-    return true;
-
     // try to connect if lose connection
     if (not_connected()) {
         if (connect_to_server()) {

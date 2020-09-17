@@ -56,6 +56,13 @@ void diffraflow::SndSrvMan::start_run() {
         LOG4CXX_ERROR(logger_, "wrong sender type: " << config_obj_->sender_type);
         return;
     }
+    // start sender thread and bind cpu
+    if (data_transfer_->start_sender(config_obj_->sender_cpu_id)) {
+        LOG4CXX_INFO(logger_, "successfully started sender thread with cpu " << config_obj_->sender_cpu_id);
+    } else {
+        LOG4CXX_ERROR(logger_, "failed to start sender thread with cpu " << config_obj_->sender_cpu_id);
+        return;
+    }
 
     // start trigger server
     if (trigger_srv_->start()) {
@@ -114,6 +121,7 @@ void diffraflow::SndSrvMan::terminate() {
     delete trigger_srv_;
     trigger_srv_ = nullptr;
 
+    data_transfer_->stop_sender();
     data_transfer_->delete_sender();
     delete data_transfer_;
     data_transfer_ = nullptr;

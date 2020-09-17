@@ -9,6 +9,7 @@
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <boost/filesystem.hpp>
+#include <sched.h>
 
 #define FRAME_SIZE 131096
 #define STRING_LEN 512
@@ -31,12 +32,18 @@ diffraflow::SndDatTran::SndDatTran(SndConfig* conf_obj) {
     current_file_ = nullptr;
     current_file_index_ = -1;
 
+    event_queue_.set_maxsize(100);
+    sender_thread_ = nullptr;
+
     transfer_metrics.invoke_counts = 0;
     transfer_metrics.busy_counts = 0;
     transfer_metrics.large_index_counts = 0;
     transfer_metrics.read_succ_counts = 0;
     transfer_metrics.key_match_counts = 0;
     transfer_metrics.send_succ_counts = 0;
+    transfer_metrics.send_fail_counts = 0;
+    transfer_metrics.read_send_succ_counts = 0;
+    transfer_metrics.read_send_fail_counts = 0;
 }
 
 diffraflow::SndDatTran::~SndDatTran() {
@@ -88,6 +95,66 @@ void diffraflow::SndDatTran::delete_sender() {
         udp_sender_ = nullptr;
     }
     sender_type_ = kNotSet;
+}
+
+bool diffraflow::SndDatTran::push_event(uint32_t event_index) { return event_queue_.push(event_index); }
+
+bool diffraflow::SndDatTran::start_sender(int cpu_id) {
+
+    if (sender_thread_ != nullptr) {
+        return true;
+    }
+
+    int num_cpus = std::thread::hardware_concurrency();
+    if (cpu_id >= num_cpus) {
+        LOG4CXX_ERROR(logger_, "CPU id (" << cpu_id << ") is too large, it should be smaller than " << num_cpus);
+        return false;
+    }
+
+    event_queue_.resume();
+    sender_thread_ = new thread([this] {
+        uint32_t event_index = 0;
+        while (event_queue_.take(event_index)) {
+            if (read_and_send(event_index)) {
+                transfer_metrics.read_send_succ_counts++;
+                LOG4CXX_DEBUG(logger_, "successfully sent event " << event_index);
+            } else {
+                transfer_metrics.read_send_fail_counts++;
+                LOG4CXX_WARN(logger_, "failed to send event " << event_index);
+            }
+        }
+    });
+
+    // bind cpu
+    bool cpu_bind_succ = true;
+    if (cpu_id >= 0) {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(cpu_id, &cpuset);
+        int rc = pthread_setaffinity_np(sender_thread_->native_handle(), sizeof(cpu_set_t), &cpuset);
+        if (rc == 0) {
+            LOG4CXX_INFO(logger_, "successfully bind sending thread on cpu " << cpu_id);
+            cpu_bind_succ = true;
+        } else {
+            LOG4CXX_ERROR(logger_, "error calling pthread_setaffinity_np with error number: " << rc);
+            cpu_bind_succ = false;
+        }
+    }
+    if (cpu_bind_succ) {
+        return true;
+    } else {
+        stop_sender();
+        return false;
+    }
+}
+
+void diffraflow::SndDatTran::stop_sender() {
+    if (sender_thread_ != nullptr) {
+        event_queue_.stop();
+        sender_thread_->join();
+        delete sender_thread_;
+        sender_thread_ = nullptr;
+    }
 }
 
 bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
@@ -177,6 +244,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
             } else {
                 tcp_sender_->close_connection();
                 LOG4CXX_WARN(logger_, "tcp: failed to send frame data.");
+                transfer_metrics.send_fail_counts++;
                 return false;
             }
         } else if (sender_type_ == kUDP) {
@@ -186,6 +254,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
                 return true;
             } else {
                 LOG4CXX_WARN(logger_, "udp: failed to send frame data.");
+                transfer_metrics.send_fail_counts++;
                 return false;
             }
         }
@@ -207,6 +276,9 @@ json::value diffraflow::SndDatTran::collect_metrics() {
     transfer_metrics_json["read_succ_counts"] = json::value::number(transfer_metrics.read_succ_counts);
     transfer_metrics_json["key_match_counts"] = json::value::number(transfer_metrics.key_match_counts);
     transfer_metrics_json["send_succ_counts"] = json::value::number(transfer_metrics.send_succ_counts);
+    transfer_metrics_json["send_fail_counts"] = json::value::number(transfer_metrics.send_fail_counts);
+    transfer_metrics_json["read_send_succ_counts"] = json::value::number(transfer_metrics.read_send_succ_counts);
+    transfer_metrics_json["read_send_fail_counts"] = json::value::number(transfer_metrics.read_send_fail_counts);
 
     json::value root_json;
     root_json["transfer_stat"] = transfer_metrics_json;

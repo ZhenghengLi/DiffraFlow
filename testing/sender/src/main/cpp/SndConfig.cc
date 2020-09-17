@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <regex>
 #include <boost/algorithm/string.hpp>
+#include <thread>
 
 using std::cout;
 using std::flush;
@@ -20,6 +21,7 @@ log4cxx::LoggerPtr diffraflow::SndConfig::logger_ = log4cxx::Logger::getLogger("
 
 diffraflow::SndConfig::SndConfig() {
     sender_id = 0;
+    sender_cpu_id = -1;
     listen_host = "0.0.0.0";
     listen_port = -1;
     sender_type = "TCP";
@@ -56,6 +58,8 @@ bool diffraflow::SndConfig::load(const char* filename) {
             sender_type = value.c_str();
         } else if (key == "sender_id") {
             sender_id = atoi(value.c_str());
+        } else if (key == "sender_cpu_id") {
+            sender_cpu_id = atoi(value.c_str());
         } else if (key == "data_dir") {
             data_dir = value.c_str();
         } else if (key == "events_per_file") {
@@ -123,6 +127,11 @@ bool diffraflow::SndConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
+    int num_cpus = std::thread::hardware_concurrency();
+    if (sender_cpu_id >= num_cpus) {
+        LOG4CXX_ERROR(logger_, "sender_cpu_id should be smaller than " << num_cpus << ".");
+        succ_flag = false;
+    }
     if (data_dir.empty()) {
         LOG4CXX_ERROR(logger_, "data_dir is not set.")
         succ_flag = false;
@@ -148,6 +157,7 @@ bool diffraflow::SndConfig::load(const char* filename) {
         // static config
         static_config_json_["sender_type"] = json::value::string(sender_type);
         static_config_json_["sender_id"] = json::value::number(sender_id);
+        static_config_json_["sender_cpu_id"] = json::value::number(sender_cpu_id);
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
         static_config_json_["data_dir"] = json::value::string(data_dir);
@@ -215,6 +225,7 @@ void diffraflow::SndConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << " sender_type        = " << sender_type << endl;
     cout << " sender_id          = " << sender_id << endl;
+    cout << " sender_cpu_id      = " << sender_cpu_id << endl;
     cout << " listen_host        = " << listen_host << endl;
     cout << " listen_port        = " << listen_port << endl;
     cout << " data_dir           = " << data_dir << endl;

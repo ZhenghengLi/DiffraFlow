@@ -18,9 +18,9 @@ namespace diffraflow {
 
     public:
         struct {
-            atomic<uint64_t> total_succ_send_counts;
-            atomic<uint64_t> total_fail_send_counts;
-        } send_metrics;
+            atomic<uint64_t> total_succ_push_counts;
+            atomic<uint64_t> total_fail_push_counts;
+        } push_metrics;
 
         json::value collect_metrics() override;
 

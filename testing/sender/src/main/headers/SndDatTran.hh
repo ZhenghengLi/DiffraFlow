@@ -5,13 +5,17 @@
 #include <fstream>
 #include <mutex>
 #include <atomic>
+#include <thread>
 
 #include "MetricsProvider.hh"
+#include "BlockingQueue.hh"
 
 using std::ifstream;
 using std::string;
 using std::mutex;
 using std::atomic;
+using std::atomic_bool;
+using std::thread;
 
 namespace diffraflow {
 
@@ -30,6 +34,10 @@ namespace diffraflow {
 
         bool read_and_send(uint32_t event_index);
 
+        bool push_event(uint32_t);
+        bool start_sender(int cpu_id = -1);
+        void stop_sender();
+
     public:
         enum SenderType { kTCP, kUDP, kNotSet };
 
@@ -41,6 +49,9 @@ namespace diffraflow {
             atomic<uint64_t> read_succ_counts;
             atomic<uint64_t> key_match_counts;
             atomic<uint64_t> send_succ_counts;
+            atomic<uint64_t> send_fail_counts;
+            atomic<uint64_t> read_send_succ_counts;
+            atomic<uint64_t> read_send_fail_counts;
         } transfer_metrics;
 
         json::value collect_metrics() override;
@@ -49,6 +60,9 @@ namespace diffraflow {
         SenderType sender_type_;
         SndTcpSender* tcp_sender_;
         SndUdpSender* udp_sender_;
+
+        BlockingQueue<uint32_t> event_queue_;
+        thread* sender_thread_;
 
         SndConfig* config_obj_;
         char* frame_buffer_;

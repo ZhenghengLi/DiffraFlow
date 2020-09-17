@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <regex>
+#include <thread>
 #include <boost/algorithm/string.hpp>
 
 using std::cout;
@@ -18,6 +19,7 @@ log4cxx::LoggerPtr diffraflow::DspConfig::logger_ = log4cxx::Logger::getLogger("
 
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
+    dgram_recv_cpu_id = -1;
     listen_host = "0.0.0.0";
     listen_port = -1;
     max_queue_size = 1000;
@@ -44,6 +46,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             listen_port = atoi(value.c_str());
         } else if (key == "dispatcher_id") {
             dispatcher_id = atoi(value.c_str());
+        } else if (key == "dgram_recv_cpu_id") {
+            dgram_recv_cpu_id = atoi(value.c_str());
         } else if (key == "max_queue_size") {
             max_queue_size = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
@@ -99,12 +103,18 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid listen_port: " << listen_port);
         succ_flag = false;
     }
+    int num_cpus = std::thread::hardware_concurrency();
+    if (dgram_recv_cpu_id >= num_cpus) {
+        LOG4CXX_ERROR(logger_, "dgram_recv_cpu_id should be smaller than " << num_cpus << ".");
+        succ_flag = false;
+    }
 
     if (succ_flag) {
         static_config_json_["dispatcher_id"] = json::value::number(dispatcher_id);
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
         static_config_json_["max_queue_size"] = json::value::number(max_queue_size);
+        static_config_json_["dgram_recv_cpu_id"] = json::value::number(dgram_recv_cpu_id);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -123,6 +133,7 @@ void diffraflow::DspConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
+    cout << "  dgram_recv_cpu_id = " << dgram_recv_cpu_id << endl;
     cout << "  max_queue_size = " << max_queue_size << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;

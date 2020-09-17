@@ -14,10 +14,9 @@
 #include "MetricsProvider.hh"
 
 using std::string;
-using std::future;
-using std::shared_future;
-using std::async;
+using std::thread;
 using std::atomic;
+using std::atomic_int;
 using std::mutex;
 using std::condition_variable;
 using std::vector;
@@ -30,8 +29,8 @@ namespace diffraflow {
         GenericDgramReceiver(string host, int port);
         ~GenericDgramReceiver();
 
-        bool start();
-        void wait();
+        bool start(int cpu_id = -1);
+        int wait();
         int stop_and_close();
 
     public:
@@ -45,11 +44,12 @@ namespace diffraflow {
         virtual json::value collect_metrics() override;
 
     private:
-        int run_();
-        shared_future<int> worker_;
+        void run_();
+        thread* worker_thread_;
+        atomic_int worker_result_;
 
     protected:
-        enum ReceiverStatus { kNotStart, kRunning, kStopped, kClosed };
+        enum ReceiverStatus { kNotStart, kRunning, kStopping, kStopped, kClosed };
 
     protected:
         bool create_udp_sock_();

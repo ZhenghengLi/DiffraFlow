@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sched.h>
 
 #include "ImageFrameDgram.hh"
 
@@ -20,6 +21,8 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     receiver_sock_host_ = host;
     receiver_sock_port_ = port;
     receiver_status_ = kNotStart;
+    worker_thread_ = nullptr;
+    worker_result_ = 0;
     memset(&receiver_addr_, 0, sizeof(receiver_addr_));
     memset(&sender_addr_, 0, sizeof(sender_addr_));
     sender_addr_len_ = 0;
@@ -56,7 +59,7 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     }
 
     // set larger receive buffer
-    int rcvbufsize = 512 * 1024 * 1024; // 512 MiB
+    int rcvbufsize = 64 * 1024 * 1024; // 512 MiB
     setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&rcvbufsize, sizeof(rcvbufsize));
 
     // bind address
@@ -68,9 +71,14 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     return true;
 }
 
-int diffraflow::GenericDgramReceiver::run_() {
+void diffraflow::GenericDgramReceiver::run_() {
     if (receiver_status_ != kNotStart) {
-        return 1;
+
+        worker_result_ = 1;
+        receiver_status_ = kStopped;
+        cv_status_.notify_all();
+
+        return;
     }
     if (create_udp_sock_()) {
         LOG4CXX_INFO(
@@ -78,7 +86,12 @@ int diffraflow::GenericDgramReceiver::run_() {
     } else {
         LOG4CXX_ERROR(
             logger_, "Failed to create dgram socket on " << receiver_sock_host_ << ":" << receiver_sock_port_);
-        return 2;
+
+        worker_result_ = 2;
+        receiver_status_ = kStopped;
+        cv_status_.notify_all();
+
+        return;
     }
 
     receiver_status_ = kRunning;
@@ -107,32 +120,72 @@ int diffraflow::GenericDgramReceiver::run_() {
         }
     }
 
-    return result;
+    worker_result_ = result;
+    receiver_status_ = kStopped;
+    cv_status_.notify_all();
 }
 
 void diffraflow::GenericDgramReceiver::process_datagram_(shared_ptr<vector<char>>& datagram) {
     // this method should be implemented by subclasses
 }
 
-bool diffraflow::GenericDgramReceiver::start() {
+bool diffraflow::GenericDgramReceiver::start(int cpu_id) {
+
+    int num_cpus = std::thread::hardware_concurrency();
+    if (cpu_id >= num_cpus) {
+        LOG4CXX_ERROR(logger_, "CPU id (" << cpu_id << ") is too large, it should be smaller than " << num_cpus);
+        return false;
+    }
+
     if (!(receiver_status_ == kNotStart || receiver_status_ == kClosed)) {
         return false;
     }
+
     receiver_status_ = kNotStart;
-    worker_ = async(&GenericDgramReceiver::run_, this);
+    worker_thread_ = new thread(&GenericDgramReceiver::run_, this);
+
+    bool cpu_bind_succ = true;
+    bool status_running = false;
+
+    if (cpu_id >= 0) {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(cpu_id, &cpuset);
+        int rc = pthread_setaffinity_np(worker_thread_->native_handle(), sizeof(cpu_set_t), &cpuset);
+        if (rc == 0) {
+            LOG4CXX_INFO(logger_, "successfully bind receiving thread on cpu " << cpu_id);
+            cpu_bind_succ = true;
+        } else {
+            LOG4CXX_ERROR(logger_, "error calling pthread_setaffinity_np with error number: " << rc);
+            cpu_bind_succ = false;
+        }
+    }
+
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return receiver_status_ != kNotStart; });
     if (receiver_status_ == kRunning) {
+        status_running = true;
+    }
+
+    if (cpu_bind_succ && status_running) {
         return true;
     } else {
+        stop_and_close();
         return false;
     }
 }
 
-void diffraflow::GenericDgramReceiver::wait() {
-    if (worker_.valid()) {
-        worker_.wait();
+int diffraflow::GenericDgramReceiver::wait() {
+    // check
+    if (receiver_status_ == kNotStart) {
+        return -1;
     }
+    if (receiver_status_ == kClosed) {
+        return -2;
+    }
+    unique_lock<mutex> ulk(mtx_status_);
+    cv_status_.wait(ulk, [this]() { return receiver_status_ == kStopped; });
+    return worker_result_;
 }
 
 int diffraflow::GenericDgramReceiver::stop_and_close() {
@@ -143,19 +196,25 @@ int diffraflow::GenericDgramReceiver::stop_and_close() {
     if (receiver_status_ == kClosed) {
         return -2;
     }
-    receiver_status_ = kStopped;
-    cv_status_.notify_all();
-    // shutdown and close socket
-    shutdown(receiver_sock_fd_, SHUT_RDWR);
-    close(receiver_sock_fd_);
-    receiver_sock_fd_ = -1;
-    receiver_status_ = kClosed;
-    cv_status_.notify_all();
-    // wait worker to finish
-    int result = -3;
-    if (worker_.valid()) {
-        result = worker_.get();
+    if (receiver_status_ == kRunning) {
+        receiver_status_ = kStopping;
     }
+    // shutdown and close socket
+    if (receiver_sock_fd_ >= 0) {
+        shutdown(receiver_sock_fd_, SHUT_RDWR);
+        close(receiver_sock_fd_);
+        receiver_sock_fd_ = -1;
+    }
+    receiver_status_ = kClosed;
+    // wait worker to finish
+    int result = wait();
+    // delete worker
+    if (worker_thread_ != nullptr) {
+        worker_thread_->join();
+        delete worker_thread_;
+        worker_thread_ = nullptr;
+    }
+
     LOG4CXX_INFO(logger_, "datagram receiver is closed.");
     return result;
 }

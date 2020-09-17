@@ -53,7 +53,7 @@ void diffraflow::DspSrvMan::start_run() {
     }
     // UDP receiver
     imgfrm_recv_->start_checker();
-    if (imgfrm_recv_->start()) {
+    if (imgfrm_recv_->start(config_obj_->dgram_recv_cpu_id)) {
         LOG4CXX_INFO(logger_, "successfully started image frame UDP receiver.")
     } else {
         LOG4CXX_ERROR(logger_, "failed to start image frame UDP receiver.")

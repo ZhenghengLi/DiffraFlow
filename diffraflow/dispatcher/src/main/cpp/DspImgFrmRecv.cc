@@ -37,9 +37,6 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& data
                                << (int)dgram_mod_id << ", " << (int)dgram_frm_sn << ", " << (int)dgram_seg_sn << ", "
                                << datagram->size() << ")");
 
-    // debug: test dgram receive only
-    return;
-
     if (dgram_mod_id >= MOD_CNT) {
         return;
     }

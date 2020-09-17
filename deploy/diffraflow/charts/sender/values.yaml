@@ -1,4 +1,5 @@
 nameSuffix: "1"
+senderCpuId: -1
 listenPort: 27611
 httpListenPort: 27612
 rawDataDir: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/converted

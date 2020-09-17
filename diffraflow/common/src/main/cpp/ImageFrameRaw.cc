@@ -106,20 +106,20 @@ int diffraflow::ImageFrameRaw::check_dgrams_integrity() {
         }
     }
 
-    // (4) check crc
-    crc_32_type crc_32;
-    crc_32.process_bytes(dgram_list_[0]->data() + 8, dgram_list_[0]->size() - 8);
-    for (size_t i = 1; i < dgram_list_.size() - 1; i++) {
-        crc_32.process_bytes(dgram_list_[i]->data() + 4, dgram_list_[i]->size() - 4);
-    }
-    size_t last_index = dgram_list_.size() - 1;
-    size_t last_size = dgram_list_[last_index]->size();
-    crc_32.process_bytes(dgram_list_[last_index]->data() + 4, dgram_list_[last_index]->size() - 8);
-    uint32_t target_crc = gDC.decode_byte<uint32_t>(dgram_list_[last_index]->data(), last_size - 4, last_size - 1);
-    if (target_crc != crc_32.checksum()) {
-        // -5: wrong CRC
-        return -5;
-    }
+    // // (4) check crc
+    // crc_32_type crc_32;
+    // crc_32.process_bytes(dgram_list_[0]->data() + 8, dgram_list_[0]->size() - 8);
+    // for (size_t i = 1; i < dgram_list_.size() - 1; i++) {
+    //     crc_32.process_bytes(dgram_list_[i]->data() + 4, dgram_list_[i]->size() - 4);
+    // }
+    // size_t last_index = dgram_list_.size() - 1;
+    // size_t last_size = dgram_list_[last_index]->size();
+    // crc_32.process_bytes(dgram_list_[last_index]->data() + 4, dgram_list_[last_index]->size() - 8);
+    // uint32_t target_crc = gDC.decode_byte<uint32_t>(dgram_list_[last_index]->data(), last_size - 4, last_size - 1);
+    // if (target_crc != crc_32.checksum()) {
+    //     // -5: wrong CRC
+    //     return -5;
+    // }
 
     // return total size of payload on success
     return 131096;

@@ -96,9 +96,14 @@ bool diffraflow::SndConfig::load(const char* filename) {
         if (pod_ip != NULL) {
             vector<string> ip_nums;
             boost::split(ip_nums, pod_ip, boost::is_any_of("."));
-            for (size_t i = 0; i < ip_nums.size(); i++) {
+            if (ip_nums.size() == 4) {
+                sender_id += atoi(ip_nums[2].c_str());
                 sender_id <<= 8;
-                sender_id += atoi(ip_nums[i].c_str());
+                sender_id += atoi(ip_nums[3].c_str());
+                sender_id <<= 16;
+                if (listen_port > 0) {
+                    sender_id += listen_port;
+                }
             }
         }
     }

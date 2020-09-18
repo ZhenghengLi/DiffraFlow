@@ -74,9 +74,14 @@ bool diffraflow::DspConfig::load(const char* filename) {
         if (pod_ip != NULL) {
             vector<string> ip_nums;
             boost::split(ip_nums, pod_ip, boost::is_any_of("."));
-            for (size_t i = 0; i < ip_nums.size(); i++) {
+            if (ip_nums.size() == 4) {
+                dispatcher_id += atoi(ip_nums[2].c_str());
                 dispatcher_id <<= 8;
-                dispatcher_id += atoi(ip_nums[i].c_str());
+                dispatcher_id += atoi(ip_nums[3].c_str());
+                dispatcher_id <<= 16;
+                if (listen_port > 0) {
+                    dispatcher_id += listen_port;
+                }
             }
         }
     }

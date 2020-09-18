@@ -3,8 +3,11 @@ Offset      Length      Type                    Content
 1           2           uint16                  Frame Sequence Number
 3           1           uint8                   Segment Sequence Number
 
-4           1376        uint8[]                 First Frame Segment
-4           1380        uint8[]                 Other Frame Segment
+4           8096        uint8[]                 First Frame Segment
+4           8200        uint8[]                 Other Frame Segment
 
 ------------------------------------------------
-131096 = 1376 + 94 * 1380
+131096 = 8096 + 8200 * 15
+
+------------------------------------------------
+Note: jumbo frame should be enabled for the network switch

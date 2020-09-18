@@ -17,7 +17,6 @@ parser.add_argument("-a", dest="min_z", help="minimum z value", default=-100, ty
 parser.add_argument("-b", dest="max_z", help="maximum z value", default=1200, type=int)
 args = parser.parse_args()
 
-
 image_data = np.empty((16, 512, 128))
 image_data[:] = np.nan
 

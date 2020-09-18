@@ -159,7 +159,7 @@ bool diffraflow::IngImgDatFetcher::start() {
         return false;
     }
     worker_status_ = kNotStart;
-    worker_ = async(&IngImgDatFetcher::run_, this);
+    worker_ = async(std::launch::async, &IngImgDatFetcher::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {

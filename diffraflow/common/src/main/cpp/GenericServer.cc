@@ -232,7 +232,7 @@ bool diffraflow::GenericServer::start(bool receiving_dominant) {
         return false;
     }
     server_status_ = kNotStart;
-    worker_ = async(&GenericServer::serve_, this, receiving_dominant);
+    worker_ = async(std::launch::async, &GenericServer::serve_, this, receiving_dominant);
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return server_status_ != kNotStart; });
     if (server_status_ == kRunning) {

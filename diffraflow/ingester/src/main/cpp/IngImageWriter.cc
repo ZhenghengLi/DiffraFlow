@@ -92,7 +92,7 @@ bool diffraflow::IngImageWriter::start() {
         }
     }
 
-    worker_ = async(&IngImageWriter::run_, this);
+    worker_ = async(std::launch::async, &IngImageWriter::run_, this);
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return worker_status_ != kNotStart; });
     if (worker_status_ == kRunning) {

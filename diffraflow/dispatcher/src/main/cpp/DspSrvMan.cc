@@ -87,7 +87,7 @@ void diffraflow::DspSrvMan::start_run() {
     running_flag_ = true;
 
     // wait for finishing
-    async([this]() { imgfrm_srv_->wait(); }).wait();
+    async(std::launch::async, [this]() { imgfrm_srv_->wait(); }).wait();
 }
 
 void diffraflow::DspSrvMan::terminate() {

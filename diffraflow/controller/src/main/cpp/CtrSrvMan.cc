@@ -55,7 +55,7 @@ void diffraflow::CtrSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async([this]() { http_server_->wait(); }).wait();
+    async(std::launch::async, [this]() { http_server_->wait(); }).wait();
 }
 
 void diffraflow::CtrSrvMan::terminate() {

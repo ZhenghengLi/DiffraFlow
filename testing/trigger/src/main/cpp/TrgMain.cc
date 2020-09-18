@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     }
 
     if (option_man.start_event_index >= 0 && option_man.event_count > 0 && option_man.interval_microseconds >= 0) {
-        async([&]() {
+        async(std::launch::async, [&]() {
             gTriggerCoordinator->trigger_many_events(
                 option_man.start_event_index, option_man.event_count, option_man.interval_microseconds);
         }).wait();
@@ -103,7 +103,9 @@ int main(int argc, char** argv) {
             }
             duration<double, micro> start_time = system_clock::now().time_since_epoch();
             bool succ_flag = false;
-            async([&]() { succ_flag = gTriggerCoordinator->trigger_one_event(event_index); }).wait();
+            async(std::launch::async, [&]() {
+                succ_flag = gTriggerCoordinator->trigger_one_event(event_index);
+            }).wait();
             duration<double, micro> finish_time = system_clock::now().time_since_epoch();
             long time_used = finish_time.count() - start_time.count();
             if (succ_flag) {

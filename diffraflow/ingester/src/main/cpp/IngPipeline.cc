@@ -158,7 +158,7 @@ void diffraflow::IngPipeline::start_run() {
 
     //======================================================
     // then wait for finishing
-    async([this]() {
+    async(std::launch::async, [this]() {
         image_data_fetcher_->wait();
         imgWthFtrQue_raw_->stop();
 

@@ -71,7 +71,7 @@ void diffraflow::CmbSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async([this]() {
+    async(std::launch::async, [this]() {
         imgfrm_srv_->wait();
         imgdat_srv_->wait();
     }).wait();

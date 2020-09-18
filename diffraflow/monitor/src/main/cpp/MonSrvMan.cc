@@ -59,7 +59,7 @@ void diffraflow::MonSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async([this]() { image_http_server_->wait(); }).wait();
+    async(std::launch::async, [this]() { image_http_server_->wait(); }).wait();
 }
 
 void diffraflow::MonSrvMan::terminate() {

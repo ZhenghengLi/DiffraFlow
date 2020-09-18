@@ -98,7 +98,7 @@ void diffraflow::SndSrvMan::start_run() {
     running_flag_ = true;
 
     // wait for finishing
-    async([this]() { trigger_srv_->wait(); }).wait();
+    async(std::launch::async, [this]() { trigger_srv_->wait(); }).wait();
 }
 
 void diffraflow::SndSrvMan::terminate() {

@@ -128,6 +128,7 @@ void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& 
     image_data_obj.late_arrived = image_data_arr.late_arrived;
     image_data_obj.calib_level = image_data_arr.calib_level;
     image_data_obj.alignment_vec.resize(MOD_CNT);
+    image_data_obj.image_frame_vec.resize(MOD_CNT);
     for (size_t i = 0; i < MOD_CNT; i++) {
 
         cout << "debug: module = " << i << endl;
@@ -138,6 +139,7 @@ void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& 
             cout << "debug: FRAME_L = " << FRAME_L << endl;
 
             image_data_obj.image_frame_vec[i] = make_shared<ImageFrame>();
+
             image_data_obj.image_frame_vec[i]->bunch_id = image_data_arr.bunch_id;
             image_data_obj.image_frame_vec[i]->module_id = i;
             image_data_obj.image_frame_vec[i]->cell_id = image_data_arr.cell_id[i];

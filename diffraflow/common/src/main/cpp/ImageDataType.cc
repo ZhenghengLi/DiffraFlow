@@ -3,6 +3,7 @@
 #include "ImageFrame.hh"
 #include "Decoder.hh"
 
+using std::cout;
 using std::endl;
 using std::string;
 
@@ -120,11 +121,17 @@ void diffraflow::ImageDataType::print(const Field& image_data, ostream& out) {
 }
 
 void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& image_data_obj) {
+
+    cout << "debug: begin of ImageDataType::convert" << endl;
+
     image_data_obj.bunch_id = image_data_arr.bunch_id;
     image_data_obj.late_arrived = image_data_arr.late_arrived;
     image_data_obj.calib_level = image_data_arr.calib_level;
     image_data_obj.alignment_vec.resize(MOD_CNT);
     for (size_t i = 0; i < MOD_CNT; i++) {
+
+        cout << "debug: module = " << i << endl;
+
         image_data_obj.alignment_vec[i] = image_data_arr.alignment[i];
         if (image_data_arr.alignment[i]) {
             image_data_obj.image_frame_vec[i] = make_shared<ImageFrame>();
@@ -145,4 +152,6 @@ void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& 
             image_data_obj.image_frame_vec[i] = nullptr;
         }
     }
+
+    cout << "debug: end of ImageDataType::convert" << endl;
 }

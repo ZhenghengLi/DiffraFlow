@@ -1,7 +1,6 @@
 #ifndef __ImageFileRawW_H__
 #define __ImageFileRawW_H__
 
-#include "ImageData.hh"
 #include <fstream>
 #include <log4cxx/logger.h>
 
@@ -21,7 +20,7 @@ namespace diffraflow {
 
         bool open(const char* filename);
         void close();
-        bool write(const ImageData& image_data);
+        bool write(const char* data, size_t len);
         size_t size();
 
     private:

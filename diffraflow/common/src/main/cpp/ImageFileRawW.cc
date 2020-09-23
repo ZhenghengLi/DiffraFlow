@@ -2,6 +2,7 @@
 #include <ctime>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <PrimitiveSerializer.hh>
 
 namespace bf = boost::filesystem;
 namespace bs = boost::system;
@@ -29,11 +30,6 @@ bool diffraflow::ImageFileRawW::open(const char* filename) {
     outfile_.open(string(filename) + inprogress_suffix_);
     if (outfile_.is_open()) {
         current_filename_ = filename;
-        time_t now_time = time(NULL);
-        string now_time_string = boost::trim_copy(string(ctime(&now_time)));
-        outfile_ << "Image Raw Data File (for test)" << endl;
-        outfile_ << "Create Time: " << now_time_string << endl;
-        outfile_ << "=============================================" << endl;
         image_counts_ = 0;
         return true;
     } else {
@@ -43,6 +39,12 @@ bool diffraflow::ImageFileRawW::open(const char* filename) {
 
 void diffraflow::ImageFileRawW::close() {
     lock_guard<mutex> lg(file_op_mtx_);
+
+    if (!outfile_.is_open()) {
+        LOG4CXX_WARN(logger_, "raw data file is not opened, and it is needed to close.");
+        return;
+    }
+
     outfile_.flush();
     outfile_.close();
     bf::path file_current_path(current_filename_ + inprogress_suffix_);
@@ -57,7 +59,12 @@ void diffraflow::ImageFileRawW::close() {
     }
 }
 
-bool diffraflow::ImageFileRawW::write(const ImageData& image_data) {
+bool diffraflow::ImageFileRawW::write(const char* data, size_t len) {
+    if (len > 104857600 /* 100 MiB */) {
+        LOG4CXX_ERROR(logger_, "the data block to write is too large.");
+        return false;
+    }
+
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (!outfile_.is_open()) {
@@ -65,14 +72,26 @@ bool diffraflow::ImageFileRawW::write(const ImageData& image_data) {
         return false;
     }
 
-    if (image_counts_ > 0) {
-        outfile_ << "---------------------------------------------" << endl;
+    char head_buffer[8];
+    gPS.serializeValue<uint32_t>(0xABCDEEEE, head_buffer, 4);
+    gPS.serializeValue<uint32_t>((uint32_t)len, head_buffer + 4, 4);
+
+    outfile_.write(head_buffer, 8);
+    if (outfile_.fail()) {
+        LOG4CXX_ERROR(logger_, "failed to write raw data head with error: " << strerror(errno));
+        return false;
+    }
+    outfile_.write(data, len);
+    if (outfile_.fail()) {
+        LOG4CXX_ERROR(logger_, "failed to write raw data block with error: " << strerror(errno));
+        return false;
     }
 
-    image_data.print(outfile_);
     image_counts_++;
-
     return true;
 }
 
-size_t diffraflow::ImageFileRawW::size() { return image_counts_.load(); }
+size_t diffraflow::ImageFileRawW::size() {
+    lock_guard<mutex> lg(file_op_mtx_);
+    return image_counts_.load();
+}

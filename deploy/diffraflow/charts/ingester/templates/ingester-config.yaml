@@ -31,6 +31,9 @@ data:
     hdf5_swmr_mode = true
     file_imgcnt_limit = 1000
 
+    # save_calib_data = true
+    # save_raw_data = true
+
     ## dynamic parameters
     dy_run_number = 0
     dy_param_int = 20

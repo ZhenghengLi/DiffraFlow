@@ -82,33 +82,20 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
 
     if (relative_path == "/") {
         shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
-
-        LOG4CXX_ERROR(logger_, "debug: before convert");
-
         if (current_image) {
             image_data_feature = *current_image;
         } else {
             message.reply(status_codes::NotFound).get();
             return;
         }
-
-        LOG4CXX_ERROR(logger_, "debug: after convert");
-
         string key_str = std::to_string(image_data_feature.image_data->get_key());
         string ingester_id_str = std::to_string(ingester_id_);
 
-        LOG4CXX_ERROR(logger_, "debug: before serialize");
-
         msgpack::pack(image_sbuff, image_data_feature);
-
-        LOG4CXX_ERROR(logger_, "debug: after serialize");
-
         concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(
             (const uint8_t*)image_sbuff.data(), image_sbuff.size());
 
         response.set_body(data_stream);
-
-        LOG4CXX_ERROR(logger_, "debug: after set_body");
 
         response.set_status_code(status_codes::OK);
         response.headers().set_content_type("application/msgpack");
@@ -117,11 +104,7 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageDataFeature"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
-        LOG4CXX_ERROR(logger_, "debug: after set headers");
-
         message.reply(response).get();
-
-        LOG4CXX_ERROR(logger_, "debug: after reply");
 
         metrics.total_sent_counts++;
 

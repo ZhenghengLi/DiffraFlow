@@ -81,7 +81,7 @@ bool diffraflow::IngImageWriter::start() {
         return false;
     }
     worker_status_ = kNotStart;
-    if (!config_obj_->storage_dir.empty()) {
+    if (!config_obj_->storage_dir.empty() && (config_obj_->save_calib_data || config_obj_->save_raw_data)) {
         // create folders
         if (!create_directories_()) {
             LOG4CXX_ERROR(logger_, "failed to create directories at start.");

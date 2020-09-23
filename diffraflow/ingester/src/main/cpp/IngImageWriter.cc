@@ -24,6 +24,7 @@ diffraflow::IngImageWriter::IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngC
     total_opened_counts_ = 0;
 
     image_file_hdf5_ = nullptr;
+    image_file_raw_ = nullptr;
 }
 
 diffraflow::IngImageWriter::~IngImageWriter() { close_file_(); }
@@ -40,6 +41,9 @@ int diffraflow::IngImageWriter::run_() {
         // image_with_feature->image_data_calib.print();
 
         if (config_obj_->storage_dir.empty()) {
+            continue;
+        }
+        if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
             continue;
         }
 
@@ -123,18 +127,38 @@ int diffraflow::IngImageWriter::stop() {
 }
 
 bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>& image_with_feature) {
-    if (image_file_hdf5_ == nullptr) {
+    if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
         return false;
     }
-    if (image_file_hdf5_->write(*image_with_feature->image_data)) {
-        LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
-        current_saved_counts_++;
-        total_saved_counts_++;
-        return true;
-    } else {
-        LOG4CXX_WARN(logger_, "failed to save one image into hdf5 file.");
+
+    if (config_obj_->save_calib_data && image_file_hdf5_ == nullptr) {
         return false;
     }
+    if (config_obj_->save_raw_data && image_file_raw_ == nullptr) {
+        return false;
+    }
+
+    if (config_obj_->save_calib_data) {
+        if (image_file_hdf5_->write(*image_with_feature->image_data)) {
+            LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
+        } else {
+            LOG4CXX_WARN(logger_, "failed to save one image into hdf5 file.");
+            return false;
+        }
+    }
+    if (config_obj_->save_raw_data) {
+        if (image_file_raw_->write(
+                image_with_feature->image_data_raw->data(), image_with_feature->image_data_raw->size())) {
+            LOG4CXX_DEBUG(logger_, "saved one image into raw data file.");
+        } else {
+            LOG4CXX_WARN(logger_, "failed to save one image into raw data file.");
+            return false;
+        }
+    }
+
+    current_saved_counts_++;
+    total_saved_counts_++;
+    return true;
 }
 
 bool diffraflow::IngImageWriter::create_directories_() {
@@ -208,36 +232,71 @@ bool diffraflow::IngImageWriter::create_directories_() {
 }
 
 bool diffraflow::IngImageWriter::open_file_() {
-    if (image_file_hdf5_ != nullptr) {
+    if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
+        return false;
+    }
+
+    if (config_obj_->save_calib_data && image_file_hdf5_ != nullptr) {
         LOG4CXX_ERROR(logger_, "hdf5 file is already opened.");
+        return false;
+    }
+    if (config_obj_->save_raw_data && image_file_raw_ != nullptr) {
+        LOG4CXX_ERROR(logger_, "raw file is already opened.");
         return false;
     }
 
     current_sequence_number_++;
 
+    // construct file path
     char str_buffer[STR_BUFF_SIZE];
-    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d.h5", current_run_number_.load(),
+    snprintf(str_buffer, STR_BUFF_SIZE, "R%04d_%s_N%02d_T%02d_S%04d", current_run_number_.load(),
         config_obj_->node_name.c_str(), config_obj_->ingester_id, current_turn_number_.load(),
         current_sequence_number_.load());
-    bf::path file_path(current_folder_path_string_);
-    file_path /= str_buffer;
-    if (bf::exists(file_path)) {
-        LOG4CXX_ERROR(logger_, "file " << file_path.c_str() << " already exists.");
+    bf::path file_path_hdf5(current_folder_path_string_);
+    file_path_hdf5 /= string(str_buffer) + ".h5";
+    bf::path file_path_raw(current_folder_path_string_);
+    file_path_raw /= string(str_buffer) + ".dat";
+
+    // check existance
+    if (bf::exists(file_path_hdf5)) {
+        LOG4CXX_ERROR(logger_, "file " << file_path_hdf5.c_str() << " already exists.");
         return false;
     }
+    if (bf::exists(file_path_raw)) {
+        LOG4CXX_ERROR(logger_, "file " << file_path_raw.c_str() << " already exists.");
+        return false;
+    }
+
     // open file
-    image_file_hdf5_ = new ImageFileHDF5W(config_obj_->hdf5_chunk_size, config_obj_->hdf5_swmr_mode);
-    if (image_file_hdf5_->open(file_path.c_str(), config_obj_->hdf5_compress_level)) {
-        LOG4CXX_INFO(logger_, "successfully opened hdf5 file: " << file_path.c_str());
-
-        current_saved_counts_ = 0;
-        total_opened_counts_++;
-
-        return true;
-    } else {
-        LOG4CXX_ERROR(logger_, "failed to create hdf5 file: " << file_path.c_str());
-        return false;
+    if (config_obj_->save_calib_data) {
+        image_file_hdf5_ = new ImageFileHDF5W(config_obj_->hdf5_chunk_size, config_obj_->hdf5_swmr_mode);
+        if (image_file_hdf5_->open(file_path_hdf5.c_str(), config_obj_->hdf5_compress_level)) {
+            LOG4CXX_INFO(logger_, "successfully opened hdf5 file: " << file_path_hdf5.c_str());
+        } else {
+            LOG4CXX_ERROR(logger_, "failed to create hdf5 file: " << file_path_hdf5.c_str());
+            image_file_hdf5_->close();
+            delete image_file_hdf5_;
+            image_file_hdf5_ = nullptr;
+            return false;
+        }
     }
+    if (config_obj_->save_raw_data) {
+        image_file_raw_ = new ImageFileRawW();
+        if (image_file_raw_->open(file_path_raw.c_str())) {
+            LOG4CXX_INFO(logger_, "successfully opened raw file: " << file_path_raw.c_str());
+        } else {
+            LOG4CXX_ERROR(logger_, "failed to create raw file: " << file_path_raw.c_str());
+            image_file_raw_->close();
+            delete image_file_raw_;
+            image_file_raw_ = nullptr;
+            return false;
+        }
+    }
+
+    current_saved_counts_ = 0;
+    total_opened_counts_++;
+
+    return true;
 }
 
 void diffraflow::IngImageWriter::close_file_() {
@@ -245,6 +304,11 @@ void diffraflow::IngImageWriter::close_file_() {
         image_file_hdf5_->close();
         delete image_file_hdf5_;
         image_file_hdf5_ = nullptr;
+    }
+    if (image_file_raw_ != nullptr) {
+        image_file_raw_->close();
+        delete image_file_raw_;
+        image_file_raw_ = nullptr;
     }
 }
 

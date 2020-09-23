@@ -28,6 +28,8 @@ diffraflow::IngConfig::IngConfig() {
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
     imgdat_queue_capacity = 100;
+    save_calib_data = false;
+    save_raw_data = false;
 
     hdf5_chunk_size = 1;
     hdf5_compress_level = 0;
@@ -69,6 +71,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
             ingester_id = atoi(value.c_str());
         } else if (key == "storage_dir") {
             storage_dir = value;
+        } else if (key == "save_calib_data") {
+            std::istringstream(value) >> std::boolalpha >> save_calib_data;
+        } else if (key == "save_raw_data") {
+            std::istringstream(value) >> std::boolalpha >> save_raw_data;
         } else if (key == "hdf5_chunk_size") {
             hdf5_chunk_size = atoi(value.c_str());
         } else if (key == "hdf5_compress_level") {
@@ -180,6 +186,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
     if (succ_flag) {
 
         static_config_json_["storage_dir"] = json::value::string(storage_dir);
+        static_config_json_["save_calib_data"] = json::value::boolean(save_calib_data);
+        static_config_json_["save_raw_data"] = json::value::boolean(save_raw_data);
         static_config_json_["node_name"] = json::value::string(node_name);
         static_config_json_["ingester_id"] = json::value::number(ingester_id);
         static_config_json_["hdf5_chunk_size"] = json::value::number(hdf5_chunk_size);
@@ -249,6 +257,9 @@ void diffraflow::IngConfig::print() {
     cout << "- recnxn_max_count = " << recnxn_max_count << endl;
     cout << "- imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
     cout << "- calib_param_file = " << calib_param_file << endl;
+    cout << "- storage_dir = " << storage_dir << endl;
+    cout << "- save_calib_data = " << save_calib_data << endl;
+    cout << "- save_raw_data = " << save_raw_data << endl;
     cout << "dynamic parameters:" << endl;
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;

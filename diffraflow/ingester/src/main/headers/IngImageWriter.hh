@@ -7,6 +7,7 @@
 #include <future>
 #include <log4cxx/logger.h>
 #include "ImageFileHDF5W.hh"
+#include "ImageFileRawW.hh"
 #include "MetricsProvider.hh"
 
 using std::mutex;
@@ -64,6 +65,7 @@ namespace diffraflow {
 
         // files:
         ImageFileHDF5W* image_file_hdf5_;
+        ImageFileRawW* image_file_raw_;
 
         // file path:
         // storage_dir/R0000/NODENAME_N00/T00/R0000_NODENAME_N00_T00_S0000.h5

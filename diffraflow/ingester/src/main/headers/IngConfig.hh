@@ -39,6 +39,8 @@ namespace diffraflow {
     public:
         // static parameters
         string storage_dir;
+        bool save_calib_data;
+        bool save_raw_data;
         string node_name;
         int ingester_id;
         int hdf5_chunk_size;

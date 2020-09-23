@@ -1,15 +1,18 @@
 #include "IngImgHttpServer.hh"
 #include "IngImageFilter.hh"
 #include "ImageWithFeature.hh"
+#include "ImageDataFeature.hh"
 
 #include <msgpack.hpp>
 #include <regex>
-#include <vector>
+#include <memory>
+#include <cpprest/rawptrstream.h>
 
 using namespace web;
 using namespace http;
 using namespace experimental::listener;
 using std::vector;
+using std::shared_ptr;
 
 log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_ = log4cxx::Logger::getLogger("IngImgHttpServer");
 
@@ -72,65 +75,78 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
     std::regex req_regex("^/(\\d+)$");
     std::smatch match_res;
 
+    // converting sequence: current_image => image_data_feature => image_sbuff
+    ImageDataFeature image_data_feature;
     msgpack::sbuffer image_sbuff;
     http_response response;
-    vector<unsigned char> response_data_vec;
 
-    message.reply(status_codes::NotFound);
+    if (relative_path == "/") {
+        shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
+        if (current_image) {
+            image_data_feature = *current_image;
+        } else {
+            message.reply(status_codes::NotFound).get();
+            return;
+        }
+        string key_str = std::to_string(image_data_feature.image_data->get_key());
+        string ingester_id_str = std::to_string(ingester_id_);
 
-    // TODO: serialize ImageFeature and send by http
+        msgpack::pack(image_sbuff, image_data_feature);
+        concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(
+            (const uint8_t*)image_sbuff.data(), image_sbuff.size());
 
-    // if (relative_path == "/") {
-    //     ImageWithFeature current_image;
-    //     if (!image_filter_->get_current_image(current_image)) {
-    //         message.reply(status_codes::NotFound);
-    //         return;
-    //     }
-    //     string key_str = std::to_string(current_image.image_data_raw.get_key());
-    //     string ingester_id_str = std::to_string(ingester_id_);
+        response.set_body(data_stream);
 
-    //     msgpack::pack(image_sbuff, current_image);
-    //     response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
-    //     response.set_body(response_data_vec);
-    //     response.set_status_code(status_codes::OK);
-    //     response.headers().set_content_type("application/msgpack");
-    //     response.headers().add(U("Ingester-ID"), ingester_id_str);
-    //     response.headers().add(U("Event-Key"), key_str);
-    //     response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
-    //     response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-    //     message.reply(response);
-    //     metrics.total_sent_counts++;
+        response.set_status_code(status_codes::OK);
+        response.headers().set_content_type("application/msgpack");
+        response.headers().add(U("Ingester-ID"), ingester_id_str);
+        response.headers().add(U("Event-Key"), key_str);
+        response.headers().add(U("Cpp-Class"), U("diffraflow::ImageDataFeature"));
+        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
-    // } else if (std::regex_match(relative_path, match_res, req_regex)) {
-    //     uint64_t request_key = std::stoul(match_res[1].str());
-    //     ImageWithFeature current_image;
-    //     if (!image_filter_->get_current_image(current_image)) {
-    //         message.reply(status_codes::NotFound);
-    //         return;
-    //     }
-    //     string key_str = std::to_string(current_image.image_data_raw.get_key());
-    //     string ingester_id_str = std::to_string(ingester_id_);
-    //     if (request_key < current_image.image_data_raw.get_key()) {
+        message.reply(response).get();
 
-    //         msgpack::pack(image_sbuff, current_image);
-    //         response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
-    //         response.set_body(response_data_vec);
-    //         response.set_status_code(status_codes::OK);
-    //         response.headers().set_content_type("application/msgpack");
-    //         response.headers().add(U("Ingester-ID"), ingester_id_str);
-    //         response.headers().add(U("Event-Key"), key_str);
-    //         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageWithFeature"));
-    //         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-    //         message.reply(response);
-    //         metrics.total_sent_counts++;
+        metrics.total_sent_counts++;
 
-    //     } else {
-    //         message.reply(status_codes::NotFound);
-    //     }
+    } else if (std::regex_match(relative_path, match_res, req_regex)) {
+        uint64_t request_key = std::stoul(match_res[1].str());
 
-    // } else {
-    //     message.reply(status_codes::NotFound);
-    // }
+        shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
+        if (current_image) {
+            image_data_feature = *current_image;
+        } else {
+            message.reply(status_codes::NotFound).get();
+            return;
+        }
+        string key_str = std::to_string(image_data_feature.image_data->get_key());
+        string ingester_id_str = std::to_string(ingester_id_);
+
+        if (request_key < image_data_feature.image_data->get_key()) {
+
+            msgpack::pack(image_sbuff, image_data_feature);
+            concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(
+                (const uint8_t*)image_sbuff.data(), image_sbuff.size());
+
+            response.set_body(data_stream);
+
+            response.set_status_code(status_codes::OK);
+            response.headers().set_content_type("application/msgpack");
+            response.headers().add(U("Ingester-ID"), ingester_id_str);
+            response.headers().add(U("Event-Key"), key_str);
+            response.headers().add(U("Cpp-Class"), U("diffraflow::ImageDataFeature"));
+            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+
+            message.reply(response).get();
+
+            metrics.total_sent_counts++;
+
+        } else {
+            message.reply(status_codes::NotFound).get();
+        }
+
+    } else {
+        message.reply(status_codes::NotFound).get();
+    }
 }
 
 json::value diffraflow::IngImgHttpServer::collect_metrics() {

@@ -6,6 +6,7 @@
 #include <queue>
 #include <map>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 
 using namespace web;
 using namespace http;
@@ -196,6 +197,14 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
         return;
     }
     string znode_path = string("/") + request_value;
+
+    string content_type = message.headers().content_type();
+    boost::algorithm::to_lower(content_type);
+    if (content_type != "application/json") {
+        message.reply(status_codes::BadRequest, utility::string_t("content type is not application/json.")).get();
+        return;
+    }
+
     json::value request_body_json = message.extract_json().get();
     map<string, string> config_map;
     if (request_body_json.is_object()) {
@@ -243,6 +252,14 @@ void diffraflow::CtrHttpServer::handlePut_(http_request message) {
         return;
     }
     string znode_path = string("/") + request_value;
+
+    string content_type = message.headers().content_type();
+    boost::algorithm::to_lower(content_type);
+    if (content_type != "application/json") {
+        message.reply(status_codes::BadRequest, utility::string_t("content type is not application/json.")).get();
+        return;
+    }
+
     json::value request_body_json = message.extract_json().get();
     map<string, string> config_map;
     if (request_body_json.is_object()) {
@@ -290,6 +307,14 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
         return;
     }
     string znode_path = string("/") + request_value;
+
+    string content_type = message.headers().content_type();
+    boost::algorithm::to_lower(content_type);
+    if (content_type != "application/json") {
+        message.reply(status_codes::BadRequest, utility::string_t("content type is not application/json.")).get();
+        return;
+    }
+
     json::value request_body_json = message.extract_json().get();
     map<string, string> config_map_patch;
     if (request_body_json.is_object()) {

@@ -6,3 +6,6 @@ ingesterAddresses: |
   http://NODE_IP:27311
   http://NODE_IP:27313
   http://NODE_IP:27315
+  http://NODE_IP:27317
+  http://NODE_IP:27319
+  http://NODE_IP:27321

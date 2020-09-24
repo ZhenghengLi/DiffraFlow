@@ -142,6 +142,10 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
     for (size_t addr_idx = current_index_; true;) {
         http_response response;
         bool found_exception = false;
+
+        LOG4CXX_DEBUG(
+            logger_, "requesting data from \"" << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\" ...");
+
         try {
             response = ingester_clients_vec_[addr_idx].request(methods::GET, key_string).get();
         } catch (std::exception& e) {
@@ -160,17 +164,31 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
                 LOG4CXX_WARN(logger_, "no Ingester-ID in http response header.");
                 return false;
             }
+
+            LOG4CXX_DEBUG(logger_, "received one image_data_feature from ingester " << ingester_id_str);
+
             vector<unsigned char> body_vec = response.extract_vector().get();
+
+            LOG4CXX_DEBUG(logger_, "successfully extracted data of image_data_feature with size " << body_vec.size());
+
             try {
                 msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_data_feature);
             } catch (std::exception& e) {
                 LOG4CXX_WARN(logger_, "failed to deserialize image_data_feature data with exception: " << e.what());
                 return false;
             }
+
+            LOG4CXX_DEBUG(logger_, "successfully unpacked image_data_feature");
+
             current_index_ = addr_idx;
             return true;
         } else if (addr_idx == current_index_) {
+
+            LOG4CXX_DEBUG(logger_, "failed to get one image_data_feature currently in this node.");
+
             return false;
+        } else {
+            LOG4CXX_DEBUG(logger_, "failed to get one image_data_feature from this ingester, try next one.")
         }
     }
 }
@@ -187,6 +205,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     metrics.total_request_counts++;
 
     string relative_path = uri::decode(message.relative_uri().path());
+
+    LOG4CXX_DEBUG(logger_, "get one request with path " << relative_path);
 
     std::regex req_regex("^/(\\d+)$");
     std::smatch match_res;
@@ -207,6 +227,7 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     ImageDataFeature image_data_feature;
     string ingester_id_str;
     string monitor_id_str = std::to_string(config_obj_->monitor_id);
+
     if (request_one_image_(key_string, image_data_feature, ingester_id_str)) {
         if (!image_data_feature.image_data || !image_data_feature.image_feature) {
             LOG4CXX_WARN(logger_, "found unexpected null image_data or image_feature.");
@@ -215,11 +236,15 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         }
         string key_str = std::to_string(image_data_feature.image_data->get_key());
 
+        LOG4CXX_DEBUG(logger_, "successfully get one image_data_feature with key " << key_str);
+
         ImageVisObject image_vis_object;
         image_vis_object.image_data = make_shared<ImageDataSmall>(*image_data_feature.image_data);
         image_vis_object.image_feature = image_data_feature.image_feature;
         image_vis_object.analysis_result = make_shared<ImageAnalysisResult>();
         do_analysis_(image_data_feature, *image_vis_object.analysis_result);
+
+        LOG4CXX_DEBUG(logger_, "finished analysis for the image_data_feature.");
 
         msgpack::pack(image_sbuff, image_vis_object);
         concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(
@@ -235,6 +260,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
         message.reply(response).get();
+
+        LOG4CXX_DEBUG(logger_, "the image data and analsyis result have been sent.");
 
         metrics.total_sent_counts++;
     } else {

@@ -7,16 +7,9 @@
 
 namespace diffraflow {
     struct ImageAnalysisResult {
-
-        ImageDataFeature image_data_feature;
-        // analysis results
-        struct {
-            int int_result;
-            float float_result;
-            MSGPACK_DEFINE_MAP(int_result, float_result);
-        } analysis_result;
-
-        MSGPACK_DEFINE_MAP(image_data_feature, analysis_result);
+        int int_result;
+        float float_result;
+        MSGPACK_DEFINE_MAP(int_result, float_result);
     };
 } // namespace diffraflow
 

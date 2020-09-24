@@ -19,7 +19,6 @@ void diffraflow::IngFeatureExtracter::extract_feature_(shared_ptr<ImageWithFeatu
     }
     image_with_feature->image_feature->peak_counts = 1;
     image_with_feature->image_feature->global_rms = 2;
-    image_with_feature->image_feature->set_defined();
 }
 
 int diffraflow::IngFeatureExtracter::run_() {

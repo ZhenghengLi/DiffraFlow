@@ -4,24 +4,10 @@
 #include <msgpack.hpp>
 
 namespace diffraflow {
-    class ImageFeature {
-    public:
-        ImageFeature();
-        ~ImageFeature();
-
-        void set_defined();
-        bool get_defined();
-
-    public:
-        // feature list
+    struct ImageFeature {
         double global_rms;
         int peak_counts;
-
-    private:
-        bool is_defined_;
-
-    public:
-        MSGPACK_DEFINE_MAP(global_rms, peak_counts, is_defined_);
+        MSGPACK_DEFINE_MAP(global_rms, peak_counts);
     };
 } // namespace diffraflow
 

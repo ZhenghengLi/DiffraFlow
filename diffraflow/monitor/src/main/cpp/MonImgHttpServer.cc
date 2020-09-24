@@ -180,7 +180,6 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
 
 void diffraflow::MonImgHttpServer::do_analysis_(
     const ImageDataFeature& image_data_feature, ImageAnalysisResult& image_analysis_result) {
-    image_analysis_result.image_data_feature = image_data_feature;
     // do some heavy analysis here and save result into image_analysis_result
 }
 

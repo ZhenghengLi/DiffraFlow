@@ -239,7 +239,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         LOG4CXX_DEBUG(logger_, "successfully get one image_data_feature with key " << key_str);
 
         ImageVisObject image_vis_object;
-        image_vis_object.image_data = make_shared<ImageDataSmall>(*image_data_feature.image_data);
+        image_vis_object.image_data = make_shared<ImageDataSmall>(
+            *image_data_feature.image_data, config_obj_->get_dy_energy_down_cut(), config_obj_->get_dy_energy_up_cut());
         image_vis_object.image_feature = image_data_feature.image_feature;
         image_vis_object.analysis_result = make_shared<ImageAnalysisResult>();
         do_analysis_(image_data_feature, *image_vis_object.analysis_result);

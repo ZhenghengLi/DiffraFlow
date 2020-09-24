@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <thread>
 #include <regex>
+#include <numeric>
 
 using std::cout;
 using std::endl;
@@ -15,6 +16,7 @@ using std::lock_guard;
 using std::regex;
 using std::regex_match;
 using std::regex_replace;
+using std::numeric_limits;
 
 log4cxx::LoggerPtr diffraflow::MonConfig::logger_ = log4cxx::Logger::getLogger("MonConfig");
 
@@ -28,6 +30,8 @@ diffraflow::MonConfig::MonConfig() {
     dy_param_int_ = 20;
     dy_param_double_ = 100;
     dy_param_string_ = "xfel";
+    dy_energy_down_cut_ = numeric_limits<float>::min();
+    dy_energy_up_cut_ = numeric_limits<float>::max();
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -173,6 +177,8 @@ void diffraflow::MonConfig::print() {
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;
     cout << "- dy_param_string = " << dy_param_string_ << endl;
+    cout << "- dy_energy_down_cut = " << dy_energy_down_cut_ << endl;
+    cout << "- dy_energy_up_cut = " << dy_energy_up_cut_ << endl;
 }
 
 bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
@@ -184,6 +190,8 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
     int tmp_dy_param_int = dy_param_int_.load();
     double tmp_dy_param_double = dy_param_double_.load();
     string tmp_dy_param_string = dy_param_string_;
+    float tmp_dy_energy_down_cut = dy_energy_down_cut_.load();
+    float tmp_dy_energy_up_cut = dy_energy_up_cut_.load();
 
     // convert
     for (map<string, string>::const_iterator iter = conf_map.begin(); iter != conf_map.end(); ++iter) {
@@ -193,6 +201,10 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
             tmp_dy_param_int = atoi(value.c_str());
         } else if (key == "dy_param_double") {
             tmp_dy_param_double = atof(value.c_str());
+        } else if (key == "dy_energy_down_cut") {
+            tmp_dy_energy_down_cut = atof(value.c_str());
+        } else if (key == "dy_energy_up_cut") {
+            tmp_dy_energy_up_cut = atof(value.c_str());
         } else if (key == "dy_param_string") {
             tmp_dy_param_string = value;
         }
@@ -211,6 +223,11 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
     }
     if (tmp_dy_param_string.length() < 2) {
         cout << "invalid configuration: dy_param_string(" << tmp_dy_param_string << ") is too short." << endl;
+        invalid_flag = true;
+    }
+    if (tmp_dy_energy_down_cut >= tmp_dy_energy_up_cut) {
+        cout << "invalid configuration: dy_energy_down_cut (" << tmp_dy_energy_down_cut << ") >= dy_energy_up_cut ("
+             << tmp_dy_energy_up_cut << ")." << endl;
         invalid_flag = true;
     }
 
@@ -234,12 +251,24 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
              << " ]." << endl;
         dy_param_string_ = tmp_dy_param_string;
     }
+    if (dy_energy_down_cut_ != tmp_dy_energy_down_cut) {
+        cout << "configuration changed: dy_energy_down_cut [ " << dy_energy_down_cut_ << " -> "
+             << tmp_dy_energy_down_cut << " ]." << endl;
+        dy_energy_down_cut_ = tmp_dy_energy_down_cut;
+    }
+    if (dy_energy_up_cut_ != tmp_dy_energy_up_cut) {
+        cout << "configuration changed: dy_energy_up_cut [ " << dy_energy_up_cut_ << " -> " << tmp_dy_energy_up_cut
+             << " ]." << endl;
+        dy_energy_up_cut_ = tmp_dy_energy_up_cut;
+    }
 
     config_mtime_ = conf_mtime;
 
     lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
     dynamic_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
     dynamic_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
+    dynamic_config_json_["dy_energy_down_cut"] = json::value::number(dy_energy_down_cut_);
+    dynamic_config_json_["dy_energy_up_cut"] = json::value::number(dy_energy_up_cut_);
     dynamic_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
     dynamic_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
@@ -249,6 +278,10 @@ bool diffraflow::MonConfig::check_and_commit_(const map<string, string>& conf_ma
 int diffraflow::MonConfig::get_dy_param_int() { return dy_param_int_.load(); }
 
 double diffraflow::MonConfig::get_dy_param_double() { return dy_param_double_.load(); }
+
+float diffraflow::MonConfig::get_dy_energy_down_cut() { return dy_energy_down_cut_.load(); }
+
+float diffraflow::MonConfig::get_dy_energy_up_cut() { return dy_energy_up_cut_.load(); }
 
 string diffraflow::MonConfig::get_dy_param_string() {
     lock_guard<mutex> lg(dy_param_string_mtx_);

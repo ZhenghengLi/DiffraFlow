@@ -15,7 +15,8 @@ namespace diffraflow {
     class ImageDataSmall {
     public:
         ImageDataSmall();
-        explicit ImageDataSmall(const ImageData& image_data);
+        explicit ImageDataSmall(
+            const ImageData& image_data, float energy_down_cut = -1000000, float energy_up_cut = 1000000);
         ~ImageDataSmall();
 
         ImageDataSmall& operator=(const ImageData& image_data);
@@ -33,7 +34,7 @@ namespace diffraflow {
         MSGPACK_DEFINE_MAP(bunch_id, alignment_vec, image_frame_vec, late_arrived, calib_level, max_energy, min_energy);
 
     private:
-        void copy_from_(const ImageData& image_data);
+        void copy_from_(const ImageData& image_data, float energy_down_cut, float energy_up_cut);
     };
 } // namespace diffraflow
 

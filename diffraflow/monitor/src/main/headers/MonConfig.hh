@@ -30,6 +30,8 @@ namespace diffraflow {
         int get_dy_param_int();
         double get_dy_param_double();
         string get_dy_param_string();
+        float get_dy_energy_down_cut();
+        float get_dy_energy_up_cut();
 
     protected:
         bool check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) override;
@@ -53,6 +55,8 @@ namespace diffraflow {
         // dynamic parameters
         atomic<int> dy_param_int_;
         atomic<double> dy_param_double_;
+        atomic<float> dy_energy_down_cut_;
+        atomic<float> dy_energy_up_cut_;
 
         string dy_param_string_;
         mutex dy_param_string_mtx_;

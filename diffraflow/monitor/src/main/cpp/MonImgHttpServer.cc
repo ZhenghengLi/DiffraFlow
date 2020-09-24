@@ -1,7 +1,6 @@
 #include "MonImgHttpServer.hh"
 #include "MonConfig.hh"
-#include "ImageDataFeature.hh"
-#include "ImageAnalysisResult.hh"
+#include "ImageVisObject.hh"
 
 #include <fstream>
 #include <msgpack.hpp>
@@ -9,6 +8,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>
+#include <cpprest/rawptrstream.h>
 
 using namespace web;
 using namespace http;
@@ -139,48 +139,47 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
         return false;
     }
 
-    return false;
-
-    // for (size_t addr_idx = current_index_; true;) {
-    //     http_response response;
-    //     bool found_exception = false;
-    //     try {
-    //         response = ingester_clients_vec_[addr_idx].request(methods::GET, key_string).get();
-    //     } catch (std::exception& e) {
-    //         found_exception = true;
-    //         LOG4CXX_WARN(logger_, "exception found when requesting data from \""
-    //                                   << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\": " <<
-    //                                   e.what());
-    //     }
-    //     addr_idx++;
-    //     if (addr_idx >= ingester_clients_vec_.size()) {
-    //         addr_idx = 0;
-    //     }
-    //     if (!found_exception && response.status_code() == status_codes::OK) { // succ
-    //         if (response.headers().has("Ingester-ID")) {
-    //             ingester_id_str = response.headers()["Ingester-ID"];
-    //         } else {
-    //             LOG4CXX_WARN(logger_, "no Ingester-ID in http response header.");
-    //             return false;
-    //         }
-    //         vector<unsigned char> body_vec = response.extract_vector().get();
-    //         try {
-    //             msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_data_feature);
-    //         } catch (std::exception& e) {
-    //             LOG4CXX_WARN(logger_, "failed to deserialize image_data_feature data with exception: " << e.what());
-    //             return false;
-    //         }
-    //         current_index_ = addr_idx;
-    //         return true;
-    //     } else if (addr_idx == current_index_) {
-    //         return false;
-    //     }
-    // }
+    for (size_t addr_idx = current_index_; true;) {
+        http_response response;
+        bool found_exception = false;
+        try {
+            response = ingester_clients_vec_[addr_idx].request(methods::GET, key_string).get();
+        } catch (std::exception& e) {
+            found_exception = true;
+            LOG4CXX_WARN(logger_, "exception found when requesting data from \""
+                                      << ingester_clients_vec_[addr_idx].base_uri().to_string() << "\": " << e.what());
+        }
+        addr_idx++;
+        if (addr_idx >= ingester_clients_vec_.size()) {
+            addr_idx = 0;
+        }
+        if (!found_exception && response.status_code() == status_codes::OK) { // succ
+            if (response.headers().has("Ingester-ID")) {
+                ingester_id_str = response.headers()["Ingester-ID"];
+            } else {
+                LOG4CXX_WARN(logger_, "no Ingester-ID in http response header.");
+                return false;
+            }
+            vector<unsigned char> body_vec = response.extract_vector().get();
+            try {
+                msgpack::unpack((const char*)body_vec.data(), body_vec.size()).get().convert(image_data_feature);
+            } catch (std::exception& e) {
+                LOG4CXX_WARN(logger_, "failed to deserialize image_data_feature data with exception: " << e.what());
+                return false;
+            }
+            current_index_ = addr_idx;
+            return true;
+        } else if (addr_idx == current_index_) {
+            return false;
+        }
+    }
 }
 
 void diffraflow::MonImgHttpServer::do_analysis_(
     const ImageDataFeature& image_data_feature, ImageAnalysisResult& image_analysis_result) {
     // do some heavy analysis here and save result into image_analysis_result
+    image_analysis_result.int_result = 123;
+    image_analysis_result.float_result = 456;
 }
 
 void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
@@ -194,7 +193,6 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
     msgpack::sbuffer image_sbuff;
     http_response response;
-    vector<unsigned char> response_data_vec;
 
     string key_string;
     if (relative_path == "/") {
@@ -202,34 +200,46 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     } else if (std::regex_match(relative_path, match_res, req_regex)) {
         key_string = match_res[1].str();
     } else {
-        message.reply(status_codes::NotFound);
+        message.reply(status_codes::NotFound).get();
         return;
     }
 
-    message.reply(status_codes::NotFound);
+    ImageDataFeature image_data_feature;
+    string ingester_id_str;
+    string monitor_id_str = std::to_string(config_obj_->monitor_id);
+    if (request_one_image_(key_string, image_data_feature, ingester_id_str)) {
+        if (!image_data_feature.image_data || !image_data_feature.image_feature) {
+            LOG4CXX_WARN(logger_, "found unexpected null image_data or image_feature.");
+            message.reply(status_codes::InternalError).get();
+            return;
+        }
+        string key_str = std::to_string(image_data_feature.image_data->get_key());
 
-    // ImageDataFeature image_data_feature;
-    // string ingester_id_str;
-    // string monitor_id_str = std::to_string(config_obj_->monitor_id);
-    // if (request_one_image_(key_string, image_data_feature, ingester_id_str)) {
-    //     string key_str = std::to_string(image_data_feature.image_data_raw.get_key());
-    //     ImageAnalysisResult image_analysis_result;
-    //     do_analysis_(image_data_feature, image_analysis_result);
-    //     msgpack::pack(image_sbuff, image_analysis_result);
-    //     response_data_vec.assign(image_sbuff.data(), image_sbuff.data() + image_sbuff.size());
-    //     response.set_body(response_data_vec);
-    //     response.set_status_code(status_codes::OK);
-    //     response.headers().set_content_type("application/msgpack");
-    //     response.headers().add(U("Monitor-ID"), monitor_id_str);
-    //     response.headers().add(U("Ingester-ID"), ingester_id_str);
-    //     response.headers().add(U("Event-Key"), key_str);
-    //     response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
-    //     response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
-    //     message.reply(response);
-    //     metrics.total_sent_counts++;
-    // } else {
-    //     message.reply(status_codes::NotFound);
-    // }
+        ImageVisObject image_vis_object;
+        image_vis_object.image_data = make_shared<ImageDataSmall>(*image_data_feature.image_data);
+        image_vis_object.image_feature = image_data_feature.image_feature;
+        image_vis_object.analysis_result = make_shared<ImageAnalysisResult>();
+        do_analysis_(image_data_feature, *image_vis_object.analysis_result);
+
+        msgpack::pack(image_sbuff, image_vis_object);
+        concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(
+            (const uint8_t*)image_sbuff.data(), image_sbuff.size());
+        response.set_body(data_stream);
+
+        response.set_status_code(status_codes::OK);
+        response.headers().set_content_type("application/msgpack");
+        response.headers().add(U("Monitor-ID"), monitor_id_str);
+        response.headers().add(U("Ingester-ID"), ingester_id_str);
+        response.headers().add(U("Event-Key"), key_str);
+        response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
+        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+
+        message.reply(response).get();
+
+        metrics.total_sent_counts++;
+    } else {
+        message.reply(status_codes::NotFound).get();
+    }
 }
 
 json::value diffraflow::MonImgHttpServer::collect_metrics() {

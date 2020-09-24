@@ -254,10 +254,11 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
         response.set_status_code(status_codes::OK);
         response.headers().set_content_type("application/msgpack");
+        response.headers().add(U("Node-Name"), config_obj_->node_name);
         response.headers().add(U("Monitor-ID"), monitor_id_str);
         response.headers().add(U("Ingester-ID"), ingester_id_str);
         response.headers().add(U("Event-Key"), key_str);
-        response.headers().add(U("Cpp-Class"), U("diffraflow::ImageAnalysisResult"));
+        response.headers().add(U("Cpp-Class"), U("diffraflow::ImageVisObject"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
         message.reply(response).get();

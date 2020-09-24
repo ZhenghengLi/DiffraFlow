@@ -5,6 +5,7 @@ helm -n diffraflow uninstall sender-1-udp
 helm -n diffraflow uninstall sender-2-udp
 helm -n diffraflow uninstall sender-3-udp
 helm -n diffraflow uninstall sender-4-udp
+helm -n diffraflow uninstall controller-1
 helm -n diffraflow uninstall monitor-1
 helm -n diffraflow uninstall ingester-01
 helm -n diffraflow uninstall ingester-02

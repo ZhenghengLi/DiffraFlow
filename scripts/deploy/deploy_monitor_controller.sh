@@ -6,4 +6,5 @@ chart_dir=$base_dir/deploy/diffraflow/charts
 value_dir=$base_dir/deploy/diffraflow/values
 
 helm -n diffraflow install -f $value_dir/monitor-1.yaml monitor-1 $chart_dir/monitor
+helm -n diffraflow install -f $value_dir/controller-1.yaml controller-1 $chart_dir/controller
 

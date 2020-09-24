@@ -23,7 +23,7 @@ void diffraflow::ImageDataSmall::copy_from_(const ImageData& image_data) {
     for (size_t i = 0; i < image_data.image_frame_vec.size(); i++) {
         if (!image_data.image_frame_vec[i]) continue;
         ImageFrame& image_frame = *image_data.image_frame_vec[i];
-        for (size_t j = 0; j < image_frame.pixel_data.size(); i++) {
+        for (size_t j = 0; j < image_frame.pixel_data.size(); j++) {
             if (image_frame.pixel_data[j] > max_energy) max_energy = image_frame.pixel_data[j];
             if (image_frame.pixel_data[j] < min_energy) min_energy = image_frame.pixel_data[j];
         }
@@ -35,7 +35,7 @@ void diffraflow::ImageDataSmall::copy_from_(const ImageData& image_data) {
             ImageFrame& image_frame = *image_data.image_frame_vec[i];
             image_frame_vec[i] = make_shared<vector<uint8_t>>();
             image_frame_vec[i]->resize(image_frame.pixel_data.size());
-            for (size_t j = 0; j < image_frame.pixel_data.size(); i++) {
+            for (size_t j = 0; j < image_frame.pixel_data.size(); j++) {
                 image_frame_vec[i]->at(j) = (uint8_t)(256 * (image_frame.pixel_data[i] - min_energy) / gap_energy);
             }
         } else {

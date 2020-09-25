@@ -16,14 +16,6 @@ namespace diffraflow {
         CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_);
         ~CmbImgFrmConn();
 
-    public:
-        struct {
-            atomic<uint64_t> total_processed_frame_size;
-            atomic<uint64_t> total_processed_frame_counts;
-        } frame_metrics;
-
-        json::value collect_metrics() override;
-
     protected:
         bool do_receiving_and_processing_() override;
 

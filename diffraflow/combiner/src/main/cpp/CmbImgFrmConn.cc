@@ -21,9 +21,6 @@ log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_ = log4cxx::Logger::getLogg
 diffraflow::CmbImgFrmConn::CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_)
     : GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 6 * 1024 * 1024) {
     image_cache_ = img_cache_;
-
-    frame_metrics.total_processed_frame_size = 0;
-    frame_metrics.total_processed_frame_counts = 0;
 }
 
 diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {}
@@ -59,19 +56,4 @@ bool diffraflow::CmbImgFrmConn::do_receiving_and_processing_() {
     }
 
     return true;
-}
-
-json::value diffraflow::CmbImgFrmConn::collect_metrics() {
-
-    json::value root_json = GenericConnection::collect_metrics();
-
-    json::value frame_metrics_json;
-    frame_metrics_json["total_processed_frame_size"] =
-        json::value::number(frame_metrics.total_processed_frame_size.load());
-    frame_metrics_json["total_processed_frame_counts"] =
-        json::value::number(frame_metrics.total_processed_frame_counts.load());
-
-    root_json["frame_stats"] = frame_metrics_json;
-
-    return root_json;
 }

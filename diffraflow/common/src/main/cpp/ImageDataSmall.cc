@@ -40,7 +40,7 @@ void diffraflow::ImageDataSmall::copy_from_(const ImageData& image_data, float e
             image_frame_vec[i] = make_shared<vector<uint8_t>>();
             image_frame_vec[i]->resize(image_frame.pixel_data.size());
             for (size_t j = 0; j < image_frame.pixel_data.size(); j++) {
-                float energy = image_frame.pixel_data[i] - min_energy;
+                float energy = image_frame.pixel_data[j] - min_energy;
                 if (energy < 0) energy = 0;
                 if (energy > gap_energy) energy = gap_energy;
                 image_frame_vec[i]->at(j) = (uint8_t)(256 * energy / gap_energy);

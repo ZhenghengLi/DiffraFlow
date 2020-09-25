@@ -9,9 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [x] change the data structure of ImageFrame and adjust all the related code. (finished but not tested)
-- [ ] implement sender and trigger.
 - [ ] aggregator: running on the pulsar consumer side to aggregate metrics from all components, calculate speeds and serve results via HTTP GET.
+
+## [0.0.14] - 2020-09-25
+
+### Added
+
+- Added some scripts and programs to view and convert the data of [European-XFEL](https://www.xfel.eu/) published on [CXIDB](https://cxidb.org/), which include scripts{alignment_index_proc.py, event_view_proc.py, event_select_proc.py, calib_gen.py} and testing/generator.
+- **trigger** and **sender** were implemented. The format of raw data sent from **sender** to **dispatcher** is defined by docs/rawdata-format.txt.
+- Added support to transfer data from **sender** to **dispatcher** by UDP and it was tested using a 8-node kubernetes cluster.
+- GenericConnection, GenericClient: added support to receive data into dynamically allocated vector, which is helpful for reducing data copying.
+- ImageFrameRaw, ImageDataRaw: added these two classes to support doing event alignment before decoding.
+- ImageDataSmall, ImageVisObject: these two classes are added to convert and send reduced image data to web client for visualization.
+- Added support to transfer data from **combiner** to **ingester** using Unix Domain Socket.
+- Data calibration in **ingester** was implemented and tested.
+
+### Changed
+
+- Changed the data structure of ImageFrame and ImageData according to the format defined in docs/rawdata-format.txt.
+- The way of data transferring from **combiner** to **ingester** was changed from a request-response mode to a long-pulling like mode, in order to increase data throughput.
+- Raw data decoding was changed to be done after event alighment and moved from **combiner** to **ingester**, and the MessagePack serialization between **combiner** and **ingester** was cancelled, instead **combiner** directly send the raw data of image frames to **ingester**.
+- Instead of sending the full image data with float data type, monitor converts and sends the image data by using only one byte to represent each pixel to reduce data size and the calculation overhead on client side.
+
+### Removed
+
+- Data compression for data transferring from **dispatcher** to **combiner** was removed, as data compression will use a lot of CPU time and actually reduce the data transfering speed.
 
 ## [0.0.13] - 2020-07-15
 

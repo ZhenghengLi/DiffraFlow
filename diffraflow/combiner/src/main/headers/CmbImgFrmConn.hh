@@ -22,12 +22,6 @@ namespace diffraflow {
             atomic<uint64_t> total_processed_frame_counts;
         } frame_metrics;
 
-        struct {
-            // for calculating compression ratio
-            atomic<uint64_t> total_compressed_size;
-            atomic<uint64_t> total_uncompressed_size;
-        } compression_metrics;
-
         json::value collect_metrics() override;
 
     protected:
@@ -35,8 +29,6 @@ namespace diffraflow {
 
     private:
         CmbImgCache* image_cache_;
-        char* buffer_uncompress_;
-        size_t buffer_uncompress_limit_;
 
     private:
         static log4cxx::LoggerPtr logger_;

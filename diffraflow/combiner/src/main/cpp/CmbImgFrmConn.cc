@@ -21,18 +21,12 @@ log4cxx::LoggerPtr diffraflow::CmbImgFrmConn::logger_ = log4cxx::Logger::getLogg
 diffraflow::CmbImgFrmConn::CmbImgFrmConn(int sock_fd, CmbImgCache* img_cache_)
     : GenericConnection(sock_fd, 0xDDCC1234, 0xDDD22CCC, 0xCCC22DDD, 6 * 1024 * 1024) {
     image_cache_ = img_cache_;
-    // note: make sure that this pkt_maxlen_ is larger than the send buffer of dispatcher
-    buffer_uncompress_ = new char[buffer_size_];
-    buffer_uncompress_limit_ = 0;
 
     frame_metrics.total_processed_frame_size = 0;
     frame_metrics.total_processed_frame_counts = 0;
-
-    compression_metrics.total_compressed_size = 0;
-    compression_metrics.total_uncompressed_size = 0;
 }
 
-diffraflow::CmbImgFrmConn::~CmbImgFrmConn() { delete[] buffer_uncompress_; }
+diffraflow::CmbImgFrmConn::~CmbImgFrmConn() {}
 
 bool diffraflow::CmbImgFrmConn::do_receiving_and_processing_() {
     uint32_t payload_type = 0;
@@ -77,14 +71,7 @@ json::value diffraflow::CmbImgFrmConn::collect_metrics() {
     frame_metrics_json["total_processed_frame_counts"] =
         json::value::number(frame_metrics.total_processed_frame_counts.load());
 
-    json::value compression_metrics_json;
-    compression_metrics_json["total_compressed_size"] =
-        json::value::number(compression_metrics.total_compressed_size.load());
-    compression_metrics_json["total_uncompressed_size"] =
-        json::value::number(compression_metrics.total_uncompressed_size.load());
-
     root_json["frame_stats"] = frame_metrics_json;
-    root_json["compression_stats"] = compression_metrics_json;
 
     return root_json;
 }

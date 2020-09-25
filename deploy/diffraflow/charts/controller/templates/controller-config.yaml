@@ -16,7 +16,7 @@ data:
     zookeeper_log_level = warn
   monitor_addresses.txt: {{.Values.monitorAddresses | quote}}
   log4cxx.properties: |
-    log4j.rootLogger = DEBUG, Console
+    log4j.rootLogger = WARN, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender
     log4j.appender.Console.layout = org.apache.log4j.PatternLayout
     log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n

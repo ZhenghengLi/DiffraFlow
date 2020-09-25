@@ -15,39 +15,67 @@ args = parser.parse_args()
 
 print("fetching event from url ", args.source_url, "...")
 response = requests.get(args.source_url)
-print(response.status_code)
-print(response.headers)
+
+if (response.status_code != 200):
+    print("failed to fetch current event with status code: ", response.status_code)
+    print("headers:")
+    for k in response.headers.keys():
+        print(k, "=", response.headers[k])
+    print("content:")
+    print(str(response.content))
+    exit(1)
+
+print()
+for k in response.headers.keys():
+    print(k, "=", response.headers[k])
+print()
 
 content = response.content
 
-print(type(content))
-print(len(content))
+image_data = np.empty((16, 512, 128))
+image_data[:] = np.nan
 
 image_vis_object = msgpack.unpackb(content)
+bunch_id = image_vis_object[b'image_data'][b'bunch_id']
+min_energy = image_vis_object[b'image_data'][b'min_energy']
+max_energy = image_vis_object[b'image_data'][b'max_energy']
+alignment_vec = image_vis_object[b'image_data'][b'alignment_vec']
 image_frame_vec = image_vis_object[b'image_data'][b'image_frame_vec']
-print(len(image_frame_vec[1]))
-max_energy = 0
-for m in range(16):
-    for i in range(65536):
-        energy = image_frame_vec[m][i]
-        if energy > max_energy:
-            max_energy = energy
 
+print("bunch_id = ", bunch_id)
+print("min_energy = ", min_energy)
 print("max_energy = ", max_energy)
+print()
 
-# image_data_feature = msgpack.unpackb(content)
-# image_data = image_data_feature[b'image_data']
-# image_frame_vec = image_data[b'image_frame_vec']
-# # print(type(image_frame_vec[0][b'pixel_data'][0]))
-# max_energy = -1000000
-# min_energy = 1000000
-# for m in range(16):
-#     for i in range(65536):
-#         energy = image_frame_vec[m][b'pixel_data'][i]
-#         if energy > max_energy:
-#             max_energy = energy
-#         if energy < min_energy:
-#             min_energy = energy
-#
-# print("max_energy = ", max_energy)
-# print("min_energy = ", min_energy)
+print("drawing ...")
+
+for m in range(16):
+    if not alignment_vec[m]:
+        continue
+    for pos in range(65536):
+        energy = image_frame_vec[m][pos]
+        h = int(pos / 128)
+        w = int(pos % 128)
+        image_data[m][h][w] = energy
+
+image_size = (1300, 1300)
+
+offset_1 = 26
+offset_2 = 4
+
+quad_offset = [
+    (-offset_1, offset_2),
+    (offset_2, offset_1),
+    (offset_1, -offset_2),
+    (-offset_2, -offset_1)
+]
+
+mod_gap = 30
+
+full_image = compose_image(image_data, image_size, quad_offset, mod_gap)
+
+cset1 = plt.imshow(full_image, cmap="rainbow", vmin=0, vmax=256)
+plt.colorbar(cset1)
+
+plt.tight_layout()
+plt.show()

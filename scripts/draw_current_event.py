@@ -8,8 +8,8 @@ import msgpack
 
 from cxidb_euxfel_utils import compose_image
 
-parser = argparse.ArgumentParser(description='draw current event fetched from monitor')
-parser.add_argument("source_url", help="url from which to fecth event")
+parser = argparse.ArgumentParser(description='draw current event that is fetched from monitor')
+parser.add_argument("source_url", help="the URL from which to fetch event data")
 
 args = parser.parse_args()
 

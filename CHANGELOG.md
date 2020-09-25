@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added some scripts and programs to view and convert the data of [European-XFEL](https://www.xfel.eu/) published on [CXIDB](https://cxidb.org/), which include scripts{alignment_index_proc.py, event_view_proc.py, event_select_proc.py, calib_gen.py} and testing/generator.
 - **trigger** and **sender** were implemented. The format of raw data sent from **sender** to **dispatcher** is defined by docs/rawdata-format.txt.
 - Added support to transfer data from **sender** to **dispatcher** by UDP and it was tested using a 8-node kubernetes cluster.
 - GenericConnection, GenericClient: added support to receive data into dynamically allocated vector, which is helpful for reducing data copying.

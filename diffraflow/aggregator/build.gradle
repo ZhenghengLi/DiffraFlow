@@ -1,8 +1,18 @@
 apply from: "$rootDir/gradle/common_cpp_app.gradle"
+import org.gradle.internal.os.OperatingSystem
 
 application {
     binaries.configureEach {
-
+        linkTask.get().linkerArgs.add('-lpulsar')
+        linkTask.get().linkerArgs.add('-llog4cxx')
+        linkTask.get().linkerArgs.add('-lcpprest')
+        linkTask.get().linkerArgs.add('-lssl')
+        linkTask.get().linkerArgs.add('-lcrypto')
+        if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
+            linkTask.get().linkerArgs.add('-lboost_system-mt')
+        } else {
+            linkTask.get().linkerArgs.add('-lboost_system')
+        }
     }
     dependencies {
         implementation project(":diffraflow:common")

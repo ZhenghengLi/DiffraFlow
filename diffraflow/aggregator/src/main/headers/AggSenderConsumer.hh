@@ -2,6 +2,9 @@
 #define __AggSenderConsumer_H__
 
 #include "AggBaseConsumer.hh"
+#include <cpprest/json.h>
+
+using namespace web;
 
 namespace diffraflow {
 
@@ -9,11 +12,14 @@ namespace diffraflow {
 
     class AggSenderConsumer : public AggBaseConsumer {
     public:
-        AggSenderConsumer(string name, AggMetrics* metrics);
+        explicit AggSenderConsumer(AggMetrics* metrics);
         ~AggSenderConsumer();
 
     protected:
         void process_message_(const pulsar::Message& message) override;
+
+    private:
+        json::value simplify_metrics_(const json::value& metrics_json);
 
     private:
         AggMetrics* aggregated_metrics_;

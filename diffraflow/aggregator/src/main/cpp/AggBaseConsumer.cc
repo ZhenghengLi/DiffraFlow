@@ -42,7 +42,7 @@ bool diffraflow::AggBaseConsumer::start(pulsar::Client* client, const string top
             if (recv_result == pulsar::ResultOk) {
                 LOG4CXX_DEBUG(logger_, "received one message from topic " << message.getTopicName() << " with key "
                                                                           << message.getPartitionKey() << ".");
-                process_message(message);
+                process_message_(message);
                 consumer.acknowledge(message);
             }
         }

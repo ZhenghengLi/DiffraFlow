@@ -22,7 +22,7 @@ namespace diffraflow {
     class AggBaseConsumer {
     public:
         explicit AggBaseConsumer(string name);
-        ~AggBaseConsumer();
+        virtual ~AggBaseConsumer();
 
         bool start(pulsar::Client* client, const string topic, int timeoutMs = 5000);
         void stop();
@@ -38,7 +38,7 @@ namespace diffraflow {
         mutex op_mtx_;
 
     protected:
-        virtual void process_message(const pulsar::Message& message) = 0;
+        virtual void process_message_(const pulsar::Message& message) = 0;
 
     private:
         string consumer_name_;

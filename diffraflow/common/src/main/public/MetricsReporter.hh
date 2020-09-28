@@ -36,7 +36,7 @@ namespace diffraflow {
     class MetricsReporter {
     public:
         MetricsReporter();
-        ~MetricsReporter();
+        virtual ~MetricsReporter();
 
         bool start_msg_producer(
             string broker_address, string topic, string msg_key, size_t report_period /* milliseconds */

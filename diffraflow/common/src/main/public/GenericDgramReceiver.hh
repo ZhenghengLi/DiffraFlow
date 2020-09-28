@@ -27,7 +27,7 @@ namespace diffraflow {
     class GenericDgramReceiver : public MetricsProvider {
     public:
         GenericDgramReceiver(string host, int port);
-        ~GenericDgramReceiver();
+        virtual ~GenericDgramReceiver();
 
         bool start(int cpu_id = -1);
         int wait();

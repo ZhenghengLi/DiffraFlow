@@ -15,7 +15,7 @@ namespace diffraflow {
     class GenericDgramSender : public MetricsProvider {
     public:
         GenericDgramSender();
-        ~GenericDgramSender();
+        virtual ~GenericDgramSender();
 
         bool init_addr_sock(string host, int port);
         string get_receiver_address();

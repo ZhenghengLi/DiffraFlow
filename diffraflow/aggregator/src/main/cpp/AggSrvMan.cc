@@ -6,6 +6,7 @@
 #include <future>
 
 using std::async;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::AggSrvMan::logger_ = log4cxx::Logger::getLogger("AggSrvMan");
 
@@ -107,6 +108,7 @@ void diffraflow::AggSrvMan::start_run() {
 
     // then wait for finishing
     async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
         http_server_->wait();
         aggregated_metrics_->wait_all();
     }).wait();
@@ -122,8 +124,6 @@ void diffraflow::AggSrvMan::terminate() {
 
     // stop http server
     http_server_->stop();
-    delete http_server_;
-    http_server_ = nullptr;
 
     // stop metrics consumers
     aggregated_metrics_->stop_sender_consumer();
@@ -131,6 +131,12 @@ void diffraflow::AggSrvMan::terminate() {
     aggregated_metrics_->stop_combiner_consumer();
     aggregated_metrics_->stop_ingester_consumer();
     aggregated_metrics_->stop_monitor_consumer();
+
+    lock_guard<mutex> lg(delete_mtx_);
+
+    delete http_server_;
+    http_server_ = nullptr;
+
     delete aggregated_metrics_;
     aggregated_metrics_ = nullptr;
 

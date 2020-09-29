@@ -2,12 +2,14 @@
 #define __AggSrvMan_H__
 
 #include <atomic>
+#include <mutex>
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
 
 using std::atomic_bool;
 using std::string;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -28,6 +30,8 @@ namespace diffraflow {
 
         AggMetrics* aggregated_metrics_;
         AggHttpServer* http_server_;
+
+        mutex delete_mtx_;
 
         atomic_bool running_flag_;
 

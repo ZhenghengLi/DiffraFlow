@@ -1,5 +1,9 @@
 #include "AggMetrics.hh"
 #include "AggSenderConsumer.hh"
+#include "AggDispatcherConsumer.hh"
+#include "AggCombinerConsumer.hh"
+#include "AggIngesterConsumer.hh"
+#include "AggMonitorConsumer.hh"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
@@ -17,6 +21,10 @@ diffraflow::AggMetrics::AggMetrics(string pulsar_url, int threads_count) {
     pulsar_client_ = new pulsar::Client(pulsar_url, client_config);
 
     sender_consumer_ = nullptr;
+    dispatcher_consumer_ = nullptr;
+    combiner_consumer_ = nullptr;
+    ingester_consumer_ = nullptr;
+    monitor_consumer_ = nullptr;
 }
 
 diffraflow::AggMetrics::~AggMetrics() {
@@ -57,5 +65,93 @@ void diffraflow::AggMetrics::stop_sender_consumer() {
         sender_consumer_->stop();
         delete sender_consumer_;
         sender_consumer_ = nullptr;
+    }
+}
+
+bool diffraflow::AggMetrics::start_dispatcher_consumer(const string topic, int timeoutMs) {
+    if (dispatcher_consumer_ != nullptr) {
+        return false;
+    }
+    dispatcher_consumer_ = new AggDispatcherConsumer(this);
+    if (dispatcher_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+        return true;
+    } else {
+        dispatcher_consumer_->stop();
+        delete dispatcher_consumer_;
+        dispatcher_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stop_dispatcher_consumer() {
+    if (dispatcher_consumer_ != nullptr) {
+        dispatcher_consumer_->stop();
+        delete dispatcher_consumer_;
+        dispatcher_consumer_ = nullptr;
+    }
+}
+
+bool diffraflow::AggMetrics::start_combiner_consumer(const string topic, int timeoutMs) {
+    if (combiner_consumer_ != nullptr) {
+        return false;
+    }
+    combiner_consumer_ = new AggCombinerConsumer(this);
+    if (combiner_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+        return true;
+    } else {
+        combiner_consumer_->stop();
+        delete combiner_consumer_;
+        combiner_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stop_combiner_consumer() {
+    if (combiner_consumer_ != nullptr) {
+        combiner_consumer_->stop();
+        delete combiner_consumer_;
+        combiner_consumer_ = nullptr;
+    }
+}
+
+bool diffraflow::AggMetrics::start_ingester_consumer(const string topic, int timeoutMs) {
+    if (ingester_consumer_ != nullptr) {
+        return false;
+    }
+    ingester_consumer_ = new AggIngesterConsumer(this);
+    if (ingester_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+        return true;
+    } else {
+        ingester_consumer_->stop();
+        delete ingester_consumer_;
+        ingester_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stop_ingester_consumer() {
+    if (ingester_consumer_ != nullptr) {
+        ingester_consumer_->stop();
+        delete ingester_consumer_;
+        ingester_consumer_ = nullptr;
+    }
+}
+
+bool diffraflow::AggMetrics::start_monitor_consumer(const string topic, int timeoutMs) {
+    if (monitor_consumer_ != nullptr) {
+        return false;
+    }
+    monitor_consumer_ = new AggMonitorConsumer(this);
+    if (monitor_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+        return true;
+    } else {
+        monitor_consumer_->stop();
+        delete monitor_consumer_;
+        monitor_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stop_monitor_consumer() {
+    if (monitor_consumer_ != nullptr) {
+        monitor_consumer_->stop();
+        delete monitor_consumer_;
+        monitor_consumer_ = nullptr;
     }
 }

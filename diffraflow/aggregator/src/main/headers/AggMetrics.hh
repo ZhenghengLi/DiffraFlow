@@ -18,6 +18,10 @@ using std::mutex;
 namespace diffraflow {
 
     class AggSenderConsumer;
+    class AggDispatcherConsumer;
+    class AggCombinerConsumer;
+    class AggIngesterConsumer;
+    class AggMonitorConsumer;
 
     class AggMetrics {
     public:
@@ -30,6 +34,18 @@ namespace diffraflow {
         bool start_sender_consumer(const string topic, int timeoutMs = 5000);
         void stop_sender_consumer();
 
+        bool start_dispatcher_consumer(const string topic, int timeoutMs = 5000);
+        void stop_dispatcher_consumer();
+
+        bool start_combiner_consumer(const string topic, int timeoutMs = 5000);
+        void stop_combiner_consumer();
+
+        bool start_ingester_consumer(const string topic, int timeoutMs = 5000);
+        void stop_ingester_consumer();
+
+        bool start_monitor_consumer(const string topic, int timeoutMs = 5000);
+        void stop_monitor_consumer();
+
     private:
         pulsar::Client* pulsar_client_;
 
@@ -37,6 +53,10 @@ namespace diffraflow {
         mutex metrics_json_mtx_;
 
         AggSenderConsumer* sender_consumer_;
+        AggDispatcherConsumer* dispatcher_consumer_;
+        AggCombinerConsumer* combiner_consumer_;
+        AggIngesterConsumer* ingester_consumer_;
+        AggMonitorConsumer* monitor_consumer_;
 
     private:
         static log4cxx::LoggerPtr logger_;

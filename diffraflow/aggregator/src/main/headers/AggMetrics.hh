@@ -32,21 +32,27 @@ namespace diffraflow {
         string get_metrics();
 
         bool start_sender_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_sender_consumer();
         void stop_sender_consumer();
 
         bool start_dispatcher_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_dispatcher_consumer();
         void stop_dispatcher_consumer();
 
         bool start_combiner_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_combiner_consumer();
         void stop_combiner_consumer();
 
         bool start_ingester_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_ingester_consumer();
         void stop_ingester_consumer();
 
         bool start_monitor_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_monitor_consumer();
         void stop_monitor_consumer();
 
         void wait_all();
+        void stop_all();
 
     private:
         pulsar::Client* pulsar_client_;

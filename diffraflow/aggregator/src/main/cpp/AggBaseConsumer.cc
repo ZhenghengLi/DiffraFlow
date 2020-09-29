@@ -61,6 +61,15 @@ bool diffraflow::AggBaseConsumer::start(pulsar::Client* client, const string top
     return consumer_status_ == kRunning;
 }
 
+void diffraflow::AggBaseConsumer::stopping() {
+
+    lock_guard<mutex> lg(op_mtx_);
+
+    if (consumer_status_ == kRunning) {
+        consumer_status_ = kStopping;
+    }
+}
+
 void diffraflow::AggBaseConsumer::stop() {
 
     lock_guard<mutex> lg(op_mtx_);

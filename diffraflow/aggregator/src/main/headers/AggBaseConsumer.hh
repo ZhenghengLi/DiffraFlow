@@ -25,6 +25,7 @@ namespace diffraflow {
         virtual ~AggBaseConsumer();
 
         bool start(pulsar::Client* client, const string topic, int timeoutMs = 5000);
+        void stopping();
         void stop();
         void wait();
 

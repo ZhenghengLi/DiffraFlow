@@ -126,11 +126,7 @@ void diffraflow::AggSrvMan::terminate() {
     http_server_->stop();
 
     // stop metrics consumers
-    aggregated_metrics_->stop_sender_consumer();
-    aggregated_metrics_->stop_dispatcher_consumer();
-    aggregated_metrics_->stop_combiner_consumer();
-    aggregated_metrics_->stop_ingester_consumer();
-    aggregated_metrics_->stop_monitor_consumer();
+    aggregated_metrics_->stop_all();
 
     lock_guard<mutex> lg(delete_mtx_);
 

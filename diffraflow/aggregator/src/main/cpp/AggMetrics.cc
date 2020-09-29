@@ -28,15 +28,12 @@ diffraflow::AggMetrics::AggMetrics(string pulsar_url, int threads_count) {
 }
 
 diffraflow::AggMetrics::~AggMetrics() {
+
+    stop_all();
+
     pulsar_client_->close();
     delete pulsar_client_;
     pulsar_client_ = nullptr;
-
-    stop_sender_consumer();
-    stop_dispatcher_consumer();
-    stop_combiner_consumer();
-    stop_ingester_consumer();
-    stop_monitor_consumer();
 }
 
 void diffraflow::AggMetrics::set_metrics(const string topic, const string key, const json::value& value) {
@@ -66,6 +63,12 @@ bool diffraflow::AggMetrics::start_sender_consumer(const string topic, int timeo
     }
 }
 
+void diffraflow::AggMetrics::stopping_sender_consumer() {
+    if (sender_consumer_ != nullptr) {
+        sender_consumer_->stopping();
+    }
+}
+
 void diffraflow::AggMetrics::stop_sender_consumer() {
     if (sender_consumer_ != nullptr) {
         sender_consumer_->stop();
@@ -85,6 +88,12 @@ bool diffraflow::AggMetrics::start_dispatcher_consumer(const string topic, int t
         dispatcher_consumer_->stop();
         delete dispatcher_consumer_;
         dispatcher_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stopping_dispatcher_consumer() {
+    if (dispatcher_consumer_ != nullptr) {
+        dispatcher_consumer_->stopping();
     }
 }
 
@@ -110,6 +119,12 @@ bool diffraflow::AggMetrics::start_combiner_consumer(const string topic, int tim
     }
 }
 
+void diffraflow::AggMetrics::stopping_combiner_consumer() {
+    if (combiner_consumer_ != nullptr) {
+        combiner_consumer_->stopping();
+    }
+}
+
 void diffraflow::AggMetrics::stop_combiner_consumer() {
     if (combiner_consumer_ != nullptr) {
         combiner_consumer_->stop();
@@ -132,6 +147,12 @@ bool diffraflow::AggMetrics::start_ingester_consumer(const string topic, int tim
     }
 }
 
+void diffraflow::AggMetrics::stopping_ingester_consumer() {
+    if (ingester_consumer_ != nullptr) {
+        ingester_consumer_->stopping();
+    }
+}
+
 void diffraflow::AggMetrics::stop_ingester_consumer() {
     if (ingester_consumer_ != nullptr) {
         ingester_consumer_->stop();
@@ -151,6 +172,12 @@ bool diffraflow::AggMetrics::start_monitor_consumer(const string topic, int time
         monitor_consumer_->stop();
         delete monitor_consumer_;
         monitor_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stopping_monitor_consumer() {
+    if (monitor_consumer_ != nullptr) {
+        monitor_consumer_->stopping();
     }
 }
 
@@ -178,4 +205,19 @@ void diffraflow::AggMetrics::wait_all() {
     if (monitor_consumer_ != nullptr) {
         monitor_consumer_->wait();
     }
+}
+
+void diffraflow::AggMetrics::stop_all() {
+
+    stopping_sender_consumer();
+    stopping_dispatcher_consumer();
+    stopping_combiner_consumer();
+    stopping_ingester_consumer();
+    stopping_monitor_consumer();
+
+    stop_sender_consumer();
+    stop_dispatcher_consumer();
+    stop_combiner_consumer();
+    stop_ingester_consumer();
+    stop_monitor_consumer();
 }

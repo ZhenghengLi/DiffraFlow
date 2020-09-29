@@ -84,6 +84,7 @@ bool diffraflow::MetricsReporter::start_msg_producer(
 
     pulsar::ProducerConfiguration producer_config;
     producer_config.setPartitionsRoutingMode(pulsar::ProducerConfiguration::RoundRobinDistribution);
+    producer_config.setCompressionType(pulsar::CompressionLZ4);
 
     pulsar_producer_ = new pulsar::Producer();
     pulsar::Result result = pulsar_client_->createProducer(topic, producer_config, *pulsar_producer_);

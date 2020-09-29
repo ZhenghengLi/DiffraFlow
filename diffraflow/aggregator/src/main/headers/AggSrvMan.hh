@@ -4,6 +4,8 @@
 #include <atomic>
 #include <log4cxx/logger.h>
 
+#include "MetricsReporter.hh"
+
 using std::atomic_bool;
 using std::string;
 
@@ -28,6 +30,8 @@ namespace diffraflow {
         AggHttpServer* http_server_;
 
         atomic_bool running_flag_;
+
+        MetricsReporter metrics_reporter_;
 
     private:
         static log4cxx::LoggerPtr logger_;

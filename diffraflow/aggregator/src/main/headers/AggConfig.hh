@@ -29,6 +29,7 @@ namespace diffraflow {
         string http_server_host;
         int http_server_port;
 
+        string pulsar_url;
         string sender_topic;
         string dispatcher_topic;
         string combiner_topic;

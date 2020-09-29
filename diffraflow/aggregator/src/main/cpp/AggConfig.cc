@@ -41,6 +41,8 @@ bool diffraflow::AggConfig::load(const char* filename) {
             http_server_host = value;
         } else if (key == "http_server_port") {
             http_server_port = atoi(value.c_str());
+        } else if (key == "pulsar_url") {
+            pulsar_url = value;
         } else if (key == "sender_topic") {
             sender_topic = value;
         } else if (key == "dispatcher_topic") {
@@ -75,10 +77,15 @@ bool diffraflow::AggConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid http_server_port: " << http_server_port);
         succ_flag = false;
     }
+    if (pulsar_url.empty()) {
+        LOG4CXX_ERROR(logger_, "pulsr_url is not set.");
+        succ_flag = false;
+    }
 
     if (succ_flag) {
         static_config_json_["http_server_host"] = json::value::string(http_server_host);
         static_config_json_["http_server_port"] = json::value::number(http_server_port);
+        static_config_json_["pulsar_url"] = json::value::string(pulsar_url);
         static_config_json_["sender_topic"] = json::value::string(sender_topic);
         static_config_json_["dispatcher_topic"] = json::value::string(dispatcher_topic);
         static_config_json_["combiner_topic"] = json::value::string(combiner_topic);
@@ -102,6 +109,7 @@ void diffraflow::AggConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << "  http_server_host = " << http_server_host << endl;
     cout << "  http_server_port = " << http_server_port << endl;
+    cout << "  pulsar_url = " << pulsar_url << endl;
     cout << "  sender_topic = " << sender_topic << endl;
     cout << "  dispatcher_topic = " << dispatcher_topic << endl;
     cout << "  combiner_topic = " << combiner_topic << endl;

@@ -26,6 +26,7 @@ namespace diffraflow {
 
         bool start(pulsar::Client* client, const string topic, int timeoutMs = 5000);
         void stop();
+        void wait();
 
     public:
         enum Consumer_Status { kNotStart, kRunning, kStopped, kStopping };

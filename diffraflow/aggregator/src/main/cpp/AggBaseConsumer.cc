@@ -75,5 +75,11 @@ void diffraflow::AggBaseConsumer::stop() {
         delete consumer_thread_;
         consumer_thread_ = nullptr;
         consumer_status_ = kStopped;
+        consumer_cv_.notify_all();
     }
+}
+
+void diffraflow::AggBaseConsumer::wait() {
+    unique_lock<mutex> ulk(consumer_mtx_);
+    consumer_cv_.wait(ulk, [this]() { return consumer_status_ != kRunning; });
 }

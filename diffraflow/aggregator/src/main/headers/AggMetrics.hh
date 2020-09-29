@@ -46,6 +46,8 @@ namespace diffraflow {
         bool start_monitor_consumer(const string topic, int timeoutMs = 5000);
         void stop_monitor_consumer();
 
+        void wait_all();
+
     private:
         pulsar::Client* pulsar_client_;
 

@@ -31,6 +31,12 @@ diffraflow::AggMetrics::~AggMetrics() {
     pulsar_client_->close();
     delete pulsar_client_;
     pulsar_client_ = nullptr;
+
+    stop_sender_consumer();
+    stop_dispatcher_consumer();
+    stop_combiner_consumer();
+    stop_ingester_consumer();
+    stop_monitor_consumer();
 }
 
 void diffraflow::AggMetrics::set_metrics(const string topic, const string key, const json::value& value) {
@@ -153,5 +159,23 @@ void diffraflow::AggMetrics::stop_monitor_consumer() {
         monitor_consumer_->stop();
         delete monitor_consumer_;
         monitor_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::wait_all() {
+    if (sender_consumer_ != nullptr) {
+        sender_consumer_->wait();
+    }
+    if (dispatcher_consumer_ != nullptr) {
+        dispatcher_consumer_->wait();
+    }
+    if (combiner_consumer_ != nullptr) {
+        combiner_consumer_->wait();
+    }
+    if (ingester_consumer_ != nullptr) {
+        ingester_consumer_->wait();
+    }
+    if (monitor_consumer_ != nullptr) {
+        monitor_consumer_->wait();
     }
 }

@@ -12,6 +12,7 @@
 
 using std::ifstream;
 using std::make_pair;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::SndSrvMan::logger_ = log4cxx::Logger::getLogger("SndSrvMan");
 
@@ -98,7 +99,10 @@ void diffraflow::SndSrvMan::start_run() {
     running_flag_ = true;
 
     // wait for finishing
-    async(std::launch::async, [this]() { trigger_srv_->wait(); }).wait();
+    async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
+        trigger_srv_->wait();
+    }).wait();
 }
 
 void diffraflow::SndSrvMan::terminate() {
@@ -109,7 +113,7 @@ void diffraflow::SndSrvMan::terminate() {
     metrics_reporter_.stop_msg_producer();
     metrics_reporter_.clear();
 
-    // stop and delete trigger server
+    // stop trigger server
     int result = trigger_srv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "trigger server is normally terminated.");
@@ -118,11 +122,15 @@ void diffraflow::SndSrvMan::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "trigger server has not yet been started or already been closed.");
     }
-    delete trigger_srv_;
-    trigger_srv_ = nullptr;
 
     data_transfer_->stop_sender();
     data_transfer_->delete_sender();
+
+    lock_guard<mutex> lg(delete_mtx_);
+
+    delete trigger_srv_;
+    trigger_srv_ = nullptr;
+
     delete data_transfer_;
     data_transfer_ = nullptr;
 

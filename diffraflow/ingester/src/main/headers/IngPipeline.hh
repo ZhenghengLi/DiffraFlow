@@ -2,11 +2,13 @@
 #define __IngPipeline_H__
 
 #include <atomic>
+#include <mutex>
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
 
 using std::atomic_bool;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -52,6 +54,7 @@ namespace diffraflow {
         IngImageWriter* image_writer_;
 
         atomic_bool running_flag_;
+        mutex delete_mtx_;
 
         // metrics
         MetricsReporter metrics_reporter_;

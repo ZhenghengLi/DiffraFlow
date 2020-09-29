@@ -7,6 +7,7 @@
 #include <future>
 
 using std::async;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::CtrSrvMan::logger_ = log4cxx::Logger::getLogger("CtrSrvMan");
 
@@ -55,17 +56,21 @@ void diffraflow::CtrSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async(std::launch::async, [this]() { http_server_->wait(); }).wait();
+    async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
+        http_server_->wait();
+    }).wait();
 }
 
 void diffraflow::CtrSrvMan::terminate() {
     if (!running_flag_) return;
 
-    if (http_server_ != nullptr) {
-        http_server_->stop();
-        delete http_server_;
-        http_server_ = nullptr;
-    }
+    http_server_->stop();
+
+    lock_guard<mutex> lg(delete_mtx_);
+
+    delete http_server_;
+    http_server_ = nullptr;
 
     if (monitor_load_balancer_ != nullptr) {
         delete monitor_load_balancer_;

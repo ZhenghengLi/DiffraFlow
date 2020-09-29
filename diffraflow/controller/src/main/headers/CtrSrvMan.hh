@@ -2,10 +2,12 @@
 #define CtrSrvMan_H
 
 #include <atomic>
+#include <mutex>
 #include <log4cxx/logger.h>
 
 using std::atomic_bool;
 using std::string;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -31,6 +33,7 @@ namespace diffraflow {
         CtrHttpServer* http_server_;
 
         atomic_bool running_flag_;
+        mutex delete_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -8,6 +8,8 @@
 #include "IngImageWriter.hh"
 #include "IngImgHttpServer.hh"
 
+using std::lock_guard;
+
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_ = log4cxx::Logger::getLogger("IngPipeline");
 
 diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
@@ -159,6 +161,8 @@ void diffraflow::IngPipeline::start_run() {
     //======================================================
     // then wait for finishing
     async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
+
         image_data_fetcher_->wait();
         imgWthFtrQue_raw_->stop();
 
@@ -239,6 +243,8 @@ void diffraflow::IngPipeline::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "image writer has not yet been started.");
     }
+
+    lock_guard<mutex> lg(delete_mtx_);
 
     // delete all workers
     delete image_data_fetcher_;

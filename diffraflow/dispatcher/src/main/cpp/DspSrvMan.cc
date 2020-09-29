@@ -13,6 +13,7 @@
 
 using std::ifstream;
 using std::make_pair;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::DspSrvMan::logger_ = log4cxx::Logger::getLogger("DspSrvMan");
 
@@ -87,7 +88,11 @@ void diffraflow::DspSrvMan::start_run() {
     running_flag_ = true;
 
     // wait for finishing
-    async(std::launch::async, [this]() { imgfrm_srv_->wait(); }).wait();
+    async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
+        imgfrm_srv_->wait();
+        imgfrm_recv_->wait();
+    }).wait();
 }
 
 void diffraflow::DspSrvMan::terminate() {
@@ -98,7 +103,7 @@ void diffraflow::DspSrvMan::terminate() {
     metrics_reporter_.stop_msg_producer();
     metrics_reporter_.clear();
 
-    // stop and delete TCP receiver
+    // stop TCP receiver
     int result = imgfrm_srv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image frame TCP receiver is normally terminated.");
@@ -107,10 +112,8 @@ void diffraflow::DspSrvMan::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "image frame TCP receiver has not yet been started or already been closed.");
     }
-    delete imgfrm_srv_;
-    imgfrm_srv_ = nullptr;
 
-    // stop and delete UDP receiver
+    // stop UDP receiver
     result = imgfrm_recv_->stop_and_close();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image frame UDP receiver is normally terminated.");
@@ -120,6 +123,12 @@ void diffraflow::DspSrvMan::terminate() {
         LOG4CXX_WARN(logger_, "image frame UDP receiver has not yet been started or already been closed.");
     }
     imgfrm_recv_->stop_checker();
+
+    lock_guard<mutex> lg(delete_mtx_);
+
+    delete imgfrm_srv_;
+    imgfrm_srv_ = nullptr;
+
     delete imgfrm_recv_;
     imgfrm_recv_ = nullptr;
 

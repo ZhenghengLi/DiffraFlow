@@ -5,6 +5,7 @@
 #include <future>
 
 using std::async;
+using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::MonSrvMan::logger_ = log4cxx::Logger::getLogger("MonSrvMan");
 
@@ -59,7 +60,10 @@ void diffraflow::MonSrvMan::start_run() {
     running_flag_ = true;
 
     // then wait for finishing
-    async(std::launch::async, [this]() { image_http_server_->wait(); }).wait();
+    async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
+        image_http_server_->wait();
+    }).wait();
 }
 
 void diffraflow::MonSrvMan::terminate() {
@@ -71,6 +75,9 @@ void diffraflow::MonSrvMan::terminate() {
     metrics_reporter_.clear();
 
     image_http_server_->stop();
+
+    lock_guard<mutex> lg(delete_mtx_);
+
     delete image_http_server_;
     image_http_server_ = nullptr;
 

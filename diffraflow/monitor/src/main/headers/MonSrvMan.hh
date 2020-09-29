@@ -2,12 +2,14 @@
 #define MonSrvMan_H
 
 #include <atomic>
+#include <mutex>
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
 
 using std::atomic_bool;
 using std::string;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -29,6 +31,7 @@ namespace diffraflow {
         string ingester_address_file_;
 
         atomic_bool running_flag_;
+        mutex delete_mtx_;
 
         // metrics
         MetricsReporter metrics_reporter_;

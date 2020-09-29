@@ -5,11 +5,13 @@
 #include <algorithm>
 #include <string>
 #include <atomic>
+#include <mutex>
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
 
 using std::atomic_bool;
+using std::mutex;
 
 namespace diffraflow {
 
@@ -31,6 +33,7 @@ namespace diffraflow {
 
         SndTrgSrv* trigger_srv_;
         atomic_bool running_flag_;
+        mutex delete_mtx_;
 
         MetricsReporter metrics_reporter_;
 

@@ -4,6 +4,8 @@
 #include "CmbImgFrmSrv.hh"
 #include "CmbImgDatSrv.hh"
 
+using std::lock_guard;
+
 log4cxx::LoggerPtr diffraflow::CmbSrvMan::logger_ = log4cxx::Logger::getLogger("CmbSrvMan");
 
 diffraflow::CmbSrvMan::CmbSrvMan(CmbConfig* config) {
@@ -72,6 +74,7 @@ void diffraflow::CmbSrvMan::start_run() {
 
     // then wait for finishing
     async(std::launch::async, [this]() {
+        lock_guard<mutex> lg(delete_mtx_);
         imgfrm_srv_->wait();
         imgdat_srv_->wait();
     }).wait();
@@ -97,10 +100,6 @@ void diffraflow::CmbSrvMan::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "image frame server has not yet been started or already been closed.");
     }
-    // delete image frame server
-    delete imgfrm_srv_;
-    imgfrm_srv_ = nullptr;
-
     // stop image data server
     result = imgdat_srv_->stop_and_close();
     if (result == 0) {
@@ -110,6 +109,13 @@ void diffraflow::CmbSrvMan::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "image data server has not yet been started or already been closed.");
     }
+
+    lock_guard<mutex> lg(delete_mtx_);
+
+    // delete image frame server
+    delete imgfrm_srv_;
+    imgfrm_srv_ = nullptr;
+
     // delete image data server
     delete imgdat_srv_;
     imgdat_srv_ = nullptr;

@@ -10,6 +10,7 @@ using std::unique_lock;
 log4cxx::LoggerPtr diffraflow::AggHttpServer::logger_ = log4cxx::Logger::getLogger("AggHttpServer");
 
 diffraflow::AggHttpServer::AggHttpServer(AggMetrics* metrics) {
+    listener_ = nullptr;
     aggregated_metrics_ = metrics;
     server_status_ = kNotStart;
 }

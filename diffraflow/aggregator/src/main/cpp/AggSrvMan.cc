@@ -107,8 +107,8 @@ void diffraflow::AggSrvMan::start_run() {
 
     // then wait for finishing
     async(std::launch::async, [this]() {
-        aggregated_metrics_->wait_all();
         http_server_->wait();
+        aggregated_metrics_->wait_all();
     }).wait();
 }
 
@@ -121,20 +121,16 @@ void diffraflow::AggSrvMan::terminate() {
     metrics_reporter_.clear();
 
     // stop http server
-    if (http_server_ != nullptr) {
-        http_server_->stop();
-        delete http_server_;
-        http_server_ = nullptr;
-    }
+    http_server_->stop();
+    delete http_server_;
+    http_server_ = nullptr;
 
     // stop metrics consumers
-    if (aggregated_metrics_ != nullptr) {
-        aggregated_metrics_->stop_sender_consumer();
-        aggregated_metrics_->stop_dispatcher_consumer();
-        aggregated_metrics_->stop_combiner_consumer();
-        aggregated_metrics_->stop_ingester_consumer();
-        aggregated_metrics_->stop_monitor_consumer();
-    }
+    aggregated_metrics_->stop_sender_consumer();
+    aggregated_metrics_->stop_dispatcher_consumer();
+    aggregated_metrics_->stop_combiner_consumer();
+    aggregated_metrics_->stop_ingester_consumer();
+    aggregated_metrics_->stop_monitor_consumer();
     delete aggregated_metrics_;
     aggregated_metrics_ = nullptr;
 

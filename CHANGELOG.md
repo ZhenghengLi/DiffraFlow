@@ -9,7 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] aggregator: running on the pulsar consumer side to aggregate metrics from all components, calculate speeds and serve results via HTTP GET.
+- [ ] dashboard: dynamically visualizes current image data, analysis results, and system working status, and provides a graphic user interface to configure the runtime parameters of **ingester** and **monitor** via REST API.
+
+## [0.1.0] - 2020-09-30
+
+From this version, all core components including **dispatcher**, **combiner**, **ingester**, **monitor**, **controller** and **aggregator**, and the necessary testing components including **sender** and **trigger**, are functional and tested on an 8-node kubernetes cluster.
+
+### Added
+
+- draw_current_event.py: fetch current image data and analysis results from **monitor** or **controller** and draw the image.
+- **aggregator** is implemented and tested, and the deploying YAML files are added.
+- scripts/deploy/{deploy_services.sh, undeploy_services.sh}: scripts to quickly deploy and undeploy services including ZooKeeper, BookKeeper and Pulsar Broker.
+- scripts/config_net.sh: configure network parameters for better UDP data transporting.
+
+### Changed
+
+- GenericDgramReceiver: the size of receiving buffer is changed from 64 MiB to 32 MiB.
+- **controller**: added support for metrics reporting via REST and message queue.
+- Enabled object deletion protection via mutex for the server manager of all components.
+
+### Fixed
+
+- ImageDataSmall: fixed an index related bug for private method copy_from_().
 
 ## [0.0.14] - 2020-09-25
 

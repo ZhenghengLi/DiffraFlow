@@ -5,11 +5,16 @@
 #include "AggIngesterConsumer.hh"
 #include "AggMonitorConsumer.hh"
 
+#include <chrono>
 #include <log4cxx/logger.h>
 #include <log4cxx/ndc.h>
 #include <pulsar/ClientConfiguration.h>
 
 using std::lock_guard;
+using std::chrono::duration;
+using std::chrono::milliseconds;
+using std::chrono::system_clock;
+using std::milli;
 
 log4cxx::LoggerPtr diffraflow::AggMetrics::logger_ = log4cxx::Logger::getLogger("AggMetrics");
 
@@ -42,6 +47,10 @@ void diffraflow::AggMetrics::set_metrics(const string topic, const string key, c
         metrics_json_[topic] = json::value();
     }
     metrics_json_[topic][key] = value;
+
+    duration<double, milli> current_time = system_clock::now().time_since_epoch();
+    metrics_json_["update_timestamp"] = json::value::number(current_time.count());
+    metrics_json_["update_timestamp_unit"] = json::value::string("milliseconds");
 }
 
 json::value diffraflow::AggMetrics::get_metrics() {

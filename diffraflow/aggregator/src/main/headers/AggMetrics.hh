@@ -29,7 +29,7 @@ namespace diffraflow {
         ~AggMetrics();
 
         void set_metrics(const string topic, const string key, const json::value& value);
-        string get_metrics();
+        json::value get_metrics();
 
         bool start_sender_consumer(const string topic, int timeoutMs = 5000);
         void stopping_sender_consumer();

@@ -44,9 +44,9 @@ void diffraflow::AggMetrics::set_metrics(const string topic, const string key, c
     metrics_json_[topic][key] = value;
 }
 
-string diffraflow::AggMetrics::get_metrics() {
+json::value diffraflow::AggMetrics::get_metrics() {
     lock_guard<mutex> lg(metrics_json_mtx_);
-    return metrics_json_.serialize();
+    return metrics_json_;
 }
 
 bool diffraflow::AggMetrics::start_sender_consumer(const string topic, int timeoutMs) {

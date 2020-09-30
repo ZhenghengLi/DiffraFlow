@@ -70,6 +70,10 @@ void diffraflow::AggHttpServer::wait() {
 }
 
 void diffraflow::AggHttpServer::handleGet_(http_request message) {
-    //
-    message.reply(status_codes::NotFound).get();
+    http_response response;
+    json::value root_json = aggregated_metrics_->get_metrics();
+    response.set_body(root_json);
+    response.set_status_code(status_codes::OK);
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+    message.reply(response).get();
 }

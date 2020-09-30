@@ -1,5 +1,6 @@
 #!/bin/bash
 
+helm -n diffraflow uninstall aggregator-1
 helm -n diffraflow uninstall trigger-1
 helm -n diffraflow uninstall sender-1-udp
 helm -n diffraflow uninstall sender-2-udp

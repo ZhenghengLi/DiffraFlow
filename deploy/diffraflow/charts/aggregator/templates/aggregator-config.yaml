@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aggregator-config-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+data:
+  aggregator.conf: |
+    http_server_host = 0.0.0.0
+    http_server_port = {{ .Values.httpPort }}
+
+    pulsar_url = pulsar://pulsar-broker:6650
+    controller_topic = persistent://zhenghengli/diffraflow/controller
+    sender_topic = persistent://zhenghengli/diffraflow/sender
+    dispatcher_topic = persistent://zhenghengli/diffraflow/dispatcher
+    combiner_topic = persistent://zhenghengli/diffraflow/combiner
+    ingester_topic = persistent://zhenghengli/diffraflow/ingester
+    monitor_topic = persistent://zhenghengli/diffraflow/monitor
+
+    # metrics http server
+    metrics_http_host = 0.0.0.0
+    metrics_http_port = {{.Values.metricsHttpPort}}
+  log4cxx.properties: |
+    log4j.rootLogger = INFO, Console
+    log4j.appender.Console = org.apache.log4j.ConsoleAppender
+    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
+    log4j.appender.Console.layout.ConversionPattern= %d [%t] %-5p %c - %m%n

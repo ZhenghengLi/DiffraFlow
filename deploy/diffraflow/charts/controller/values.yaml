@@ -1,5 +1,6 @@
 nameSuffix: "1"
 httpPort: 27511
+metricsHttpPort: 27512
 monitorAddresses: |
   http://10.15.39.24:27411
   http://10.15.39.25:27411

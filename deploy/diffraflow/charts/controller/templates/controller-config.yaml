@@ -8,6 +8,17 @@ data:
     http_host = 0.0.0.0
     http_port = {{ .Values.httpPort }}
     request_timeout = 10000
+
+    ## metrics http server
+    metrics_http_host = 0.0.0.0
+    metrics_http_port = {{.Values.metricsHttpPort}}
+
+    ## metrics pulsar setting
+    metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
+    metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow/controller
+    metrics_pulsar_message_key = controller-{{.Values.nameSuffix}}@NODE_NAME
+    metrics_pulsar_report_period = 1000
+
   zookeeper.conf: |
     zookeeper_server = zookeeper:2181
     zookeeper_chroot = /diffraflow

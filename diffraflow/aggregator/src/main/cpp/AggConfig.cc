@@ -43,6 +43,8 @@ bool diffraflow::AggConfig::load(const char* filename) {
             http_server_port = atoi(value.c_str());
         } else if (key == "pulsar_url") {
             pulsar_url = value;
+        } else if (key == "controller_topic") {
+            controller_topic = value;
         } else if (key == "sender_topic") {
             sender_topic = value;
         } else if (key == "dispatcher_topic") {
@@ -86,6 +88,7 @@ bool diffraflow::AggConfig::load(const char* filename) {
         static_config_json_["http_server_host"] = json::value::string(http_server_host);
         static_config_json_["http_server_port"] = json::value::number(http_server_port);
         static_config_json_["pulsar_url"] = json::value::string(pulsar_url);
+        static_config_json_["controller_topic"] = json::value::string(controller_topic);
         static_config_json_["sender_topic"] = json::value::string(sender_topic);
         static_config_json_["dispatcher_topic"] = json::value::string(dispatcher_topic);
         static_config_json_["combiner_topic"] = json::value::string(combiner_topic);
@@ -110,6 +113,7 @@ void diffraflow::AggConfig::print() {
     cout << "  http_server_host = " << http_server_host << endl;
     cout << "  http_server_port = " << http_server_port << endl;
     cout << "  pulsar_url = " << pulsar_url << endl;
+    cout << "  controller_topic = " << controller_topic << endl;
     cout << "  sender_topic = " << sender_topic << endl;
     cout << "  dispatcher_topic = " << dispatcher_topic << endl;
     cout << "  combiner_topic = " << combiner_topic << endl;

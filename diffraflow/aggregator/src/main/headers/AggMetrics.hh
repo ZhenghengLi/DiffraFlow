@@ -17,6 +17,7 @@ using std::mutex;
 
 namespace diffraflow {
 
+    class AggControllerConsumer;
     class AggSenderConsumer;
     class AggDispatcherConsumer;
     class AggCombinerConsumer;
@@ -30,6 +31,10 @@ namespace diffraflow {
 
         void set_metrics(const string topic, const string key, const json::value& value);
         json::value get_metrics();
+
+        bool start_controller_consumer(const string topic, int timeoutMs = 5000);
+        void stopping_controller_consumer();
+        void stop_controller_consumer();
 
         bool start_sender_consumer(const string topic, int timeoutMs = 5000);
         void stopping_sender_consumer();
@@ -60,6 +65,7 @@ namespace diffraflow {
         json::value metrics_json_;
         mutex metrics_json_mtx_;
 
+        AggControllerConsumer* controller_consumer_;
         AggSenderConsumer* sender_consumer_;
         AggDispatcherConsumer* dispatcher_consumer_;
         AggCombinerConsumer* combiner_consumer_;

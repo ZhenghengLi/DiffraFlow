@@ -25,6 +25,16 @@ void diffraflow::AggSrvMan::start_run() {
     if (running_flag_) return;
 
     aggregated_metrics_ = new AggMetrics(config_obj_->pulsar_url, 5);
+    if (!config_obj_->controller_topic.empty()) {
+        if (aggregated_metrics_->start_controller_consumer(config_obj_->controller_topic)) {
+            LOG4CXX_INFO(logger_,
+                "successfully started metrics consumer for controller topic " << config_obj_->controller_topic);
+        } else {
+            LOG4CXX_ERROR(
+                logger_, "failed to start metrics consumer for controller topic " << config_obj_->controller_topic);
+            return;
+        }
+    }
     if (!config_obj_->sender_topic.empty()) {
         if (aggregated_metrics_->start_sender_consumer(config_obj_->sender_topic)) {
             LOG4CXX_INFO(

@@ -1,4 +1,5 @@
 #include "AggMetrics.hh"
+#include "AggControllerConsumer.hh"
 #include "AggSenderConsumer.hh"
 #include "AggDispatcherConsumer.hh"
 #include "AggCombinerConsumer.hh"
@@ -25,6 +26,7 @@ diffraflow::AggMetrics::AggMetrics(string pulsar_url, int threads_count) {
     }
     pulsar_client_ = new pulsar::Client(pulsar_url, client_config);
 
+    controller_consumer_ = nullptr;
     sender_consumer_ = nullptr;
     dispatcher_consumer_ = nullptr;
     combiner_consumer_ = nullptr;
@@ -56,6 +58,34 @@ void diffraflow::AggMetrics::set_metrics(const string topic, const string key, c
 json::value diffraflow::AggMetrics::get_metrics() {
     lock_guard<mutex> lg(metrics_json_mtx_);
     return metrics_json_;
+}
+
+bool diffraflow::AggMetrics::start_controller_consumer(const string topic, int timeoutMs) {
+    if (controller_consumer_ != nullptr) {
+        return false;
+    }
+    controller_consumer_ = new AggControllerConsumer(this);
+    if (controller_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+        return true;
+    } else {
+        controller_consumer_->stop();
+        delete controller_consumer_;
+        controller_consumer_ = nullptr;
+    }
+}
+
+void diffraflow::AggMetrics::stopping_controller_consumer() {
+    if (controller_consumer_ != nullptr) {
+        controller_consumer_->stopping();
+    }
+}
+
+void diffraflow::AggMetrics::stop_controller_consumer() {
+    if (controller_consumer_ != nullptr) {
+        controller_consumer_->stop();
+        delete controller_consumer_;
+        controller_consumer_ = nullptr;
+    }
 }
 
 bool diffraflow::AggMetrics::start_sender_consumer(const string topic, int timeoutMs) {
@@ -218,12 +248,14 @@ void diffraflow::AggMetrics::wait_all() {
 
 void diffraflow::AggMetrics::stop_all() {
 
+    stopping_controller_consumer();
     stopping_sender_consumer();
     stopping_dispatcher_consumer();
     stopping_combiner_consumer();
     stopping_ingester_consumer();
     stopping_monitor_consumer();
 
+    stop_controller_consumer();
     stop_sender_consumer();
     stop_dispatcher_consumer();
     stop_combiner_consumer();

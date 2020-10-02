@@ -2,6 +2,7 @@
 #define __AggMetrics_H__
 
 #include <string>
+#include <map>
 #include <thread>
 #include <pulsar/Client.h>
 #include <pulsar/Consumer.h>
@@ -14,50 +15,30 @@ using namespace web;
 
 using std::string;
 using std::mutex;
+using std::map;
+using std::condition_variable;
 
 namespace diffraflow {
 
-    class AggControllerConsumer;
-    class AggSenderConsumer;
-    class AggDispatcherConsumer;
-    class AggCombinerConsumer;
-    class AggIngesterConsumer;
-    class AggMonitorConsumer;
+    class AggConsumer;
 
     class AggMetrics {
+        friend class AggConsumer;
+
     public:
         explicit AggMetrics(string pulsar_url, int threads_count = 1);
         ~AggMetrics();
 
-        void set_metrics(const string topic, const string key, const json::value& value);
         json::value get_metrics();
 
-        bool start_controller_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_controller_consumer();
-        void stop_controller_consumer();
+        bool start_consumer(const string name, const string topic, int timeoutMs = 5000);
+        void stop_consumer(const string name);
 
-        bool start_sender_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_sender_consumer();
-        void stop_sender_consumer();
-
-        bool start_dispatcher_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_dispatcher_consumer();
-        void stop_dispatcher_consumer();
-
-        bool start_combiner_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_combiner_consumer();
-        void stop_combiner_consumer();
-
-        bool start_ingester_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_ingester_consumer();
-        void stop_ingester_consumer();
-
-        bool start_monitor_consumer(const string topic, int timeoutMs = 5000);
-        void stopping_monitor_consumer();
-        void stop_monitor_consumer();
-
-        void wait_all();
+        void wait();
         void stop_all();
+
+    private:
+        void set_metrics_(const string topic, const string key, const json::value& value);
 
     private:
         pulsar::Client* pulsar_client_;
@@ -65,12 +46,9 @@ namespace diffraflow {
         json::value metrics_json_;
         mutex metrics_json_mtx_;
 
-        AggControllerConsumer* controller_consumer_;
-        AggSenderConsumer* sender_consumer_;
-        AggDispatcherConsumer* dispatcher_consumer_;
-        AggCombinerConsumer* combiner_consumer_;
-        AggIngesterConsumer* ingester_consumer_;
-        AggMonitorConsumer* monitor_consumer_;
+        map<string, AggConsumer*> consumer_map_;
+        mutex consumer_map_mtx_;
+        condition_variable consumer_map_cv_;
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -1,5 +1,5 @@
-#ifndef __AggBaseConsumer_H__
-#define __AggBaseConsumer_H__
+#ifndef __AggConsumer_H__
+#define __AggConsumer_H__
 
 #include <string>
 #include <thread>
@@ -19,31 +19,35 @@ using std::atomic;
 using std::condition_variable;
 
 namespace diffraflow {
-    class AggBaseConsumer {
-    public:
-        explicit AggBaseConsumer(string name);
-        virtual ~AggBaseConsumer();
 
-        bool start(pulsar::Client* client, const string topic, int timeoutMs = 5000);
+    class AggMetrics;
+
+    class AggConsumer {
+    public:
+        explicit AggConsumer(AggMetrics* metrics, const string name, const string topic);
+        virtual ~AggConsumer();
+
+        bool start(int timeoutMs = 5000);
         void stopping();
         void stop();
         void wait();
 
-    public:
-        enum Consumer_Status { kNotStart, kRunning, kStopped, kStopping };
+    private:
+        void process_message_(const pulsar::Message& message);
+
+    private:
+        enum Consumer_Status_ { kNotStart, kRunning, kStopped, kStopping };
 
         thread* consumer_thread_;
-        atomic<Consumer_Status> consumer_status_;
+        atomic<Consumer_Status_> consumer_status_;
         mutex consumer_mtx_;
         condition_variable consumer_cv_;
 
         mutex op_mtx_;
 
-    protected:
-        virtual void process_message_(const pulsar::Message& message) = 0;
-
-    private:
+        AggMetrics* aggregated_metrics_;
         string consumer_name_;
+        string consumer_topic_;
 
     private:
         static log4cxx::LoggerPtr logger_;

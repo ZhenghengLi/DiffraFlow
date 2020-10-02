@@ -1,10 +1,5 @@
 #include "AggMetrics.hh"
-#include "AggControllerConsumer.hh"
-#include "AggSenderConsumer.hh"
-#include "AggDispatcherConsumer.hh"
-#include "AggCombinerConsumer.hh"
-#include "AggIngesterConsumer.hh"
-#include "AggMonitorConsumer.hh"
+#include "AggConsumer.hh"
 
 #include <chrono>
 #include <log4cxx/logger.h>
@@ -12,6 +7,7 @@
 #include <pulsar/ClientConfiguration.h>
 
 using std::lock_guard;
+using std::unique_lock;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 using std::chrono::system_clock;
@@ -25,13 +21,6 @@ diffraflow::AggMetrics::AggMetrics(string pulsar_url, int threads_count) {
         client_config.setIOThreads(threads_count);
     }
     pulsar_client_ = new pulsar::Client(pulsar_url, client_config);
-
-    controller_consumer_ = nullptr;
-    sender_consumer_ = nullptr;
-    dispatcher_consumer_ = nullptr;
-    combiner_consumer_ = nullptr;
-    ingester_consumer_ = nullptr;
-    monitor_consumer_ = nullptr;
 }
 
 diffraflow::AggMetrics::~AggMetrics() {
@@ -43,7 +32,7 @@ diffraflow::AggMetrics::~AggMetrics() {
     pulsar_client_ = nullptr;
 }
 
-void diffraflow::AggMetrics::set_metrics(const string topic, const string key, const json::value& value) {
+void diffraflow::AggMetrics::set_metrics_(const string topic, const string key, const json::value& value) {
     lock_guard<mutex> lg(metrics_json_mtx_);
     if (!metrics_json_.has_field(topic)) {
         metrics_json_[topic] = json::value();
@@ -60,205 +49,53 @@ json::value diffraflow::AggMetrics::get_metrics() {
     return metrics_json_;
 }
 
-bool diffraflow::AggMetrics::start_controller_consumer(const string topic, int timeoutMs) {
-    if (controller_consumer_ != nullptr) {
+bool diffraflow::AggMetrics::start_consumer(const string name, const string topic, int timeoutMs) {
+    lock_guard<mutex> lg(consumer_map_mtx_);
+    if (consumer_map_.find(name) != consumer_map_.end()) {
+        LOG4CXX_WARN(logger_, "consumer " << name << " has already been started.");
         return false;
     }
-    controller_consumer_ = new AggControllerConsumer(this);
-    if (controller_consumer_->start(pulsar_client_, topic, timeoutMs)) {
+    AggConsumer* consumer = new AggConsumer(this, name, topic);
+    if (consumer->start(timeoutMs)) {
+        consumer_map_[name] = consumer;
         return true;
     } else {
-        controller_consumer_->stop();
-        delete controller_consumer_;
-        controller_consumer_ = nullptr;
+        consumer->stop();
+        delete consumer;
+        consumer = nullptr;
     }
 }
 
-void diffraflow::AggMetrics::stopping_controller_consumer() {
-    if (controller_consumer_ != nullptr) {
-        controller_consumer_->stopping();
+void diffraflow::AggMetrics::stop_consumer(const string name) {
+    lock_guard<mutex> lg(consumer_map_mtx_);
+    if (consumer_map_.find(name) == consumer_map_.end()) {
+        LOG4CXX_WARN(logger_, "consumer " << name << " has not yet been started.");
+        return;
+    }
+    consumer_map_[name]->stop();
+    delete consumer_map_[name];
+    consumer_map_.erase(name);
+    if (consumer_map_.empty()) {
+        consumer_map_cv_.notify_all();
     }
 }
 
-void diffraflow::AggMetrics::stop_controller_consumer() {
-    if (controller_consumer_ != nullptr) {
-        controller_consumer_->stop();
-        delete controller_consumer_;
-        controller_consumer_ = nullptr;
-    }
-}
-
-bool diffraflow::AggMetrics::start_sender_consumer(const string topic, int timeoutMs) {
-    if (sender_consumer_ != nullptr) {
-        return false;
-    }
-    sender_consumer_ = new AggSenderConsumer(this);
-    if (sender_consumer_->start(pulsar_client_, topic, timeoutMs)) {
-        return true;
-    } else {
-        sender_consumer_->stop();
-        delete sender_consumer_;
-        sender_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::stopping_sender_consumer() {
-    if (sender_consumer_ != nullptr) {
-        sender_consumer_->stopping();
-    }
-}
-
-void diffraflow::AggMetrics::stop_sender_consumer() {
-    if (sender_consumer_ != nullptr) {
-        sender_consumer_->stop();
-        delete sender_consumer_;
-        sender_consumer_ = nullptr;
-    }
-}
-
-bool diffraflow::AggMetrics::start_dispatcher_consumer(const string topic, int timeoutMs) {
-    if (dispatcher_consumer_ != nullptr) {
-        return false;
-    }
-    dispatcher_consumer_ = new AggDispatcherConsumer(this);
-    if (dispatcher_consumer_->start(pulsar_client_, topic, timeoutMs)) {
-        return true;
-    } else {
-        dispatcher_consumer_->stop();
-        delete dispatcher_consumer_;
-        dispatcher_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::stopping_dispatcher_consumer() {
-    if (dispatcher_consumer_ != nullptr) {
-        dispatcher_consumer_->stopping();
-    }
-}
-
-void diffraflow::AggMetrics::stop_dispatcher_consumer() {
-    if (dispatcher_consumer_ != nullptr) {
-        dispatcher_consumer_->stop();
-        delete dispatcher_consumer_;
-        dispatcher_consumer_ = nullptr;
-    }
-}
-
-bool diffraflow::AggMetrics::start_combiner_consumer(const string topic, int timeoutMs) {
-    if (combiner_consumer_ != nullptr) {
-        return false;
-    }
-    combiner_consumer_ = new AggCombinerConsumer(this);
-    if (combiner_consumer_->start(pulsar_client_, topic, timeoutMs)) {
-        return true;
-    } else {
-        combiner_consumer_->stop();
-        delete combiner_consumer_;
-        combiner_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::stopping_combiner_consumer() {
-    if (combiner_consumer_ != nullptr) {
-        combiner_consumer_->stopping();
-    }
-}
-
-void diffraflow::AggMetrics::stop_combiner_consumer() {
-    if (combiner_consumer_ != nullptr) {
-        combiner_consumer_->stop();
-        delete combiner_consumer_;
-        combiner_consumer_ = nullptr;
-    }
-}
-
-bool diffraflow::AggMetrics::start_ingester_consumer(const string topic, int timeoutMs) {
-    if (ingester_consumer_ != nullptr) {
-        return false;
-    }
-    ingester_consumer_ = new AggIngesterConsumer(this);
-    if (ingester_consumer_->start(pulsar_client_, topic, timeoutMs)) {
-        return true;
-    } else {
-        ingester_consumer_->stop();
-        delete ingester_consumer_;
-        ingester_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::stopping_ingester_consumer() {
-    if (ingester_consumer_ != nullptr) {
-        ingester_consumer_->stopping();
-    }
-}
-
-void diffraflow::AggMetrics::stop_ingester_consumer() {
-    if (ingester_consumer_ != nullptr) {
-        ingester_consumer_->stop();
-        delete ingester_consumer_;
-        ingester_consumer_ = nullptr;
-    }
-}
-
-bool diffraflow::AggMetrics::start_monitor_consumer(const string topic, int timeoutMs) {
-    if (monitor_consumer_ != nullptr) {
-        return false;
-    }
-    monitor_consumer_ = new AggMonitorConsumer(this);
-    if (monitor_consumer_->start(pulsar_client_, topic, timeoutMs)) {
-        return true;
-    } else {
-        monitor_consumer_->stop();
-        delete monitor_consumer_;
-        monitor_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::stopping_monitor_consumer() {
-    if (monitor_consumer_ != nullptr) {
-        monitor_consumer_->stopping();
-    }
-}
-
-void diffraflow::AggMetrics::stop_monitor_consumer() {
-    if (monitor_consumer_ != nullptr) {
-        monitor_consumer_->stop();
-        delete monitor_consumer_;
-        monitor_consumer_ = nullptr;
-    }
-}
-
-void diffraflow::AggMetrics::wait_all() {
-    if (sender_consumer_ != nullptr) {
-        sender_consumer_->wait();
-    }
-    if (dispatcher_consumer_ != nullptr) {
-        dispatcher_consumer_->wait();
-    }
-    if (combiner_consumer_ != nullptr) {
-        combiner_consumer_->wait();
-    }
-    if (ingester_consumer_ != nullptr) {
-        ingester_consumer_->wait();
-    }
-    if (monitor_consumer_ != nullptr) {
-        monitor_consumer_->wait();
-    }
+void diffraflow::AggMetrics::wait() {
+    unique_lock<mutex> ulk(consumer_map_mtx_);
+    consumer_map_cv_.wait(ulk, [this]() { return consumer_map_.empty(); });
 }
 
 void diffraflow::AggMetrics::stop_all() {
-
-    stopping_controller_consumer();
-    stopping_sender_consumer();
-    stopping_dispatcher_consumer();
-    stopping_combiner_consumer();
-    stopping_ingester_consumer();
-    stopping_monitor_consumer();
-
-    stop_controller_consumer();
-    stop_sender_consumer();
-    stop_dispatcher_consumer();
-    stop_combiner_consumer();
-    stop_ingester_consumer();
-    stop_monitor_consumer();
+    lock_guard<mutex> lg(consumer_map_mtx_);
+    for (map<string, AggConsumer*>::iterator iter = consumer_map_.begin(); iter != consumer_map_.end(); ++iter) {
+        LOG4CXX_INFO(logger_, "stopping consumer " << iter->first << " ...");
+        iter->second->stopping();
+    }
+    for (map<string, AggConsumer*>::iterator iter = consumer_map_.begin(); iter != consumer_map_.end(); ++iter) {
+        iter->second->stop();
+        delete iter->second;
+        LOG4CXX_INFO(logger_, "consumer " << iter->first << " is stopped.");
+    }
+    consumer_map_.clear();
+    consumer_map_cv_.notify_all();
 }

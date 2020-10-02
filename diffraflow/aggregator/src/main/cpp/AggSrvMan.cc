@@ -26,7 +26,7 @@ void diffraflow::AggSrvMan::start_run() {
 
     aggregated_metrics_ = new AggMetrics(config_obj_->pulsar_url, 6);
     if (!config_obj_->controller_topic.empty()) {
-        if (aggregated_metrics_->start_controller_consumer(config_obj_->controller_topic)) {
+        if (aggregated_metrics_->start_consumer("controller", config_obj_->controller_topic)) {
             LOG4CXX_INFO(logger_,
                 "successfully started metrics consumer for controller topic " << config_obj_->controller_topic);
         } else {
@@ -36,7 +36,7 @@ void diffraflow::AggSrvMan::start_run() {
         }
     }
     if (!config_obj_->sender_topic.empty()) {
-        if (aggregated_metrics_->start_sender_consumer(config_obj_->sender_topic)) {
+        if (aggregated_metrics_->start_consumer("sender", config_obj_->sender_topic)) {
             LOG4CXX_INFO(
                 logger_, "successfully started metrics consumer for sender topic " << config_obj_->sender_topic);
         } else {
@@ -45,7 +45,7 @@ void diffraflow::AggSrvMan::start_run() {
         }
     }
     if (!config_obj_->dispatcher_topic.empty()) {
-        if (aggregated_metrics_->start_dispatcher_consumer(config_obj_->dispatcher_topic)) {
+        if (aggregated_metrics_->start_consumer("dispatcher", config_obj_->dispatcher_topic)) {
             LOG4CXX_INFO(logger_,
                 "successfully started metrics consumer for dispatcher topic " << config_obj_->dispatcher_topic);
         } else {
@@ -55,7 +55,7 @@ void diffraflow::AggSrvMan::start_run() {
         }
     }
     if (!config_obj_->combiner_topic.empty()) {
-        if (aggregated_metrics_->start_combiner_consumer(config_obj_->combiner_topic)) {
+        if (aggregated_metrics_->start_consumer("combiner", config_obj_->combiner_topic)) {
             LOG4CXX_INFO(
                 logger_, "successfully started metrics consumer for combiner topic " << config_obj_->combiner_topic);
         } else {
@@ -65,7 +65,7 @@ void diffraflow::AggSrvMan::start_run() {
         }
     }
     if (!config_obj_->ingester_topic.empty()) {
-        if (aggregated_metrics_->start_ingester_consumer(config_obj_->ingester_topic)) {
+        if (aggregated_metrics_->start_consumer("ingester", config_obj_->ingester_topic)) {
             LOG4CXX_INFO(
                 logger_, "successfully started metrics consumer for ingester topic " << config_obj_->ingester_topic);
         } else {
@@ -75,7 +75,7 @@ void diffraflow::AggSrvMan::start_run() {
         }
     }
     if (!config_obj_->monitor_topic.empty()) {
-        if (aggregated_metrics_->start_monitor_consumer(config_obj_->monitor_topic)) {
+        if (aggregated_metrics_->start_consumer("monitor", config_obj_->monitor_topic)) {
             LOG4CXX_INFO(
                 logger_, "successfully started metrics consumer for monitor topic " << config_obj_->monitor_topic);
         } else {
@@ -120,7 +120,7 @@ void diffraflow::AggSrvMan::start_run() {
     async(std::launch::async, [this]() {
         lock_guard<mutex> lg(delete_mtx_);
         http_server_->wait();
-        aggregated_metrics_->wait_all();
+        aggregated_metrics_->wait();
     }).wait();
 }
 

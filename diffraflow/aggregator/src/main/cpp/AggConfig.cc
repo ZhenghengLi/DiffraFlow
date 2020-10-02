@@ -20,6 +20,7 @@ log4cxx::LoggerPtr diffraflow::AggConfig::logger_ = log4cxx::Logger::getLogger("
 diffraflow::AggConfig::AggConfig() {
     http_server_host = "0.0.0.0";
     http_server_port = -1;
+    subscription_name = "aggregator";
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
@@ -43,6 +44,8 @@ bool diffraflow::AggConfig::load(const char* filename) {
             http_server_port = atoi(value.c_str());
         } else if (key == "pulsar_url") {
             pulsar_url = value;
+        } else if (key == "subscription_name") {
+            subscription_name = value;
         } else if (key == "controller_topic") {
             controller_topic = value;
         } else if (key == "sender_topic") {
@@ -88,6 +91,7 @@ bool diffraflow::AggConfig::load(const char* filename) {
         static_config_json_["http_server_host"] = json::value::string(http_server_host);
         static_config_json_["http_server_port"] = json::value::number(http_server_port);
         static_config_json_["pulsar_url"] = json::value::string(pulsar_url);
+        static_config_json_["subscription_name"] = json::value::string(subscription_name);
         static_config_json_["controller_topic"] = json::value::string(controller_topic);
         static_config_json_["sender_topic"] = json::value::string(sender_topic);
         static_config_json_["dispatcher_topic"] = json::value::string(dispatcher_topic);
@@ -113,6 +117,7 @@ void diffraflow::AggConfig::print() {
     cout << "  http_server_host = " << http_server_host << endl;
     cout << "  http_server_port = " << http_server_port << endl;
     cout << "  pulsar_url = " << pulsar_url << endl;
+    cout << "  subscription_name = " << subscription_name << endl;
     cout << "  controller_topic = " << controller_topic << endl;
     cout << "  sender_topic = " << sender_topic << endl;
     cout << "  dispatcher_topic = " << dispatcher_topic << endl;

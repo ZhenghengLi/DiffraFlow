@@ -30,6 +30,7 @@ namespace diffraflow {
         int http_server_port;
 
         string pulsar_url;
+        string subscription_name;
         string controller_topic;
         string sender_topic;
         string dispatcher_topic;

@@ -26,7 +26,7 @@ namespace diffraflow {
         friend class AggConsumer;
 
     public:
-        explicit AggMetrics(string pulsar_url, int threads_count = 1);
+        explicit AggMetrics(string pulsar_url, string sub_name = "aggregator", int threads_count = 1);
         ~AggMetrics();
 
         json::value get_metrics();
@@ -42,6 +42,7 @@ namespace diffraflow {
 
     private:
         pulsar::Client* pulsar_client_;
+        string subscription_name_;
 
         json::value metrics_json_;
         mutex metrics_json_mtx_;

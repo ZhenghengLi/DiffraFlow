@@ -29,7 +29,8 @@ bool diffraflow::AggConsumer::start(int timeoutMs) {
     consumer_status_ = kNotStart;
     consumer_thread_ = new thread([this, timeoutMs]() {
         pulsar::Consumer consumer;
-        pulsar::Result result = aggregated_metrics_->pulsar_client_->subscribe(consumer_topic_, "aggregator", consumer);
+        pulsar::Result result = aggregated_metrics_->pulsar_client_->subscribe(
+            consumer_topic_, aggregated_metrics_->subscription_name_, consumer);
         if (result == pulsar::ResultOk) {
             LOG4CXX_INFO(logger_, "successfully subscribed " << consumer_topic_);
             consumer_status_ = kRunning;

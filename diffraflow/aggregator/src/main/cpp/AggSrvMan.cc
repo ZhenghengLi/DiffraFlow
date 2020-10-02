@@ -24,7 +24,7 @@ diffraflow::AggSrvMan::~AggSrvMan() {
 void diffraflow::AggSrvMan::start_run() {
     if (running_flag_) return;
 
-    aggregated_metrics_ = new AggMetrics(config_obj_->pulsar_url, 6);
+    aggregated_metrics_ = new AggMetrics(config_obj_->pulsar_url, config_obj_->subscription_name, 6);
     if (!config_obj_->controller_topic.empty()) {
         if (aggregated_metrics_->start_consumer("controller", config_obj_->controller_topic)) {
             LOG4CXX_INFO(logger_,

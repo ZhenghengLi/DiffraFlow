@@ -29,8 +29,10 @@ bool diffraflow::AggConsumer::start(int timeoutMs) {
     consumer_status_ = kNotStart;
     consumer_thread_ = new thread([this, timeoutMs]() {
         pulsar::Consumer consumer;
+        pulsar::ConsumerConfiguration consumer_config;
+        consumer_config.setReadCompacted(aggregated_metrics_->read_compacted_);
         pulsar::Result result = aggregated_metrics_->pulsar_client_->subscribe(
-            consumer_topic_, aggregated_metrics_->subscription_name_, consumer);
+            consumer_topic_, aggregated_metrics_->subscription_name_, consumer_config, consumer);
         if (result == pulsar::ResultOk) {
             LOG4CXX_INFO(logger_, "successfully subscribed " << consumer_topic_);
             consumer_status_ = kRunning;

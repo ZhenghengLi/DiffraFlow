@@ -31,6 +31,7 @@ namespace diffraflow {
 
         string pulsar_url;
         string subscription_name;
+        bool read_compacted;
         string controller_topic;
         string sender_topic;
         string dispatcher_topic;

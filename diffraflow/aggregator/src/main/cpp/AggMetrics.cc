@@ -15,13 +15,18 @@ using std::milli;
 
 log4cxx::LoggerPtr diffraflow::AggMetrics::logger_ = log4cxx::Logger::getLogger("AggMetrics");
 
-diffraflow::AggMetrics::AggMetrics(string pulsar_url, string sub_name, int threads_count) {
+diffraflow::AggMetrics::AggMetrics(
+    string pulsar_url, string sub_name, bool rd_compact, int io_threads_count, int listener_threads_count) {
     pulsar::ClientConfiguration client_config;
-    if (threads_count > 0) {
-        client_config.setIOThreads(threads_count);
+    if (io_threads_count > 0) {
+        client_config.setIOThreads(io_threads_count);
+    }
+    if (listener_threads_count > 0) {
+        client_config.setMessageListenerThreads(listener_threads_count);
     }
     pulsar_client_ = new pulsar::Client(pulsar_url, client_config);
     subscription_name_ = sub_name;
+    read_compacted_ = rd_compact;
 }
 
 diffraflow::AggMetrics::~AggMetrics() {

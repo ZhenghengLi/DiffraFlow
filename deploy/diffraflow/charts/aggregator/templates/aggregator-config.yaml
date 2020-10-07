@@ -9,6 +9,7 @@ data:
     http_server_port = {{ .Values.httpPort }}
 
     pulsar_url = pulsar://pulsar-broker:6650
+    read_compacted = true
     controller_topic = persistent://zhenghengli/diffraflow-metrics/controller
     sender_topic = persistent://zhenghengli/diffraflow-metrics/sender
     dispatcher_topic = persistent://zhenghengli/diffraflow-metrics/dispatcher

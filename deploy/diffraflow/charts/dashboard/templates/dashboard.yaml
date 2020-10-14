@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dashboard-{{ .Values.nameSuffix }}
+  namespace: diffraflow
+  labels:
+    k8s-app: dashboard-{{ .Values.nameSuffix }}
+spec:
+  selector:
+    matchLabels:
+      name: dashboard-{{ .Values.nameSuffix }}
+  template:
+    metadata:
+      labels:
+        name: dashboard-{{ .Values.nameSuffix }}
+    spec:
+      imagePullSecrets:
+        - name: docker-hub-zhenghengli
+      containers:
+        - name: dashboard
+          image: zhenghengli/diffraflow-dashboard:latest
+          ports:
+            - containerPort: 80
+              hostPort: {{.Values.httpPort}}
+      nodeSelector:
+        kubernetes.io/hostname: kube-master-0
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists

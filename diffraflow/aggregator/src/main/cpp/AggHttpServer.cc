@@ -83,13 +83,13 @@ void diffraflow::AggHttpServer::handleGet_(http_request message) {
         return;
     }
 
-    bool compress_flag = false;
-    map<utility::string_t, utility::string_t> query_map = uri::split_query(message.relative_uri().query());
-    for (const pair<utility::string_t, utility::string_t> item : query_map) {
-        if (item.first == "compress" && item.second == "true") {
-            compress_flag = true;
-        }
-    }
+    // bool compress_flag = false;
+    // map<utility::string_t, utility::string_t> query_map = uri::split_query(message.relative_uri().query());
+    // for (const pair<utility::string_t, utility::string_t> item : query_map) {
+    //     if (item.first == "compress" && item.second == "true") {
+    //         compress_flag = true;
+    //     }
+    // }
 
     http_response response;
     json::value root_json = aggregated_metrics_->get_metrics();

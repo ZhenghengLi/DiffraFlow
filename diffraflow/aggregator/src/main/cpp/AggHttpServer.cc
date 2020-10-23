@@ -1,6 +1,13 @@
 #include "AggHttpServer.hh"
 #include "AggMetrics.hh"
 
+#include <map>
+#include <algorithm>
+
+using std::map;
+using std::pair;
+using std::string;
+
 using namespace web;
 using namespace http;
 using namespace experimental::listener;
@@ -70,6 +77,20 @@ void diffraflow::AggHttpServer::wait() {
 }
 
 void diffraflow::AggHttpServer::handleGet_(http_request message) {
+
+    if (message.relative_uri().path() != "/") {
+        message.reply(status_codes::NotFound).get();
+        return;
+    }
+
+    bool compress_flag = false;
+    map<utility::string_t, utility::string_t> query_map = uri::split_query(message.relative_uri().query());
+    for (const pair<utility::string_t, utility::string_t> item : query_map) {
+        if (item.first == "compress" && item.second == "true") {
+            compress_flag = true;
+        }
+    }
+
     http_response response;
     json::value root_json = aggregated_metrics_->get_metrics();
     response.set_body(root_json);

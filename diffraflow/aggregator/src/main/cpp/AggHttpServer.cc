@@ -85,7 +85,7 @@ void diffraflow::AggHttpServer::handleGet_(http_request message) {
 
     // bool compress_flag = false;
     // map<utility::string_t, utility::string_t> query_map = uri::split_query(message.relative_uri().query());
-    // for (const pair<utility::string_t, utility::string_t> item : query_map) {
+    // for (const pair<utility::string_t, utility::string_t>& item : query_map) {
     //     if (item.first == "compress" && item.second == "true") {
     //         compress_flag = true;
     //     }

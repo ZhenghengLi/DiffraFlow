@@ -32,6 +32,7 @@ diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
     dgram_metrics.total_recv_size = 0;
     dgram_metrics.total_error_count = 0;
     dgram_metrics.total_processed_count = 0;
+    dgram_metrics.total_zero_count = 0;
 }
 
 diffraflow::GenericDgramReceiver::~GenericDgramReceiver() { stop_and_close(); }
@@ -111,8 +112,11 @@ void diffraflow::GenericDgramReceiver::run_() {
             LOG4CXX_WARN(logger_, "found error when receiving datagram: " << strerror(errno));
             // do not stop, continue to receive next datagram
             dgram_metrics.total_error_count++;
-        }
-        if (recvlen > 0) {
+        } else if (recvlen == 0) {
+            LOG4CXX_WARN(logger_, "received a zero length datagram.");
+            // do not stop, continue to receive next datagram
+            dgram_metrics.total_zero_count++;
+        } else {
             dgram_metrics.total_recv_size += recvlen;
             datagram->resize(recvlen);
             process_datagram_(datagram);
@@ -227,6 +231,7 @@ json::value diffraflow::GenericDgramReceiver::collect_metrics() {
     dgram_metrics_json["total_recv_size"] = json::value::number(dgram_metrics.total_recv_size.load());
     dgram_metrics_json["total_error_count"] = json::value::number(dgram_metrics.total_error_count.load());
     dgram_metrics_json["total_processed_count"] = json::value::number(dgram_metrics.total_processed_count.load());
+    dgram_metrics_json["total_zero_count"] = json::value::number(dgram_metrics.total_zero_count.load());
 
     json::value root_json;
     root_json["dgram_stats"] = dgram_metrics_json;

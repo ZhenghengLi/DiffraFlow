@@ -38,6 +38,7 @@ namespace diffraflow {
             atomic<uint64_t> total_recv_count;
             atomic<uint64_t> total_recv_size;
             atomic<uint64_t> total_error_count;
+            atomic<uint64_t> total_zero_count;
             atomic<uint64_t> total_processed_count;
         } dgram_metrics;
 

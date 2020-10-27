@@ -25,7 +25,9 @@ namespace diffraflow {
     public:
         struct {
             atomic<uint64_t> total_send_count;
+            atomic<uint64_t> total_send_size;
             atomic<uint64_t> total_succ_count;
+            atomic<uint64_t> total_succ_size;
             atomic<uint64_t> total_error_count;
             atomic<uint64_t> total_zero_count;
             atomic<uint64_t> total_partial_count;

@@ -20,7 +20,9 @@ diffraflow::GenericDgramSender::GenericDgramSender() {
     memset(&receiver_addr_, 0, sizeof(receiver_addr_));
     // init metrics
     dgram_metrics.total_send_count = 0;
+    dgram_metrics.total_send_size = 0;
     dgram_metrics.total_succ_count = 0;
+    dgram_metrics.total_succ_size = 0;
     dgram_metrics.total_error_count = 0;
     dgram_metrics.total_zero_count = 0;
     dgram_metrics.total_partial_count = 0;
@@ -85,6 +87,7 @@ bool diffraflow::GenericDgramSender::send_datagram(const char* buffer, size_t le
         return false;
     }
     dgram_metrics.total_send_count++;
+    dgram_metrics.total_send_size += len;
     int sndlen = sendto(sender_sock_fd_, buffer, len, 0, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_));
     if (sndlen < 0) {
         dgram_metrics.total_error_count++;
@@ -100,6 +103,7 @@ bool diffraflow::GenericDgramSender::send_datagram(const char* buffer, size_t le
         return false;
     } else {
         dgram_metrics.total_succ_count++;
+        dgram_metrics.total_succ_size += len;
         LOG4CXX_DEBUG(logger_, "datagram is successfully sent.");
         return true;
     }
@@ -117,7 +121,9 @@ json::value diffraflow::GenericDgramSender::collect_metrics() {
 
     json::value dgram_metrics_json;
     dgram_metrics_json["total_send_count"] = json::value::number(dgram_metrics.total_send_count.load());
+    dgram_metrics_json["total_send_size"] = json::value::number(dgram_metrics.total_send_size.load());
     dgram_metrics_json["total_succ_count"] = json::value::number(dgram_metrics.total_succ_count.load());
+    dgram_metrics_json["total_succ_size"] = json::value::number(dgram_metrics.total_succ_size.load());
     dgram_metrics_json["total_error_count"] = json::value::number(dgram_metrics.total_error_count.load());
     dgram_metrics_json["total_zero_count"] = json::value::number(dgram_metrics.total_zero_count.load());
     dgram_metrics_json["total_partial_count"] = json::value::number(dgram_metrics.total_partial_count.load());

@@ -10,6 +10,8 @@
 #include <pplx/pplxtasks.h>
 #include <log4cxx/logger.h>
 
+#include "MetricsProvider.hh"
+
 using std::string;
 using web::http::experimental::listener::http_listener;
 using web::http::http_request;
@@ -25,7 +27,7 @@ namespace diffraflow {
     class CtrMonLoadBalancer;
     class DynamicConfiguration;
 
-    class CtrHttpServer {
+    class CtrHttpServer : public MetricsProvider {
     public:
         explicit CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicConfiguration* zk_conf_client);
         ~CtrHttpServer();
@@ -33,6 +35,19 @@ namespace diffraflow {
         bool start(string host, int port);
         void stop();
         void wait();
+
+    public:
+        struct {
+            atomic<uint64_t> total_get_request_count;
+            atomic<uint64_t> total_event_request_count;
+            atomic<uint64_t> total_event_sent_count;
+            atomic<uint64_t> total_post_request_count;
+            atomic<uint64_t> total_put_request_count;
+            atomic<uint64_t> total_patch_request_count;
+            atomic<uint64_t> total_delete_request_count;
+        } http_metrics;
+
+        json::value collect_metrics() override;
 
     public:
         enum WorkerStatus { kNotStart, kRunning, kStopped };

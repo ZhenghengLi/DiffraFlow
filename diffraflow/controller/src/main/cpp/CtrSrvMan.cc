@@ -55,6 +55,7 @@ void diffraflow::CtrSrvMan::start_run() {
 
     // start metrics reporter
     metrics_reporter_.add("configuration", config_obj_);
+    metrics_reporter_.add("http_server", http_server_);
     if (config_obj_->metrics_pulsar_params_are_set()) {
         if (metrics_reporter_.start_msg_producer(config_obj_->metrics_pulsar_broker_address,
                 config_obj_->metrics_pulsar_topic_name, config_obj_->metrics_pulsar_message_key,

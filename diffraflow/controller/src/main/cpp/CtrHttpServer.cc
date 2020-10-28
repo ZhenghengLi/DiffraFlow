@@ -28,6 +28,15 @@ diffraflow::CtrHttpServer::CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicC
     server_status_ = kNotStart;
     monitor_load_balancer_ = mon_ld_bl;
     zookeeper_config_client_ = zk_conf_client;
+
+    // metrics init
+    http_metrics.total_get_request_count = 0;
+    http_metrics.total_event_request_count = 0;
+    http_metrics.total_event_sent_count = 0;
+    http_metrics.total_post_request_count = 0;
+    http_metrics.total_put_request_count = 0;
+    http_metrics.total_patch_request_count = 0;
+    http_metrics.total_delete_request_count = 0;
 }
 
 diffraflow::CtrHttpServer::~CtrHttpServer() {}
@@ -93,6 +102,8 @@ void diffraflow::CtrHttpServer::wait() {
 
 void diffraflow::CtrHttpServer::handleGet_(http_request message) {
 
+    http_metrics.total_get_request_count++;
+
     vector<utility::string_t> path_vec = uri::split_path(message.relative_uri().path());
 
     std::regex number_regex("\\d+");
@@ -116,6 +127,9 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
     string request_value = (path_vec.size() > 1 ? path_vec[1] : "");
 
     if (request_type == "event") {
+
+        http_metrics.total_event_request_count++;
+
         if (monitor_load_balancer_ == nullptr) {
             message.reply(status_codes::NotImplemented).get();
             return;
@@ -128,6 +142,9 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
         }
         if (monitor_load_balancer_->do_one_request(response, request_value)) {
             message.reply(response).get();
+
+            http_metrics.total_event_sent_count++;
+
         } else {
             message.reply(status_codes::NotFound).get();
         }
@@ -178,6 +195,8 @@ void diffraflow::CtrHttpServer::handleGet_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePost_(http_request message) {
+
+    http_metrics.total_post_request_count++;
 
     if (zookeeper_config_client_ == nullptr) {
         message.reply(status_codes::NotImplemented).get();
@@ -234,6 +253,8 @@ void diffraflow::CtrHttpServer::handlePost_(http_request message) {
 
 void diffraflow::CtrHttpServer::handlePut_(http_request message) {
 
+    http_metrics.total_put_request_count++;
+
     if (zookeeper_config_client_ == nullptr) {
         message.reply(status_codes::NotImplemented).get();
         return;
@@ -288,6 +309,8 @@ void diffraflow::CtrHttpServer::handlePut_(http_request message) {
 }
 
 void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
+
+    http_metrics.total_patch_request_count++;
 
     if (zookeeper_config_client_ == nullptr) {
         message.reply(status_codes::NotImplemented).get();
@@ -366,6 +389,8 @@ void diffraflow::CtrHttpServer::handlePatch_(http_request message) {
 
 void diffraflow::CtrHttpServer::handleDel_(http_request message) {
 
+    http_metrics.total_delete_request_count++;
+
     if (zookeeper_config_client_ == nullptr) {
         message.reply(status_codes::NotImplemented).get();
         return;
@@ -392,4 +417,19 @@ void diffraflow::CtrHttpServer::handleDel_(http_request message) {
     } else {
         message.reply(status_codes::InternalError).get();
     }
+}
+
+json::value diffraflow::CtrHttpServer::collect_metrics() {
+
+    json::value root_json;
+
+    root_json["total_get_request_counts"] = json::value::number(http_metrics.total_get_request_count.load());
+    root_json["total_event_request_counts"] = json::value::number(http_metrics.total_event_request_count.load());
+    root_json["total_event_sent_counts"] = json::value::number(http_metrics.total_event_sent_count.load());
+    root_json["total_post_request_counts"] = json::value::number(http_metrics.total_post_request_count.load());
+    root_json["total_put_request_counts"] = json::value::number(http_metrics.total_put_request_count.load());
+    root_json["total_patch_request_counts"] = json::value::number(http_metrics.total_patch_request_count.load());
+    root_json["total_delete_request_counts"] = json::value::number(http_metrics.total_delete_request_count.load());
+
+    return root_json;
 }

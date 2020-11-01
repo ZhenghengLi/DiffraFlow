@@ -20,7 +20,7 @@ data:
     metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
     metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow-metrics/combiner
     metrics_pulsar_message_key = combiner-{{ .Values.nameSuffix }}@NODE_NAME
-    metrics_pulsar_report_period = 800
+    metrics_pulsar_report_period = 900
   log4cxx.properties: |
     log4j.rootLogger = WARN, Console
     log4j.appender.Console = org.apache.log4j.ConsoleAppender

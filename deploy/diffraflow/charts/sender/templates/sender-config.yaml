@@ -20,7 +20,7 @@ data:
     metrics_pulsar_broker_address = pulsar://10.15.39.20:6650,10.15.39.21:6650,10.15.39.22:6650,10.15.39.23:6650
     metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow-metrics/sender
     metrics_pulsar_message_key = sender-{{ .Values.nameSuffix }}@NODE_NAME
-    metrics_pulsar_report_period = 800
+    metrics_pulsar_report_period = 900
   node_map.txt: {{.Values.nodeMap | quote}}
   log4cxx.properties: |
     log4j.rootLogger = WARN, Console

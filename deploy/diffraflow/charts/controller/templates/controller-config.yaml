@@ -17,7 +17,7 @@ data:
     metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
     metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow-metrics/controller
     metrics_pulsar_message_key = controller-{{.Values.nameSuffix}}@NODE_NAME
-    metrics_pulsar_report_period = 800
+    metrics_pulsar_report_period = 900
 
   zookeeper.conf: |
     zookeeper_server = zookeeper:2181

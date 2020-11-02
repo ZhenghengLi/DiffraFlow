@@ -51,7 +51,7 @@ spec:
             - name: config-volume
               mountPath: /config
       nodeSelector:
-        kubernetes.io/hostname: kube-master-0
+        kubernetes.io/hostname: kube-worker-1
       tolerations:
         - key: node-role.kubernetes.io/master
           operator: Exists

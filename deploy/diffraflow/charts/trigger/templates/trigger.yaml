@@ -21,7 +21,10 @@ spec:
         - name: config-volume
           mountPath: /config
   nodeSelector:
-    diffraflow/node-type: service
+    kubernetes.io/hostname: kube-worker-3
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
   volumes:
     - name: config-volume
       configMap:

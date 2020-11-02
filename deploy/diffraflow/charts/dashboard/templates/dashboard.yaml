@@ -24,9 +24,9 @@ spec:
               hostPort: {{.Values.httpPort}}
           env:
             - name: AGGREGATOR_ADDRESS
-              value: "10.15.86.19:27711"
+              value: "10.15.86.21:27711"
             - name: CONTROLLER_ADDRESS
-              value: "10.15.86.19:27511"
+              value: "10.15.86.20:27511"
       nodeSelector:
         kubernetes.io/hostname: kube-master-0
       tolerations:

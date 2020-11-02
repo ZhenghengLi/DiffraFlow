@@ -260,6 +260,7 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Event-Key"), key_str);
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageVisObject"));
         response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+        response.headers().add(U("Access-Control-Expose-Headers"), U("*"));
 
         message.reply(response).get();
 

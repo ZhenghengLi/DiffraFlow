@@ -213,6 +213,7 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
     msgpack::sbuffer image_sbuff;
     http_response response;
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
     string key_string;
     if (relative_path == "/") {
@@ -220,7 +221,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     } else if (std::regex_match(relative_path, match_res, req_regex)) {
         key_string = match_res[1].str();
     } else {
-        message.reply(status_codes::NotFound).get();
+        response.set_status_code(status_codes::NotFound);
+        message.reply(response).get();
         return;
     }
 
@@ -231,7 +233,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
     if (request_one_image_(key_string, image_data_feature, ingester_id_str)) {
         if (!image_data_feature.image_data || !image_data_feature.image_feature) {
             LOG4CXX_WARN(logger_, "found unexpected null image_data or image_feature.");
-            message.reply(status_codes::InternalError).get();
+            response.set_status_code(status_codes::InternalError);
+            message.reply(response).get();
             return;
         }
         string key_str = std::to_string(image_data_feature.image_data->get_key());
@@ -259,7 +262,6 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Ingester-ID"), ingester_id_str);
         response.headers().add(U("Event-Key"), key_str);
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageVisObject"));
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         response.headers().add(U("Access-Control-Expose-Headers"), U("*"));
 
         message.reply(response).get();
@@ -268,7 +270,8 @@ void diffraflow::MonImgHttpServer::handleGet_(http_request message) {
 
         metrics.total_sent_counts++;
     } else {
-        message.reply(status_codes::NotFound).get();
+        response.set_status_code(status_codes::NotFound);
+        message.reply(response).get();
     }
 }
 

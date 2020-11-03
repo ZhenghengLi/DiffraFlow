@@ -166,6 +166,7 @@ bool diffraflow::MetricsReporter::start_http_server(string host, int port) {
 
 void diffraflow::MetricsReporter::handleGet_(http_request message) {
     http_response response;
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
     utility::string_t relative_path = uri::decode(message.relative_uri().path());
     if (relative_path == "/") {
         json::value paths_json;
@@ -174,12 +175,10 @@ void diffraflow::MetricsReporter::handleGet_(http_request message) {
         root_json["paths"] = paths_json;
         response.set_body(root_json);
         response.set_status_code(status_codes::OK);
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
     } else if (relative_path == "/stat") {
         json::value root_json = aggregate_metrics_();
         response.set_body(root_json);
         response.set_status_code(status_codes::OK);
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
     } else {
         response.set_status_code(status_codes::NotFound);
     }

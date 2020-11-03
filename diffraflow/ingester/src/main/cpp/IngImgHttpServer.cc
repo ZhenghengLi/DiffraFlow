@@ -79,13 +79,15 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
     ImageDataFeature image_data_feature;
     msgpack::sbuffer image_sbuff;
     http_response response;
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
     if (relative_path == "/") {
         shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
         if (current_image) {
             image_data_feature = *current_image;
         } else {
-            message.reply(status_codes::NotFound).get();
+            response.set_status_code(status_codes::NotFound);
+            message.reply(response).get();
             return;
         }
         string key_str = std::to_string(image_data_feature.image_data->get_key());
@@ -102,7 +104,6 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         response.headers().add(U("Ingester-ID"), ingester_id_str);
         response.headers().add(U("Event-Key"), key_str);
         response.headers().add(U("Cpp-Class"), U("diffraflow::ImageDataFeature"));
-        response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
         response.headers().add(U("Access-Control-Expose-Headers"), U("*"));
 
         message.reply(response).get();
@@ -116,7 +117,8 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
         if (current_image) {
             image_data_feature = *current_image;
         } else {
-            message.reply(status_codes::NotFound).get();
+            response.set_status_code(status_codes::NotFound);
+            message.reply(response).get();
             return;
         }
         string key_str = std::to_string(image_data_feature.image_data->get_key());
@@ -135,7 +137,6 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             response.headers().add(U("Ingester-ID"), ingester_id_str);
             response.headers().add(U("Event-Key"), key_str);
             response.headers().add(U("Cpp-Class"), U("diffraflow::ImageDataFeature"));
-            response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
             response.headers().add(U("Access-Control-Expose-Headers"), U("*"));
 
             message.reply(response).get();
@@ -143,11 +144,13 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
             metrics.total_sent_counts++;
 
         } else {
-            message.reply(status_codes::NotFound).get();
+            response.set_status_code(status_codes::NotFound);
+            message.reply(response).get();
         }
 
     } else {
-        message.reply(status_codes::NotFound).get();
+        response.set_status_code(status_codes::NotFound);
+        message.reply(response).get();
     }
 }
 

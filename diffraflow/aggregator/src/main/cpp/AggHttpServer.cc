@@ -78,8 +78,12 @@ void diffraflow::AggHttpServer::wait() {
 
 void diffraflow::AggHttpServer::handleGet_(http_request message) {
 
+    http_response response;
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+
     if (message.relative_uri().path() != "/") {
-        message.reply(status_codes::NotFound).get();
+        response.set_status_code(status_codes::NotFound);
+        message.reply(response).get();
         return;
     }
 
@@ -91,10 +95,8 @@ void diffraflow::AggHttpServer::handleGet_(http_request message) {
     //     }
     // }
 
-    http_response response;
     json::value root_json = aggregated_metrics_->get_metrics();
     response.set_body(root_json);
     response.set_status_code(status_codes::OK);
-    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
     message.reply(response).get();
 }

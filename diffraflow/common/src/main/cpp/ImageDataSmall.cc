@@ -50,7 +50,7 @@ void diffraflow::ImageDataSmall::copy_from_(const ImageData& image_data, float e
                 float energy = image_frame.pixel_data[j] - min_energy;
                 if (energy < 0) energy = 0;
                 if (energy > gap_energy) energy = gap_energy;
-                image_frame_vec[i]->at(j) = (uint8_t)(256 * energy / gap_energy);
+                image_frame_vec[i]->at(j) = (uint8_t)(255 * energy / gap_energy);
             }
         } else {
             image_frame_vec[i] = nullptr;

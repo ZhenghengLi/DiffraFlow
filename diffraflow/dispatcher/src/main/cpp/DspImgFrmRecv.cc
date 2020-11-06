@@ -111,6 +111,7 @@ json::value diffraflow::DspImgFrmRecv::collect_metrics() {
     json::value frame_metrics_json;
     frame_metrics_json["total_received_count"] = json::value::number(frame_metrics.total_received_count.load());
     frame_metrics_json["total_checked_count"] = json::value::number(frame_metrics.total_checked_count.load());
+    frame_metrics_json["current_frame_queue_size"] = json::value::number((uint64_t)imgfrm_queue_.size());
 
     root_json["frame_stats"] = frame_metrics_json;
 

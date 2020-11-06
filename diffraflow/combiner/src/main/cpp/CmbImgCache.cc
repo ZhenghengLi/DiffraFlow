@@ -99,61 +99,65 @@ bool diffraflow::CmbImgCache::push_frame(const shared_ptr<ImageFrameRaw>& image_
         return false;
     }
 
-    lock_guard<mutex> data_lk(data_mtx_);
+    { // do push and alignment with data lock
+        lock_guard<mutex> data_lk(data_mtx_);
 
-    if (image_frame->get_key() < key_min_) {
-        key_min_ = image_frame->get_key();
-    }
-    if (imgfrm_queues_arr_[image_frame->module_id].empty()) {
-        num_of_empty_--;
-    }
-    imgfrm_queues_arr_[image_frame->module_id].push_back(image_frame);
-
-    int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].back()->get_key() -
-                               imgfrm_queues_arr_[image_frame->module_id].front()->get_key();
-    size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
-    if (distance_current > distance_max_) {
-        distance_max_ = distance_current;
-    }
-    if (queue_size_current > queue_size_max_) {
-        queue_size_max_ = queue_size_current;
-    }
-
-    alignment_metrics.total_pushed_frames++;
-
-    shared_ptr<ImageDataRaw> image_data;
-    while (image_data = do_alignment_(false)) {
-        if (image_data->get_key() < key_last_) {
-            image_data->late_arrived = true;
-            alignment_metrics.total_late_arrived++;
-        } else {
-            image_data->late_arrived = false;
-            key_last_ = image_data->get_key();
+        if (image_frame->get_key() < key_min_) {
+            key_min_ = image_frame->get_key();
         }
-        alignment_metrics.total_aligned_images++;
-        for (const bool& item : image_data->alignment_vec) {
-            if (!item) {
-                alignment_metrics.total_partial_images++;
-                break;
+        if (imgfrm_queues_arr_[image_frame->module_id].empty()) {
+            num_of_empty_--;
+        }
+        imgfrm_queues_arr_[image_frame->module_id].push_back(image_frame);
+
+        int64_t distance_current = imgfrm_queues_arr_[image_frame->module_id].back()->get_key() -
+                                   imgfrm_queues_arr_[image_frame->module_id].front()->get_key();
+        size_t queue_size_current = imgfrm_queues_arr_[image_frame->module_id].size();
+        if (distance_current > distance_max_) {
+            distance_max_ = distance_current;
+        }
+        if (queue_size_current > queue_size_max_) {
+            queue_size_max_ = queue_size_current;
+        }
+
+        alignment_metrics.total_pushed_frames++;
+
+        shared_ptr<ImageDataRaw> image_data;
+        while (image_data = do_alignment_(false)) {
+            if (image_data->get_key() < key_last_) {
+                image_data->late_arrived = true;
+                alignment_metrics.total_late_arrived++;
+            } else {
+                image_data->late_arrived = false;
+                key_last_ = image_data->get_key();
+            }
+            alignment_metrics.total_aligned_images++;
+            for (const bool& item : image_data->alignment_vec) {
+                if (!item) {
+                    alignment_metrics.total_partial_images++;
+                    break;
+                }
+            }
+
+            LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
+            if (imgdat_queue_.push(image_data)) {
+                queue_metrics.image_data_queue_push_counts++;
+                LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
+            } else {
+                LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
+                return false;
             }
         }
-
-        LOG4CXX_DEBUG(logger_, "before push into imgdat_queue_.");
-        if (imgdat_queue_.push(image_data)) {
-            queue_metrics.image_data_queue_push_counts++;
-            LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_queue_.");
-        } else {
-            LOG4CXX_INFO(logger_, "failed to push image data, as imgdat_queue_ is stopped.");
-            return false;
-        }
     }
 
-    lock_guard<mutex> clear_lk(clear_mtx_);
-    duration<double, milli> current_time = system_clock::now().time_since_epoch();
-    latest_push_time_ = current_time.count();
-    if (clear_flag_) {
-        clear_flag_ = false;
-        clear_cv_.notify_all();
+    { // update last push time and wake up clear worker
+        lock_guard<mutex> clear_lk(clear_mtx_);
+        duration<double, milli> current_time = system_clock::now().time_since_epoch();
+        latest_push_time_ = current_time.count();
+        if (clear_flag_) {
+            clear_flag_ = false;
+            clear_cv_.notify_all();
+        }
     }
 
     return true;

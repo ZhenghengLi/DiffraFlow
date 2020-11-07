@@ -183,6 +183,7 @@ namespace diffraflow {
         lock_guard<mutex> lk(mtx_);
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
+            cv_take_.notify_one();
             return true;
         } else {
             return false;
@@ -197,6 +198,7 @@ namespace diffraflow {
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            cv_push_.notify_one();
             return true;
         }
     }
@@ -207,6 +209,7 @@ namespace diffraflow {
         if (!lk.owns_lock()) return false;
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
+            cv_take_.notify_one();
             return true;
         } else {
             return false;
@@ -222,6 +225,8 @@ namespace diffraflow {
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            cv_push_.notify_one();
+            return true;
         }
     }
 

@@ -29,7 +29,7 @@ namespace diffraflow {
         ~SndDatTran();
 
         bool create_tcp_sender(string dispatcher_host, int dispatcher_port, uint32_t sender_id);
-        bool create_udp_sender(string dispatcher_host, int dispatcher_port);
+        bool create_udp_sender(string dispatcher_host, int dispatcher_port, int sndbufsize = 4 * 1024 * 1024);
         void delete_sender();
 
         bool read_and_send(uint32_t event_index);

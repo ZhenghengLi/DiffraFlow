@@ -33,6 +33,7 @@ namespace diffraflow {
         string sender_type; // TCP or UDP
         uint32_t sender_id;
         int sender_cpu_id;
+        int sender_buffer_size;
         string listen_host;
         int listen_port;
 

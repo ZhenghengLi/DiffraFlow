@@ -45,7 +45,8 @@ void diffraflow::SndSrvMan::start_run() {
             return;
         }
     } else if (config_obj_->sender_type == "UDP") {
-        if (data_transfer_->create_udp_sender(config_obj_->dispatcher_host, config_obj_->dispatcher_port)) {
+        if (data_transfer_->create_udp_sender(
+                config_obj_->dispatcher_host, config_obj_->dispatcher_port, config_obj_->sender_buffer_size)) {
             LOG4CXX_INFO(logger_, "successfully created UDP sender for dispatcher "
                                       << config_obj_->dispatcher_host << ":" << config_obj_->dispatcher_port);
         } else {

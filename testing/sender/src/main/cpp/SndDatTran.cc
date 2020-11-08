@@ -69,8 +69,8 @@ bool diffraflow::SndDatTran::create_tcp_sender(string dispatcher_host, int dispa
     }
 }
 
-bool diffraflow::SndDatTran::create_udp_sender(string dispatcher_host, int dispatcher_port) {
-    udp_sender_ = new SndUdpSender();
+bool diffraflow::SndDatTran::create_udp_sender(string dispatcher_host, int dispatcher_port, int sndbufsize) {
+    udp_sender_ = new SndUdpSender(sndbufsize);
     if (udp_sender_->init_addr_sock(dispatcher_host, dispatcher_port)) {
         LOG4CXX_INFO(
             logger_, "successfully initialized udp socket for dispatcher: " << udp_sender_->get_receiver_address());

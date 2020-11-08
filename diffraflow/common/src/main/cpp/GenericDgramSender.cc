@@ -13,10 +13,17 @@
 
 log4cxx::LoggerPtr diffraflow::GenericDgramSender::logger_ = log4cxx::Logger::getLogger("GenericDgramSender");
 
-diffraflow::GenericDgramSender::GenericDgramSender() {
+diffraflow::GenericDgramSender::GenericDgramSender(int sndbufsize) {
     receiver_sock_host_ = "";
     receiver_sock_port_ = -1;
     sender_sock_fd_ = -1;
+    if (sndbufsize < 512 * 1024) {
+        sender_sock_bs_ = 512 * 1024;
+    } else if (sndbufsize > 64 * 1024 * 1024) {
+        sender_sock_bs_ = 64 * 1024 * 1024;
+    } else {
+        sender_sock_bs_ = sndbufsize;
+    }
     memset(&receiver_addr_, 0, sizeof(receiver_addr_));
     // init metrics
     dgram_metrics.total_send_count = 0;
@@ -66,8 +73,7 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
     sender_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
 
     // set larger sender buffer
-    int sndbufsize = 4 * 1024 * 1024; // 4 MiB
-    setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sndbufsize, sizeof(sndbufsize));
+    setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sender_sock_bs_, sizeof(sender_sock_bs_));
 
     if (sender_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));

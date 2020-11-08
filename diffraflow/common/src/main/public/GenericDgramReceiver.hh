@@ -26,7 +26,7 @@ using std::make_shared;
 namespace diffraflow {
     class GenericDgramReceiver : public MetricsProvider {
     public:
-        GenericDgramReceiver(string host, int port);
+        GenericDgramReceiver(string host, int port, int rcvbufsize = 56 * 1024 * 1024);
         virtual ~GenericDgramReceiver();
 
         bool start(int cpu_id = -1);
@@ -61,6 +61,7 @@ namespace diffraflow {
         string receiver_sock_host_;
         int receiver_sock_port_;
         int receiver_sock_fd_;
+        int receiver_sock_bs_;
 
         struct sockaddr_in receiver_addr_;
         struct sockaddr_in sender_addr_;

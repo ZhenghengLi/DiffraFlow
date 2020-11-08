@@ -16,8 +16,15 @@ using std::unique_lock;
 
 log4cxx::LoggerPtr diffraflow::GenericDgramReceiver::logger_ = log4cxx::Logger::getLogger("GenericDgramReceiver");
 
-diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port) {
+diffraflow::GenericDgramReceiver::GenericDgramReceiver(string host, int port, int rcvbufsize) {
     receiver_sock_fd_ = -1;
+    if (rcvbufsize < 512 * 1024) {
+        receiver_sock_bs_ = 512 * 1024;
+    } else if (rcvbufsize > 64 * 1024 * 1024) {
+        receiver_sock_bs_ = 64 * 1024 * 1024;
+    } else {
+        receiver_sock_bs_ = rcvbufsize;
+    }
     receiver_sock_host_ = host;
     receiver_sock_port_ = port;
     receiver_status_ = kNotStart;
@@ -60,8 +67,7 @@ bool diffraflow::GenericDgramReceiver::create_udp_sock_() {
     }
 
     // set larger receive buffer
-    int rcvbufsize = 56 * 1024 * 1024; // 56 MiB
-    setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&rcvbufsize, sizeof(rcvbufsize));
+    setsockopt(receiver_sock_fd_, SOL_SOCKET, SO_RCVBUF, (char*)&receiver_sock_bs_, sizeof(receiver_sock_bs_));
 
     // bind address
     if (bind(receiver_sock_fd_, (struct sockaddr*)&receiver_addr_, sizeof(receiver_addr_)) < 0) {

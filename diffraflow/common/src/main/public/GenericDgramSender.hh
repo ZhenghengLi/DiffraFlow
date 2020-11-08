@@ -14,7 +14,7 @@ using std::atomic;
 namespace diffraflow {
     class GenericDgramSender : public MetricsProvider {
     public:
-        GenericDgramSender();
+        explicit GenericDgramSender(int sndbufsize = 4 * 1024 * 1024);
         virtual ~GenericDgramSender();
 
         bool init_addr_sock(string host, int port);
@@ -40,6 +40,7 @@ namespace diffraflow {
         int receiver_sock_port_;
 
         int sender_sock_fd_;
+        int sender_sock_bs_;
 
         struct sockaddr_in receiver_addr_;
         socklen_t receiver_addr_len_;

@@ -20,6 +20,7 @@ log4cxx::LoggerPtr diffraflow::DspConfig::logger_ = log4cxx::Logger::getLogger("
 diffraflow::DspConfig::DspConfig() {
     dispatcher_id = 0;
     dgram_recv_cpu_id = -1;
+    dgram_recv_buffer_size = 56 * 1024 * 1024;
     listen_host = "0.0.0.0";
     listen_port = -1;
     max_queue_size = 1000;
@@ -48,6 +49,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             dispatcher_id = atoi(value.c_str());
         } else if (key == "dgram_recv_cpu_id") {
             dgram_recv_cpu_id = atoi(value.c_str());
+        } else if (key == "dgram_recv_buffer_size") {
+            dgram_recv_buffer_size = atoi(value.c_str());
         } else if (key == "max_queue_size") {
             max_queue_size = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
@@ -98,6 +101,13 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "max_queue_size is too small (<100), use 100 instead.");
         max_queue_size = 100;
     }
+    if (dgram_recv_buffer_size < 512 * 1024) {
+        LOG4CXX_WARN(logger_, "dgram_recv_buffer_size it too small (< 512 kiB) use 512 kiB instead.");
+        dgram_recv_buffer_size = 512 * 1024;
+    } else if (dgram_recv_buffer_size > 64 * 1024 * 1024) {
+        LOG4CXX_WARN(logger_, "dgram_recv_buffer_size is too large (> 64 MiB), use 64 MiB instead.");
+        dgram_recv_buffer_size = 64 * 1024 * 1024;
+    }
     if (metrics_pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");
         metrics_pulsar_report_period = 500;
@@ -120,6 +130,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
         static_config_json_["listen_port"] = json::value::number(listen_port);
         static_config_json_["max_queue_size"] = json::value::number(max_queue_size);
         static_config_json_["dgram_recv_cpu_id"] = json::value::number(dgram_recv_cpu_id);
+        static_config_json_["dgram_recv_buffer_size"] = json::value::number(dgram_recv_buffer_size);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
         metrics_config_json_["metrics_pulsar_topic_name"] = json::value::string(metrics_pulsar_topic_name);
@@ -139,6 +150,7 @@ void diffraflow::DspConfig::print() {
     cout << "  listen_port = " << listen_port << endl;
     cout << "  dispatcher_id = " << dispatcher_id << endl;
     cout << "  dgram_recv_cpu_id = " << dgram_recv_cpu_id << endl;
+    cout << "  dgram_recv_buffer_size = " << dgram_recv_buffer_size << endl;
     cout << "  max_queue_size = " << max_queue_size << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;

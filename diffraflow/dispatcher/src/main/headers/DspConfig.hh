@@ -28,6 +28,7 @@ namespace diffraflow {
     public:
         uint32_t dispatcher_id;
         int dgram_recv_cpu_id;
+        int dgram_recv_buffer_size;
         string listen_host;
         int listen_port;
         int max_queue_size;

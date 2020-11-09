@@ -197,7 +197,7 @@ void diffraflow::MonImgHttpServer::do_analysis_(
     const ImageDataFeature& image_data_feature, ImageAnalysisResult& image_analysis_result) {
     // do some heavy analysis here and save result into image_analysis_result
     image_analysis_result.int_result = 123;
-    image_analysis_result.float_result = 456;
+    image_analysis_result.float_result = 456.789;
 }
 
 void diffraflow::MonImgHttpServer::handleGet_(http_request message) {

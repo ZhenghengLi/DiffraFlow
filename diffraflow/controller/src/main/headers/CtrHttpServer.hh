@@ -38,6 +38,7 @@ namespace diffraflow {
 
     public:
         struct {
+            atomic<uint64_t> total_options_request_count;
             atomic<uint64_t> total_get_request_count;
             atomic<uint64_t> total_event_request_count;
             atomic<uint64_t> total_event_sent_count;
@@ -63,11 +64,12 @@ namespace diffraflow {
         DynamicConfiguration* zookeeper_config_client_;
 
     private:
-        void handleGet_(http_request message);   // zookeeper_fetch_config | zookeeper_get_children
-        void handlePost_(http_request message);  // zookeeper_create_config
-        void handlePut_(http_request message);   // zookeeper_change_config
-        void handlePatch_(http_request message); // zookeeper_fetch_config & zookeeper_change_config
-        void handleDel_(http_request message);   // zookeeper_delete_config
+        void handleGet_(http_request message);     // zookeeper_fetch_config | zookeeper_get_children
+        void handlePost_(http_request message);    // zookeeper_create_config
+        void handlePut_(http_request message);     // zookeeper_change_config
+        void handlePatch_(http_request message);   // zookeeper_fetch_config & zookeeper_change_config
+        void handleDel_(http_request message);     // zookeeper_delete_config
+        void handleOptions_(http_request message); // for preflight request from browser
 
     private:
         static log4cxx::LoggerPtr logger_;

@@ -30,6 +30,7 @@ diffraflow::CtrHttpServer::CtrHttpServer(CtrMonLoadBalancer* mon_ld_bl, DynamicC
     zookeeper_config_client_ = zk_conf_client;
 
     // metrics init
+    http_metrics.total_options_request_count = 0;
     http_metrics.total_get_request_count = 0;
     http_metrics.total_event_request_count = 0;
     http_metrics.total_event_sent_count = 0;
@@ -57,6 +58,7 @@ bool diffraflow::CtrHttpServer::start(string host, int port) {
     uri_b.set_host(host);
     uri_b.set_port(port);
     listener_ = new http_listener(uri_b.to_uri());
+    listener_->support(methods::OPTIONS, std::bind(&CtrHttpServer::handleOptions_, this, std::placeholders::_1));
     listener_->support(methods::GET, std::bind(&CtrHttpServer::handleGet_, this, std::placeholders::_1));
     listener_->support(methods::POST, std::bind(&CtrHttpServer::handlePost_, this, std::placeholders::_1));
     listener_->support(methods::PUT, std::bind(&CtrHttpServer::handlePut_, this, std::placeholders::_1));
@@ -98,6 +100,20 @@ void diffraflow::CtrHttpServer::stop() {
 void diffraflow::CtrHttpServer::wait() {
     unique_lock<mutex> ulk(mtx_status_);
     cv_status_.wait(ulk, [this]() { return server_status_ != kRunning; });
+}
+
+void diffraflow::CtrHttpServer::handleOptions_(http_request message) {
+
+    http_metrics.total_options_request_count++;
+
+    http_response response;
+    response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
+    response.headers().add(U("Access-Control-Allow-Methods"), U("*"));
+    response.headers().add(U("Access-Control-Allow-Headers"), U("*"));
+    response.headers().add(U("Access-Control-Max-Age"), U("600"));
+    response.set_status_code(status_codes::OK);
+
+    message.reply(response).get();
 }
 
 void diffraflow::CtrHttpServer::handleGet_(http_request message) {
@@ -491,6 +507,7 @@ json::value diffraflow::CtrHttpServer::collect_metrics() {
 
     json::value root_json;
 
+    root_json["total_options_request_counts"] = json::value::number(http_metrics.total_options_request_count.load());
     root_json["total_get_request_counts"] = json::value::number(http_metrics.total_get_request_count.load());
     root_json["total_event_request_counts"] = json::value::number(http_metrics.total_event_request_count.load());
     root_json["total_event_sent_counts"] = json::value::number(http_metrics.total_event_sent_count.load());

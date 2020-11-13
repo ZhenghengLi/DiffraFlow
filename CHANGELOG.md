@@ -9,7 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- [ ] dashboard: dynamically visualizes current image data, analysis results, and system working status, and provides a graphic user interface to configure the runtime parameters of **ingester** and **monitor** via REST API.
+- next step: GPU algorithms in **ingester**.
+
+## [0.1.1] - 2020-11-13
+
+### Added
+
+- **aggregator**: add configuration for subscription name and add support for consuming compacted topics from Pulsar.
+- Add deployment files for dashboard which is maintained in another project.
+- Add header 'Access-Control-Allow-Origin: *' for all http responses.
+- **controller**: add code to handle HTTP OPTIONS requests from web browser by fetch API.
+
+### Changed
+
+- The code of aggregator is simplified: use a common consumer class for all components, while different components use different instances.
+- deploy **trigger**, **aggregator**, **controller** and **dashboard** on different nodes instead of the same one.
+- **monitor**: use fixed energy range for image data conversion for visualization instead of dynamic one.
+- **sender** and **dispatcher**: buffer size of UDP socket can be configured by configuration file.
+
+### Fixed
+
+- **monitor**: fix a energy range mistake in image data conversion function.
+- **combiner**: fix a deadlock problem related to clear worker thread.
+- BlockingQueue: fix the forgetting of thread notifying in offer(), get(), try_offer() and try_get() methods.
 
 ## [0.1.0] - 2020-09-30
 

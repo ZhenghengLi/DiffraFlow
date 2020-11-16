@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: docker-registry-ui
+  namespace: diffraflow
+  labels:
+    k8s-app: docker-registry-ui
+spec:
+  selector:
+    matchLabels:
+      name: docker-registry-ui
+  template:
+    metadata:
+      labels:
+        name: docker-registry-ui
+    spec:
+      containers:
+        - name: docker-registry-ui
+          image: joxit/docker-registry-ui:static
+          ports:
+            - containerPort: 80
+              hostPort: 25080
+          env:
+            - name: REGISTRY_URL
+              value: https://10.15.86.19:25443
+            - name: DELETE_IMAGES
+              value: "true"
+      nodeSelector:
+        kubernetes.io/hostname: kube-master-0
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists

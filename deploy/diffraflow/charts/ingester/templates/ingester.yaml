@@ -17,22 +17,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      imagePullSecrets:
-        - name: docker-hub-zhenghengli
-      # initContainers:
-      #   - name: combiner-cnxn-checker
-      #     image: zhenghengli/diffraflow:latest
-      #     command:
-      #       - check_cnxn_address.sh
-      #       - "$(NODE_IP):{{ .Values.combinerPort }}"
-      #     env:
-      #       - name: NODE_IP
-      #         valueFrom:
-      #           fieldRef:
-      #             fieldPath: status.hostIP
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       containers:
         - name: ingester
-          image: zhenghengli/diffraflow:latest
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
           command:
             - ingester
             - --config=/config/ingester.conf

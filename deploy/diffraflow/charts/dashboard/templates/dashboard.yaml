@@ -14,11 +14,12 @@ spec:
       labels:
         name: dashboard-{{ .Values.nameSuffix }}
     spec:
-      imagePullSecrets:
-        - name: docker-hub-zhenghengli
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       containers:
         - name: dashboard
-          image: zhenghengli/diffraflow-dashboard:latest
+          # image: zhenghengli/diffraflow-dashboard:latest
+          image: 10.15.86.19:25443/diffraflow-dashboard:latest
           ports:
             - containerPort: 80
               hostPort: {{.Values.httpPort}}

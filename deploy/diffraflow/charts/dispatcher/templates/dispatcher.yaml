@@ -18,11 +18,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      imagePullSecrets:
-        - name: docker-hub-zhenghengli
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       initContainers:
         - name: combiner-cnxn-checker
-          image: zhenghengli/diffraflow:latest
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
           command:
             - check_cnxn_addrlist.sh
             - /config/combiner_addresses.txt
@@ -31,7 +32,8 @@ spec:
               mountPath: /config
       containers:
         - name: dispatcher
-          image: zhenghengli/diffraflow:latest
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
           command:
             - dispatcher
             - --config=/config/dispatcher.conf

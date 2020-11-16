@@ -18,11 +18,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      imagePullSecrets:
-        - name: docker-hub-zhenghengli
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       containers:
         - name: sender
-          image: zhenghengli/diffraflow:latest
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
           command:
             - sender
             - --config=/config/sender.conf

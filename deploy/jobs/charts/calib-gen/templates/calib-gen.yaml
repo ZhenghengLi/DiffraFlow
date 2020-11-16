@@ -14,11 +14,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      imagePullSecrets:
-        - name: docker-hub-zhenghengli
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       containers:
         - name: calib-gen
-          image: zhenghengli/diffraflow:latest
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
           command:
             - calib_gen.py
             - -s 0

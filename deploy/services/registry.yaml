@@ -27,6 +27,8 @@ spec:
               value: /certs/cu01.crt
             - name: REGISTRY_HTTP_TLS_KEY
               value: /certs/cu01.key
+            - name: REGISTRY_STORAGE_DELETE_ENABLED
+              value: "true"
           volumeMounts:
             - name: certs
               mountPath: /certs

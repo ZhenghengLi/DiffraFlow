@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: docker-registry
+  namespace: diffraflow
+  labels:
+    k8s-app: docker-registry
+spec:
+  selector:
+    matchLabels:
+      name: docker-registry
+  template:
+    metadata:
+      labels:
+        name: docker-registry
+    spec:
+      containers:
+        - name: docker-registry
+          image: registry:2
+          ports:
+            - containerPort: 443
+              hostPort: 25443
+          env:
+            - name: REGISTRY_HTTP_ADDR
+              value: 0.0.0.0:443
+            - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              value: /certs/cu01.crt
+            - name: REGISTRY_HTTP_TLS_KEY
+              value: /certs/cu01.key
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/registry
+      nodeSelector:
+        kubernetes.io/hostname: kube-master-0
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+      volumes:
+        - name: certs
+          hostPath:
+            path: /kubernetes/registry/certs
+        - name: data
+          hostPath:
+            path: /kubernetes/registry/data

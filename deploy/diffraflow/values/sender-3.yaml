@@ -5,7 +5,7 @@ listenPort: 27631
 httpListenPort: 27632
 rawDataDir: /kubernetes/data/lizhh1/diffraflow/sender
 nodeMap: |
-  kube-master-0, 8, 10.15.85.32, 27211
-  kube-worker-1, 9, 10.15.85.33, 27211
-  kube-worker-2, 10, 10.15.85.34, 27211
-  kube-worker-3, 11, 10.15.85.35, 27211
+  kube-master-0, 8, 10.15.85.32, 27231
+  kube-worker-1, 9, 10.15.85.33, 27231
+  kube-worker-2, 10, 10.15.85.34, 27231
+  kube-worker-3, 11, 10.15.85.35, 27231

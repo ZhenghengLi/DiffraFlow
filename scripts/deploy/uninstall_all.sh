@@ -18,6 +18,9 @@ helm -n diffraflow uninstall ingester-06
 helm -n diffraflow uninstall ingester-07
 helm -n diffraflow uninstall ingester-08
 helm -n diffraflow uninstall dispatcher-1
+helm -n diffraflow uninstall dispatcher-2
+helm -n diffraflow uninstall dispatcher-3
+helm -n diffraflow uninstall dispatcher-4
 helm -n diffraflow uninstall combiner-1
 helm -n diffraflow uninstall combiner-2
 

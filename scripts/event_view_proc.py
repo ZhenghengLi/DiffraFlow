@@ -12,27 +12,24 @@ from cxidb_euxfel_utils import get_image_dset, compose_image
 parser = argparse.ArgumentParser(description='view an event')
 parser.add_argument("data_dir", help="directory that contains input data files")
 parser.add_argument("align_file", help="alignment file")
-parser.add_argument("start_event", help="start event", type=int)
-parser.add_argument("cell_offset", help="cell offset", type=int)
+parser.add_argument("event_num", help="event number", type=int)
 parser.add_argument("-s", dest="seg_count", help="segments count", default=3, type=int)
 parser.add_argument("-a", dest="min_z", help="minimum z value", default=-100, type=int)
 parser.add_argument("-b", dest="max_z", help="maximum z value", default=1200, type=int)
 args = parser.parse_args()
 
-event_num = args.start_event + args.cell_offset * 64
-
 align_idx_h5file = h5py.File(args.align_file, 'r')
 align_idx_dset = align_idx_h5file['alignment_index']
 
-if event_num < 0:
+if args.event_num < 0:
     print("event_num < 0")
     exit(1)
 
-if event_num >= align_idx_dset.shape[0]:
+if args.event_num >= align_idx_dset.shape[0]:
     print("event_num is too large.")
     exit(1)
 
-index_mat = align_idx_dset[event_num]
+index_mat = align_idx_dset[args.event_num]
 
 align_idx_h5file.close()
 

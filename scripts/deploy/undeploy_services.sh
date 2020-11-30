@@ -8,3 +8,6 @@ kubectl delete -f $yaml_dir/pulsar-broker.yaml
 kubectl delete -f $yaml_dir/pulsar-bookkeeper.yaml
 kubectl delete -f $yaml_dir/zookeeper.yaml
 
+kubectl delete -f $yaml_dir/registry-ui.yaml
+kubectl delete -f $yaml_dir/registry.yaml
+

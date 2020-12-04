@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: GPU algorithms in **ingester**.
 
+## [0.1.2] - 2020-12-04
+
+### Added
+
+- Add deployment files for local Docker Registry and Docker Registry UI.
+- Add script bunch_id_2_event_num.py.
+
+### Changed
+
+- Use local Docker Registry instead of Docker Hub for the deployment of all core components.
+- Make it default to deploy two combiners on each GPU node.
+
 ## [0.1.1] - 2020-11-13
 
 ### Added

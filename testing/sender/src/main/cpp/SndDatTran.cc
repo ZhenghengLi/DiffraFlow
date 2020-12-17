@@ -157,7 +157,7 @@ void diffraflow::SndDatTran::stop_sender() {
     }
 }
 
-bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
+bool diffraflow::SndDatTran::read_and_send(uint32_t bunch_id) {
 
     transfer_metrics.invoke_counts++;
 
@@ -166,18 +166,13 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         return false;
     }
 
+    uint32_t event_index = bunch_id % config_obj_->total_events;
+
     unique_lock<mutex> data_lk(data_mtx_, std::try_to_lock);
     if (!data_lk.owns_lock()) {
         LOG4CXX_WARN(
             logger_, "data transfer of a previous event is on going, and event " << event_index << " is jumped.");
         transfer_metrics.busy_counts++;
-        return false;
-    }
-
-    if (event_index >= config_obj_->total_events) {
-        LOG4CXX_WARN(
-            logger_, "event index " << event_index << " is larger than total events" << config_obj_->total_events);
-        transfer_metrics.large_index_counts++;
         return false;
     }
 
@@ -234,6 +229,16 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t event_index) {
         } else {
             LOG4CXX_WARN(logger_, "event_index " << event_index << " does not match with " << key << ".");
             return false;
+        }
+
+        // modify bunch_id, status and crc if bunch_id != event_index
+        if (bunch_id != event_index) {
+            // set bunch_id
+            gPS.serializeValue(bunch_id, frame_buffer_ + 12, 8);
+            // tag this by status
+            gPS.serializeValue(0xFFFF, frame_buffer_ + 10, 2);
+            // invalid crc
+            gPS.serializeValue(0, frame_buffer_ + 131092, 4);
         }
 
         if (sender_type_ == kTCP) {

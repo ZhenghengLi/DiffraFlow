@@ -1,6 +1,6 @@
 #!/bin/bash
 
-interval=370
+interval=375
 if [[ -n $1 && $1 -ge 0 ]]; then
     interval=$1
 fi

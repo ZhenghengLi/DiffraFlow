@@ -2,7 +2,14 @@
 #include "IngImgWthFtrQueue.hh"
 #include "IngConfig.hh"
 #include <regex>
+#include <cstdlib>
+#include <limits>
+#include <chrono>
 #include <boost/filesystem.hpp>
+
+using std::chrono::duration;
+using std::chrono::system_clock;
+using std::numeric_limits;
 
 namespace bf = boost::filesystem;
 namespace bs = boost::system;
@@ -19,6 +26,7 @@ diffraflow::IngImageWriter::IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngC
     current_run_number_ = config_obj_->get_dy_run_number();
     current_turn_number_ = 0;
     current_sequence_number_ = 0;
+    current_imgcnt_limit_ = 0;
     current_saved_counts_ = 0;
     total_saved_counts_ = 0;
     total_opened_counts_ = 0;
@@ -64,7 +72,7 @@ int diffraflow::IngImageWriter::run_() {
         }
 
         if (save_image_(image_with_feature)) {
-            if (current_saved_counts_.load() >= config_obj_->file_imgcnt_limit) {
+            if (current_saved_counts_.load() >= current_imgcnt_limit_.load()) {
                 LOG4CXX_INFO(logger_, "file limit reached, reopen new files.");
                 close_file_();
                 open_file_();
@@ -246,6 +254,18 @@ bool diffraflow::IngImageWriter::open_file_() {
     }
 
     current_sequence_number_++;
+
+    // if (current_sequence_number_ > 0) {
+    //     current_imgcnt_limit_ = config_obj_->file_imgcnt_limit;
+    // } else {
+    duration<double, std::nano> current_time = system_clock::now().time_since_epoch();
+    uint32_t seed = (uint64_t)current_time.count() % numeric_limits<uint32_t>::max();
+    srand(seed);
+    int start = config_obj_->file_imgcnt_limit * 0.6;
+    int rand_len = config_obj_->file_imgcnt_limit * 0.8;
+    int rand_offset = 1 + rand() % rand_len;
+    current_imgcnt_limit_ = start + rand_offset;
+    // }
 
     // construct file path
     char str_buffer[STR_BUFF_SIZE];

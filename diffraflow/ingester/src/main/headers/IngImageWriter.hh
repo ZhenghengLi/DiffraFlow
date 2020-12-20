@@ -72,6 +72,7 @@ namespace diffraflow {
         atomic<int> current_run_number_;
         atomic<int> current_turn_number_;
         atomic<int> current_sequence_number_;
+        atomic<int> current_imgcnt_limit_;
         atomic<int> current_saved_counts_;
         atomic<uint64_t> total_saved_counts_;
         atomic<int> total_opened_counts_;

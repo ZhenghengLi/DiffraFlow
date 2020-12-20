@@ -6,7 +6,7 @@ if [[ -n $1 && $1 -ge 0 ]]; then
 fi
 
 counts=89000
-if [[ -n $2 && $2 -le 89000 && $2 -gt 0 ]]; then
+if [[ -n $2 && $2 -gt 0 ]]; then
     counts=$2
 fi
 

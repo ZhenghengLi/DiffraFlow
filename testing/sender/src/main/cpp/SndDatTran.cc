@@ -234,11 +234,11 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t bunch_id) {
         // modify bunch_id, status and crc if bunch_id != event_index
         if (bunch_id != event_index) {
             // set bunch_id
-            gPS.serializeValue(bunch_id, frame_buffer_ + 12, 8);
+            gPS.serializeValue<uint64_t>(bunch_id, frame_buffer_ + 12, 8);
             // tag this by status
-            gPS.serializeValue(0xFFFF, frame_buffer_ + 10, 2);
+            gPS.serializeValue<uint16_t>(0xFFFF, frame_buffer_ + 10, 2);
             // invalid crc
-            gPS.serializeValue(0, frame_buffer_ + 131092, 4);
+            gPS.serializeValue<uint32_t>(0, frame_buffer_ + 131092, 4);
         }
 
         if (sender_type_ == kTCP) {

@@ -17,7 +17,7 @@ data:
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}
     # pulsar
-    metrics_pulsar_broker_address = pulsar://pulsar-broker:6650
+    metrics_pulsar_broker_address = pulsar://10.15.39.20:6650,10.15.39.21:6650,10.15.39.22:6650,10.15.39.23:6650
     metrics_pulsar_topic_name = persistent://zhenghengli/diffraflow-metrics/combiner
     metrics_pulsar_message_key = combiner-{{ .Values.nameSuffix }}@NODE_NAME
     metrics_pulsar_report_period = 900

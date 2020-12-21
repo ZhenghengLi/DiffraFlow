@@ -21,7 +21,7 @@ data:
     image_http_port = {{ .Values.imageHttpPort }}
     recnxn_wait_time = 1000
     recnxn_max_count = 5
-    imgdat_queue_capacity = 200
+    imgdat_queue_capacity = 150
 
     calib_param_file = /calib-data/calib-rand-s0.h5
 

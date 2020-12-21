@@ -14,7 +14,6 @@ spec:
       labels:
         name: combiner-{{ .Values.nameSuffix }}
     spec:
-      hostNetwork: true
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010

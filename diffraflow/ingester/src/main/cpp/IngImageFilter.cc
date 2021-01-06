@@ -31,10 +31,10 @@ int diffraflow::IngImageFilter::run_() {
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
         if (check_for_save_(*image_with_feature->image_feature)) {
             filter_metrics.total_images_for_save++;
-            if (image_queue_out_->push(image_with_feature)) {
+            if (image_queue_out_->offer(image_with_feature)) {
                 LOG4CXX_DEBUG(logger_, "pushed the one good image into queue for saving.");
             } else {
-                break;
+                // break;
             }
         }
         if (check_for_monitor_(*image_with_feature->image_feature)) {

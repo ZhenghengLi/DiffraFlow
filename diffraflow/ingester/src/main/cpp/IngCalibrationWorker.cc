@@ -88,57 +88,58 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
 
     ImageDataType::Field& image_data = *image_with_feature->image_data;
 
-    // for (size_t m = 0; m < MOD_CNT; m++) {
-    //     if (image_data.alignment[m]) {
-    //         for (size_t h = 0; h < FRAME_H; h++) {
-    //             for (size_t w = 0; w < FRAME_W; w++) {
-    //                 size_t l = image_data.gain_level[m][h][w];
-    //                 if (l < LEVEL_CNT) {
-    //                     image_data.pixel_data[m][h][w] =
-    //                         (image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w]) * calib_gain_[m][l][h][w];
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // ==== common noise subtraction test begin ====
-
-    // subtract pedestal
     for (size_t m = 0; m < MOD_CNT; m++) {
         if (image_data.alignment[m]) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     size_t l = image_data.gain_level[m][h][w];
                     if (l < LEVEL_CNT) {
-                        image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w];
+                        image_data.pixel_data[m][h][w] =
+                            (image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w]) * calib_gain_[m][l][h][w];
                     }
                 }
             }
         }
     }
 
-    double common_noise[MOD_CNT];
-    for (size_t m = 0; m < MOD_CNT; m++) {
-        // calculate common noise
-        common_noise[m] = 0;
-        for (size_t h = 0; h < FRAME_H; h++) {
-            for (size_t w = 0; w < FRAME_W; w++) {
-                common_noise[m] += image_data.pixel_data[m][h][w];
-            }
-        }
-        common_noise[m] /= 65536.;
-        // subtract common noise and correct gain
-        for (size_t h = 0; h < FRAME_H; h++) {
-            for (size_t w = 0; w < FRAME_W; w++) {
-                size_t l = image_data.gain_level[m][h][w];
-                if (l < LEVEL_CNT) {
-                    double tmp_adc = image_data.pixel_data[m][h][w] - common_noise[m];
-                    image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] * calib_gain_[m][l][h][w];
-                }
-            }
-        }
-    }
+    // ==== common noise subtraction test begin ====
+
+    // subtract pedestal
+    // for (size_t m = 0; m < MOD_CNT; m++) {
+    //     if (image_data.alignment[m]) {
+    //         for (size_t h = 0; h < FRAME_H; h++) {
+    //             for (size_t w = 0; w < FRAME_W; w++) {
+    //                 size_t l = image_data.gain_level[m][h][w];
+    //                 if (l < LEVEL_CNT) {
+    //                     image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] -
+    //                     calib_pedestal_[m][l][h][w];
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    // double common_noise[MOD_CNT];
+    // for (size_t m = 0; m < MOD_CNT; m++) {
+    //     // calculate common noise
+    //     common_noise[m] = 0;
+    //     for (size_t h = 0; h < FRAME_H; h++) {
+    //         for (size_t w = 0; w < FRAME_W; w++) {
+    //             common_noise[m] += image_data.pixel_data[m][h][w];
+    //         }
+    //     }
+    //     common_noise[m] /= 65536.;
+    //     // subtract common noise and correct gain
+    //     for (size_t h = 0; h < FRAME_H; h++) {
+    //         for (size_t w = 0; w < FRAME_W; w++) {
+    //             size_t l = image_data.gain_level[m][h][w];
+    //             if (l < LEVEL_CNT) {
+    //                 double tmp_adc = image_data.pixel_data[m][h][w] - common_noise[m];
+    //                 image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] * calib_gain_[m][l][h][w];
+    //             }
+    //         }
+    //     }
+    // }
 
     // ==== common noise subtraction test end ====
 

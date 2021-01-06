@@ -6,6 +6,7 @@
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
+#include "IngImgWthFtrQueue.hh"
 
 using std::atomic_bool;
 using std::mutex;
@@ -13,7 +14,6 @@ using std::mutex;
 namespace diffraflow {
 
     class IngConfig;
-    class IngImgWthFtrQueue;
     class IngImgDatFetcher;
     class IngCalibrationWorker;
     class IngFeatureExtracter;

@@ -23,7 +23,7 @@ namespace diffraflow {
         explicit BlockingQueue(size_t ms = 100);
         BlockingQueue(const BlockingQueue<E>& bq);
         BlockingQueue<E>& operator=(const BlockingQueue<E>& bq);
-        ~BlockingQueue();
+        virtual ~BlockingQueue();
 
         // synchronized methods
         void set_maxsize(size_t ms);
@@ -49,7 +49,7 @@ namespace diffraflow {
         // non-blocking take only when get lock and have element
         bool try_get(E& el);
 
-        void stop();
+        void stop(int wait_time = 0);
         bool stopped();
         void resume();
 
@@ -61,16 +61,15 @@ namespace diffraflow {
         atomic<bool> stopped_;
         atomic<size_t> max_size_;
 
-        mutex mtx_;
+        mutex data_mtx_;
         condition_variable cv_push_;
         condition_variable cv_take_;
+        condition_variable cv_stop_;
     };
 
     template <typename E>
-    BlockingQueue<E>::BlockingQueue(size_t ms) {
-        max_size_ = ms;
+    BlockingQueue<E>::BlockingQueue(size_t ms) : max_size_(ms), stopped_(false) {
         internal_queue_ = new queue<E>();
-        stopped_ = false;
     }
 
     template <typename E>
@@ -110,20 +109,20 @@ namespace diffraflow {
 
     template <typename E>
     size_t BlockingQueue<E>::size() {
-        lock_guard<mutex> lk(mtx_);
+        lock_guard<mutex> lk(data_mtx_);
         return internal_queue_->size();
     }
 
     template <typename E>
     bool BlockingQueue<E>::empty() {
-        lock_guard<mutex> lk(mtx_);
+        lock_guard<mutex> lk(data_mtx_);
         return internal_queue_->empty();
     }
 
     template <typename E>
     bool BlockingQueue<E>::push(const E& el) {
         if (stopped_) return false;
-        unique_lock<mutex> lk(mtx_);
+        unique_lock<mutex> lk(data_mtx_);
         cv_push_.wait(lk, [&]() { return stopped_ || internal_queue_->size() < max_size_; });
         if (stopped_) return false;
         internal_queue_->push(el);
@@ -135,7 +134,7 @@ namespace diffraflow {
     bool BlockingQueue<E>::push(const E& el, int timeout) {
         if (stopped_) return false;
         if (timeout < 0) return false;
-        unique_lock<mutex> lk(mtx_);
+        unique_lock<mutex> lk(data_mtx_);
         if (cv_push_.wait_for(lk, std::chrono::milliseconds(timeout),
                 [&]() { return stopped_ || internal_queue_->size() < max_size_; })) {
             if (stopped_) return false;
@@ -150,13 +149,16 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::take(E& el) {
-        unique_lock<mutex> lk(mtx_);
+        unique_lock<mutex> lk(data_mtx_);
         cv_take_.wait(lk, [&]() { return stopped_ || !internal_queue_->empty(); });
         if (internal_queue_->empty()) {
             return false;
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            if (internal_queue_->empty()) {
+                cv_stop_.notify_all();
+            }
             cv_push_.notify_one();
             return true;
         }
@@ -165,7 +167,7 @@ namespace diffraflow {
     template <typename E>
     bool BlockingQueue<E>::take(E& el, int timeout) {
         if (timeout < 0) return false;
-        unique_lock<mutex> lk(mtx_);
+        unique_lock<mutex> lk(data_mtx_);
         cv_take_.wait_for(
             lk, std::chrono::milliseconds(timeout), [&]() { return stopped_ || !internal_queue_->empty(); });
         if (internal_queue_->empty()) {
@@ -173,6 +175,9 @@ namespace diffraflow {
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            if (internal_queue_->empty()) {
+                cv_stop_.notify_all();
+            }
             cv_push_.notify_one();
             return true;
         }
@@ -180,7 +185,7 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::offer(const E& el) {
-        lock_guard<mutex> lk(mtx_);
+        lock_guard<mutex> lk(data_mtx_);
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
             cv_take_.notify_one();
@@ -192,12 +197,15 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::get(E& el) {
-        lock_guard<mutex> lk(mtx_);
+        lock_guard<mutex> lk(data_mtx_);
         if (internal_queue_->empty()) {
             return false;
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            if (internal_queue_->empty()) {
+                cv_stop_.notify_all();
+            }
             cv_push_.notify_one();
             return true;
         }
@@ -205,7 +213,7 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::try_offer(const E& el) {
-        unique_lock<mutex> lk(mtx_, std::try_to_lock);
+        unique_lock<mutex> lk(data_mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->size() < max_size_) {
             internal_queue_->push(el);
@@ -218,22 +226,29 @@ namespace diffraflow {
 
     template <typename E>
     bool BlockingQueue<E>::try_get(E& el) {
-        unique_lock<mutex> lk(mtx_, std::try_to_lock);
+        unique_lock<mutex> lk(data_mtx_, std::try_to_lock);
         if (!lk.owns_lock()) return false;
         if (internal_queue_->empty()) {
             return false;
         } else {
             el = internal_queue_->front();
             internal_queue_->pop();
+            if (internal_queue_->empty()) {
+                cv_stop_.notify_all();
+            }
             cv_push_.notify_one();
             return true;
         }
     }
 
     template <typename E>
-    void BlockingQueue<E>::stop() {
+    void BlockingQueue<E>::stop(int wait_time) {
+        unique_lock<mutex> lk(data_mtx_);
         stopped_ = true;
         cv_push_.notify_all();
+        if (wait_time > 0) {
+            cv_stop_.wait_for(lk, std::chrono::milliseconds(wait_time), [this]() { return internal_queue_->empty(); });
+        }
         cv_take_.notify_all();
     }
 

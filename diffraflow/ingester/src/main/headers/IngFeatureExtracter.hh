@@ -18,6 +18,7 @@ using std::future;
 using std::shared_future;
 using std::shared_ptr;
 using std::async;
+using std::make_shared;
 
 namespace diffraflow {
     class IngFeatureExtracter {

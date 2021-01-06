@@ -16,6 +16,7 @@ using std::atomic_bool;
 using std::future;
 using std::shared_future;
 using std::async;
+using std::make_shared;
 
 namespace diffraflow {
     class IngImgDatFetcher : public GenericClient {

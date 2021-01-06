@@ -9,6 +9,7 @@
 #include "ImageFileHDF5W.hh"
 #include "ImageFileRawW.hh"
 #include "MetricsProvider.hh"
+#include "IngImgWthFtrQueue.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -24,7 +25,6 @@ namespace diffraflow {
 
     struct ImageWithFeature;
 
-    class IngImgWthFtrQueue;
     class ImageFeature;
     class IngConfig;
 

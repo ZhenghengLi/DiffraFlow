@@ -2,5 +2,5 @@ nameSuffix: "19"
 ingesterID: 19
 combinerPort: 27112
 combinerSock: combiner-1.sock
-imageHttpPort: 273347
+imageHttpPort: 27347
 metricsHttpPort: 27348

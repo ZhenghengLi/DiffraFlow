@@ -1,0 +1,6 @@
+nameSuffix: "18"
+ingesterID: 18
+combinerPort: 27122
+combinerSock: combiner-2.sock
+imageHttpPort: 27345
+metricsHttpPort: 27346

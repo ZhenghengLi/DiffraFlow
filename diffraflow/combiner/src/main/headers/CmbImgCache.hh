@@ -50,6 +50,7 @@ namespace diffraflow {
 
         struct {
             atomic<uint64_t> image_data_queue_push_counts;
+            atomic<uint64_t> image_data_queue_push_fail_counts;
             atomic<uint64_t> image_data_queue_take_counts;
         } queue_metrics;
 

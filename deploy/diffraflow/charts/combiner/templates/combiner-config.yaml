@@ -12,7 +12,7 @@ data:
     imgdat_sock_path = /sock/{{ .Values.imgdatListenSock }}
     imgdat_queue_capacity = 2500
     max_linger_time = 20000
-    queue_size_threshold = 1000
+    queue_size_threshold = 2500
     # http server
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

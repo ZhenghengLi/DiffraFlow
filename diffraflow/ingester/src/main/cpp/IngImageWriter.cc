@@ -255,17 +255,14 @@ bool diffraflow::IngImageWriter::open_file_() {
 
     current_sequence_number_++;
 
-    // if (current_sequence_number_ > 0) {
-    //     current_imgcnt_limit_ = config_obj_->file_imgcnt_limit;
-    // } else {
-    duration<double, std::nano> current_time = system_clock::now().time_since_epoch();
-    uint32_t seed = (uint64_t)current_time.count() % numeric_limits<uint32_t>::max();
-    srand(seed);
-    int start = config_obj_->file_imgcnt_limit * 0.6;
-    int rand_len = config_obj_->file_imgcnt_limit * 0.8;
-    int rand_offset = 1 + rand() % rand_len;
-    current_imgcnt_limit_ = start + rand_offset;
-    // }
+    current_imgcnt_limit_ = config_obj_->file_imgcnt_limit;
+
+    if (config_obj_->file_imgcnt_rand > 1) {
+        duration<double, std::nano> current_time = system_clock::now().time_since_epoch();
+        uint32_t seed = (uint64_t)current_time.count() % numeric_limits<uint32_t>::max();
+        srand(seed);
+        current_imgcnt_limit_ += rand() % config_obj_->file_imgcnt_rand;
+    }
 
     // construct file path
     char str_buffer[STR_BUFF_SIZE];

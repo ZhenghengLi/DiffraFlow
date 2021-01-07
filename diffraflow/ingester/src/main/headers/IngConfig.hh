@@ -47,6 +47,7 @@ namespace diffraflow {
         int hdf5_compress_level;
         bool hdf5_swmr_mode;
         int file_imgcnt_limit;
+        int file_imgcnt_rand;
 
         string combiner_host;
         int combiner_port;

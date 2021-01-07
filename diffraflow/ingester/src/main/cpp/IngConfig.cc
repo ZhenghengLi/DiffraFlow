@@ -38,6 +38,7 @@ diffraflow::IngConfig::IngConfig() {
     hdf5_compress_level = 0;
     hdf5_swmr_mode = true;
     file_imgcnt_limit = 1000;
+    file_imgcnt_rand = 0;
 
     zookeeper_setting_ready_flag_ = false;
 
@@ -86,6 +87,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
             std::istringstream(value) >> std::boolalpha >> hdf5_swmr_mode;
         } else if (key == "file_imgcnt_limit") {
             file_imgcnt_limit = atoi(value.c_str());
+        } else if (key == "file_imgcnt_rand") {
+            file_imgcnt_rand = atoi(value.c_str());
         } else if (key == "combiner_host") {
             combiner_host = value;
         } else if (key == "combiner_port") {
@@ -215,6 +218,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["hdf5_compress_level"] = json::value::number(hdf5_compress_level);
         static_config_json_["hdf5_swmr_mode"] = json::value::number(hdf5_swmr_mode);
         static_config_json_["file_imgcnt_limit"] = json::value::number(file_imgcnt_limit);
+        static_config_json_["file_imgcnt_rand"] = json::value::number(file_imgcnt_rand);
         static_config_json_["combiner_host"] = json::value::string(combiner_host);
         static_config_json_["combiner_port"] = json::value::number(combiner_port);
         static_config_json_["combiner_sock"] = json::value::string(combiner_sock);

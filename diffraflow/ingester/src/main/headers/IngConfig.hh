@@ -56,7 +56,10 @@ namespace diffraflow {
         int image_http_port;
         size_t recnxn_wait_time;
         size_t recnxn_max_count;
-        size_t imgdat_queue_capacity;
+        size_t raw_queue_capacity;
+        size_t calib_queue_capacity;
+        size_t feature_queue_capacity;
+        size_t write_queue_capacity;
 
         string calib_param_file;
 

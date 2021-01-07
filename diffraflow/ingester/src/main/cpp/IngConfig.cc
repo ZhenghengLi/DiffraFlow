@@ -27,7 +27,10 @@ diffraflow::IngConfig::IngConfig() {
     image_http_host = "localhost";
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
-    imgdat_queue_capacity = 100;
+    raw_queue_capacity = 100;
+    calib_queue_capacity = 100;
+    feature_queue_capacity = 100;
+    write_queue_capacity = 1000;
     save_calib_data = false;
     save_raw_data = false;
 
@@ -97,8 +100,14 @@ bool diffraflow::IngConfig::load(const char* filename) {
             recnxn_wait_time = atoi(value.c_str());
         } else if (key == "recnxn_max_count") {
             recnxn_max_count = atoi(value.c_str());
-        } else if (key == "imgdat_queue_capacity") {
-            imgdat_queue_capacity = atoi(value.c_str());
+        } else if (key == "raw_queue_capacity") {
+            raw_queue_capacity = atoi(value.c_str());
+        } else if (key == "calib_queue_capacity") {
+            calib_queue_capacity = atoi(value.c_str());
+        } else if (key == "feature_queue_capacity") {
+            feature_queue_capacity = atoi(value.c_str());
+        } else if (key == "write_queue_capacity") {
+            write_queue_capacity = atoi(value.c_str());
         } else if (key == "calib_param_file") {
             calib_param_file = value.c_str();
         } else if (key == "metrics_pulsar_broker_address") {
@@ -174,8 +183,20 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid image_http_port: " << image_http_port);
         succ_flag = false;
     }
-    if (imgdat_queue_capacity < 1 || imgdat_queue_capacity > 10000) {
-        LOG4CXX_ERROR(logger_, "imgdat_queue_capacity is out of range " << 1 << "-" << 10000);
+    if (raw_queue_capacity < 1 || raw_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "raw_queue_capacity is out of range " << 1 << "-" << 10000);
+        succ_flag = false;
+    }
+    if (calib_queue_capacity < 1 || calib_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "calib_queue_capacity is out of range " << 1 << "-" << 10000);
+        succ_flag = false;
+    }
+    if (feature_queue_capacity < 1 || feature_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "feature_queue_capacity is out of range " << 1 << "-" << 10000);
+        succ_flag = false;
+    }
+    if (write_queue_capacity < 1 || write_queue_capacity > 10000) {
+        LOG4CXX_ERROR(logger_, "write_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
     }
     // check and commit for dynamic parameters
@@ -201,7 +222,10 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["image_http_port"] = json::value::number(image_http_port);
         static_config_json_["recnxn_wait_time"] = json::value::number((uint32_t)recnxn_wait_time);
         static_config_json_["recnxn_max_count"] = json::value::number((uint32_t)recnxn_max_count);
-        static_config_json_["imgdat_queue_capacity"] = json::value::number((uint32_t)imgdat_queue_capacity);
+        static_config_json_["raw_queue_capacity"] = json::value::number((uint32_t)raw_queue_capacity);
+        static_config_json_["calib_queue_capacity"] = json::value::number((uint32_t)calib_queue_capacity);
+        static_config_json_["feature_queue_capacity"] = json::value::number((uint32_t)feature_queue_capacity);
+        static_config_json_["write_queue_capacity"] = json::value::number((uint32_t)write_queue_capacity);
         static_config_json_["calib_param_file"] = json::value::string(calib_param_file);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
@@ -255,7 +279,10 @@ void diffraflow::IngConfig::print() {
     cout << "- image_http_port = " << image_http_port << endl;
     cout << "- recnxn_wait_time = " << recnxn_wait_time << endl;
     cout << "- recnxn_max_count = " << recnxn_max_count << endl;
-    cout << "- imgdat_queue_capacity = " << imgdat_queue_capacity << endl;
+    cout << "- raw_queue_capacity = " << raw_queue_capacity << endl;
+    cout << "- calib_queue_capacity = " << calib_queue_capacity << endl;
+    cout << "- feature_queue_capacity = " << feature_queue_capacity << endl;
+    cout << "- write_queue_capacity = " << write_queue_capacity << endl;
     cout << "- calib_param_file = " << calib_param_file << endl;
     cout << "- storage_dir = " << storage_dir << endl;
     cout << "- save_calib_data = " << save_calib_data << endl;

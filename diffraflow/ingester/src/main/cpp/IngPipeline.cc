@@ -41,7 +41,7 @@ void diffraflow::IngPipeline::start_run() {
     //======================================================
     // create all queues and workers
     //// image fetcher
-    imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->raw_queue_capacity);
     if (config_obj_->combiner_sock.empty()) {
         image_data_fetcher_ = new IngImgDatFetcher(
             config_obj_->combiner_host, config_obj_->combiner_port, config_obj_->ingester_id, imgWthFtrQue_raw_);
@@ -51,15 +51,15 @@ void diffraflow::IngPipeline::start_run() {
     }
 
     //// calibration worker
-    imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->calib_queue_capacity);
     calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
 
     //// feature extracter
-    imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->feature_queue_capacity);
     feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
 
     //// image filter
-    imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->imgdat_queue_capacity);
+    imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->write_queue_capacity);
     image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
 
     //// http server

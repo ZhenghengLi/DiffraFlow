@@ -14,6 +14,7 @@ diffraflow::IngImageFilter::IngImageFilter(
 
     filter_metrics.total_images_for_monitor = 0;
     filter_metrics.total_images_for_save = 0;
+    filter_metrics.total_images_for_save_fail = 0;
     filter_metrics.total_processed_images = 0;
 }
 
@@ -32,9 +33,10 @@ int diffraflow::IngImageFilter::run_() {
         if (check_for_save_(*image_with_feature->image_feature)) {
             filter_metrics.total_images_for_save++;
             if (image_queue_out_->offer(image_with_feature)) {
-                LOG4CXX_DEBUG(logger_, "pushed the one good image into queue for saving.");
+                LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");
             } else {
-                // break;
+                LOG4CXX_DEBUG(logger_, "failed to push one good image into queue for saving.");
+                filter_metrics.total_images_for_save_fail++;
             }
         }
         if (check_for_monitor_(*image_with_feature->image_feature)) {
@@ -98,6 +100,8 @@ json::value diffraflow::IngImageFilter::collect_metrics() {
     json::value filter_metrics_json;
     filter_metrics_json["total_processed_images"] = json::value::number(filter_metrics.total_processed_images.load());
     filter_metrics_json["total_images_for_save"] = json::value::number(filter_metrics.total_images_for_save.load());
+    filter_metrics_json["total_images_for_save_fail"] =
+        json::value::number(filter_metrics.total_images_for_save_fail.load());
     filter_metrics_json["total_images_for_monitor"] =
         json::value::number(filter_metrics.total_images_for_monitor.load());
     return filter_metrics_json;

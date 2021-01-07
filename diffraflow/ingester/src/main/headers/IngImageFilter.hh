@@ -43,6 +43,7 @@ namespace diffraflow {
         struct {
             atomic<uint64_t> total_processed_images;
             atomic<uint64_t> total_images_for_save;
+            atomic<uint64_t> total_images_for_save_fail;
             atomic<uint64_t> total_images_for_monitor;
         } filter_metrics;
 

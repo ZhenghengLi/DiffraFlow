@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: GPU algorithms in **ingester**.
 
+## [0.1.3] - 2021-01-08
+
+### Changed
+
+- **sender**: can repeatedly send unlimited number of images using limited dataset.
+- **ingester**: the number of images writting into each data file can be randomized, in order to avoid many file open/close operations that can occur at very similar time.
+- **ingester**: add support of non-blocking cache for image data saving. When the speed of data saving is lower than that of processing, the cache queue will be full and some images may be lost.
+- **combiner**: add support of non-blocking cache for image data processing. When the speed of data processing is lower than that of time alignment, the cache queue will be full and some images may be lost.
+
 ## [0.1.2] - 2020-12-04
 
 ### Added

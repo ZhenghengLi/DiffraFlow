@@ -35,7 +35,7 @@ data:
     file_imgcnt_limit = 1000
     file_imgcnt_rand = 0
 
-    save_calib_data = true
+    # save_calib_data = true
     # save_raw_data = true
 
     ## dynamic parameters

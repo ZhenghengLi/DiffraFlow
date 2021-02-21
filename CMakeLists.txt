@@ -9,7 +9,7 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
-find_package(Threads)
+find_package(Threads REQUIRED)
 
 add_subdirectory(diffraflow)
 add_subdirectory(testing)

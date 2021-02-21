@@ -14,7 +14,7 @@ function(df_standard_cpp_project proj_name)
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
     )
-    install(TARGETS ${PROJECT_NAME})
+    install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 endfunction()
 
 function(df_standard_lib_project proj_name)
@@ -34,7 +34,7 @@ function(df_standard_lib_project proj_name)
         ${ARG_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
-    install(TARGETS ${PROJECT_NAME})
+    install(TARGETS ${PROJECT_NAME} DESTINATION lib)
     set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/inc CACHE INTERNAL "" FORCE)
     set(${PROJECT_NAME}_DEFINITIONS ${ARG_DEFINITIONS} CACHE INTERNAL "" FORCE)
 endfunction()

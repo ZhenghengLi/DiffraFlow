@@ -7,13 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/package)
 
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(CommonMacros)
 
 find_package(Threads REQUIRED)
 
 add_subdirectory(diffraflow)
 add_subdirectory(testing)
 
+# install script files
 set(SCRIPT_FILES
     scripts/thisenv.sh
     scripts/check_cnxn_address.sh
@@ -25,7 +27,12 @@ set(SCRIPT_FILES
     scripts/raw_data_gen.py
     scripts/copy_sender_data.sh
     )
+install(PROGRAMS
+    ${SCRIPT_FILES}
+    DESTINATION scripts
+    )
 
+# install config files
 set(CONFIG_FILES
     config/combiner_1.conf
     config/dispatcher_1.conf
@@ -35,12 +42,6 @@ set(CONFIG_FILES
     config/log4cxx.properties
     config/zookeeper_k8s.conf
     )
-
-install(PROGRAMS
-    ${SCRIPT_FILES}
-    DESTINATION scripts
-    )
-
 install(FILES
     ${CONFIG_FILES}
     DESTINATION conf

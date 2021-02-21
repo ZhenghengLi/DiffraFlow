@@ -4,10 +4,8 @@ tmp_dir=$(dirname ${BASH_SOURCE[0]})
 my_dir=$(cd $tmp_dir/.. > /dev/null ; pwd)
 
 # change this variable if needed
-packageDir=$my_dir/build/package_debug
+packageDir=$my_dir/build/package
 scriptsDir=$my_dir/scripts
-
-export CLASSPATH=$packageDir/jar/*
 
 export PATH=$scriptsDir:$packageDir/bin:$PATH
 export PYTHONPATH=$scriptsDir:$PYTHONPATH

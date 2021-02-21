@@ -9,8 +9,9 @@ function(df_standard_cpp_project proj_name)
     add_definitions(
         ${ARG_DEFINITIONS}
     )
+    file(GLOB HH_FILES inc/*.hh)
     file(GLOB CC_FILES src/*.cc)
-    add_executable(${PROJECT_NAME} ${CC_FILES})
+    add_executable(${PROJECT_NAME} ${CC_FILES} ${HH_FILES})
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
     )
@@ -28,8 +29,9 @@ function(df_standard_lib_project proj_name)
     add_definitions(
         ${ARG_DEFINITIONS}
     )
+    file(GLOB HH_FILES inc/*.hh)
     file(GLOB CC_FILES src/*.cc)
-    add_library(${PROJECT_NAME} SHARED ${CC_FILES})
+    add_library(${PROJECT_NAME} SHARED ${CC_FILES} ${HH_FILES})
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}

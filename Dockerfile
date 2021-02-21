@@ -5,7 +5,6 @@
 FROM zhenghengli/ubuntu-devel:20.04 AS builder
 
 # build and install
-ARG BUILD_PARALLEL=8
 ARG SOURCE_DIR=/opt/diffraflow_src
 ARG BUILD_DIR=/opt/diffraflow_build
 ARG INSTALL_DIR=/opt/diffraflow
@@ -13,7 +12,7 @@ ADD $PWD $SOURCE_DIR
 RUN set -x \
     ## build and install
     && cmake -S $SOURCE_DIR -B $BUILD_DIR \
-    && cmake --build $BUILD_DIR --parallel $BUILD_PARALLEL \
+    && cmake --build $BUILD_DIR --parallel $(nproc) \
     && cmake --install $BUILD_DIR --prefix $INSTALL_DIR \
     ## clean
     && rm -rf $SOURCE_DIR \

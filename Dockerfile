@@ -36,8 +36,7 @@ LABEL description="High volume data acquisition and online data analysis for are
     build_time="$BUILD_TIME"
 
 # set runtime environment variables
-ENV CLASSPATH=$INSTALL_DIR/jar/* \
-    PATH=$INSTALL_DIR/bin:$INSTALL_DIR/scripts:$PATH \
+ENV PATH=$INSTALL_DIR/bin:$INSTALL_DIR/scripts:$PATH \
     LD_LIBRARY_PATH=$INSTALL_DIR/lib:$LD_LIBRARY_PATH \
     SOURCE_COMMIT="$SOURCE_COMMIT" \
     COMMIT_MSG="$COMMIT_MSG" \

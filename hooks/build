@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Start time: $(date)"
-docker build --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="$COMMIT_MSG" --build-arg BUILD_TIME="$(date)" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
+docker build --build-arg BUILD_PARALLEL=1 --build-arg SOURCE_COMMIT="$SOURCE_COMMIT" --build-arg COMMIT_MSG="$COMMIT_MSG" --build-arg BUILD_TIME="$(date)" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
 echo "Finish time: $(date)"

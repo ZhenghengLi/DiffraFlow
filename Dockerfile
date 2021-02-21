@@ -5,7 +5,7 @@
 FROM zhenghengli/ubuntu-devel:20.04 AS builder
 
 # build and install
-ARG BUILD_PARALLEL
+ARG BUILD_PARALLEL=8
 ARG SOURCE_DIR=/opt/diffraflow_src
 ARG BUILD_DIR=/opt/diffraflow_build
 ARG INSTALL_DIR=/opt/diffraflow

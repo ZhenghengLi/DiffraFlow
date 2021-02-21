@@ -4,9 +4,10 @@ project(DiffraFlow)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
+
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(Threads)
 

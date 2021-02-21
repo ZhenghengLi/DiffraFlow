@@ -6,19 +6,17 @@ FROM zhenghengli/ubuntu-devel:20.04 AS builder
 
 # build and install
 ARG SOURCE_DIR=/opt/diffraflow_src
+ARG BUILD_DIR=/opt/diffraflow_build
 ARG INSTALL_DIR=/opt/diffraflow
 ADD $PWD $SOURCE_DIR
 RUN set -x \
-    ## build
-    && cd $SOURCE_DIR \
-    && ./gradlew --no-daemon packageRelease \
-    ## install
-    && mkdir $INSTALL_DIR \
-    && mv build/package_release/* $INSTALL_DIR \
+    ## build and install
+    && cmake -S $SOURCE_DIR -B $BUILD_DIR \
+    && cmake --build $BUILD_DIR --parallel \
+    && cmake --install $BUILD_DIR --prefix $INSTALL_DIR \
     ## clean
-    && cd / \
-    && rm -rf $HOME/.gradle \
-    && rm -rf $SOURCE_DIR
+    && rm -rf $SOURCE_DIR \
+    && rm -rf $BUILD_DIR
 
 # deploy ############################################################
 FROM zhenghengli/ubuntu-runtime:20.04

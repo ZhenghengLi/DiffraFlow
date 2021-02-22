@@ -2,7 +2,7 @@
 # maintainer: Zhengheng Li <zhenghenge@gmail.com>
 
 # build ############################################################
-FROM zhenghengli/ubuntu-devel:20.04-cuda11.2.1 AS builder
+FROM zhenghengli/ubuntu-devel:20.04-cuda11.0.3 AS builder
 
 # build and install
 ARG SOURCE_DIR=/opt/diffraflow_src
@@ -19,7 +19,7 @@ RUN set -x \
     && rm -rf $BUILD_DIR
 
 # deploy ############################################################
-FROM zhenghengli/ubuntu-runtime:20.04-cuda11.2.1
+FROM zhenghengli/ubuntu-runtime:20.04-cuda11.0.3
 
 # copy from builder
 ARG INSTALL_DIR=/opt/diffraflow

@@ -69,6 +69,7 @@ bool diffraflow::AggMetrics::start_consumer(const string name, const string topi
         consumer->stop();
         delete consumer;
         consumer = nullptr;
+        return false;
     }
 }
 

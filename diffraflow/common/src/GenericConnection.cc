@@ -129,6 +129,9 @@ bool diffraflow::GenericConnection::do_receiving_and_processing_() {
     case kFailed:
         return false;
     }
+
+    // to suppress warning from compiler
+    return false;
 }
 
 bool diffraflow::GenericConnection::do_preparing_and_sending_() {

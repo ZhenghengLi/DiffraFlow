@@ -270,6 +270,9 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t bunch_id) {
         current_file_index_ = 0;
         return false;
     }
+
+    // to suppress compiler warnings
+    return false;
 }
 
 json::value diffraflow::SndDatTran::collect_metrics() {

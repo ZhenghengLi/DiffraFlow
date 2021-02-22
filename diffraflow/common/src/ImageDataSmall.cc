@@ -15,6 +15,7 @@ diffraflow::ImageDataSmall::~ImageDataSmall() {}
 
 diffraflow::ImageDataSmall& diffraflow::ImageDataSmall::operator=(const ImageData& image_data) {
     copy_from_(image_data, numeric_limits<float>::min(), numeric_limits<float>::max());
+    return *this;
 }
 
 void diffraflow::ImageDataSmall::copy_from_(const ImageData& image_data, float energy_down_cut, float energy_up_cut) {

@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: GPU algorithms in **ingester**.
 
+## [0.2.0] - 2021-02-22
+
+### Changed
+
+- The build system was switched from Gradle to CMake.
+- README.md files were revised.
+
+### Removed
+
+- testing/console_test (a Java project) was removed.
+
 ## [0.1.3] - 2021-01-08
 
 ### Changed

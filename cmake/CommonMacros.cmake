@@ -1,17 +1,13 @@
 function(df_standard_cpp_project proj_name)
-    set(options CUDA)
     set(multiValueArgs INCLUDE_DIRS DEFINITIONS LIBRARIES)
-    cmake_parse_arguments(ARG "${options}" "" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})
 
-    if(ARG_CUDA)
-        project(${proj_name} C CXX CUDA)
-    else()
-        project(${proj_name} C CXX)
-    endif()
+    project(${proj_name})
 
     file(GLOB sources src/*)
     file(GLOB headers inc/*)
     add_executable(${PROJECT_NAME} ${sources} ${headers})
+
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
     )
@@ -22,19 +18,15 @@ function(df_standard_cpp_project proj_name)
 endfunction()
 
 function(df_standard_lib_project proj_name)
-    set(options CUDA)
     set(multiValueArgs INCLUDE_DIRS DEFINITIONS LIBRARIES)
-    cmake_parse_arguments(ARG "${options}" "" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})
 
-    if(ARG_CUDA)
-        project(${proj_name} C CXX CUDA)
-    else()
-        project(${proj_name} C CXX)
-    endif()
+    project(${proj_name})
 
     file(GLOB sources src/*)
     file(GLOB headers inc/*)
     add_library(${PROJECT_NAME} SHARED ${sources} ${headers})
+
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}

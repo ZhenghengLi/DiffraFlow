@@ -1,5 +1,5 @@
 #include "OptionsManager.hh"
-#include "ReleaseInfo.hh"
+#include "VersionInfo.hh"
 #include <iostream>
 
 using std::cout;
@@ -24,14 +24,13 @@ void diffraflow::OptionsManager::print_version_() {
     cout << endl;
     cout << "    " << software_name_ << " - "
          << "DiffraFlow Project" << endl;
-    cout << "    " << gReleaseVersion << " (" << gReleaseDate << ", compiled " << __DATE__ << " " << __TIME__ << ")"
+    cout << "    " << VERSION_STRING << " (" << VERSION_DATE << ", compiled " << __DATE__ << " " << __TIME__ << ")"
          << endl;
     cout << endl;
-    cout << gCopyrightStatement << endl;
-    // cout << " Source Code: " << gSourceCodeUrl << endl;
+    cout << COPYRIGHT_STATEMENT << endl;
     cout << endl;
     cout << " Main Contributors: " << endl;
-    cout << gMainContributors << endl;
+    cout << MAIN_CONTRIBUTORS << endl;
 
     cout << endl;
 }

@@ -1,3 +1,3 @@
-df_standard_cpp_project(monitor
+df_standard_cpp(monitor
     LIBRARIES diffraflow::common
 )

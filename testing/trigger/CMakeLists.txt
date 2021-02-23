@@ -1,3 +1,3 @@
-df_standard_cpp_project(trigger
+df_standard_cpp(trigger
     LIBRARIES diffraflow::common
 )

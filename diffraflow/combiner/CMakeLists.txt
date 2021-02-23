@@ -1,3 +1,3 @@
-df_standard_cpp_project(combiner
+df_standard_cpp(combiner
     LIBRARIES diffraflow::common
 )

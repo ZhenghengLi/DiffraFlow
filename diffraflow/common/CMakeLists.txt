@@ -1,4 +1,4 @@
-df_standard_lib_project(dfcommon
+df_standard_lib(dfcommon
     ALIAS diffraflow::common
     INCLUDE_DIRS /usr/include/hdf5/serial
     LIBRARIES

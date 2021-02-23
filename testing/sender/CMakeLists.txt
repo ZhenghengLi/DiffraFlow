@@ -1,3 +1,3 @@
-df_standard_cpp_project(sender
+df_standard_cpp(sender
     LIBRARIES diffraflow::common
 )

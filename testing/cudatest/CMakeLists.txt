@@ -1,3 +1,1 @@
-df_standard_cpp_project(cudatest
-    CUDA
-)
+df_standard_cpp(cudatest)

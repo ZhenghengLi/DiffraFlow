@@ -1,0 +1,10 @@
+#ifndef __VersionInfo_HH__
+#define __VersionInfo_HH__
+
+#define VERSION_STRING "@DF_VERSION_STRING@"
+#define VERSION_DATE "@DF_VERSION_DATE@"
+#define COPYRIGHT_STATEMENT "@DF_COPYRIGHT_STATEMENT@"
+#define PROJECT_URL "@DF_PROJECT_URL@"
+#define MAIN_CONTRIBUTORS "@DF_MAIN_CONTRIBUTORS@"
+
+#endif

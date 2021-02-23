@@ -13,3 +13,7 @@ df_standard_lib(dfcommon
         boost_filesystem
         boost_system
 )
+
+configure_file(inc/VersionInfo.hh.in inc/VersionInfo.hh)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/inc)
+

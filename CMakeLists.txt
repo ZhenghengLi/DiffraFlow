@@ -16,6 +16,7 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/package)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(VersionInfo)
 include(CommonMacros)
 
 find_package(Threads REQUIRED)

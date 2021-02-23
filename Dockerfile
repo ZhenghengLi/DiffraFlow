@@ -29,7 +29,7 @@ COPY --from=builder $INSTALL_DIR $INSTALL_DIR
 ARG SOURCE_COMMIT
 ARG COMMIT_MSG
 ARG BUILD_TIME
-LABEL description="High volume data acquisition and online data analysis for area detectors." \
+LABEL description="High throughput streaming data acquisition and online analysis for pixel array detectors." \
     maintainer="Zhengheng Li <zhenghenge@gmail.com>" \
     source_commit="$SOURCE_COMMIT" \
     commit_msg="$COMMIT_MSG" \

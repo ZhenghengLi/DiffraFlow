@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(DiffraFlow C CXX CUDA)
+project(DiffraFlow
+    VERSION 0.2.0
+    DESCRIPTION "High throughput streaming data acquisition and online analysis for pixel array detectors."
+    LANGUAGES C CXX CUDA
+    )
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)

@@ -13,14 +13,15 @@ spec:
         name: diffraflow-all
     spec:
       tolerations:
-      - operator: Exists
-        effect: NoSchedule
+        - operator: Exists
+          effect: NoSchedule
       restartPolicy: Always
-      imagePullSecrets:
-      - name: docker-hub-zhenghengli
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
       containers:
-      - name: diffraflow
-        image: zhenghengli/diffraflow:latest
-        command:
-          - sleep
-          - 1000d
+        - name: diffraflow
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
+          command:
+            - sleep
+            - 1000d

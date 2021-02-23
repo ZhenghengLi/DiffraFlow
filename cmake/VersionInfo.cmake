@@ -1,5 +1,5 @@
-set(DF_VERSION_STRING "v0.2.0")
-set(DF_VERSION_DATE "2021-02-22")
+set(DF_VERSION_STRING ${CURRENT_VERSION_STRING})
+set(DF_VERSION_DATE ${CURRENT_VERSION_DATE})
 
 set(DF_COPYRIGHT_STATEMENT "\
  Copyright (c) 2019-2020  G.E.T. department of SHINE project.\\n\
@@ -30,6 +30,3 @@ if(Git_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
         set(DF_VERSION_DATE ${git_show_date})
     endif()
 endif()
-
-message("version: ${DF_VERSION_STRING}")
-message("date: ${DF_VERSION_DATE}")

@@ -25,13 +25,15 @@ function(df_standard_lib_project proj_name)
 
     file(GLOB sources src/*)
     file(GLOB headers inc/*)
-    add_library(${PROJECT_NAME} SHARED ${sources} ${headers})
+    file(GLOB publics pub/*)
+    add_library(${PROJECT_NAME} SHARED ${sources} ${headers} ${publics})
 
     target_link_libraries(${PROJECT_NAME}
         ${ARG_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
     )
-    target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/inc)
+    target_include_directories(${PROJECT_NAME} PUBLIC  ${PROJECT_SOURCE_DIR}/pub)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/inc)
     target_include_directories(${PROJECT_NAME} PRIVATE ${ARG_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PRIVATE ${ARG_DEFINITIONS})
 

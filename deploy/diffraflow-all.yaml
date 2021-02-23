@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: diffraflow-all
+  namespace: diffraflow
+spec:
+  selector:
+    matchLabels:
+      name: diffraflow-all
+  template:
+    metadata:
+      labels:
+        name: diffraflow-all
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: docker-hub-zhenghengli
+      containers:
+      - name: diffraflow
+        image: zhenghengli/diffraflow:latest
+        command:
+          - sleep
+          - 1000d

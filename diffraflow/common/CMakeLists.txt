@@ -1,6 +1,5 @@
 df_standard_lib_project(dfcommon
     INCLUDE_DIRS /usr/include/hdf5/serial
-    DEFINITIONS -DBOOST_ALL_DYN_LINK
     LIBRARIES
         pulsar
         log4cxx

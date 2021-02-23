@@ -18,8 +18,9 @@ function(df_standard_cpp_project proj_name)
 endfunction()
 
 function(df_standard_lib_project proj_name)
+    set(oneValueArgs ALIAS)
     set(multiValueArgs INCLUDE_DIRS DEFINITIONS LIBRARIES)
-    cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(ARG "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     project(${proj_name})
 
@@ -35,6 +36,10 @@ function(df_standard_lib_project proj_name)
     target_include_directories(${PROJECT_NAME} PUBLIC  pub)
     target_include_directories(${PROJECT_NAME} PRIVATE inc ${ARG_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PRIVATE ${ARG_DEFINITIONS})
+
+    if(DEFINED ARG_ALIAS)
+        add_library(${ARG_ALIAS} ALIAS ${PROJECT_NAME})
+    endif()
 
     install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 endfunction()

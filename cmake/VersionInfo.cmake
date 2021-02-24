@@ -2,7 +2,7 @@ set(DF_VERSION_STRING ${CURRENT_VERSION_STRING})
 set(DF_VERSION_DATE ${CURRENT_VERSION_DATE})
 
 set(DF_COPYRIGHT_STATEMENT "\
- Copyright (c) 2019-2020  G.E.T. department of SHINE project.\\n\
+ Copyright (c) 2019-2021  G.E.T. department of SHINE project.\\n\
  All Rights Reserved."
 )
 

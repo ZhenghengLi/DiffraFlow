@@ -12,4 +12,4 @@ The overall design of data flow is schematically shown below, and more details w
 
 The overall design looks similar to LCLS-II's (see: <https://ieeexplore.ieee.org/document/8533033>). While the difference could be that this design uses a MapReduce-like data shuffling process to do the online event-building, which will make it easier to do online data filtering and the following science analysis based on event data.
 
-This project is currently under developing and still at the demo stage.
+This project is currently under developing and still at the prototype stage.

@@ -1,3 +1,3 @@
-df_standard_cpp(aggregator
+df_standard_exe(aggregator
     LIBRARIES diffraflow::common
 )

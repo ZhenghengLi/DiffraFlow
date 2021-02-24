@@ -1,3 +1,3 @@
-df_standard_cpp(controller
+df_standard_exe(controller
     LIBRARIES diffraflow::common
 )

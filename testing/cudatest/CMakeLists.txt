@@ -1,1 +1,1 @@
-df_standard_cpp(cudatest)
+df_standard_exe(cudatest)

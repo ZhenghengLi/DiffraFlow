@@ -1,3 +1,3 @@
-df_standard_cpp(dispatcher
+df_standard_exe(dispatcher
     LIBRARIES diffraflow::common
 )

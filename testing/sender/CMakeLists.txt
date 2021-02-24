@@ -1,3 +1,3 @@
-df_standard_cpp(sender
+df_standard_exe(sender
     LIBRARIES diffraflow::common
 )

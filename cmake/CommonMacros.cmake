@@ -1,4 +1,4 @@
-function(df_standard_cpp target_name)
+function(df_standard_exe target_name)
     set(multiValueArgs INCLUDE_DIRS DEFINITIONS LIBRARIES)
     cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})
 

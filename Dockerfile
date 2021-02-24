@@ -11,7 +11,7 @@ ARG INSTALL_DIR=/opt/diffraflow
 ADD $PWD $SOURCE_DIR
 RUN set -x \
     ## build and install
-    && cmake -S $SOURCE_DIR -B $BUILD_DIR -G Ninja \
+    && cmake -S $SOURCE_DIR -B $BUILD_DIR -G Ninja -D CMAKE_BUILD_TYPE=Release \
     && cmake --build $BUILD_DIR --parallel $(nproc) \
     && cmake --install $BUILD_DIR --prefix $INSTALL_DIR \
     ## clean

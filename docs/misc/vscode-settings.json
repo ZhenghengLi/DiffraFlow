@@ -1,4 +1,5 @@
 {
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/**",
         "/usr/include/hdf5/serial"

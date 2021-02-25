@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#include "helper_cuda.h"
 #include "vectorAdd.hh"
 
 __global__ void vectorAdd(const float* A, const float* B, float* C, int numElements) {

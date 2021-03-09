@@ -18,6 +18,12 @@ namespace diffraflow {
         shared_ptr<ImageDataField> image_data;
         // image feature
         shared_ptr<ImageFeature> image_feature;
+
+        // for GPU
+        // image data
+        ImageDataField* image_data_devptr = 0;
+        // image feature
+        ImageFeature* image_feature_devptr = 0;
     };
 } // namespace diffraflow
 

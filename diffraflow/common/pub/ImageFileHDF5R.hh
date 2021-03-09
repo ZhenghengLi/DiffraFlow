@@ -1,7 +1,7 @@
 #ifndef __ImageFileHDF5R_H__
 #define __ImageFileHDF5R_H__
 
-#include "ImageDataHDF5.hh"
+#include "ImageDataType.hh"
 #include "ImageData.hh"
 #include <log4cxx/logger.h>
 
@@ -19,13 +19,13 @@ namespace diffraflow {
         bool open(const char* filename);
         void close();
         bool next_batch();
-        bool next_image(ImageDataHDF5::Field& imgdat_st);
+        bool next_image(ImageDataType::Field& imgdat_st);
         size_t image_dset_size();
         string create_time();
 
     private:
-        ImageDataHDF5 image_data_hdf5_;
-        ImageDataHDF5::Field* image_buffer_;
+        ImageDataType image_data_type_;
+        ImageDataType::Field* image_buffer_;
 
         size_t buffer_size_;
         size_t buffer_limit_;

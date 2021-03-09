@@ -16,8 +16,21 @@ spec:
         - operator: Exists
           effect: NoSchedule
       restartPolicy: Always
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
       # imagePullSecrets:
       #   - name: docker-hub-zhenghengli
+      volumes:
+        - name: cuda-mps-pipe
+          hostPath:
+            path: /kubernetes/data/lizhh1/nvidia/mps
+        - name: cuda-mps-log
+          hostPath:
+            path: /kubernetes/data/lizhh1/nvidia/log
+        - name: dev-shm
+          hostPath:
+            path: /dev/shm
       containers:
         - name: diffraflow
           # image: zhenghengli/diffraflow:latest
@@ -25,3 +38,16 @@ spec:
           command:
             - sleep
             - 1000d
+          env:
+            - name: CUDA_MPS_PIPE_DIRECTORY
+              value: /nvidia/mps
+            - name: CUDA_MPS_LOG_DIRECTORY
+              value: /nvidia/log
+          volumeMounts:
+            - name: cuda-mps-pipe
+              mountPath: /nvidia/mps
+            - name: cuda-mps-log
+              mountPath: /nvidia/log
+            - name: dev-shm
+              mountPath: /dev/shm
+

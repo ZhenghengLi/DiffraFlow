@@ -23,6 +23,9 @@ spec:
         - name: cuda-mps-log
           hostPath:
             path: /kubernetes/data/lizhh1/nvidia/log
+        - name: dev-shm
+          hostPath:
+            path: /dev/shm
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
@@ -45,3 +48,5 @@ spec:
               mountPath: /nvidia/mps
             - name: cuda-mps-log
               mountPath: /nvidia/log
+            - name: dev-shm
+              mountPath: /dev/shm

@@ -99,7 +99,7 @@ bool diffraflow::ImageFileHDF5W::flush() {
     return true;
 }
 
-bool diffraflow::ImageFileHDF5W::write(const ImageDataType::Field& image_data) {
+bool diffraflow::ImageFileHDF5W::write(const ImageDataField& image_data) {
     lock_guard<mutex> lg(file_op_mtx_);
 
     if (h5file_ == nullptr) {

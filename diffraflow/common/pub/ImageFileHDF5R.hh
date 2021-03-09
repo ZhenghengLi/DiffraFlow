@@ -19,13 +19,13 @@ namespace diffraflow {
         bool open(const char* filename);
         void close();
         bool next_batch();
-        bool next_image(ImageDataType::Field& imgdat_st);
+        bool next_image(ImageDataField& imgdat_st);
         size_t image_dset_size();
         string create_time();
 
     private:
         ImageDataType image_data_type_;
-        ImageDataType::Field* image_buffer_;
+        ImageDataField* image_buffer_;
 
         size_t buffer_size_;
         size_t buffer_limit_;

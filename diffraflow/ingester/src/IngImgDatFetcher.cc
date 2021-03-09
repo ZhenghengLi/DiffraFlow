@@ -88,7 +88,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     }
 
     // decode
-    image_with_feature->image_data = make_shared<ImageDataType::Field>();
+    image_with_feature->image_data = make_shared<ImageDataField>();
     if (ImageDataType::decode(*image_with_feature->image_data, payload_data->data(), payload_data->size())) {
         image_with_feature->image_data_raw = payload_data;
         return kSucc;

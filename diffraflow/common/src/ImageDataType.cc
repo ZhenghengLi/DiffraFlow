@@ -7,35 +7,35 @@ using std::cout;
 using std::endl;
 using std::string;
 
-diffraflow::ImageDataType::ImageDataType() : H5::CompType(sizeof(Field)) {
+diffraflow::ImageDataType::ImageDataType() : H5::CompType(sizeof(ImageDataField)) {
     //// bunch_id
-    insertMember("bunch_id", HOFFSET(Field, bunch_id), H5::PredType::NATIVE_UINT64);
+    insertMember("bunch_id", HOFFSET(ImageDataField, bunch_id), H5::PredType::NATIVE_UINT64);
     //// alignment
     hsize_t module_dim[] = {MOD_CNT};
     H5::ArrayType alignment_t(H5::PredType::NATIVE_HBOOL, 1, module_dim);
-    insertMember("alignment", HOFFSET(Field, alignment), alignment_t);
+    insertMember("alignment", HOFFSET(ImageDataField, alignment), alignment_t);
     //// cell_id
     H5::ArrayType cell_id_t(H5::PredType::NATIVE_INT16, 1, module_dim);
-    insertMember("cell_id", HOFFSET(Field, cell_id), cell_id_t);
+    insertMember("cell_id", HOFFSET(ImageDataField, cell_id), cell_id_t);
     //// status
     H5::ArrayType status_t(H5::PredType::NATIVE_UINT16, 1, module_dim);
-    insertMember("status", HOFFSET(Field, status), status_t);
+    insertMember("status", HOFFSET(ImageDataField, status), status_t);
     //// image_frame
     hsize_t frame_dim[] = {MOD_CNT, FRAME_H, FRAME_W};
     H5::ArrayType pixel_data_t(H5::PredType::NATIVE_FLOAT, 3, frame_dim);
-    insertMember("pixel_data", HOFFSET(Field, pixel_data), pixel_data_t);
+    insertMember("pixel_data", HOFFSET(ImageDataField, pixel_data), pixel_data_t);
     //// gain_level
     H5::ArrayType gain_level_t(H5::PredType::NATIVE_UINT8, 3, frame_dim);
-    insertMember("gain_level", HOFFSET(Field, gain_level), gain_level_t);
+    insertMember("gain_level", HOFFSET(ImageDataField, gain_level), gain_level_t);
     //// late_arrived
-    insertMember("late_arrived", HOFFSET(Field, late_arrived), H5::PredType::NATIVE_HBOOL);
+    insertMember("late_arrived", HOFFSET(ImageDataField, late_arrived), H5::PredType::NATIVE_HBOOL);
     //// calib_level
-    insertMember("calib_level", HOFFSET(Field, calib_level), H5::PredType::NATIVE_INT8);
+    insertMember("calib_level", HOFFSET(ImageDataField, calib_level), H5::PredType::NATIVE_INT8);
 }
 
 diffraflow::ImageDataType::~ImageDataType() {}
 
-bool diffraflow::ImageDataType::decode(Field& image_data, const char* buffer, const size_t len) {
+bool diffraflow::ImageDataType::decode(ImageDataField& image_data, const char* buffer, const size_t len) {
 
     if (len < 11) return false;
 
@@ -109,7 +109,7 @@ bool diffraflow::ImageDataType::decode(Field& image_data, const char* buffer, co
     return true;
 }
 
-void diffraflow::ImageDataType::print(const Field& image_data, ostream& out) {
+void diffraflow::ImageDataType::print(const ImageDataField& image_data, ostream& out) {
     out << "bunch_id: " << image_data.bunch_id << endl;
     out << "late_arrived: " << image_data.late_arrived << endl;
     out << "alignment: [";
@@ -120,7 +120,7 @@ void diffraflow::ImageDataType::print(const Field& image_data, ostream& out) {
     out << "]" << endl;
 }
 
-void diffraflow::ImageDataType::convert(const Field& image_data_arr, ImageData& image_data_obj) {
+void diffraflow::ImageDataType::convert(const ImageDataField& image_data_arr, ImageData& image_data_obj) {
     image_data_obj.bunch_id = image_data_arr.bunch_id;
     image_data_obj.late_arrived = image_data_arr.late_arrived;
     image_data_obj.calib_level = image_data_arr.calib_level;

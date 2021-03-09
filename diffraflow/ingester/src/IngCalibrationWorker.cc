@@ -86,7 +86,7 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}
 
 void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& image_with_feature) {
 
-    ImageDataType::Field& image_data = *image_with_feature->image_data;
+    ImageDataField& image_data = *image_with_feature->image_data;
 
     for (size_t m = 0; m < MOD_CNT; m++) {
         if (image_data.alignment[m]) {

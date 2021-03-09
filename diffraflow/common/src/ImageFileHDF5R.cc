@@ -11,7 +11,7 @@ log4cxx::LoggerPtr diffraflow::ImageFileHDF5R::logger_ = log4cxx::Logger::getLog
 diffraflow::ImageFileHDF5R::ImageFileHDF5R(size_t buffer_size, bool swmr) {
     buffer_size_ = (buffer_size > 10 ? buffer_size : 10);
 
-    image_buffer_ = new ImageDataType::Field[buffer_size_];
+    image_buffer_ = new ImageDataField[buffer_size_];
     buffer_limit_ = 0;
     buffer_pos_ = 0;
 
@@ -121,7 +121,7 @@ bool diffraflow::ImageFileHDF5R::next_batch() {
     }
 }
 
-bool diffraflow::ImageFileHDF5R::next_image(ImageDataType::Field& imgdat_st) {
+bool diffraflow::ImageFileHDF5R::next_image(ImageDataField& imgdat_st) {
 
     lock_guard<mutex> lg(file_op_mtx_);
 

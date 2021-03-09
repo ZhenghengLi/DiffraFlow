@@ -18,7 +18,7 @@ namespace diffraflow {
         ~ImageFileHDF5W();
 
         bool open(const char* filename, int compress_level = -1);
-        bool write(const ImageDataType::Field& image_data);
+        bool write(const ImageDataField& image_data);
         bool flush();
         void close();
         size_t size();

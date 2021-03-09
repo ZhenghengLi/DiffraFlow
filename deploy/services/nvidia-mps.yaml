@@ -17,9 +17,12 @@ spec:
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
-        - name: tmp-nvidia-mps
+        - name: cuda-mps-pipe
           hostPath:
-            path: /kubernetes/data/lizhh1/diffraflow/nvidia-mps
+            path: /kubernetes/data/lizhh1/nvidia/mps
+        - name: cuda-mps-log
+          hostPath:
+            path: /kubernetes/data/lizhh1/nvidia/log
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
@@ -32,6 +35,13 @@ spec:
           command:
             - nvidia-cuda-mps-control
             - -f
+          env:
+            - name: CUDA_MPS_PIPE_DIRECTORY
+              value: /nvidia/mps
+            - name: CUDA_MPS_LOG_DIRECTORY
+              value: /nvidia/log
           volumeMounts:
-            - name: tmp-nvidia-mps
-              mountPath: /tmp/nvidia-mps
+            - name: cuda-mps-pipe
+              mountPath: /nvidia/mps
+            - name: cuda-mps-log
+              mountPath: /nvidia/log

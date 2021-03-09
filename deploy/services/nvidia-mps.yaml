@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-mps
+  namespace: diffraflow
+  labels:
+    k8s-app: nvidia-mps
+spec:
+  selector:
+    matchLabels:
+      name: nvidia-mps
+  template:
+    metadata:
+      labels:
+        name: nvidia-mps
+    spec:
+      nodeSelector:
+        diffraflow/node-type: daq-ana
+      volumes:
+        - name: tmp-nvidia-mps
+          hostPath:
+            path: /kubernetes/data/lizhh1/diffraflow/nvidia-mps
+      securityContext:
+        runAsUser: 1017
+        runAsGroup: 1010
+      # imagePullSecrets:
+      #   - name: docker-hub-zhenghengli
+      containers:
+        - name: nvidia-cuda-mps-control
+          # image: zhenghengli/diffraflow:latest
+          image: 10.15.86.19:25443/diffraflow:latest
+          command:
+            - nvidia-cuda-mps-control
+            - -f
+          volumeMounts:
+            - name: tmp-nvidia-mps
+              mountPath: /tmp/nvidia-mps

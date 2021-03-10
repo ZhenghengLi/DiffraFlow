@@ -7,7 +7,7 @@
 
 namespace diffraflow {
     struct ImageFeature {
-        double global_rms;
+        float global_rms;
         int peak_counts;
 #ifndef __CUDACC__
         MSGPACK_DEFINE_MAP(global_rms, peak_counts);

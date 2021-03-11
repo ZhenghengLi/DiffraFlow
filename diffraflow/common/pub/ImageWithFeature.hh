@@ -6,12 +6,24 @@
 
 #include <vector>
 #include <memory>
+#include <log4cxx/logger.h>
 
 using std::vector;
 using std::shared_ptr;
 
 namespace diffraflow {
-    struct ImageWithFeature {
+    class ImageWithFeature {
+        // copies of the same instance of this class share the same internal data.
+        // the internal data will be automatically deleted when all copies of the instance are destroyied.
+
+    public:
+        ImageWithFeature(bool use_gpu = false);
+        ImageWithFeature(const ImageWithFeature& obj);
+        ~ImageWithFeature();
+
+        ImageWithFeature& operator=(const ImageWithFeature& right);
+
+    public:
         // raw image data
         shared_ptr<vector<char>> image_data_raw;
         // image data
@@ -19,11 +31,31 @@ namespace diffraflow {
         // image feature
         shared_ptr<ImageFeature> image_feature;
 
-        // for GPU
-        // image data
-        ImageDataField* image_data_devptr = 0;
-        // image feature
-        ImageFeature* image_feature_devptr = 0;
+        // internal pointer getters
+        //// host
+        ImageDataField* image_data_host() { return image_data_host_ptr_; };
+        ImageFeature* image_feature_host() { return image_feature_host_ptr_; };
+        //// device
+        ImageDataField* image_data_device() { return image_data_device_ptr_; };
+        ImageFeature* image_feature_device() { return image_feature_device_ptr_; };
+
+    private:
+        void copyObj_(const ImageWithFeature& obj);
+
+    private:
+        bool use_gpu_;
+        int* ref_cnt_ptr_;
+
+        // self-managed pointers
+        //// host
+        ImageDataField* image_data_host_ptr_;
+        ImageFeature* image_feature_host_ptr_;
+        //// device
+        ImageDataField* image_data_device_ptr_;
+        ImageFeature* image_feature_device_ptr_;
+
+    private:
+        static log4cxx::LoggerPtr logger_;
     };
 } // namespace diffraflow
 

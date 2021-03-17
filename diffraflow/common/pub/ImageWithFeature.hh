@@ -6,10 +6,12 @@
 
 #include <vector>
 #include <memory>
+#include <atomic>
 #include <log4cxx/logger.h>
 
 using std::vector;
 using std::shared_ptr;
+using std::atomic_int;
 
 namespace diffraflow {
     class ImageWithFeature {
@@ -49,7 +51,7 @@ namespace diffraflow {
         bool mem_ready_;
 
         // reference counter
-        int* ref_cnt_ptr_;
+        atomic_int* ref_cnt_ptr_;
 
         // self-managed pointers
         //// host

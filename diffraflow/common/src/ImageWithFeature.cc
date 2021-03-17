@@ -6,7 +6,7 @@
 log4cxx::LoggerPtr diffraflow::ImageWithFeature::logger_ = log4cxx::Logger::getLogger("ImageWithFeature");
 
 diffraflow::ImageWithFeature::ImageWithFeature(bool use_gpu) : use_gpu_(use_gpu) {
-    ref_cnt_ptr_ = new int(1);
+    ref_cnt_ptr_ = new atomic_int(1);
     mem_ready_ = true;
 
     if (use_gpu_) {
@@ -41,11 +41,11 @@ void diffraflow::ImageWithFeature::copyObj_(const ImageWithFeature& obj) {
     if (this == &obj) return;
 
     *this = obj;
-    *this->ref_cnt_ptr_ += 1;
+    (*this->ref_cnt_ptr_)++;
 }
 
 diffraflow::ImageWithFeature::~ImageWithFeature() {
-    *this->ref_cnt_ptr_ -= 1;
+    (*this->ref_cnt_ptr_)--;
 
     if (*this->ref_cnt_ptr_ < 1) {
 

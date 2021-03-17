@@ -26,18 +26,14 @@ namespace diffraflow {
     public:
         // raw image data
         shared_ptr<vector<char>> image_data_raw;
-        // image data
-        shared_ptr<ImageDataField> image_data;
-        // image feature
-        shared_ptr<ImageFeature> image_feature;
 
         // internal pointer getters
         //// host
-        ImageDataField* image_data_host() { return image_data_host_ptr_; };
-        ImageFeature* image_feature_host() { return image_feature_host_ptr_; };
+        ImageDataField* image_data_host() const { return image_data_host_ptr_; };
+        ImageFeature* image_feature_host() const { return image_feature_host_ptr_; };
         //// device
-        ImageDataField* image_data_device() { return image_data_device_ptr_; };
-        ImageFeature* image_feature_device() { return image_feature_device_ptr_; };
+        ImageDataField* image_data_device() const { return image_data_device_ptr_; };
+        ImageFeature* image_feature_device() const { return image_feature_device_ptr_; };
 
         bool mem_ready() { return mem_ready_; }
 

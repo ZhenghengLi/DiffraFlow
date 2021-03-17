@@ -88,8 +88,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     }
 
     // decode
-    image_with_feature->image_data = make_shared<ImageDataField>();
-    if (ImageDataType::decode(*image_with_feature->image_data, payload_data->data(), payload_data->size())) {
+    if (ImageDataType::decode(*image_with_feature->image_data_host(), payload_data->data(), payload_data->size())) {
         image_with_feature->image_data_raw = payload_data;
         return kSucc;
     } else {
@@ -105,15 +104,27 @@ int diffraflow::IngImgDatFetcher::run_() {
         cv_status_.notify_all();
         size_t successive_fail_count = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
+
+            // allocate memory space for an image_with_feature
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
+            if (!image_with_feature->mem_ready()) {
+                LOG4CXX_ERROR(logger_,
+                    "memory allocation for an image_with_feature failed, close the connection and stop running.");
+                close_connection();
+                worker_status_ = kStopped;
+                result = 2;
+                break;
+            }
+
+            // receive data from combiner and decode it into the allocated memory
             switch (receive_one_image(image_with_feature)) {
             case kDisconnected:
                 if (worker_status_ == kStopped) {
                     result = 0;
                     break;
                 }
-                LOG4CXX_WARN(logger_, "error found when receiving one image from combiner,"
-                                          << " close the connection and try to reconnect.")
+                LOG4CXX_WARN(logger_,
+                    "error found when receiving one image from combiner, close the connection and try to reconnect.")
                 close_connection();
                 running = false;
                 break;
@@ -130,6 +141,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                     close_connection();
                     worker_status_ = kStopped;
                     running = false;
+                    result = 0;
                 }
 
                 break;

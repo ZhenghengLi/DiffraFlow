@@ -30,7 +30,7 @@ int diffraflow::IngImageFilter::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        if (check_for_save_(*image_with_feature->image_feature)) {
+        if (check_for_save_(*image_with_feature->image_feature_host())) {
             filter_metrics.total_images_for_save++;
             if (image_queue_out_->offer(image_with_feature)) {
                 LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");
@@ -39,7 +39,7 @@ int diffraflow::IngImageFilter::run_() {
                 filter_metrics.total_images_for_save_fail++;
             }
         }
-        if (check_for_monitor_(*image_with_feature->image_feature)) {
+        if (check_for_monitor_(*image_with_feature->image_feature_host())) {
             filter_metrics.total_images_for_monitor++;
             set_current_image(image_with_feature);
         }

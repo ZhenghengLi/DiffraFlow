@@ -15,11 +15,16 @@ const diffraflow::ImageDataFeature& diffraflow::ImageDataFeature::operator=(
 }
 
 void diffraflow::ImageDataFeature::copy_from_(const ImageWithFeature& image_with_feature) {
-    if (image_with_feature.image_data) {
+    if (image_with_feature.image_data_host()) {
         this->image_data = make_shared<ImageData>();
-        ImageDataType::convert(*image_with_feature.image_data, *this->image_data);
+        ImageDataType::convert(*image_with_feature.image_data_host(), *this->image_data);
     } else {
         this->image_data = nullptr;
     }
-    this->image_feature = image_with_feature.image_feature;
+    if (image_with_feature.image_feature_host()) {
+        this->image_feature = make_shared<ImageFeature>();
+        *this->image_feature = *image_with_feature.image_feature_host();
+    } else {
+        this->image_feature = nullptr;
+    }
 }

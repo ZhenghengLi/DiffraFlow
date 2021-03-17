@@ -14,11 +14,11 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 void diffraflow::IngFeatureExtracter::extract_feature_(shared_ptr<ImageWithFeature>& image_with_feature) {
 
     // some example code
-    if (!image_with_feature->image_feature) {
-        image_with_feature->image_feature = make_shared<ImageFeature>();
+    if (!image_with_feature->image_feature_host()) {
+        return;
     }
-    image_with_feature->image_feature->peak_counts = 1;
-    image_with_feature->image_feature->global_rms = 2;
+    image_with_feature->image_feature_host()->peak_counts = 1;
+    image_with_feature->image_feature_host()->global_rms = 2;
 }
 
 int diffraflow::IngFeatureExtracter::run_() {

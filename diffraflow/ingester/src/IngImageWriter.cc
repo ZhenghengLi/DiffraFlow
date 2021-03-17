@@ -147,7 +147,7 @@ bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>&
     }
 
     if (config_obj_->save_calib_data) {
-        if (image_file_hdf5_->write(*image_with_feature->image_data)) {
+        if (image_file_hdf5_->write(*image_with_feature->image_data_host())) {
             LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
         } else {
             LOG4CXX_WARN(logger_, "failed to save one image into hdf5 file.");

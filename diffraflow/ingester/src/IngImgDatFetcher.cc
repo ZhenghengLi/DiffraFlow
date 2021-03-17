@@ -47,10 +47,10 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
             break;
         } else {
             if (current_count < recnxn_max_count_) {
-                LOG4CXX_WARN(logger_, "failed to connect to combiner "
-                                          << dest_host_ << ":" << dest_port_ << ", wait for " << recnxn_wait_time_
-                                          << "ms and retry (" << current_count + 1 << "/" << recnxn_max_count_
-                                          << ") ...");
+                LOG4CXX_WARN(logger_, "failed to connect to combiner " << get_server_address() << ", wait for "
+                                                                       << recnxn_wait_time_ << "ms and retry ("
+                                                                       << current_count + 1 << "/" << recnxn_max_count_
+                                                                       << ") ...");
                 if (recnxn_wait_time_ > 0) {
                     unique_lock<mutex> ulk(cnxn_mtx_);
                     cnxn_cv_.wait_for(ulk, std::chrono::milliseconds(recnxn_wait_time_),

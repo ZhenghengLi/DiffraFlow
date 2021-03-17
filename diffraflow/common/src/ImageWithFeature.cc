@@ -7,9 +7,12 @@ log4cxx::LoggerPtr diffraflow::ImageWithFeature::logger_ = log4cxx::Logger::getL
 
 diffraflow::ImageWithFeature::ImageWithFeature(bool use_gpu) : use_gpu_(use_gpu) {
     ref_cnt_ptr_ = new int(1);
+    mem_ready_ = true;
+
     if (use_gpu_) {
         // cudaHostAlloc
         // cudaMalloc
+        // if malloc failed: mem_ready_ = false
 
         // host
         image_data_host_ptr_ = nullptr;
@@ -35,12 +38,15 @@ diffraflow::ImageWithFeature& diffraflow::ImageWithFeature::operator=(const Imag
 }
 
 void diffraflow::ImageWithFeature::copyObj_(const ImageWithFeature& obj) {
+    if (this == &obj) return;
+
     *this = obj;
     *this->ref_cnt_ptr_ += 1;
 }
 
 diffraflow::ImageWithFeature::~ImageWithFeature() {
     *this->ref_cnt_ptr_ -= 1;
+
     if (*this->ref_cnt_ptr_ < 1) {
         if (use_gpu_) {
             // cudaFreeHost
@@ -51,5 +57,7 @@ diffraflow::ImageWithFeature::~ImageWithFeature() {
             delete image_feature_host_ptr_;
             image_feature_host_ptr_ = nullptr;
         }
+        delete ref_cnt_ptr_;
+        ref_cnt_ptr_ = nullptr;
     }
 }

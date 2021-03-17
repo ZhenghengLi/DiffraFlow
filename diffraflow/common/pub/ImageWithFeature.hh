@@ -39,12 +39,15 @@ namespace diffraflow {
         ImageDataField* image_data_device() { return image_data_device_ptr_; };
         ImageFeature* image_feature_device() { return image_feature_device_ptr_; };
 
+        bool mem_ready() { return mem_ready_; }
+
     private:
         void copyObj_(const ImageWithFeature& obj);
 
     private:
         bool use_gpu_;
         int* ref_cnt_ptr_;
+        bool mem_ready_;
 
         // self-managed pointers
         //// host

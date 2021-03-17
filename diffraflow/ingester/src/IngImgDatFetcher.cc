@@ -79,7 +79,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     uint32_t payload_type = 0;
     shared_ptr<vector<char>> payload_data;
     if (!receive_one_(payload_type, payload_data, MAX_PAYLOAD_SIZE)) {
-        return kFail;
+        return kDisconnected;
     }
 
     if (payload_type != 0xABCDEEEE) {
@@ -103,7 +103,7 @@ int diffraflow::IngImgDatFetcher::run_() {
     while (worker_status_ != kStopped && connect_to_combiner_()) {
         worker_status_ = kRunning;
         cv_status_.notify_all();
-        size_t successive_fail_count_ = 0;
+        size_t successive_fail_count = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
             shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
             switch (receive_one_image(image_with_feature)) {
@@ -118,7 +118,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                 running = false;
                 break;
             case kSucc:
-                successive_fail_count_ = 0;
+                successive_fail_count = 0;
 
                 // for debug
                 // ImageDataType::print(image_with_feature->image_data);
@@ -134,12 +134,12 @@ int diffraflow::IngImgDatFetcher::run_() {
 
                 break;
             case kFail:
-                successive_fail_count_++;
-                LOG4CXX_WARN(logger_, "failed to deserialize image data (" << successive_fail_count_ << "/"
+                successive_fail_count++;
+                LOG4CXX_WARN(logger_, "failed to deserialize image data (" << successive_fail_count << "/"
                                                                            << max_successive_fail_count_ << ").");
-                if (successive_fail_count_ >= max_successive_fail_count_) {
+                if (successive_fail_count >= max_successive_fail_count_) {
                     LOG4CXX_WARN(logger_, "successively failed for "
-                                              << successive_fail_count_
+                                              << successive_fail_count
                                               << " times, close the connection and stop running.");
                     close_connection();
                     worker_status_ = kStopped;

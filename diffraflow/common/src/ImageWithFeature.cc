@@ -48,6 +48,12 @@ diffraflow::ImageWithFeature::~ImageWithFeature() {
     *this->ref_cnt_ptr_ -= 1;
 
     if (*this->ref_cnt_ptr_ < 1) {
+
+        // delete the reference counter
+        delete ref_cnt_ptr_;
+        ref_cnt_ptr_ = nullptr;
+
+        // delete the data on both host and device
         if (use_gpu_) {
             // cudaFreeHost
             // cudaFree
@@ -57,7 +63,5 @@ diffraflow::ImageWithFeature::~ImageWithFeature() {
             delete image_feature_host_ptr_;
             image_feature_host_ptr_ = nullptr;
         }
-        delete ref_cnt_ptr_;
-        ref_cnt_ptr_ = nullptr;
     }
 }

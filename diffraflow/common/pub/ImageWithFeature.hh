@@ -24,8 +24,10 @@ namespace diffraflow {
         ImageWithFeature& operator=(const ImageWithFeature& right);
 
     public:
-        // raw image data
-        shared_ptr<vector<char>> image_data_raw;
+        // check if memory allocation succeeds
+        bool mem_ready() const { return mem_ready_; }
+        // get reference count
+        int ref_count() const { return *ref_cnt_ptr_; }
 
         // internal pointer getters
         //// host
@@ -35,15 +37,19 @@ namespace diffraflow {
         ImageDataField* image_data_device() const { return image_data_device_ptr_; };
         ImageFeature* image_feature_device() const { return image_feature_device_ptr_; };
 
-        bool mem_ready() { return mem_ready_; }
+    public:
+        // raw image data
+        shared_ptr<vector<char>> image_data_raw;
 
     private:
         void copyObj_(const ImageWithFeature& obj);
 
     private:
         bool use_gpu_;
-        int* ref_cnt_ptr_;
         bool mem_ready_;
+
+        // reference counter
+        int* ref_cnt_ptr_;
 
         // self-managed pointers
         //// host

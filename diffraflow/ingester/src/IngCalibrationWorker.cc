@@ -1,6 +1,8 @@
 #include "IngCalibrationWorker.hh"
 #include "H5Cpp.h"
 
+#include "Calibration.hh"
+
 log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
 diffraflow::IngCalibrationWorker::IngCalibrationWorker(
@@ -97,25 +99,7 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
 }
 
 void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& image_with_feature) {
-
-    ImageDataField& image_data = *image_with_feature->image_data_host();
-
-    for (size_t m = 0; m < MOD_CNT; m++) {
-        if (image_data.alignment[m]) {
-            for (size_t h = 0; h < FRAME_H; h++) {
-                for (size_t w = 0; w < FRAME_W; w++) {
-                    size_t l = image_data.gain_level[m][h][w];
-                    if (l < GLV_CNT) {
-                        image_data.pixel_data[m][h][w] =
-                            (image_data.pixel_data[m][h][w] - calib_data_host_->pedestal[m][l][h][w]) *
-                            calib_data_host_->gain[m][l][h][w];
-                    }
-                }
-            }
-        }
-    }
-
-    image_data.calib_level = 1;
+    Calibration::do_calib_cpu(image_with_feature->image_data_host(), calib_data_host_);
 }
 
 int diffraflow::IngCalibrationWorker::run_() {

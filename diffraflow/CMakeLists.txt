@@ -1,4 +1,4 @@
-add_subdirectory(common)
+add_subdirectory(shared)
 add_subdirectory(dispatcher)
 add_subdirectory(combiner)
 add_subdirectory(ingester)

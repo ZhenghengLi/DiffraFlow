@@ -1,5 +1,5 @@
-df_standard_lib(dfcudatools
-    ALIAS diffraflow::cudatools
+df_standard_lib(dfutils
+    ALIAS diffraflow::utils
     INCLUDE_DIRS ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 

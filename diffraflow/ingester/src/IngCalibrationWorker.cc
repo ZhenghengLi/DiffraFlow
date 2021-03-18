@@ -108,10 +108,8 @@ int diffraflow::IngCalibrationWorker::run_() {
     cv_status_.notify_all();
     shared_ptr<ImageWithFeature> image_with_feature;
     while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        do_calib_(image_with_feature);
 
-        // debug
-        // image_with_feature->image_data_calib.print();
+        do_calib_(image_with_feature);
 
         if (image_queue_out_->push(image_with_feature)) {
             LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");

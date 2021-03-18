@@ -2,10 +2,14 @@
 
 void diffraflow::Calibration::do_calib_cpu(ImageDataField* image_data_host, CalibDataField* calib_data_host) {
 
+    // check arguments
     if (image_data_host == nullptr) return;
     if (calib_data_host == nullptr) return;
-    if (image_data_host->calib_level == 1) return;
 
+    // check calib level
+    if (image_data_host->calib_level >= 1) return;
+
+    // do calib
     for (size_t m = 0; m < MOD_CNT; m++) {
         if (image_data_host->alignment[m]) {
             for (size_t h = 0; h < FRAME_H; h++) {
@@ -21,5 +25,6 @@ void diffraflow::Calibration::do_calib_cpu(ImageDataField* image_data_host, Cali
         }
     }
 
+    // set calib level
     image_data_host->calib_level = 1;
 }

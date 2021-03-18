@@ -9,6 +9,7 @@
 #include <log4cxx/logger.h>
 
 #include "IngImgWthFtrQueue.hh"
+#include "CalibDataField.hh"
 #include "ImageDimension.hh"
 
 using std::mutex;
@@ -34,8 +35,8 @@ namespace diffraflow {
         bool read_calib_file(const char* calib_file);
 
     private:
-        float calib_gain_[MOD_CNT][GLV_CNT][FRAME_H][FRAME_W];     // keV/ADC
-        float calib_pedestal_[MOD_CNT][GLV_CNT][FRAME_H][FRAME_W]; // ADC
+        CalibDataField* calib_data_host_;
+        CalibDataField* calib_data_device_;
 
     public:
         enum WorkerStatus { kNotStart, kRunning, kStopped };

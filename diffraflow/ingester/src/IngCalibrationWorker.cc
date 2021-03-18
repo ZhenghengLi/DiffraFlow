@@ -9,13 +9,16 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
     image_queue_out_ = img_queue_out;
     worker_status_ = kNotStart;
 
+    calib_data_host_ = new CalibDataField();
+    calib_data_device_ = nullptr;
+
     // init calibration parameters
     for (size_t m = 0; m < MOD_CNT; m++) {
         for (size_t l = 0; l < GLV_CNT; l++) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
-                    calib_gain_[m][l][h][w] = 1.0;
-                    calib_pedestal_[m][l][h][w] = 0.0;
+                    calib_data_host_->gain[m][l][h][w] = 1.0;
+                    calib_data_host_->pedestal[m][l][h][w] = 0.0;
                 }
             }
         }
@@ -36,7 +39,7 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         hsize_t gain_offset[] = {0, 0, 0, 0};
         gain_file_space.selectHyperslab(H5S_SELECT_SET, gain_mem_dim, gain_offset);
         H5::DataSpace gain_mem_space(4, gain_mem_dim);
-        gain_dset.read(calib_gain_, H5::PredType::NATIVE_FLOAT, gain_mem_space, gain_file_space);
+        gain_dset.read(calib_data_host_->gain, H5::PredType::NATIVE_FLOAT, gain_mem_space, gain_file_space);
 
         // pedestal
         H5::DataSet pedestal_dset = h5file->openDataSet("pedestal");
@@ -45,7 +48,8 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         hsize_t pedestal_offset[] = {0, 0, 0, 0};
         pedestal_file_space.selectHyperslab(H5S_SELECT_SET, pedestal_mem_dim, pedestal_offset);
         H5::DataSpace pedestal_mem_space(4, pedestal_mem_dim);
-        pedestal_dset.read(calib_pedestal_, H5::PredType::NATIVE_FLOAT, pedestal_mem_space, pedestal_file_space);
+        pedestal_dset.read(
+            calib_data_host_->pedestal, H5::PredType::NATIVE_FLOAT, pedestal_mem_space, pedestal_file_space);
 
         h5file->close();
         delete h5file;
@@ -65,13 +69,13 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         for (size_t l = 0; l < GLV_CNT; l++) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
-                    if (calib_gain_[m][l][h][w] > 0) {
-                        calib_gain_[m][l][h][w] = 1.0 / calib_gain_[m][l][h][w];
+                    if (calib_data_host_->gain[m][l][h][w] > 0) {
+                        calib_data_host_->gain[m][l][h][w] = 1.0 / calib_data_host_->gain[m][l][h][w];
                     } else {
-                        calib_gain_[m][l][h][w] = 1.0;
-                        LOG4CXX_ERROR(logger_, "found invalid gain: calib_gain_[" << m << "][" << l << "][" << h << "]["
-                                                                                  << w
-                                                                                  << "] = " << calib_gain_[m][l][h][w]);
+                        calib_data_host_->gain[m][l][h][w] = 1.0;
+                        LOG4CXX_ERROR(logger_, "found invalid gain: calib_gain_["
+                                                   << m << "][" << l << "][" << h << "][" << w
+                                                   << "] = " << calib_data_host_->gain[m][l][h][w]);
                         return false;
                     }
                 }
@@ -79,10 +83,18 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         }
     }
 
+    // allocate memory on GPU and copy calib_data_host_ into it if use GPU
+
     return true;
 }
 
-diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {}
+diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
+    delete calib_data_host_;
+    calib_data_host_ = nullptr;
+    if (calib_data_device_ != nullptr) {
+        // deallocate memory on GPU
+    }
+}
 
 void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& image_with_feature) {
 
@@ -95,53 +107,13 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
                     size_t l = image_data.gain_level[m][h][w];
                     if (l < GLV_CNT) {
                         image_data.pixel_data[m][h][w] =
-                            (image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w]) * calib_gain_[m][l][h][w];
+                            (image_data.pixel_data[m][h][w] - calib_data_host_->pedestal[m][l][h][w]) *
+                            calib_data_host_->gain[m][l][h][w];
                     }
                 }
             }
         }
     }
-
-    // ==== common noise subtraction test begin ====
-
-    // subtract pedestal
-    // for (size_t m = 0; m < MOD_CNT; m++) {
-    //     if (image_data.alignment[m]) {
-    //         for (size_t h = 0; h < FRAME_H; h++) {
-    //             for (size_t w = 0; w < FRAME_W; w++) {
-    //                 size_t l = image_data.gain_level[m][h][w];
-    //                 if (l < GLV_CNT) {
-    //                     image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] -
-    //                     calib_pedestal_[m][l][h][w];
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // double common_noise[MOD_CNT];
-    // for (size_t m = 0; m < MOD_CNT; m++) {
-    //     // calculate common noise
-    //     common_noise[m] = 0;
-    //     for (size_t h = 0; h < FRAME_H; h++) {
-    //         for (size_t w = 0; w < FRAME_W; w++) {
-    //             common_noise[m] += image_data.pixel_data[m][h][w];
-    //         }
-    //     }
-    //     common_noise[m] /= 65536.;
-    //     // subtract common noise and correct gain
-    //     for (size_t h = 0; h < FRAME_H; h++) {
-    //         for (size_t w = 0; w < FRAME_W; w++) {
-    //             size_t l = image_data.gain_level[m][h][w];
-    //             if (l < GLV_CNT) {
-    //                 double tmp_adc = image_data.pixel_data[m][h][w] - common_noise[m];
-    //                 image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] * calib_gain_[m][l][h][w];
-    //             }
-    //         }
-    //     }
-    // }
-
-    // ==== common noise subtraction test end ====
 
     image_data.calib_level = 1;
 }

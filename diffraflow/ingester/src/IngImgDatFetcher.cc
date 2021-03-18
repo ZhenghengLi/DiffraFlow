@@ -193,6 +193,7 @@ int diffraflow::IngImgDatFetcher::stop() {
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();
+    cnxn_cv_.notify_all();
     close_connection();
     int result = -2;
     if (worker_.valid()) {

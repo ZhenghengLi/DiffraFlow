@@ -11,7 +11,7 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
 
     // init calibration parameters
     for (size_t m = 0; m < MOD_CNT; m++) {
-        for (size_t l = 0; l < LEVEL_CNT; l++) {
+        for (size_t l = 0; l < GLV_CNT; l++) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     calib_gain_[m][l][h][w] = 1.0;
@@ -32,7 +32,7 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         // gain
         H5::DataSet gain_dset = h5file->openDataSet("gain");
         H5::DataSpace gain_file_space = gain_dset.getSpace();
-        hsize_t gain_mem_dim[] = {MOD_CNT, LEVEL_CNT, FRAME_H, FRAME_W};
+        hsize_t gain_mem_dim[] = {MOD_CNT, GLV_CNT, FRAME_H, FRAME_W};
         hsize_t gain_offset[] = {0, 0, 0, 0};
         gain_file_space.selectHyperslab(H5S_SELECT_SET, gain_mem_dim, gain_offset);
         H5::DataSpace gain_mem_space(4, gain_mem_dim);
@@ -41,7 +41,7 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
         // pedestal
         H5::DataSet pedestal_dset = h5file->openDataSet("pedestal");
         H5::DataSpace pedestal_file_space = pedestal_dset.getSpace();
-        hsize_t pedestal_mem_dim[] = {MOD_CNT, LEVEL_CNT, FRAME_H, FRAME_W};
+        hsize_t pedestal_mem_dim[] = {MOD_CNT, GLV_CNT, FRAME_H, FRAME_W};
         hsize_t pedestal_offset[] = {0, 0, 0, 0};
         pedestal_file_space.selectHyperslab(H5S_SELECT_SET, pedestal_mem_dim, pedestal_offset);
         H5::DataSpace pedestal_mem_space(4, pedestal_mem_dim);
@@ -62,7 +62,7 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
 
     // change the unit of gain from ADC/keV to keV/ADC.
     for (size_t m = 0; m < MOD_CNT; m++) {
-        for (size_t l = 0; l < LEVEL_CNT; l++) {
+        for (size_t l = 0; l < GLV_CNT; l++) {
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     if (calib_gain_[m][l][h][w] > 0) {
@@ -93,7 +93,7 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     size_t l = image_data.gain_level[m][h][w];
-                    if (l < LEVEL_CNT) {
+                    if (l < GLV_CNT) {
                         image_data.pixel_data[m][h][w] =
                             (image_data.pixel_data[m][h][w] - calib_pedestal_[m][l][h][w]) * calib_gain_[m][l][h][w];
                     }
@@ -110,7 +110,7 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
     //         for (size_t h = 0; h < FRAME_H; h++) {
     //             for (size_t w = 0; w < FRAME_W; w++) {
     //                 size_t l = image_data.gain_level[m][h][w];
-    //                 if (l < LEVEL_CNT) {
+    //                 if (l < GLV_CNT) {
     //                     image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] -
     //                     calib_pedestal_[m][l][h][w];
     //                 }
@@ -133,7 +133,7 @@ void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& i
     //     for (size_t h = 0; h < FRAME_H; h++) {
     //         for (size_t w = 0; w < FRAME_W; w++) {
     //             size_t l = image_data.gain_level[m][h][w];
-    //             if (l < LEVEL_CNT) {
+    //             if (l < GLV_CNT) {
     //                 double tmp_adc = image_data.pixel_data[m][h][w] - common_noise[m];
     //                 image_data.pixel_data[m][h][w] = image_data.pixel_data[m][h][w] * calib_gain_[m][l][h][w];
     //             }

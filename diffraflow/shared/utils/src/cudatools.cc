@@ -4,7 +4,7 @@
 using std::string;
 using std::stringstream;
 
-string diffraflow::utils::uuid_to_string(char uuid_bytes[16]) {
+string diffraflow::cudatools::uuid_to_string(char uuid_bytes[16]) {
     stringstream ss;
     ss << std::hex;
     for (int i = 0; i < 16; i++) {

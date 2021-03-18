@@ -4,11 +4,11 @@
 #include <string>
 
 namespace diffraflow {
-    namespace utils {
+    namespace cudatools {
 
         std::string uuid_to_string(char uuid_bytes[16]);
 
-    } // namespace utils
+    } // namespace cudatools
 } // namespace diffraflow
 
 #endif

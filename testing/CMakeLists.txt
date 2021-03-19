@@ -1,5 +1,4 @@
 add_subdirectory(generator)
 add_subdirectory(sender)
 add_subdirectory(trigger)
-add_subdirectory(cudatest)
-add_subdirectory(calibtest)
+add_subdirectory(cuda-calib-test)

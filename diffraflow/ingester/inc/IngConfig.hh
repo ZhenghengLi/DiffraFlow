@@ -63,6 +63,7 @@ namespace diffraflow {
         size_t write_queue_capacity;
 
         string calib_param_file;
+        int gpu_device_index; // -1 for no gpu; 0 for device 0, 1 for device 1, and so on
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

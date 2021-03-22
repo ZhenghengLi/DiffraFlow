@@ -8,6 +8,9 @@
 #include "IngImageWriter.hh"
 #include "IngImgHttpServer.hh"
 
+#include <cuda_runtime.h>
+#include "cudatools.hh"
+
 using std::lock_guard;
 
 log4cxx::LoggerPtr diffraflow::IngPipeline::logger_ = log4cxx::Logger::getLogger("IngPipeline");
@@ -37,6 +40,23 @@ diffraflow::IngPipeline::~IngPipeline() {}
 
 void diffraflow::IngPipeline::start_run() {
     if (running_flag_) return;
+
+    bool use_gpu = false;
+    // select gpu device
+    if (config_obj_->gpu_device_index >= 0) {
+        LOG4CXX_INFO(logger_, "Use GPU for data processing.");
+        cudaError_t cuda_err = cudaSetDevice(config_obj_->gpu_device_index);
+        if (cuda_err == cudaSuccess) {
+            LOG4CXX_INFO(
+                logger_, "Successfully selected " << cudatools::get_device_string(config_obj_->gpu_device_index));
+            use_gpu = true;
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to select GPU of device index " << config_obj_->gpu_device_index);
+            return;
+        }
+    } else {
+        LOG4CXX_INFO(logger_, "Use CPU for data processing.");
+    }
 
     //======================================================
     // create all queues and workers

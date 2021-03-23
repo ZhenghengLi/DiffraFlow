@@ -4,3 +4,4 @@ combinerPort: 27122
 combinerSock: combiner-2.sock
 imageHttpPort: 27349
 metricsHttpPort: 27350
+gpuDeviceIndex: 1

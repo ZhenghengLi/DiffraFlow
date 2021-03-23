@@ -27,7 +27,8 @@ data:
     feature_queue_capacity = 100
     write_queue_capacity = 1000
 
-    gpu_device_index = -1
+    gpu_enable = false
+    gpu_device_index = {{ .Values.gpuDeviceIndex }}
 
     calib_param_file = /calib-data/calib-rand-s0.h5
 

@@ -72,7 +72,7 @@ void diffraflow::IngPipeline::start_run() {
 
     //// calibration worker
     imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->calib_queue_capacity);
-    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_);
+    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_, use_gpu);
 
     //// feature extracter
     imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->feature_queue_capacity);

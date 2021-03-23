@@ -21,10 +21,13 @@ data:
     image_http_port = {{ .Values.imageHttpPort }}
     recnxn_wait_time = 1000
     recnxn_max_count = 5
+
     raw_queue_capacity = 100
     calib_queue_capacity = 100
     feature_queue_capacity = 100
     write_queue_capacity = 1000
+
+    gpu_device_index = -1
 
     calib_param_file = /calib-data/calib-rand-s0.h5
 

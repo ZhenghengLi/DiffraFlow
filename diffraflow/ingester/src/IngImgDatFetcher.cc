@@ -9,8 +9,8 @@
 log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_ = log4cxx::Logger::getLogger("IngImgDatFetcher");
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
-    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue)
-    : GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
+    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu)
+    : GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE), use_gpu_(use_gpu) {
     imgWthFtrQue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
@@ -18,8 +18,9 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(
     worker_status_ = kNotStart;
 }
 
-diffraflow::IngImgDatFetcher::IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue)
-    : GenericClient(combiner_sock, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE) {
+diffraflow::IngImgDatFetcher::IngImgDatFetcher(
+    string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu)
+    : GenericClient(combiner_sock, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE), use_gpu_(use_gpu) {
     imgWthFtrQue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
@@ -106,7 +107,7 @@ int diffraflow::IngImgDatFetcher::run_() {
         for (bool running = true; running && worker_status_ == kRunning;) {
 
             // allocate memory space for an image_with_feature
-            shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>();
+            shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>(use_gpu_);
             if (!image_with_feature->mem_ready()) {
                 LOG4CXX_ERROR(logger_,
                     "memory allocation for an image_with_feature failed, close the connection and stop running.");

@@ -21,8 +21,9 @@ using std::make_shared;
 namespace diffraflow {
     class IngImgDatFetcher : public GenericClient {
     public:
-        IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue);
-        IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue);
+        IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue,
+            bool use_gpu = false);
+        IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu = false);
         ~IngImgDatFetcher();
 
         void set_recnxn_policy(size_t wait_time, size_t max_count);
@@ -42,6 +43,8 @@ namespace diffraflow {
     private:
         int run_();
         shared_future<int> worker_;
+
+        bool use_gpu_;
 
         atomic<WorkerStatus> worker_status_;
         mutex mtx_status_;

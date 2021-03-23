@@ -3,19 +3,30 @@
 
 #include <cstddef>
 
-#include "ImageDataField.hh"
-#include "ImageFeature.hh"
-
 namespace diffraflow {
+
     class IngImgFtrBuffer {
     public:
-        IngImgFtrBuffer();
+        IngImgFtrBuffer(size_t capacity, bool use_gpu = false);
         ~IngImgFtrBuffer();
 
+        bool mem_ready() const { return mem_ready_; }
+
     private:
-        size_t head_;
-        size_t tail_;
-        size_t flag_;
+        bool use_gpu_;
+        bool mem_ready_;
+
+        size_t capacity_;
+        size_t element_size_;
+        size_t feature_offset_;
+        size_t buffer_size_;
+
+        void* buffer_host_;
+        void* buffer_device_;
+
+        int head_;
+        int tail_;
+        int flag_;
     };
 } // namespace diffraflow
 

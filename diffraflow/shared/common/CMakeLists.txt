@@ -1,6 +1,6 @@
 df_standard_lib(dfcommon
     ALIAS diffraflow::common
-    INCLUDE_DIRS /usr/include/hdf5/serial
+    INCLUDE_DIRS /usr/include/hdf5/serial ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     LIBRARIES
         pulsar
         log4cxx
@@ -12,6 +12,7 @@ df_standard_lib(dfcommon
         hdf5_serial
         boost_filesystem
         boost_system
+        CUDA::cudart
 )
 
 configure_file(inc/VersionInfo.hh.in inc/VersionInfo.hh)

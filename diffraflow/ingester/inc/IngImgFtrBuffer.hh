@@ -51,6 +51,7 @@ namespace diffraflow {
         int flag_idx_;
 
         std::mutex index_mtx_;
+        std::mutex flag_mtx_;
         std::condition_variable next_cv_;
     };
 } // namespace diffraflow

@@ -43,7 +43,7 @@ void diffraflow::IngPipeline::start_run() {
 
     bool use_gpu = false;
     // select gpu device
-    if (config_obj_->gpu_device_index >= 0) {
+    if (config_obj_->gpu_enable && config_obj_->gpu_device_index >= 0) {
         LOG4CXX_INFO(logger_, "Use GPU for data processing.");
         cudaError_t cuda_err = cudaSetDevice(config_obj_->gpu_device_index);
         if (cuda_err == cudaSuccess) {

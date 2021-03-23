@@ -36,6 +36,7 @@ diffraflow::IngConfig::IngConfig() {
     save_calib_data = false;
     save_raw_data = false;
 
+    gpu_enable = false;
     gpu_device_index = -1;
 
     hdf5_chunk_size = 1;
@@ -117,6 +118,8 @@ bool diffraflow::IngConfig::load(const char* filename) {
             write_queue_capacity = atoi(value.c_str());
         } else if (key == "calib_param_file") {
             calib_param_file = value.c_str();
+        } else if (key == "gpu_enable") {
+            std::istringstream(value) >> std::boolalpha >> gpu_enable;
         } else if (key == "gpu_device_index") {
             gpu_device_index = atoi(value.c_str());
         } else if (key == "metrics_pulsar_broker_address") {
@@ -208,7 +211,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "write_queue_capacity is out of range " << 1 << "-" << 10000);
         succ_flag = false;
     }
-    if (gpu_device_index >= 0) {
+    if (gpu_enable && gpu_device_index >= 0) {
         int device_count = 0;
         cudaError_t cuda_err = cudaGetDeviceCount(&device_count);
         if (cuda_err == cudaSuccess) {
@@ -251,6 +254,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["feature_queue_capacity"] = json::value::number((uint32_t)feature_queue_capacity);
         static_config_json_["write_queue_capacity"] = json::value::number((uint32_t)write_queue_capacity);
         static_config_json_["calib_param_file"] = json::value::string(calib_param_file);
+        static_config_json_["gpu_enable"] = json::value::boolean(gpu_enable);
         static_config_json_["gpu_device_index"] = json::value::number(gpu_device_index);
 
         metrics_config_json_["metrics_pulsar_broker_address"] = json::value::string(metrics_pulsar_broker_address);
@@ -309,6 +313,7 @@ void diffraflow::IngConfig::print() {
     cout << "- feature_queue_capacity = " << feature_queue_capacity << endl;
     cout << "- write_queue_capacity = " << write_queue_capacity << endl;
     cout << "- calib_param_file = " << calib_param_file << endl;
+    cout << "- gpu_enable = " << gpu_enable << endl;
     cout << "- gpu_device_index = " << gpu_device_index << endl;
     cout << "- storage_dir = " << storage_dir << endl;
     cout << "- save_calib_data = " << save_calib_data << endl;

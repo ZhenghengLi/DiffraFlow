@@ -6,7 +6,8 @@
 log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
 diffraflow::IngCalibrationWorker::IngCalibrationWorker(
-    IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out) {
+    IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, bool use_gpu)
+    : use_gpu_(use_gpu) {
     image_queue_in_ = img_queue_in;
     image_queue_out_ = img_queue_out;
     worker_status_ = kNotStart;
@@ -23,6 +24,13 @@ diffraflow::IngCalibrationWorker::IngCalibrationWorker(
                     calib_data_host_->pedestal[m][l][h][w] = 0.0;
                 }
             }
+        }
+    }
+
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_, cudaStreamNonBlocking);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
         }
     }
 }
@@ -86,15 +94,57 @@ bool diffraflow::IngCalibrationWorker::read_calib_file(const char* calib_file) {
     }
 
     // allocate memory on GPU and copy calib_data_host_ into it if use GPU
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaMalloc(&calib_data_device_, sizeof(CalibDataField));
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "Failed to allocate memory on GPU for calibration parameters with error: "
+                                       << cudaGetErrorString(cuda_err));
+            return false;
+        }
+        cuda_err = cudaMemcpyAsync(
+            calib_data_device_, calib_data_host_, sizeof(CalibDataField), cudaMemcpyHostToDevice, cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "cudaMemcpyAsync failed for copying calibraion parameters into GPU with error: "
+                                       << cudaGetErrorString(cuda_err));
+            return false;
+        }
+        cuda_err = cudaStreamSynchronize(cuda_stream_);
+        if (cuda_err == cudaSuccess) {
+            LOG4CXX_INFO(logger_, "copying calibration parameters into GPU succeeds.");
+        } else {
+            LOG4CXX_ERROR(
+                logger_, "cudaStreamSynchronize failed for copying calibraion parameters into GPU with error: "
+                             << cudaGetErrorString(cuda_err));
+            return false;
+        }
+    }
 
     return true;
 }
 
 diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
+
+    stop();
+
     delete calib_data_host_;
     calib_data_host_ = nullptr;
-    if (calib_data_device_ != nullptr) {
-        // deallocate memory on GPU
+
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaStreamDestroy(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        if (calib_data_device_ != nullptr) {
+            cuda_err = cudaFree(calib_data_device_);
+            if (cuda_err != cudaSuccess) {
+                LOG4CXX_WARN(logger_, "cudaFree failed with error: " << cudaGetErrorString(cuda_err));
+            }
+            calib_data_device_ = nullptr;
+        }
     }
 }
 

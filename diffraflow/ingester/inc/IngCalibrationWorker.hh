@@ -7,6 +7,7 @@
 #include <future>
 #include <memory>
 #include <log4cxx/logger.h>
+#include <cuda_runtime.h>
 
 #include "IngImgWthFtrQueue.hh"
 #include "CalibDataField.hh"
@@ -24,7 +25,7 @@ using std::async;
 namespace diffraflow {
     class IngCalibrationWorker {
     public:
-        IngCalibrationWorker(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out);
+        IngCalibrationWorker(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, bool use_gpu = false);
 
         ~IngCalibrationWorker();
 
@@ -47,6 +48,9 @@ namespace diffraflow {
     private:
         int run_();
         shared_future<int> worker_;
+
+        bool use_gpu_;
+        cudaStream_t cuda_stream_;
 
         atomic<WorkerStatus> worker_status_;
         mutex mtx_status_;

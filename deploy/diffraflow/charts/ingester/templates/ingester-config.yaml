@@ -22,10 +22,11 @@ data:
     recnxn_wait_time = 1000
     recnxn_max_count = 5
 
-    raw_queue_capacity = 100
-    calib_queue_capacity = 100
-    feature_queue_capacity = 100
-    write_queue_capacity = 1000
+    buffer_capacity = 510
+    queue_capacity_raw = 100
+    queue_capacity_calib = 50
+    queue_capacity_feature = 50
+    queue_capacity_write = 300
 
     gpu_enable = false
     gpu_device_index = {{ .Values.gpuDeviceIndex }}

@@ -6,11 +6,11 @@
 #include <condition_variable>
 #include <memory>
 
-namespace diffraflow {
+#include "ImageDataFeature.hh"
+#include "ImageDataField.hh"
+#include "ImageFeature.hh"
 
-    class ImageDataFeature;
-    class ImageDataField;
-    class ImageFeature;
+namespace diffraflow {
 
     class IngImgFtrBuffer {
     public:

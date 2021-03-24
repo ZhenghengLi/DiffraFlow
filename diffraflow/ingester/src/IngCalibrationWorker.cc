@@ -1,4 +1,5 @@
 #include "IngCalibrationWorker.hh"
+#include "IngImgFtrBuffer.hh"
 #include "H5Cpp.h"
 
 #include "Calibration.hh"
@@ -6,10 +7,9 @@
 log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
 diffraflow::IngCalibrationWorker::IngCalibrationWorker(
-    IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, bool use_gpu)
-    : use_gpu_(use_gpu) {
-    image_queue_in_ = img_queue_in;
-    image_queue_out_ = img_queue_out;
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), use_gpu_(use_gpu) {
+
     worker_status_ = kNotStart;
 
     calib_data_host_ = new CalibDataField();
@@ -148,20 +148,20 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
     }
 }
 
-void diffraflow::IngCalibrationWorker::do_calib_(shared_ptr<ImageWithFeature>& image_with_feature) {
-    Calibration::do_calib_cpu(image_with_feature->image_data_host(), calib_data_host_);
+void diffraflow::IngCalibrationWorker::do_calib_(const IngBufferItem& item) {
+    Calibration::do_calib_cpu(image_feature_buffer_->image_data_host(item.index), calib_data_host_);
 }
 
 int diffraflow::IngCalibrationWorker::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    shared_ptr<ImageWithFeature> image_with_feature;
-    while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
+    IngBufferItem item;
+    while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
-        do_calib_(image_with_feature);
+        do_calib_(item);
 
-        if (image_queue_out_->push(image_with_feature)) {
+        if (item_queue_out_->push(item)) {
             LOG4CXX_DEBUG(logger_, "pushed the calibrated data into queue.");
         } else {
             break;

@@ -2,6 +2,7 @@
 #define __ImageDataFeature_H__
 
 #include "ImageData.hh"
+#include "ImageDataField.hh"
 #include "ImageFeature.hh"
 
 #include <memory>
@@ -11,16 +12,10 @@ using std::shared_ptr;
 
 namespace diffraflow {
 
-    class ImageWithFeature;
-    class ImageDataField;
-
     class ImageDataFeature {
     public:
         ImageDataFeature();
         ImageDataFeature(ImageDataField* image_data_ptr, ImageFeature* image_feature_ptr);
-        explicit ImageDataFeature(const ImageWithFeature& image_with_feature);
-
-        const ImageDataFeature& operator=(const ImageWithFeature& image_with_feature);
 
     public:
         // image data
@@ -30,9 +25,6 @@ namespace diffraflow {
 
     public:
         MSGPACK_DEFINE_MAP(image_data, image_feature);
-
-    private:
-        void copy_from_(const ImageWithFeature& image_with_feature);
     };
 } // namespace diffraflow
 

@@ -1,34 +1,30 @@
 #include "IngFeatureExtracter.hh"
+#include "IngImgFtrBuffer.hh"
 
 log4cxx::LoggerPtr diffraflow::IngFeatureExtracter::logger_ = log4cxx::Logger::getLogger("IngFeatureExtracter");
 
 diffraflow::IngFeatureExtracter::IngFeatureExtracter(
-    IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out) {
-    image_queue_in_ = img_queue_in;
-    image_queue_out_ = img_queue_out;
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out) {
     worker_status_ = kNotStart;
 }
 
 diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 
-void diffraflow::IngFeatureExtracter::extract_feature_(shared_ptr<ImageWithFeature>& image_with_feature) {
-
+void diffraflow::IngFeatureExtracter::extract_feature_(const IngBufferItem& item) {
     // some example code
-    if (!image_with_feature->image_feature_host()) {
-        return;
-    }
-    image_with_feature->image_feature_host()->peak_counts = 1;
-    image_with_feature->image_feature_host()->global_rms = 2;
+    image_feature_buffer_->image_feature_host(item.index)->peak_counts = 1;
+    image_feature_buffer_->image_feature_host(item.index)->global_rms = 2;
 }
 
 int diffraflow::IngFeatureExtracter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    shared_ptr<ImageWithFeature> image_with_feature;
-    while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        extract_feature_(image_with_feature);
-        if (image_queue_out_->push(image_with_feature)) {
+    IngBufferItem item;
+    while (worker_status_ != kStopped && item_queue_in_->take(item)) {
+        extract_feature_(item);
+        if (item_queue_out_->push(item)) {
             LOG4CXX_DEBUG(logger_, "pushed the feature data into queue.");
         } else {
             break;

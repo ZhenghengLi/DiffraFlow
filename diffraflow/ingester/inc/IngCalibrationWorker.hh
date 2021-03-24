@@ -9,9 +9,9 @@
 #include <log4cxx/logger.h>
 #include <cuda_runtime.h>
 
-#include "IngImgWthFtrQueue.hh"
 #include "CalibDataField.hh"
 #include "ImageDimension.hh"
+#include "IngBufferItemQueue.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -23,9 +23,13 @@ using std::shared_ptr;
 using std::async;
 
 namespace diffraflow {
+
+    class IngImgFtrBuffer;
+
     class IngCalibrationWorker {
     public:
-        IngCalibrationWorker(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, bool use_gpu = false);
+        IngCalibrationWorker(
+            IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu = false);
 
         ~IngCalibrationWorker();
 
@@ -43,7 +47,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void do_calib_(shared_ptr<ImageWithFeature>& image_with_feature);
+        void do_calib_(const IngBufferItem& item);
 
     private:
         int run_();
@@ -57,8 +61,9 @@ namespace diffraflow {
         condition_variable cv_status_;
 
     private:
-        IngImgWthFtrQueue* image_queue_in_;
-        IngImgWthFtrQueue* image_queue_out_;
+        IngImgFtrBuffer* image_feature_buffer_;
+        IngBufferItemQueue* item_queue_in_;
+        IngBufferItemQueue* item_queue_out_;
 
     private:
         static log4cxx::LoggerPtr logger_;

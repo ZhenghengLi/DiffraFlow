@@ -16,11 +16,11 @@ using std::atomic;
 
 namespace diffraflow {
 
-    class IngImageFilter;
+    class IngImgFtrBuffer;
 
     class IngImgHttpServer : public MetricsProvider {
     public:
-        IngImgHttpServer(IngImageFilter* img_filter, int ing_id);
+        IngImgHttpServer(IngImgFtrBuffer* buffer, int ing_id);
         ~IngImgHttpServer();
 
         bool start(string host, int port);
@@ -38,7 +38,7 @@ namespace diffraflow {
         void handleGet_(http_request message);
 
     private:
-        IngImageFilter* image_filter_;
+        IngImgFtrBuffer* image_feature_buffer_;
         http_listener* listener_;
 
         int ingester_id_;

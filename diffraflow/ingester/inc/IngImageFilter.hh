@@ -8,7 +8,7 @@
 #include <log4cxx/logger.h>
 
 #include "MetricsProvider.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngBufferItemQueue.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -21,23 +21,20 @@ using std::async;
 
 namespace diffraflow {
 
-    struct ImageWithFeature;
-
-    class ImageFeature;
+    class IngImgFtrBuffer;
     class IngConfig;
+    class ImageFeature;
 
     class IngImageFilter : public MetricsProvider {
     public:
-        IngImageFilter(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, IngConfig* conf_obj);
+        IngImageFilter(
+            IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, IngConfig* conf_obj);
 
         ~IngImageFilter();
 
         bool start();
         void wait();
         int stop();
-
-        void set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature);
-        shared_ptr<ImageWithFeature> get_current_image();
 
     public:
         struct {
@@ -65,13 +62,10 @@ namespace diffraflow {
         condition_variable cv_status_;
 
     private:
-        IngImgWthFtrQueue* image_queue_in_;
-        IngImgWthFtrQueue* image_queue_out_;
+        IngImgFtrBuffer* image_feature_buffer_;
+        IngBufferItemQueue* item_queue_in_;
+        IngBufferItemQueue* item_queue_out_;
         IngConfig* config_obj_;
-
-    private:
-        shared_ptr<ImageWithFeature> current_image_;
-        mutex current_image_mtx_;
 
     private:
         static log4cxx::LoggerPtr logger_;

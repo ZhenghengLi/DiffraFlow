@@ -1,7 +1,4 @@
 #include "IngImgFtrBuffer.hh"
-#include "ImageDataField.hh"
-#include "ImageFeature.hh"
-#include "ImageDataFeature.hh"
 
 #include <cuda_runtime.h>
 

@@ -8,7 +8,7 @@
 #include <future>
 #include <log4cxx/logger.h>
 
-#include "IngImgWthFtrQueue.hh"
+#include "IngBufferItemQueue.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -21,9 +21,12 @@ using std::async;
 using std::make_shared;
 
 namespace diffraflow {
+
+    class IngImgFtrBuffer;
+
     class IngFeatureExtracter {
     public:
-        IngFeatureExtracter(IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out);
+        IngFeatureExtracter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out);
 
         ~IngFeatureExtracter();
 
@@ -35,7 +38,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void extract_feature_(shared_ptr<ImageWithFeature>& image_with_feature);
+        void extract_feature_(const IngBufferItem& item);
 
     private:
         int run_();
@@ -46,8 +49,9 @@ namespace diffraflow {
         condition_variable cv_status_;
 
     private:
-        IngImgWthFtrQueue* image_queue_in_;
-        IngImgWthFtrQueue* image_queue_out_;
+        IngImgFtrBuffer* image_feature_buffer_;
+        IngBufferItemQueue* item_queue_in_;
+        IngBufferItemQueue* item_queue_out_;
 
     private:
         static log4cxx::LoggerPtr logger_;

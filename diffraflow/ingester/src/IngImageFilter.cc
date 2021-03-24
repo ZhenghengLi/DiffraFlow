@@ -1,15 +1,15 @@
 #include "IngImageFilter.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngImgFtrBuffer.hh"
 #include "IngConfig.hh"
 #include "ImageWithFeature.hh"
+#include "ImageFeature.hh"
 
 log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_ = log4cxx::Logger::getLogger("IngImageFilter");
 
 diffraflow::IngImageFilter::IngImageFilter(
-    IngImgWthFtrQueue* img_queue_in, IngImgWthFtrQueue* img_queue_out, IngConfig* conf_obj) {
-    image_queue_in_ = img_queue_in;
-    image_queue_out_ = img_queue_out;
-    config_obj_ = conf_obj;
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, IngConfig* conf_obj)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), config_obj_(conf_obj) {
+
     worker_status_ = kNotStart;
 
     filter_metrics.total_images_for_monitor = 0;
@@ -28,21 +28,28 @@ int diffraflow::IngImageFilter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    shared_ptr<ImageWithFeature> image_with_feature;
-    while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
-        if (check_for_save_(*image_with_feature->image_feature_host())) {
+    IngBufferItem item;
+    while (worker_status_ != kStopped && item_queue_in_->take(item)) {
+
+        // copy image feature from gpu to cpu if gpu is enabled
+
+        if (check_for_monitor_(*image_feature_buffer_->image_feature_host(item.index))) {
+            filter_metrics.total_images_for_monitor++;
+            image_feature_buffer_->flag(item.index);
+        }
+
+        if (check_for_save_(*image_feature_buffer_->image_feature_host(item.index))) {
             filter_metrics.total_images_for_save++;
-            if (image_queue_out_->offer(image_with_feature)) {
+            if (item_queue_out_->offer(item)) {
                 LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");
             } else {
                 LOG4CXX_DEBUG(logger_, "failed to push one good image into queue for saving.");
                 filter_metrics.total_images_for_save_fail++;
             }
+        } else {
+            image_feature_buffer_->done(item.index);
         }
-        if (check_for_monitor_(*image_with_feature->image_feature_host())) {
-            filter_metrics.total_images_for_monitor++;
-            set_current_image(image_with_feature);
-        }
+
         filter_metrics.total_processed_images++;
     }
     worker_status_ = kStopped;
@@ -82,18 +89,6 @@ int diffraflow::IngImageFilter::stop() {
         result = worker_.get();
     }
     return result;
-}
-
-void diffraflow::IngImageFilter::set_current_image(const shared_ptr<ImageWithFeature>& image_with_feature) {
-    unique_lock<mutex> lk(current_image_mtx_, std::try_to_lock);
-    if (lk.owns_lock()) {
-        current_image_ = image_with_feature;
-    }
-}
-
-shared_ptr<diffraflow::ImageWithFeature> diffraflow::IngImageFilter::get_current_image() {
-    lock_guard<mutex> lg(current_image_mtx_);
-    return current_image_;
 }
 
 json::value diffraflow::IngImageFilter::collect_metrics() {

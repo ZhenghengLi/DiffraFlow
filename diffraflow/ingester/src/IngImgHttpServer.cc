@@ -1,6 +1,5 @@
 #include "IngImgHttpServer.hh"
-#include "IngImageFilter.hh"
-#include "ImageWithFeature.hh"
+#include "IngImgFtrBuffer.hh"
 #include "ImageDataFeature.hh"
 
 #include <msgpack.hpp>
@@ -16,10 +15,10 @@ using std::shared_ptr;
 
 log4cxx::LoggerPtr diffraflow::IngImgHttpServer::logger_ = log4cxx::Logger::getLogger("IngImgHttpServer");
 
-diffraflow::IngImgHttpServer::IngImgHttpServer(IngImageFilter* img_filter, int ing_id) {
-    image_filter_ = img_filter;
+diffraflow::IngImgHttpServer::IngImgHttpServer(IngImgFtrBuffer* buffer, int ing_id)
+    : image_feature_buffer_(buffer), ingester_id_(ing_id) {
+
     listener_ = nullptr;
-    ingester_id_ = ing_id;
 
     metrics.total_request_counts = 0;
     metrics.total_sent_counts = 0;
@@ -76,21 +75,19 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
     std::smatch match_res;
 
     // converting sequence: current_image => image_data_feature => image_sbuff
-    ImageDataFeature image_data_feature;
+    shared_ptr<ImageDataFeature> image_data_feature;
     msgpack::sbuffer image_sbuff;
     http_response response;
     response.headers().add(U("Access-Control-Allow-Origin"), U("*"));
 
     if (relative_path == "/") {
-        shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
-        if (current_image) {
-            image_data_feature = *current_image;
-        } else {
+        image_data_feature = image_feature_buffer_->flag_image();
+        if (!image_data_feature) {
             response.set_status_code(status_codes::NotFound);
             message.reply(response).get();
             return;
         }
-        string key_str = std::to_string(image_data_feature.image_data->get_key());
+        string key_str = std::to_string(image_data_feature->image_data->get_key());
         string ingester_id_str = std::to_string(ingester_id_);
 
         msgpack::pack(image_sbuff, image_data_feature);
@@ -113,18 +110,17 @@ void diffraflow::IngImgHttpServer::handleGet_(http_request message) {
     } else if (std::regex_match(relative_path, match_res, req_regex)) {
         uint64_t request_key = std::stoul(match_res[1].str());
 
-        shared_ptr<ImageWithFeature> current_image = image_filter_->get_current_image();
-        if (current_image) {
-            image_data_feature = *current_image;
-        } else {
+        image_data_feature = image_feature_buffer_->flag_image();
+        if (!image_data_feature) {
             response.set_status_code(status_codes::NotFound);
             message.reply(response).get();
             return;
         }
-        string key_str = std::to_string(image_data_feature.image_data->get_key());
+
+        string key_str = std::to_string(image_data_feature->image_data->get_key());
         string ingester_id_str = std::to_string(ingester_id_);
 
-        if (request_key < image_data_feature.image_data->get_key()) {
+        if (request_key < image_data_feature->image_data->get_key()) {
 
             msgpack::pack(image_sbuff, image_data_feature);
             concurrency::streams::istream data_stream = concurrency::streams::rawptr_stream<uint8_t>::open_istream(

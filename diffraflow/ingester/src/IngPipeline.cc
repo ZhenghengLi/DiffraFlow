@@ -1,6 +1,6 @@
 #include "IngPipeline.hh"
 #include "IngConfig.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngImgFtrBuffer.hh"
 #include "IngImgDatFetcher.hh"
 #include "IngCalibrationWorker.hh"
 #include "IngFeatureExtracter.hh"
@@ -19,17 +19,19 @@ diffraflow::IngPipeline::IngPipeline(IngConfig* config) {
     config_obj_ = config;
     running_flag_ = false;
 
+    image_feature_buffer_ = nullptr;
+
     image_data_fetcher_ = nullptr;
-    imgWthFtrQue_raw_ = nullptr;
+    item_queue_raw_ = nullptr;
 
     calibration_worker_ = nullptr;
-    imgWthFtrQue_calib_ = nullptr;
+    item_queue_calib_ = nullptr;
 
     feature_extracter_ = nullptr;
-    imgWthFtrQue_feature_ = nullptr;
+    item_queue_feature_ = nullptr;
 
     image_filter_ = nullptr;
-    imgWthFtrQue_write_ = nullptr;
+    item_queue_write_ = nullptr;
 
     image_http_server_ = nullptr;
 
@@ -59,34 +61,41 @@ void diffraflow::IngPipeline::start_run() {
     }
 
     //======================================================
+    // create buffer
+    image_feature_buffer_ = new IngImgFtrBuffer(config_obj_->buffer_capacity, use_gpu);
+    if (!image_feature_buffer_->mem_ready()) {
+        LOG4CXX_ERROR(logger_, "Failed to create image feature buffer.");
+        return;
+    }
+
     // create all queues and workers
     //// image fetcher
-    imgWthFtrQue_raw_ = new IngImgWthFtrQueue(config_obj_->raw_queue_capacity);
+    item_queue_raw_ = new IngBufferItemQueue(config_obj_->queue_capacity_raw);
     if (config_obj_->combiner_sock.empty()) {
         image_data_fetcher_ = new IngImgDatFetcher(config_obj_->combiner_host, config_obj_->combiner_port,
-            config_obj_->ingester_id, imgWthFtrQue_raw_, use_gpu);
+            config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_, use_gpu);
     } else {
-        image_data_fetcher_ =
-            new IngImgDatFetcher(config_obj_->combiner_sock, config_obj_->ingester_id, imgWthFtrQue_raw_, use_gpu);
+        image_data_fetcher_ = new IngImgDatFetcher(
+            config_obj_->combiner_sock, config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_, use_gpu);
     }
 
     //// calibration worker
-    imgWthFtrQue_calib_ = new IngImgWthFtrQueue(config_obj_->calib_queue_capacity);
-    calibration_worker_ = new IngCalibrationWorker(imgWthFtrQue_raw_, imgWthFtrQue_calib_, use_gpu);
+    item_queue_calib_ = new IngBufferItemQueue(config_obj_->queue_capacity_calib);
+    calibration_worker_ = new IngCalibrationWorker(image_feature_buffer_, item_queue_raw_, item_queue_calib_, use_gpu);
 
     //// feature extracter
-    imgWthFtrQue_feature_ = new IngImgWthFtrQueue(config_obj_->feature_queue_capacity);
-    feature_extracter_ = new IngFeatureExtracter(imgWthFtrQue_calib_, imgWthFtrQue_feature_);
+    item_queue_feature_ = new IngBufferItemQueue(config_obj_->queue_capacity_feature);
+    feature_extracter_ = new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_);
 
     //// image filter
-    imgWthFtrQue_write_ = new IngImgWthFtrQueue(config_obj_->write_queue_capacity);
-    image_filter_ = new IngImageFilter(imgWthFtrQue_feature_, imgWthFtrQue_write_, config_obj_);
-
-    //// http server
-    image_http_server_ = new IngImgHttpServer(image_filter_, config_obj_->ingester_id);
+    item_queue_write_ = new IngBufferItemQueue(config_obj_->queue_capacity_write);
+    image_filter_ = new IngImageFilter(image_feature_buffer_, item_queue_feature_, item_queue_write_, config_obj_);
 
     //// image writer
-    image_writer_ = new IngImageWriter(imgWthFtrQue_write_, config_obj_);
+    image_writer_ = new IngImageWriter(image_feature_buffer_, item_queue_write_, config_obj_);
+
+    //// http server
+    image_http_server_ = new IngImgHttpServer(image_feature_buffer_, config_obj_->ingester_id);
 
     //======================================================
     // config and prepare before start
@@ -184,16 +193,16 @@ void diffraflow::IngPipeline::start_run() {
         lock_guard<mutex> lg(delete_mtx_);
 
         image_data_fetcher_->wait();
-        imgWthFtrQue_raw_->stop();
+        item_queue_raw_->stop();
 
         calibration_worker_->wait();
-        imgWthFtrQue_calib_->stop();
+        item_queue_calib_->stop();
 
         feature_extracter_->wait();
-        imgWthFtrQue_feature_->stop();
+        item_queue_feature_->stop();
 
         image_filter_->wait();
-        imgWthFtrQue_write_->stop();
+        item_queue_write_->stop();
 
         image_writer_->wait();
     }).wait();
@@ -218,7 +227,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop data calibration
-    imgWthFtrQue_raw_->stop(/* wait_time */);
+    item_queue_raw_->stop(/* wait_time */);
     result = calibration_worker_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "calibration worker is normally terminated.");
@@ -229,7 +238,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop feature extraction
-    imgWthFtrQue_calib_->stop(/* wait_time */);
+    item_queue_calib_->stop(/* wait_time */);
     result = feature_extracter_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "feature extracter is normally terminated.");
@@ -240,7 +249,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop image filter
-    imgWthFtrQue_feature_->stop(/* wait_time */);
+    item_queue_feature_->stop(/* wait_time */);
     result = image_filter_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image filter is normally terminated.");
@@ -250,11 +259,8 @@ void diffraflow::IngPipeline::terminate() {
         LOG4CXX_WARN(logger_, "image filter has not yet been started.");
     }
 
-    // stop http server
-    image_http_server_->stop();
-
     // stop image writer
-    imgWthFtrQue_write_->stop(/* wait_time */);
+    item_queue_write_->stop(/* wait_time */);
     result = image_writer_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image writer is normally terminated.");
@@ -263,6 +269,9 @@ void diffraflow::IngPipeline::terminate() {
     } else {
         LOG4CXX_WARN(logger_, "image writer has not yet been started.");
     }
+
+    // stop http server
+    image_http_server_->stop();
 
     lock_guard<mutex> lg(delete_mtx_);
 
@@ -279,24 +288,27 @@ void diffraflow::IngPipeline::terminate() {
     delete image_filter_;
     image_filter_ = nullptr;
 
-    delete image_http_server_;
-    image_http_server_ = nullptr;
-
     delete image_writer_;
     image_writer_ = nullptr;
 
+    delete image_http_server_;
+    image_http_server_ = nullptr;
+
     // delete all queues
-    delete imgWthFtrQue_raw_;
-    imgWthFtrQue_raw_ = nullptr;
+    delete item_queue_raw_;
+    item_queue_raw_ = nullptr;
 
-    delete imgWthFtrQue_calib_;
-    imgWthFtrQue_calib_ = nullptr;
+    delete item_queue_calib_;
+    item_queue_calib_ = nullptr;
 
-    delete imgWthFtrQue_feature_;
-    imgWthFtrQue_feature_ = nullptr;
+    delete item_queue_feature_;
+    item_queue_feature_ = nullptr;
 
-    delete imgWthFtrQue_write_;
-    imgWthFtrQue_write_ = nullptr;
+    delete item_queue_write_;
+    item_queue_write_ = nullptr;
+
+    delete image_feature_buffer_;
+    image_feature_buffer_ = nullptr;
 
     running_flag_ = false;
 }

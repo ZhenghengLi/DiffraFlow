@@ -29,10 +29,13 @@ diffraflow::IngConfig::IngConfig() {
     image_http_host = "localhost";
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
-    raw_queue_capacity = 100;
-    calib_queue_capacity = 100;
-    feature_queue_capacity = 100;
-    write_queue_capacity = 1000;
+
+    buffer_capacity = 510;
+    queue_capacity_raw = 100;
+    queue_capacity_calib = 50;
+    queue_capacity_feature = 50;
+    queue_capacity_write = 300;
+
     save_calib_data = false;
     save_raw_data = false;
 
@@ -108,14 +111,16 @@ bool diffraflow::IngConfig::load(const char* filename) {
             recnxn_wait_time = atoi(value.c_str());
         } else if (key == "recnxn_max_count") {
             recnxn_max_count = atoi(value.c_str());
-        } else if (key == "raw_queue_capacity") {
-            raw_queue_capacity = atoi(value.c_str());
-        } else if (key == "calib_queue_capacity") {
-            calib_queue_capacity = atoi(value.c_str());
-        } else if (key == "feature_queue_capacity") {
-            feature_queue_capacity = atoi(value.c_str());
-        } else if (key == "write_queue_capacity") {
-            write_queue_capacity = atoi(value.c_str());
+        } else if (key == "buffer_capacity") {
+            buffer_capacity = atoi(value.c_str());
+        } else if (key == "queue_capacity_raw") {
+            queue_capacity_raw = atoi(value.c_str());
+        } else if (key == "queue_capacity_calib") {
+            queue_capacity_calib = atoi(value.c_str());
+        } else if (key == "queue_capacity_feature") {
+            queue_capacity_feature = atoi(value.c_str());
+        } else if (key == "queue_capacity_write") {
+            queue_capacity_write = atoi(value.c_str());
         } else if (key == "calib_param_file") {
             calib_param_file = value.c_str();
         } else if (key == "gpu_enable") {
@@ -195,20 +200,24 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "invalid image_http_port: " << image_http_port);
         succ_flag = false;
     }
-    if (raw_queue_capacity < 1 || raw_queue_capacity > 10000) {
-        LOG4CXX_ERROR(logger_, "raw_queue_capacity is out of range " << 1 << "-" << 10000);
+    if (buffer_capacity < 1 || buffer_capacity > 1000) {
+        LOG4CXX_ERROR(logger_, "buffer_capacity is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
-    if (calib_queue_capacity < 1 || calib_queue_capacity > 10000) {
-        LOG4CXX_ERROR(logger_, "calib_queue_capacity is out of range " << 1 << "-" << 10000);
+    if (queue_capacity_raw < 1 || queue_capacity_raw > 1000) {
+        LOG4CXX_ERROR(logger_, "queue_capacity_raw is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
-    if (feature_queue_capacity < 1 || feature_queue_capacity > 10000) {
-        LOG4CXX_ERROR(logger_, "feature_queue_capacity is out of range " << 1 << "-" << 10000);
+    if (queue_capacity_calib < 1 || queue_capacity_calib > 1000) {
+        LOG4CXX_ERROR(logger_, "queue_capacity_calib is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
-    if (write_queue_capacity < 1 || write_queue_capacity > 10000) {
-        LOG4CXX_ERROR(logger_, "write_queue_capacity is out of range " << 1 << "-" << 10000);
+    if (queue_capacity_feature < 1 || queue_capacity_feature > 1000) {
+        LOG4CXX_ERROR(logger_, "queue_capacity_feature is out of range " << 1 << "-" << 1000);
+        succ_flag = false;
+    }
+    if (queue_capacity_write < 1 || queue_capacity_write > 1000) {
+        LOG4CXX_ERROR(logger_, "write_queue_capacity is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
     if (gpu_enable && gpu_device_index >= 0) {
@@ -249,10 +258,11 @@ bool diffraflow::IngConfig::load(const char* filename) {
         static_config_json_["image_http_port"] = json::value::number(image_http_port);
         static_config_json_["recnxn_wait_time"] = json::value::number((uint32_t)recnxn_wait_time);
         static_config_json_["recnxn_max_count"] = json::value::number((uint32_t)recnxn_max_count);
-        static_config_json_["raw_queue_capacity"] = json::value::number((uint32_t)raw_queue_capacity);
-        static_config_json_["calib_queue_capacity"] = json::value::number((uint32_t)calib_queue_capacity);
-        static_config_json_["feature_queue_capacity"] = json::value::number((uint32_t)feature_queue_capacity);
-        static_config_json_["write_queue_capacity"] = json::value::number((uint32_t)write_queue_capacity);
+        static_config_json_["buffer_capacity"] = json::value::number((uint32_t)buffer_capacity);
+        static_config_json_["queue_capacity_raw"] = json::value::number((uint32_t)queue_capacity_raw);
+        static_config_json_["queue_capacity_calib"] = json::value::number((uint32_t)queue_capacity_calib);
+        static_config_json_["queue_capacity_feature"] = json::value::number((uint32_t)queue_capacity_feature);
+        static_config_json_["queue_capacity_write"] = json::value::number((uint32_t)queue_capacity_write);
         static_config_json_["calib_param_file"] = json::value::string(calib_param_file);
         static_config_json_["gpu_enable"] = json::value::boolean(gpu_enable);
         static_config_json_["gpu_device_index"] = json::value::number(gpu_device_index);
@@ -308,10 +318,11 @@ void diffraflow::IngConfig::print() {
     cout << "- image_http_port = " << image_http_port << endl;
     cout << "- recnxn_wait_time = " << recnxn_wait_time << endl;
     cout << "- recnxn_max_count = " << recnxn_max_count << endl;
-    cout << "- raw_queue_capacity = " << raw_queue_capacity << endl;
-    cout << "- calib_queue_capacity = " << calib_queue_capacity << endl;
-    cout << "- feature_queue_capacity = " << feature_queue_capacity << endl;
-    cout << "- write_queue_capacity = " << write_queue_capacity << endl;
+    cout << "- buffer_capacity = " << buffer_capacity << endl;
+    cout << "- queue_capacity_raw = " << queue_capacity_raw << endl;
+    cout << "- queue_capacity_calib = " << queue_capacity_calib << endl;
+    cout << "- queue_capacity_feature = " << queue_capacity_feature << endl;
+    cout << "- queue_capacity_write = " << queue_capacity_write << endl;
     cout << "- calib_param_file = " << calib_param_file << endl;
     cout << "- gpu_enable = " << gpu_enable << endl;
     cout << "- gpu_device_index = " << gpu_device_index << endl;

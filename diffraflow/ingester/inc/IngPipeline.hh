@@ -6,7 +6,7 @@
 #include <log4cxx/logger.h>
 
 #include "MetricsReporter.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngBufferItemQueue.hh"
 
 using std::atomic_bool;
 using std::mutex;
@@ -20,6 +20,7 @@ namespace diffraflow {
     class IngImageFilter;
     class IngImageWriter;
     class IngImgHttpServer;
+    class IngImgFtrBuffer;
 
     class IngPipeline {
     public:
@@ -31,21 +32,22 @@ namespace diffraflow {
 
     private:
         IngConfig* config_obj_;
+        IngImgFtrBuffer* image_feature_buffer_;
 
         IngImgDatFetcher* image_data_fetcher_;
-        IngImgWthFtrQueue* imgWthFtrQue_raw_;
+        IngBufferItemQueue* item_queue_raw_;
 
         // Calibration
         IngCalibrationWorker* calibration_worker_;
-        IngImgWthFtrQueue* imgWthFtrQue_calib_;
+        IngBufferItemQueue* item_queue_calib_;
 
         // Feature Extraction
         IngFeatureExtracter* feature_extracter_;
-        IngImgWthFtrQueue* imgWthFtrQue_feature_;
+        IngBufferItemQueue* item_queue_feature_;
 
         // Filtering
         IngImageFilter* image_filter_;
-        IngImgWthFtrQueue* imgWthFtrQue_write_;
+        IngBufferItemQueue* item_queue_write_;
 
         // HTTP Server
         IngImgHttpServer* image_http_server_;

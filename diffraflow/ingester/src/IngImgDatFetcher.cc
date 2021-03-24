@@ -1,5 +1,8 @@
 #include "IngImgDatFetcher.hh"
+#include "IngImgFtrBuffer.hh"
 #include "PrimitiveSerializer.hh"
+#include "ImageDataType.hh"
+#include "ImageDataField.hh"
 #include "Decoder.hh"
 #include <msgpack.hpp>
 
@@ -8,10 +11,11 @@
 
 log4cxx::LoggerPtr diffraflow::IngImgDatFetcher::logger_ = log4cxx::Logger::getLogger("IngImgDatFetcher");
 
-diffraflow::IngImgDatFetcher::IngImgDatFetcher(
-    string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu)
+diffraflow::IngImgDatFetcher::IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id,
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue, bool use_gpu)
     : GenericClient(combiner_host, combiner_port, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE), use_gpu_(use_gpu) {
-    imgWthFtrQue_raw_ = queue;
+    image_feature_buffer_ = buffer;
+    item_queue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
@@ -19,9 +23,10 @@ diffraflow::IngImgDatFetcher::IngImgDatFetcher(
 }
 
 diffraflow::IngImgDatFetcher::IngImgDatFetcher(
-    string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu)
+    string combiner_sock, uint32_t ingester_id, IngImgFtrBuffer* buffer, IngBufferItemQueue* queue, bool use_gpu)
     : GenericClient(combiner_sock, ingester_id, 0xEECC1234, 0xEEE22CCC, 0xCCC22EEE), use_gpu_(use_gpu) {
-    imgWthFtrQue_raw_ = queue;
+    image_feature_buffer_ = buffer;
+    item_queue_raw_ = queue;
     recnxn_wait_time_ = 0;
     recnxn_max_count_ = 0;
     max_successive_fail_count_ = 5;
@@ -74,8 +79,7 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
     }
 }
 
-diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(
-    shared_ptr<ImageWithFeature>& image_with_feature) {
+diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(IngBufferItem& item) {
 
     uint32_t payload_type = 0;
     shared_ptr<vector<char>> payload_data;
@@ -89,8 +93,9 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     }
 
     // decode
-    if (ImageDataType::decode(*image_with_feature->image_data_host(), payload_data->data(), payload_data->size())) {
-        image_with_feature->image_data_raw = payload_data;
+    if (ImageDataType::decode(
+            *image_feature_buffer_->image_data_host(item.index), payload_data->data(), payload_data->size())) {
+        item.rawdata = payload_data;
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");
@@ -106,19 +111,10 @@ int diffraflow::IngImgDatFetcher::run_() {
         size_t successive_fail_count = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
 
-            // allocate memory space for an image_with_feature
-            shared_ptr<ImageWithFeature> image_with_feature = make_shared<ImageWithFeature>(use_gpu_);
-            if (!image_with_feature->mem_ready()) {
-                LOG4CXX_ERROR(logger_,
-                    "memory allocation for an image_with_feature failed, close the connection and stop running.");
-                close_connection();
-                worker_status_ = kStopped;
-                result = 2;
-                break;
-            }
+            IngBufferItem item;
+            item.index = image_feature_buffer_->next();
 
-            // receive data from combiner and decode it into the allocated memory
-            switch (receive_one_image(image_with_feature)) {
+            switch (receive_one_image(item)) {
             case kDisconnected:
                 if (worker_status_ == kStopped) {
                     result = 0;
@@ -132,13 +128,10 @@ int diffraflow::IngImgDatFetcher::run_() {
             case kSucc:
                 successive_fail_count = 0;
 
-                // for debug
-                // ImageDataType::print(image_with_feature->image_data);
-
-                if (imgWthFtrQue_raw_->push(image_with_feature)) {
-                    LOG4CXX_DEBUG(logger_, "pushed one image into imgdat_raw_queue_.");
+                if (item_queue_raw_->push(item)) {
+                    LOG4CXX_DEBUG(logger_, "pushed one item into item_queue_raw_.");
                 } else {
-                    LOG4CXX_WARN(logger_, "raw image data queue is stopped, close the connection and stop running.");
+                    LOG4CXX_WARN(logger_, "item_queue_raw_ is stopped, close the connection and stop running.");
                     close_connection();
                     worker_status_ = kStopped;
                     running = false;

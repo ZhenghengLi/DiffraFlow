@@ -9,7 +9,7 @@
 #include "ImageFileHDF5W.hh"
 #include "ImageFileRawW.hh"
 #include "MetricsProvider.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngBufferItemQueue.hh"
 
 using std::mutex;
 using std::condition_variable;
@@ -23,14 +23,12 @@ using std::string;
 
 namespace diffraflow {
 
-    struct ImageWithFeature;
-
-    class ImageFeature;
     class IngConfig;
+    class IngImgFtrBuffer;
 
     class IngImageWriter : public MetricsProvider {
     public:
-        IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngConfig* conf_obj);
+        IngImageWriter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngConfig* conf_obj);
 
         ~IngImageWriter();
 
@@ -57,10 +55,11 @@ namespace diffraflow {
         bool open_file_();
         void close_file_();
 
-        bool save_image_(const shared_ptr<ImageWithFeature>& image_with_feature);
+        bool save_image_(const IngBufferItem& item);
 
     private:
-        IngImgWthFtrQueue* image_queue_in_;
+        IngImgFtrBuffer* image_feature_buffer_;
+        IngBufferItemQueue* item_queue_in_;
         IngConfig* config_obj_;
 
         // files:

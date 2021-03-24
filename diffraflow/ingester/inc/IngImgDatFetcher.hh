@@ -2,7 +2,7 @@
 #define __IngImgDatFetcher_H__
 
 #include "GenericClient.hh"
-#include "IngImgWthFtrQueue.hh"
+#include "IngBufferItemQueue.hh"
 
 #include <mutex>
 #include <atomic>
@@ -19,11 +19,16 @@ using std::async;
 using std::make_shared;
 
 namespace diffraflow {
+
+    class IngImgFtrBuffer;
+    class ImageDataField;
+
     class IngImgDatFetcher : public GenericClient {
     public:
-        IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgWthFtrQueue* queue,
+        IngImgDatFetcher(string combiner_host, int combiner_port, uint32_t ingester_id, IngImgFtrBuffer* buffer,
+            IngBufferItemQueue* queue, bool use_gpu = false);
+        IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgFtrBuffer* buffer, IngBufferItemQueue* queue,
             bool use_gpu = false);
-        IngImgDatFetcher(string combiner_sock, uint32_t ingester_id, IngImgWthFtrQueue* queue, bool use_gpu = false);
         ~IngImgDatFetcher();
 
         void set_recnxn_policy(size_t wait_time, size_t max_count);
@@ -38,7 +43,7 @@ namespace diffraflow {
 
     private:
         bool connect_to_combiner_();
-        ReceiveRes receive_one_image(shared_ptr<ImageWithFeature>& image_with_feature);
+        ReceiveRes receive_one_image(IngBufferItem& item);
 
     private:
         int run_();
@@ -55,7 +60,8 @@ namespace diffraflow {
         size_t recnxn_max_count_;
         size_t max_successive_fail_count_;
 
-        IngImgWthFtrQueue* imgWthFtrQue_raw_;
+        IngImgFtrBuffer* image_feature_buffer_;
+        IngBufferItemQueue* item_queue_raw_;
 
         mutex cnxn_mtx_;
         condition_variable cnxn_cv_;

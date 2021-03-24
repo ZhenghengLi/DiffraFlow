@@ -1,6 +1,6 @@
 #include "IngImageWriter.hh"
-#include "IngImgWthFtrQueue.hh"
 #include "IngConfig.hh"
+#include "IngImgFtrBuffer.hh"
 #include <regex>
 #include <cstdlib>
 #include <limits>
@@ -18,9 +18,9 @@ namespace bs = boost::system;
 
 log4cxx::LoggerPtr diffraflow::IngImageWriter::logger_ = log4cxx::Logger::getLogger("IngImageWriter");
 
-diffraflow::IngImageWriter::IngImageWriter(IngImgWthFtrQueue* img_queue_in, IngConfig* conf_obj) {
-    image_queue_in_ = img_queue_in;
-    config_obj_ = conf_obj;
+diffraflow::IngImageWriter::IngImageWriter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngConfig* conf_obj)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), config_obj_(conf_obj) {
+
     worker_status_ = kNotStart;
 
     current_run_number_ = config_obj_->get_dy_run_number();
@@ -41,9 +41,9 @@ int diffraflow::IngImageWriter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    shared_ptr<ImageWithFeature> image_with_feature;
+    IngBufferItem item;
 
-    while (worker_status_ != kStopped && image_queue_in_->take(image_with_feature)) {
+    while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
         // debug
         // image_with_feature->image_data_calib.print();
@@ -71,13 +71,15 @@ int diffraflow::IngImageWriter::run_() {
             }
         }
 
-        if (save_image_(image_with_feature)) {
+        if (save_image_(item)) {
             if (current_saved_counts_.load() >= current_imgcnt_limit_.load()) {
                 LOG4CXX_INFO(logger_, "file limit reached, reopen new files.");
                 close_file_();
                 open_file_();
             }
         }
+
+        image_feature_buffer_->done(item.index);
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();
@@ -134,7 +136,7 @@ int diffraflow::IngImageWriter::stop() {
     return result;
 }
 
-bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>& image_with_feature) {
+bool diffraflow::IngImageWriter::save_image_(const IngBufferItem& item) {
     if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
         return false;
     }
@@ -147,7 +149,7 @@ bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>&
     }
 
     if (config_obj_->save_calib_data) {
-        if (image_file_hdf5_->write(*image_with_feature->image_data_host())) {
+        if (image_file_hdf5_->write(*image_feature_buffer_->image_data_host(item.index))) {
             LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
         } else {
             LOG4CXX_WARN(logger_, "failed to save one image into hdf5 file.");
@@ -155,8 +157,7 @@ bool diffraflow::IngImageWriter::save_image_(const shared_ptr<ImageWithFeature>&
         }
     }
     if (config_obj_->save_raw_data) {
-        if (image_file_raw_->write(
-                image_with_feature->image_data_raw->data(), image_with_feature->image_data_raw->size())) {
+        if (image_file_raw_->write(item.rawdata->data(), item.rawdata->size())) {
             LOG4CXX_DEBUG(logger_, "saved one image into raw data file.");
         } else {
             LOG4CXX_WARN(logger_, "failed to save one image into raw data file.");

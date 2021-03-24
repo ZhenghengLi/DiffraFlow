@@ -5,6 +5,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <memory>
+#include <atomic>
 
 #include "ImageDataFeature.hh"
 #include "ImageDataField.hh"
@@ -34,6 +35,8 @@ namespace diffraflow {
 
         std::shared_ptr<ImageDataFeature> flag_image();
 
+        void stop();
+
     private:
         bool use_gpu_;
         bool mem_ready_;
@@ -53,6 +56,7 @@ namespace diffraflow {
         std::mutex range_mtx_;
         std::mutex flag_mtx_;
         std::condition_variable next_cv_;
+        std::atomic_bool stopped_;
     };
 } // namespace diffraflow
 

@@ -111,8 +111,17 @@ int diffraflow::IngImgDatFetcher::run_() {
         size_t successive_fail_count = 0;
         for (bool running = true; running && worker_status_ == kRunning;) {
 
+            int next_index = image_feature_buffer_->next();
+            if (next_index < 0) {
+                LOG4CXX_WARN(logger_, "image_feature_buffer_ is stopped, close the connection and stop running.");
+                close_connection();
+                worker_status_ = kStopped;
+                result = 0;
+                break;
+            }
+
             IngBufferItem item;
-            item.index = image_feature_buffer_->next();
+            item.index = next_index;
 
             switch (receive_one_image(item)) {
             case kDisconnected:

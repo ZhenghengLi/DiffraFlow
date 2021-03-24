@@ -24,6 +24,7 @@ diffraflow::IngImgFtrBuffer::IngImgFtrBuffer(size_t capacity, bool use_gpu) : ca
     head_idx_ = -1;
     tail_idx_ = -1;
     flag_idx_ = -1;
+    stopped_ = false;
 }
 
 diffraflow::IngImgFtrBuffer::~IngImgFtrBuffer() {
@@ -38,12 +39,19 @@ diffraflow::IngImgFtrBuffer::~IngImgFtrBuffer() {
     }
 }
 
+void diffraflow::IngImgFtrBuffer::stop() {
+    stopped_ = true;
+    next_cv_.notify_all();
+}
+
 int diffraflow::IngImgFtrBuffer::next() {
+    if (stopped_) return -1;
     unique_lock<mutex> ulk(range_mtx_);
     lock_guard<mutex> lg(flag_mtx_);
     int next_head = head_idx_ + 1;
     if (next_head == capacity_) next_head = 0;
-    next_cv_.wait(ulk, [&] { return next_head != tail_idx_; });
+    next_cv_.wait(ulk, [&] { return stopped_ || next_head != tail_idx_; });
+    if (stopped_) return -1;
     head_idx_ = next_head;
     if (head_idx_ == flag_idx_) {
         flag_idx_ = -1;
@@ -52,6 +60,7 @@ int diffraflow::IngImgFtrBuffer::next() {
 }
 
 void diffraflow::IngImgFtrBuffer::done(int idx) {
+    if (stopped_) return;
     lock_guard<mutex> lg(range_mtx_);
     if (idx >= 0 && idx < capacity_) {
         tail_idx_ = idx;
@@ -60,6 +69,7 @@ void diffraflow::IngImgFtrBuffer::done(int idx) {
 }
 
 void diffraflow::IngImgFtrBuffer::flag(int idx) {
+    if (stopped_) return;
     lock_guard<mutex> lg(flag_mtx_);
     if (idx >= 0 && idx < capacity_) {
         flag_idx_ = idx;
@@ -67,6 +77,7 @@ void diffraflow::IngImgFtrBuffer::flag(int idx) {
 }
 
 shared_ptr<diffraflow::ImageDataFeature> diffraflow::IngImgFtrBuffer::flag_image() {
+    if (stopped_) return nullptr;
     lock_guard<mutex> lg(flag_mtx_);
     if (flag_idx_ >= 0) {
         return make_shared<ImageDataFeature>(image_data_host(flag_idx_), image_feature_host(flag_idx_));

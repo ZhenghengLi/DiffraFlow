@@ -216,6 +216,9 @@ void diffraflow::IngPipeline::terminate() {
     metrics_reporter_.stop_msg_producer();
     metrics_reporter_.clear();
 
+    // stop buffer
+    image_feature_buffer_->stop();
+
     // stop data fetcher
     int result = image_data_fetcher_->stop();
     if (result == 0) {

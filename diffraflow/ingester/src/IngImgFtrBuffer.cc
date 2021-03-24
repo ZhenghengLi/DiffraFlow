@@ -21,8 +21,8 @@ diffraflow::IngImgFtrBuffer::IngImgFtrBuffer(size_t capacity, bool use_gpu) : ca
     } else {
         buffer_host_ = (char*)malloc(buffer_size_);
     }
-    head_idx_ = -1;
-    tail_idx_ = -1;
+    head_idx_ = 0;
+    tail_idx_ = 0;
     flag_idx_ = -1;
     stopped_ = false;
 }

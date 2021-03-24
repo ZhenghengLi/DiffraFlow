@@ -43,7 +43,7 @@ namespace diffraflow {
 
     private:
         bool connect_to_combiner_();
-        ReceiveRes receive_one_image(IngBufferItem& item);
+        ReceiveRes receive_one_image(shared_ptr<IngBufferItem>& item);
 
     private:
         int run_();

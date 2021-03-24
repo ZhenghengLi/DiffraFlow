@@ -148,15 +148,15 @@ diffraflow::IngCalibrationWorker::~IngCalibrationWorker() {
     }
 }
 
-void diffraflow::IngCalibrationWorker::do_calib_(const IngBufferItem& item) {
-    Calibration::do_calib_cpu(image_feature_buffer_->image_data_host(item.index), calib_data_host_);
+void diffraflow::IngCalibrationWorker::do_calib_(const shared_ptr<IngBufferItem>& item) {
+    Calibration::do_calib_cpu(image_feature_buffer_->image_data_host(item->index), calib_data_host_);
 }
 
 int diffraflow::IngCalibrationWorker::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    IngBufferItem item;
+    shared_ptr<IngBufferItem> item;
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
         do_calib_(item);

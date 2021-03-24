@@ -38,7 +38,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void extract_feature_(const IngBufferItem& item);
+        void extract_feature_(const shared_ptr<IngBufferItem>& item);
 
     private:
         int run_();

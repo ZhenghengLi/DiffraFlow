@@ -79,7 +79,8 @@ bool diffraflow::IngImgDatFetcher::connect_to_combiner_() {
     }
 }
 
-diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(IngBufferItem& item) {
+diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_one_image(
+    shared_ptr<IngBufferItem>& item) {
 
     uint32_t payload_type = 0;
     shared_ptr<vector<char>> payload_data;
@@ -94,8 +95,8 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
 
     // decode
     if (ImageDataType::decode(
-            *image_feature_buffer_->image_data_host(item.index), payload_data->data(), payload_data->size())) {
-        item.rawdata = payload_data;
+            *image_feature_buffer_->image_data_host(item->index), payload_data->data(), payload_data->size())) {
+        item->rawdata = payload_data;
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");
@@ -120,8 +121,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                 break;
             }
 
-            IngBufferItem item;
-            item.index = next_index;
+            shared_ptr<IngBufferItem> item = make_shared<IngBufferItem>(next_index);
 
             switch (receive_one_image(item)) {
             case kDisconnected:

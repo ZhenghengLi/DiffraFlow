@@ -28,26 +28,28 @@ int diffraflow::IngImageFilter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    IngBufferItem item;
+    shared_ptr<IngBufferItem> item;
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
         // copy image feature from gpu to cpu if gpu is enabled
 
-        if (check_for_monitor_(*image_feature_buffer_->image_feature_host(item.index))) {
+        if (check_for_monitor_(*image_feature_buffer_->image_feature_host(item->index))) {
             filter_metrics.total_images_for_monitor++;
-            image_feature_buffer_->flag(item.index);
+            image_feature_buffer_->flag(item->index);
         }
 
-        if (check_for_save_(*image_feature_buffer_->image_feature_host(item.index))) {
+        if (check_for_save_(*image_feature_buffer_->image_feature_host(item->index))) {
             filter_metrics.total_images_for_save++;
-            if (item_queue_out_->offer(item)) {
-                LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");
-            } else {
-                LOG4CXX_DEBUG(logger_, "failed to push one good image into queue for saving.");
-                filter_metrics.total_images_for_save_fail++;
-            }
+            item->save = true;
         } else {
-            image_feature_buffer_->done(item.index);
+            item->save = false;
+        }
+
+        if (item_queue_out_->offer(item)) {
+            LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");
+        } else {
+            LOG4CXX_DEBUG(logger_, "failed to push one good image into queue for saving.");
+            filter_metrics.total_images_for_save_fail++;
         }
 
         filter_metrics.total_processed_images++;

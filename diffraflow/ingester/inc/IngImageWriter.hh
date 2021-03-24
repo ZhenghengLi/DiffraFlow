@@ -55,7 +55,7 @@ namespace diffraflow {
         bool open_file_();
         void close_file_();
 
-        bool save_image_(const IngBufferItem& item);
+        bool save_image_(const shared_ptr<IngBufferItem>& item);
 
     private:
         IngImgFtrBuffer* image_feature_buffer_;

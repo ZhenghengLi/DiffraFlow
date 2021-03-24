@@ -11,17 +11,17 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
 
 diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
 
-void diffraflow::IngFeatureExtracter::extract_feature_(const IngBufferItem& item) {
+void diffraflow::IngFeatureExtracter::extract_feature_(const shared_ptr<IngBufferItem>& item) {
     // some example code
-    image_feature_buffer_->image_feature_host(item.index)->peak_counts = 1;
-    image_feature_buffer_->image_feature_host(item.index)->global_rms = 2;
+    image_feature_buffer_->image_feature_host(item->index)->peak_counts = 1;
+    image_feature_buffer_->image_feature_host(item->index)->global_rms = 2;
 }
 
 int diffraflow::IngFeatureExtracter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    IngBufferItem item;
+    shared_ptr<IngBufferItem> item;
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
         extract_feature_(item);
         if (item_queue_out_->push(item)) {

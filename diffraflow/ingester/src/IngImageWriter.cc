@@ -41,17 +41,21 @@ int diffraflow::IngImageWriter::run_() {
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();
-    IngBufferItem item;
+    shared_ptr<IngBufferItem> item;
 
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
-        // debug
-        // image_with_feature->image_data_calib.print();
+        if (!item->save) {
+            image_feature_buffer_->done(item->index);
+            continue;
+        }
 
         if (config_obj_->storage_dir.empty()) {
+            image_feature_buffer_->done(item->index);
             continue;
         }
         if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
+            image_feature_buffer_->done(item->index);
             continue;
         }
 
@@ -79,7 +83,7 @@ int diffraflow::IngImageWriter::run_() {
             }
         }
 
-        image_feature_buffer_->done(item.index);
+        image_feature_buffer_->done(item->index);
     }
     worker_status_ = kStopped;
     cv_status_.notify_all();
@@ -136,7 +140,7 @@ int diffraflow::IngImageWriter::stop() {
     return result;
 }
 
-bool diffraflow::IngImageWriter::save_image_(const IngBufferItem& item) {
+bool diffraflow::IngImageWriter::save_image_(const shared_ptr<IngBufferItem>& item) {
     if (!config_obj_->save_calib_data && !config_obj_->save_raw_data) {
         return false;
     }
@@ -149,7 +153,7 @@ bool diffraflow::IngImageWriter::save_image_(const IngBufferItem& item) {
     }
 
     if (config_obj_->save_calib_data) {
-        if (image_file_hdf5_->write(*image_feature_buffer_->image_data_host(item.index))) {
+        if (image_file_hdf5_->write(*image_feature_buffer_->image_data_host(item->index))) {
             LOG4CXX_DEBUG(logger_, "saved one image into hdf5 file.");
         } else {
             LOG4CXX_WARN(logger_, "failed to save one image into hdf5 file.");
@@ -157,7 +161,7 @@ bool diffraflow::IngImageWriter::save_image_(const IngBufferItem& item) {
         }
     }
     if (config_obj_->save_raw_data) {
-        if (image_file_raw_->write(item.rawdata->data(), item.rawdata->size())) {
+        if (image_file_raw_->write(item->rawdata->data(), item->rawdata->size())) {
             LOG4CXX_DEBUG(logger_, "saved one image into raw data file.");
         } else {
             LOG4CXX_WARN(logger_, "failed to save one image into raw data file.");

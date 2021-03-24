@@ -11,11 +11,13 @@ using std::shared_ptr;
 namespace diffraflow {
 
     struct IngBufferItem {
+        explicit IngBufferItem(int idx = -1) : index(idx), rawdata(nullptr), save(false) {}
         shared_ptr<vector<char>> rawdata;
         int index;
+        bool save;
     };
 
-    typedef BlockingQueue<IngBufferItem> IngBufferItemQueue;
+    typedef BlockingQueue<shared_ptr<IngBufferItem>> IngBufferItemQueue;
 
 } // namespace diffraflow
 

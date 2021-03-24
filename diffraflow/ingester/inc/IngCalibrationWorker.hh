@@ -47,7 +47,7 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        void do_calib_(const IngBufferItem& item);
+        void do_calib_(const shared_ptr<IngBufferItem>& item);
 
     private:
         int run_();

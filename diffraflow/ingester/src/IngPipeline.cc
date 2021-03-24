@@ -220,6 +220,7 @@ void diffraflow::IngPipeline::terminate() {
     image_feature_buffer_->stop();
 
     // stop data fetcher
+    item_queue_raw_->stop();
     int result = image_data_fetcher_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image data fetcher is normally terminated.");
@@ -230,7 +231,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop data calibration
-    item_queue_raw_->stop(/* wait_time */);
+    item_queue_calib_->stop();
     result = calibration_worker_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "calibration worker is normally terminated.");
@@ -241,7 +242,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop feature extraction
-    item_queue_calib_->stop(/* wait_time */);
+    item_queue_feature_->stop();
     result = feature_extracter_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "feature extracter is normally terminated.");
@@ -252,7 +253,7 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop image filter
-    item_queue_feature_->stop(/* wait_time */);
+    item_queue_write_->stop();
     result = image_filter_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image filter is normally terminated.");
@@ -263,7 +264,6 @@ void diffraflow::IngPipeline::terminate() {
     }
 
     // stop image writer
-    item_queue_write_->stop(/* wait_time */);
     result = image_writer_->stop();
     if (result == 0) {
         LOG4CXX_INFO(logger_, "image writer is normally terminated.");

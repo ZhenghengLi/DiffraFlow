@@ -47,12 +47,12 @@ void diffraflow::IngImgFtrBuffer::stop() {
 int diffraflow::IngImgFtrBuffer::next() {
     if (stopped_) return -1;
     unique_lock<mutex> ulk(range_mtx_);
-    lock_guard<mutex> lg(flag_mtx_);
     int next_head = head_idx_ + 1;
     if (next_head == capacity_) next_head = 0;
     next_cv_.wait(ulk, [&] { return stopped_ || next_head != tail_idx_; });
     if (stopped_) return -1;
     head_idx_ = next_head;
+    lock_guard<mutex> lg(flag_mtx_);
     if (head_idx_ == flag_idx_) {
         flag_idx_ = -1;
     }

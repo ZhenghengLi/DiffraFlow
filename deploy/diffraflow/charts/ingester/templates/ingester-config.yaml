@@ -22,13 +22,13 @@ data:
     recnxn_wait_time = 1000
     recnxn_max_count = 5
 
-    buffer_capacity = 510
-    queue_capacity_raw = 100
-    queue_capacity_calib = 50
-    queue_capacity_feature = 50
-    queue_capacity_write = 300
+    buffer_capacity = 600
+    queue_capacity_raw = 30
+    queue_capacity_calib = 30
+    queue_capacity_feature = 30
+    queue_capacity_write = 500
 
-    gpu_enable = false
+    gpu_enable = true
     gpu_device_index = {{ .Values.gpuDeviceIndex }}
 
     calib_param_file = /calib-data/calib-rand-s0.h5

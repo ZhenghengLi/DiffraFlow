@@ -30,11 +30,11 @@ diffraflow::IngConfig::IngConfig() {
     recnxn_wait_time = 0;
     recnxn_max_count = 0;
 
-    buffer_capacity = 510;
-    queue_capacity_raw = 100;
-    queue_capacity_calib = 50;
-    queue_capacity_feature = 50;
-    queue_capacity_write = 300;
+    buffer_capacity = 500;
+    queue_capacity_raw = 30;
+    queue_capacity_calib = 30;
+    queue_capacity_feature = 30;
+    queue_capacity_write = 400;
 
     save_calib_data = false;
     save_raw_data = false;

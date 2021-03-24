@@ -55,7 +55,9 @@ namespace diffraflow {
 
         std::mutex range_mtx_;
         std::mutex flag_mtx_;
+        std::mutex next_mtx_;
         std::condition_variable next_cv_;
+
         std::atomic_bool stopped_;
     };
 } // namespace diffraflow

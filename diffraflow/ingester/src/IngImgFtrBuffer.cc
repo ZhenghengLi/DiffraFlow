@@ -52,8 +52,9 @@ int diffraflow::IngImgFtrBuffer::next() {
     next_cv_.wait(ulk, [&] { return stopped_ || next_head != tail_idx_; });
     if (stopped_) return -1;
     head_idx_ = next_head;
-    lock_guard<mutex> lg(flag_mtx_);
+    lock_guard<mutex> next_lg(next_mtx_);
     if (head_idx_ == flag_idx_) {
+        lock_guard<mutex> flag_lg(flag_mtx_);
         flag_idx_ = -1;
     }
     return head_idx_;
@@ -70,15 +71,16 @@ void diffraflow::IngImgFtrBuffer::done(int idx) {
 
 void diffraflow::IngImgFtrBuffer::flag(int idx) {
     if (stopped_) return;
-    lock_guard<mutex> lg(flag_mtx_);
-    if (idx >= 0 && idx < capacity_) {
+    lock_guard<mutex> next_lg(next_mtx_);
+    unique_lock<mutex> flag_lk(flag_mtx_, std::try_to_lock);
+    if (flag_lk.owns_lock() && idx >= 0 && idx < capacity_) {
         flag_idx_ = idx;
     }
 }
 
 shared_ptr<diffraflow::ImageDataFeature> diffraflow::IngImgFtrBuffer::flag_image() {
     if (stopped_) return nullptr;
-    lock_guard<mutex> lg(flag_mtx_);
+    lock_guard<mutex> flag_lg(flag_mtx_);
     if (flag_idx_ >= 0) {
         return make_shared<ImageDataFeature>(image_data_host(flag_idx_), image_feature_host(flag_idx_));
     } else {

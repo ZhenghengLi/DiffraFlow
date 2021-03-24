@@ -217,7 +217,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
         succ_flag = false;
     }
     if (queue_capacity_write < 1 || queue_capacity_write > 1000) {
-        LOG4CXX_ERROR(logger_, "write_queue_capacity is out of range " << 1 << "-" << 1000);
+        LOG4CXX_ERROR(logger_, "queue_capacity_write is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
     if (gpu_enable && gpu_device_index >= 0) {

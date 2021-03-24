@@ -42,7 +42,7 @@ diffraflow::IngImgFtrBuffer::~IngImgFtrBuffer() {
 }
 
 int diffraflow::IngImgFtrBuffer::next() {
-    unique_lock<mutex> ulk(index_mtx_);
+    unique_lock<mutex> ulk(range_mtx_);
     lock_guard<mutex> lg(flag_mtx_);
     int next_head = head_idx_ + 1;
     if (next_head == capacity_) next_head = 0;
@@ -55,7 +55,7 @@ int diffraflow::IngImgFtrBuffer::next() {
 }
 
 void diffraflow::IngImgFtrBuffer::done(int idx) {
-    lock_guard<mutex> lg(index_mtx_);
+    lock_guard<mutex> lg(range_mtx_);
     if (idx >= 0 && idx < capacity_) {
         tail_idx_ = idx;
         next_cv_.notify_all();

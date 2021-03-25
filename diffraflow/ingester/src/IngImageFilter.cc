@@ -1,7 +1,6 @@
 #include "IngImageFilter.hh"
 #include "IngImgFtrBuffer.hh"
 #include "IngConfig.hh"
-#include "ImageWithFeature.hh"
 #include "ImageFeature.hh"
 
 log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_ = log4cxx::Logger::getLogger("IngImageFilter");

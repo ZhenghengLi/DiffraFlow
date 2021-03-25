@@ -1,5 +1,4 @@
 #include "ImageDataFeature.hh"
-#include "ImageWithFeature.hh"
 #include "ImageDataType.hh"
 #include "ImageDataField.hh"
 

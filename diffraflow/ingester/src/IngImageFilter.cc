@@ -5,9 +5,10 @@
 
 log4cxx::LoggerPtr diffraflow::IngImageFilter::logger_ = log4cxx::Logger::getLogger("IngImageFilter");
 
-diffraflow::IngImageFilter::IngImageFilter(
-    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, IngConfig* conf_obj)
-    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), config_obj_(conf_obj) {
+diffraflow::IngImageFilter::IngImageFilter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in,
+    IngBufferItemQueue* queue_out, IngConfig* conf_obj, bool use_gpu)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), config_obj_(conf_obj),
+      use_gpu_(use_gpu) {
 
     worker_status_ = kNotStart;
 
@@ -15,9 +16,27 @@ diffraflow::IngImageFilter::IngImageFilter(
     filter_metrics.total_images_for_save = 0;
     filter_metrics.total_images_for_save_fail = 0;
     filter_metrics.total_processed_images = 0;
+
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_, cudaStreamNonBlocking);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+        }
+    }
 }
 
-diffraflow::IngImageFilter::~IngImageFilter() {}
+diffraflow::IngImageFilter::~IngImageFilter() {
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaStreamDestroy(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+        }
+    }
+}
 
 bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature& image_feature) { return true; }
 

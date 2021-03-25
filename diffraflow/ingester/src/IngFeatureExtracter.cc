@@ -4,12 +4,30 @@
 log4cxx::LoggerPtr diffraflow::IngFeatureExtracter::logger_ = log4cxx::Logger::getLogger("IngFeatureExtracter");
 
 diffraflow::IngFeatureExtracter::IngFeatureExtracter(
-    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out)
-    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out) {
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), use_gpu_(use_gpu) {
     worker_status_ = kNotStart;
+
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_, cudaStreamNonBlocking);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+        }
+    }
 }
 
-diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {}
+diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaStreamDestroy(cuda_stream_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+        }
+    }
+}
 
 void diffraflow::IngFeatureExtracter::extract_feature_(const shared_ptr<IngBufferItem>& item) {
     // some example code

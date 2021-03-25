@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <future>
 #include <log4cxx/logger.h>
+#include <cuda_runtime.h>
 
 #include "IngBufferItemQueue.hh"
 
@@ -26,7 +27,8 @@ namespace diffraflow {
 
     class IngFeatureExtracter {
     public:
-        IngFeatureExtracter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out);
+        IngFeatureExtracter(
+            IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu = false);
 
         ~IngFeatureExtracter();
 
@@ -43,6 +45,9 @@ namespace diffraflow {
     private:
         int run_();
         shared_future<int> worker_;
+
+        bool use_gpu_;
+        cudaStream_t cuda_stream_;
 
         atomic<WorkerStatus> worker_status_;
         mutex mtx_status_;

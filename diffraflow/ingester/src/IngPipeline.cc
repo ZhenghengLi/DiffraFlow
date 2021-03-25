@@ -73,10 +73,10 @@ void diffraflow::IngPipeline::start_run() {
     item_queue_raw_ = new IngBufferItemQueue(config_obj_->queue_capacity_raw);
     if (config_obj_->combiner_sock.empty()) {
         image_data_fetcher_ = new IngImgDatFetcher(config_obj_->combiner_host, config_obj_->combiner_port,
-            config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_, use_gpu);
+            config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_);
     } else {
         image_data_fetcher_ = new IngImgDatFetcher(
-            config_obj_->combiner_sock, config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_, use_gpu);
+            config_obj_->combiner_sock, config_obj_->ingester_id, image_feature_buffer_, item_queue_raw_);
     }
 
     //// calibration worker
@@ -85,11 +85,13 @@ void diffraflow::IngPipeline::start_run() {
 
     //// feature extracter
     item_queue_feature_ = new IngBufferItemQueue(config_obj_->queue_capacity_feature);
-    feature_extracter_ = new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_);
+    feature_extracter_ =
+        new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_, use_gpu);
 
     //// image filter
     item_queue_write_ = new IngBufferItemQueue(config_obj_->queue_capacity_write);
-    image_filter_ = new IngImageFilter(image_feature_buffer_, item_queue_feature_, item_queue_write_, config_obj_);
+    image_filter_ =
+        new IngImageFilter(image_feature_buffer_, item_queue_feature_, item_queue_write_, config_obj_, use_gpu);
 
     //// image writer
     image_writer_ = new IngImageWriter(image_feature_buffer_, item_queue_write_, config_obj_);

@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <future>
 #include <log4cxx/logger.h>
+#include <cuda_runtime.h>
 
 #include "MetricsProvider.hh"
 #include "IngBufferItemQueue.hh"
@@ -27,8 +28,8 @@ namespace diffraflow {
 
     class IngImageFilter : public MetricsProvider {
     public:
-        IngImageFilter(
-            IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, IngConfig* conf_obj);
+        IngImageFilter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out,
+            IngConfig* conf_obj, bool use_gpu = false);
 
         ~IngImageFilter();
 
@@ -56,6 +57,9 @@ namespace diffraflow {
     private:
         int run_();
         shared_future<int> worker_;
+
+        bool use_gpu_;
+        cudaStream_t cuda_stream_;
 
         atomic<WorkerStatus> worker_status_;
         mutex mtx_status_;

@@ -154,12 +154,8 @@ void diffraflow::IngCalibrationWorker::do_calib_(const shared_ptr<IngBufferItem>
     char* element_device = image_feature_buffer_->element_device(item->index);
     size_t element_size = image_feature_buffer_->element_size();
 
-    ImageFeature* image_feature_host = image_feature_buffer_->image_feature_host(item->index);
-    ImageFeature* image_feature_device = image_feature_buffer_->image_feature_device(item->index);
     ImageDataField* image_data_host = image_feature_buffer_->image_data_host(item->index);
     ImageDataField* image_data_device = image_feature_buffer_->image_data_device(item->index);
-
-    image_feature_host->clear();
 
     if (use_gpu_) {
         // copy data into GPU

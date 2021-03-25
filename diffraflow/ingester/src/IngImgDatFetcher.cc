@@ -95,8 +95,9 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
 
     // decode
     if (ImageDataType::decode(
-            *image_feature_buffer_->image_data_host(item->index), payload_data->data(), payload_data->size())) {
+            image_feature_buffer_->image_data_host(item->index), payload_data->data(), payload_data->size())) {
         item->rawdata = payload_data;
+        image_feature_buffer_->image_feature_host(item->index)->clear();
         return kSucc;
     } else {
         LOG4CXX_WARN(logger_, "failed decode image data.");

@@ -35,26 +35,26 @@ diffraflow::ImageDataType::ImageDataType() : H5::CompType(sizeof(ImageDataField)
 
 diffraflow::ImageDataType::~ImageDataType() {}
 
-bool diffraflow::ImageDataType::decode(ImageDataField& image_data, const char* buffer, const size_t len) {
+bool diffraflow::ImageDataType::decode(ImageDataField* image_data, const char* buffer, const size_t len) {
 
     if (len < 11) return false;
 
     // bunch_id
-    image_data.bunch_id = gDC.decode_byte<uint64_t>(buffer, 0, 7);
+    image_data->bunch_id = gDC.decode_byte<uint64_t>(buffer, 0, 7);
 
     // alignment
     uint16_t alignment_bits = gDC.decode_byte<uint16_t>(buffer, 8, 9);
     for (size_t i = 0; i < MOD_CNT; i++) {
-        image_data.alignment[i] = (1 << (15 - i)) & alignment_bits;
+        image_data->alignment[i] = (1 << (15 - i)) & alignment_bits;
     }
 
     // late_arrived
-    image_data.late_arrived = gDC.decode_byte<uint8_t>(buffer, 10, 10);
+    image_data->late_arrived = gDC.decode_byte<uint8_t>(buffer, 10, 10);
 
     // frame data
     size_t current_pos = 11;
     for (size_t i = 0; i < MOD_CNT; i++) {
-        if (image_data.alignment[i]) {
+        if (image_data->alignment[i]) {
             if (len - current_pos < FRAME_S) return false;
             const char* frame_buffer = buffer + current_pos;
             // verification
@@ -63,7 +63,7 @@ bool diffraflow::ImageDataType::decode(ImageDataField& image_data, const char* b
                 return false;
             }
             uint64_t bunch_id = gDC.decode_byte<uint64_t>(frame_buffer, 12, 19);
-            if (bunch_id != image_data.bunch_id) {
+            if (bunch_id != image_data->bunch_id) {
                 return false;
             }
             uint16_t module_id = gDC.decode_byte<uint16_t>(frame_buffer, 6, 7);
@@ -71,40 +71,40 @@ bool diffraflow::ImageDataType::decode(ImageDataField& image_data, const char* b
                 return false;
             }
             // cell_id
-            image_data.cell_id[i] = gDC.decode_byte<uint16_t>(frame_buffer, 8, 9);
+            image_data->cell_id[i] = gDC.decode_byte<uint16_t>(frame_buffer, 8, 9);
             // status
-            image_data.status[i] = gDC.decode_byte<uint16_t>(frame_buffer, 10, 11);
+            image_data->status[i] = gDC.decode_byte<uint16_t>(frame_buffer, 10, 11);
 
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     size_t offset = 20 + 2 * (h * FRAME_W + w);
                     // pixel_data
-                    image_data.gain_level[i][h][w] = gDC.decode_bit<uint8_t>(frame_buffer + offset, 0, 1);
+                    image_data->gain_level[i][h][w] = gDC.decode_bit<uint8_t>(frame_buffer + offset, 0, 1);
                     // gain_level
-                    image_data.pixel_data[i][h][w] = gDC.decode_bit<uint16_t>(frame_buffer + offset, 2, 15);
+                    image_data->pixel_data[i][h][w] = gDC.decode_bit<uint16_t>(frame_buffer + offset, 2, 15);
                 }
             }
 
             current_pos += FRAME_S;
         } else {
             // cell_id
-            image_data.cell_id[i] = 0;
+            image_data->cell_id[i] = 0;
             // status
-            image_data.status[i] = 0;
+            image_data->status[i] = 0;
 
             for (size_t h = 0; h < FRAME_H; h++) {
                 for (size_t w = 0; w < FRAME_W; w++) {
                     // pixel_data
-                    image_data.pixel_data[i][h][w] = 0;
+                    image_data->pixel_data[i][h][w] = 0;
                     // gain_level
-                    image_data.gain_level[i][h][w] = 0;
+                    image_data->gain_level[i][h][w] = 0;
                 }
             }
         }
     }
 
     // calib_level
-    image_data.calib_level = 0;
+    image_data->calib_level = 0;
 
     return true;
 }

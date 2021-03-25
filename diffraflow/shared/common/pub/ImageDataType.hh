@@ -18,7 +18,7 @@ namespace diffraflow {
         ~ImageDataType();
 
     public:
-        static bool decode(ImageDataField& image_data, const char* buffer, const size_t len);
+        static bool decode(ImageDataField* image_data, const char* buffer, const size_t len);
         static void print(const ImageDataField& image_data, ostream& out = std::cout);
         static void convert(const ImageDataField& image_data_arr, ImageData& image_data_obj);
     };

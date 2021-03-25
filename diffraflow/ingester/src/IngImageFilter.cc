@@ -38,9 +38,48 @@ diffraflow::IngImageFilter::~IngImageFilter() {
     }
 }
 
-bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature& image_feature) { return true; }
+bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature* image_feature) { return true; }
 
-bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature& image_feature) { return true; }
+bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature* image_feature) { return true; }
+
+void diffraflow::IngImageFilter::do_filter(shared_ptr<IngBufferItem>& item) {
+
+    ImageFeature* image_feature_host = image_feature_buffer_->image_feature_host(item->index);
+    ImageFeature* image_feature_device = image_feature_buffer_->image_feature_device(item->index);
+    ImageDataField* image_data_host = image_feature_buffer_->image_data_host(item->index);
+    ImageDataField* image_data_device = image_feature_buffer_->image_data_device(item->index);
+
+    if (use_gpu_) {
+        // copy image feature from GPU to CPU
+        cudaMemcpyAsync(
+            image_feature_host, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost, cuda_stream_);
+        // wait to finish
+        cudaStreamSynchronize(cuda_stream_);
+    }
+
+    bool monitor = check_for_monitor_(image_feature_host);
+    bool save = check_for_save_(image_feature_host);
+
+    if (use_gpu_ && (monitor || save)) {
+        // copy image data from GPU to CPU
+        cudaMemcpyAsync(
+            image_data_host, image_data_device, sizeof(ImageDataField), cudaMemcpyDeviceToHost, cuda_stream_);
+        // wait to finish
+        cudaStreamSynchronize(cuda_stream_);
+    }
+
+    if (monitor) {
+        filter_metrics.total_images_for_monitor++;
+        image_feature_buffer_->flag(item->index);
+    }
+
+    if (save) {
+        filter_metrics.total_images_for_save++;
+        item->save = true;
+    } else {
+        item->save = false;
+    }
+}
 
 int diffraflow::IngImageFilter::run_() {
     int result = 0;
@@ -49,19 +88,7 @@ int diffraflow::IngImageFilter::run_() {
     shared_ptr<IngBufferItem> item;
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
 
-        // copy image feature from gpu to cpu if gpu is enabled
-
-        if (check_for_monitor_(*image_feature_buffer_->image_feature_host(item->index))) {
-            filter_metrics.total_images_for_monitor++;
-            image_feature_buffer_->flag(item->index);
-        }
-
-        if (check_for_save_(*image_feature_buffer_->image_feature_host(item->index))) {
-            filter_metrics.total_images_for_save++;
-            item->save = true;
-        } else {
-            item->save = false;
-        }
+        do_filter(item);
 
         if (item_queue_out_->offer(item)) {
             LOG4CXX_DEBUG(logger_, "successfully pushed one good image into queue for saving.");

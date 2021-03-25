@@ -23,6 +23,9 @@ namespace diffraflow {
         int next();
         void done(int idx);
         void flag(int idx);
+        void stop();
+
+        std::shared_ptr<ImageDataFeature> flag_image();
 
         ImageDataField* image_data_host(int idx) { return (ImageDataField*)(buffer_host_ + element_size_ * idx); }
         ImageFeature* image_feature_host(int idx) {
@@ -32,10 +35,9 @@ namespace diffraflow {
         ImageFeature* image_feature_device(int idx) {
             return (ImageFeature*)(buffer_device_ + element_size_ * idx + feature_offset_);
         }
-
-        std::shared_ptr<ImageDataFeature> flag_image();
-
-        void stop();
+        char* element_host(int idx) { return buffer_host_ + element_size_ * idx; }
+        char* element_device(int idx) { return buffer_device_ + element_size_ * idx; }
+        size_t element_size() { return element_size_; }
 
     private:
         bool use_gpu_;

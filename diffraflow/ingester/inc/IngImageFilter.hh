@@ -51,8 +51,9 @@ namespace diffraflow {
         enum WorkerStatus { kNotStart, kRunning, kStopped };
 
     private:
-        bool check_for_save_(const ImageFeature& image_feature);
-        bool check_for_monitor_(const ImageFeature& image_feature);
+        void do_filter(shared_ptr<IngBufferItem>& item);
+        bool check_for_save_(const ImageFeature* image_feature);
+        bool check_for_monitor_(const ImageFeature* image_feature);
 
     private:
         int run_();

@@ -41,7 +41,9 @@ int diffraflow::IngFeatureExtracter::run_() {
     cv_status_.notify_all();
     shared_ptr<IngBufferItem> item;
     while (worker_status_ != kStopped && item_queue_in_->take(item)) {
+
         extract_feature_(item);
+
         if (item_queue_out_->push(item)) {
             LOG4CXX_DEBUG(logger_, "pushed the feature data into queue.");
         } else {

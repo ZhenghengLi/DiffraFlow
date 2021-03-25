@@ -1,14 +1,15 @@
 #include "IngCalibrationWorker.hh"
 #include "IngImgFtrBuffer.hh"
 #include "H5Cpp.h"
-
 #include "Calibration.hh"
+#include "cudatools.hh"
 
 log4cxx::LoggerPtr diffraflow::IngCalibrationWorker::logger_ = log4cxx::Logger::getLogger("IngCalibrationWorker");
 
 diffraflow::IngCalibrationWorker::IngCalibrationWorker(
-    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu)
-    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), use_gpu_(use_gpu) {
+    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu, int gpu_index)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), use_gpu_(use_gpu),
+      gpu_index_(gpu_index) {
 
     worker_status_ = kNotStart;
 
@@ -170,6 +171,19 @@ void diffraflow::IngCalibrationWorker::do_calib_(const shared_ptr<IngBufferItem>
 }
 
 int diffraflow::IngCalibrationWorker::run_() {
+
+    if (use_gpu_) {
+        cudaError_t cuda_err = cudaSetDevice(gpu_index_);
+        if (cuda_err == cudaSuccess) {
+            LOG4CXX_INFO(logger_, "Successfully selected " << cudatools::get_device_string(gpu_index_));
+        } else {
+            LOG4CXX_ERROR(logger_, "Failed to select GPU of device index " << gpu_index_);
+            worker_status_ = kStopped;
+            cv_status_.notify_all();
+            return -1;
+        }
+    }
+
     int result = 0;
     worker_status_ = kRunning;
     cv_status_.notify_all();

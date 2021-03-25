@@ -29,7 +29,7 @@ namespace diffraflow {
     class IngImageFilter : public MetricsProvider {
     public:
         IngImageFilter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out,
-            IngConfig* conf_obj, bool use_gpu = false);
+            IngConfig* conf_obj, bool use_gpu = false, int gpu_index = 0);
 
         ~IngImageFilter();
 
@@ -60,6 +60,7 @@ namespace diffraflow {
         shared_future<int> worker_;
 
         bool use_gpu_;
+        int gpu_index_;
         cudaStream_t cuda_stream_;
 
         atomic<WorkerStatus> worker_status_;

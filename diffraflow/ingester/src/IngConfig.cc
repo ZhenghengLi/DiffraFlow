@@ -40,7 +40,7 @@ diffraflow::IngConfig::IngConfig() {
     save_raw_data = false;
 
     gpu_enable = false;
-    gpu_device_index = -1;
+    gpu_device_index = 0;
 
     hdf5_chunk_size = 1;
     hdf5_compress_level = 0;
@@ -220,18 +220,22 @@ bool diffraflow::IngConfig::load(const char* filename) {
         LOG4CXX_ERROR(logger_, "queue_capacity_write is out of range " << 1 << "-" << 1000);
         succ_flag = false;
     }
-    if (gpu_enable && gpu_device_index >= 0) {
-        int device_count = 0;
-        cudaError_t cuda_err = cudaGetDeviceCount(&device_count);
-        if (cuda_err == cudaSuccess) {
-            if (gpu_device_index >= device_count) {
-                LOG4CXX_ERROR(
-                    logger_, "gpu_device_index " << gpu_device_index << " is out of range [0," << device_count << ")");
+    if (gpu_enable) {
+        if (gpu_device_index < 0) {
+            LOG4CXX_ERROR(logger_, "gpu_device_index < 0 while gpu_enable = true");
+            succ_flag = false;
+        } else {
+            int device_count = 0;
+            cudaError_t cuda_err = cudaGetDeviceCount(&device_count);
+            if (cuda_err == cudaSuccess) {
+                if (gpu_device_index >= device_count) {
+                    LOG4CXX_ERROR(logger_, "gpu_device_index >= " << device_count << " while gpu_enable = true");
+                    succ_flag = false;
+                }
+            } else {
+                LOG4CXX_ERROR(logger_, "Failed to get gpu device count with error: " << cudaGetErrorString(cuda_err));
                 succ_flag = false;
             }
-        } else {
-            LOG4CXX_ERROR(logger_, "Failed to get gpu device count with error: " << cudaGetErrorString(cuda_err));
-            succ_flag = false;
         }
     }
     // check and commit for dynamic parameters

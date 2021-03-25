@@ -43,15 +43,13 @@ diffraflow::IngPipeline::~IngPipeline() {}
 void diffraflow::IngPipeline::start_run() {
     if (running_flag_) return;
 
-    bool use_gpu = false;
     // select gpu device
-    if (config_obj_->gpu_enable && config_obj_->gpu_device_index >= 0) {
+    if (config_obj_->gpu_enable) {
         LOG4CXX_INFO(logger_, "Use GPU for data processing.");
         cudaError_t cuda_err = cudaSetDevice(config_obj_->gpu_device_index);
         if (cuda_err == cudaSuccess) {
             LOG4CXX_INFO(
                 logger_, "Successfully selected " << cudatools::get_device_string(config_obj_->gpu_device_index));
-            use_gpu = true;
         } else {
             LOG4CXX_ERROR(logger_, "Failed to select GPU of device index " << config_obj_->gpu_device_index);
             return;
@@ -62,7 +60,7 @@ void diffraflow::IngPipeline::start_run() {
 
     //======================================================
     // create buffer
-    image_feature_buffer_ = new IngImgFtrBuffer(config_obj_->buffer_capacity, use_gpu);
+    image_feature_buffer_ = new IngImgFtrBuffer(config_obj_->buffer_capacity, config_obj_->gpu_enable);
     if (!image_feature_buffer_->mem_ready()) {
         LOG4CXX_ERROR(logger_, "Failed to create image feature buffer.");
         return;
@@ -81,17 +79,18 @@ void diffraflow::IngPipeline::start_run() {
 
     //// calibration worker
     item_queue_calib_ = new IngBufferItemQueue(config_obj_->queue_capacity_calib);
-    calibration_worker_ = new IngCalibrationWorker(image_feature_buffer_, item_queue_raw_, item_queue_calib_, use_gpu);
+    calibration_worker_ = new IngCalibrationWorker(image_feature_buffer_, item_queue_raw_, item_queue_calib_,
+        config_obj_->gpu_enable, config_obj_->gpu_device_index);
 
     //// feature extracter
     item_queue_feature_ = new IngBufferItemQueue(config_obj_->queue_capacity_feature);
-    feature_extracter_ =
-        new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_, use_gpu);
+    feature_extracter_ = new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_,
+        config_obj_->gpu_enable, config_obj_->gpu_device_index);
 
     //// image filter
     item_queue_write_ = new IngBufferItemQueue(config_obj_->queue_capacity_write);
-    image_filter_ =
-        new IngImageFilter(image_feature_buffer_, item_queue_feature_, item_queue_write_, config_obj_, use_gpu);
+    image_filter_ = new IngImageFilter(image_feature_buffer_, item_queue_feature_, item_queue_write_, config_obj_,
+        config_obj_->gpu_enable, config_obj_->gpu_device_index);
 
     //// image writer
     image_writer_ = new IngImageWriter(image_feature_buffer_, item_queue_write_, config_obj_);

@@ -27,8 +27,8 @@ namespace diffraflow {
 
     class IngFeatureExtracter {
     public:
-        IngFeatureExtracter(
-            IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu = false);
+        IngFeatureExtracter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out,
+            bool use_gpu = false, int gpu_index = 0);
 
         ~IngFeatureExtracter();
 
@@ -47,6 +47,7 @@ namespace diffraflow {
         shared_future<int> worker_;
 
         bool use_gpu_;
+        int gpu_index_;
         cudaStream_t cuda_stream_;
 
         atomic<WorkerStatus> worker_status_;

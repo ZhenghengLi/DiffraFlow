@@ -66,7 +66,7 @@ namespace diffraflow {
 
         string calib_param_file;
         bool gpu_enable;
-        int gpu_device_index; // -1 for no gpu; 0 for device 0, 1 for device 1, and so on
+        int gpu_device_index;
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

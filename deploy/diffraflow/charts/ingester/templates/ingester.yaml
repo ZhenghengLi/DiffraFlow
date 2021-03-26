@@ -41,6 +41,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: CUDA_MPS_PIPE_DIRECTORY
+              value: /nvidia/mps
+            - name: CUDA_MPS_LOG_DIRECTORY
+              value: /nvidia/log
           volumeMounts:
             - name: config-volume
               mountPath: /config
@@ -50,6 +54,12 @@ spec:
               mountPath: /ingester-data
             - name: calib-data
               mountPath: /calib-data
+            - name: cuda-mps-pipe
+              mountPath: /nvidia/mps
+            - name: cuda-mps-log
+              mountPath: /nvidia/log
+            - name: dev-shm
+              mountPath: /dev/shm
       nodeSelector:
         diffraflow/node-type: daq-ana
       volumes:
@@ -65,3 +75,12 @@ spec:
         - name: calib-data
           hostPath:
             path: /data-ib/home/lizhh1/data/CXIDB/id83/r0243-conv/aux-files
+        - name: cuda-mps-pipe
+          hostPath:
+            path: /kubernetes/data/lizhh1/nvidia/mps
+        - name: cuda-mps-log
+          hostPath:
+            path: /kubernetes/data/lizhh1/nvidia/log
+        - name: dev-shm
+          hostPath:
+            path: /dev/shm

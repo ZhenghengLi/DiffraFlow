@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 
 namespace diffraflow {
     class ByteBuffer {
@@ -13,6 +14,7 @@ namespace diffraflow {
         explicit ByteBuffer(size_t len) : size_(len) {
             if (size_ > 0) {
                 data_ = (char*)malloc(size_);
+                if (data_ == nullptr) throw std::bad_alloc();
             } else {
                 data_ = nullptr;
             }
@@ -32,6 +34,7 @@ namespace diffraflow {
             size_ = len;
             if (size_ > 0) {
                 data_ = (char*)realloc(data_, size_);
+                if (data_ == nullptr) throw std::bad_alloc();
             } else {
                 free(data_);
                 data_ = nullptr;
@@ -44,6 +47,7 @@ namespace diffraflow {
             size_ = buffer.size_;
             if (size_ > 0) {
                 data_ = (char*)malloc(size_);
+                if (data_ == nullptr) throw std::bad_alloc();
                 memcpy(data_, buffer.data_, buffer.size_);
             } else {
                 data_ = nullptr;

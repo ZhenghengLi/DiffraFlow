@@ -9,7 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- next step: GPU algorithms in **ingester**.
+- next step: feature extraction algorithms with GPU in **ingester**.
+
+## [0.2.2] - 2021-03-26
+
+### Added
+
+- Added two libraries utilities and algorithms in diffraflow/shared folder, and library common was also moved into this folder.
+- Added class ImageDataField to represent ImageDataType::Field, and it can be included in CUDA code.
+- Added file nvidia-mps.yaml for deploying CUDA MPS on k8s and its function was tested.
+
+### Changed
+
+- **ingester**: Cache memory for the data processing pipeline was changed from dynamic to static using ring buffer which was implemented by class IngImgFtrBuffer.
+- **ingester**: Copying image data in/out GPU and doing calibraion on GPU were added and tested on a k8s cluster.
+- CMake minimum required version was changed to 3.18 which has the native support for CUDAToolkit.
+
+### Removed
+
+- Removed class ImageWithFeature.
 
 ## [0.2.1] - 2021-02-24
 

@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: feature extraction algorithms with GPU in **ingester**.
 
+## [0.2.3] - 2021-03-26
+
+### Changed
+
+- Use ByteBuffer for dynamic network data caching instead of std::vector\<char\>. ByteBuffer is implemented by malloc() which only allocate memory but not initialize the data in it like the STL default allocator, therefore it has better performance especially when the buffer size is large.
+
 ## [0.2.2] - 2021-03-26
 
 ### Added

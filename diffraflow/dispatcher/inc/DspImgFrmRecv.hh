@@ -36,7 +36,7 @@ namespace diffraflow {
         json::value collect_metrics() override;
 
     protected:
-        void process_datagram_(shared_ptr<vector<char>>& datagram) override;
+        void process_datagram_(shared_ptr<ByteBuffer>& datagram) override;
 
     private:
         uint32_t hash_long_(uint64_t value);

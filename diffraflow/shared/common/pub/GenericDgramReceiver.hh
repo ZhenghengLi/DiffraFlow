@@ -8,10 +8,10 @@
 #include <future>
 #include <atomic>
 #include <thread>
-#include <vector>
 #include <memory>
 
 #include "MetricsProvider.hh"
+#include "ByteBuffer.hh"
 
 using std::string;
 using std::thread;
@@ -19,7 +19,6 @@ using std::atomic;
 using std::atomic_int;
 using std::mutex;
 using std::condition_variable;
-using std::vector;
 using std::shared_ptr;
 using std::make_shared;
 
@@ -55,7 +54,7 @@ namespace diffraflow {
     protected:
         bool create_udp_sock_();
 
-        virtual void process_datagram_(shared_ptr<vector<char>>& datagram);
+        virtual void process_datagram_(shared_ptr<ByteBuffer>& datagram);
 
     protected:
         string receiver_sock_host_;

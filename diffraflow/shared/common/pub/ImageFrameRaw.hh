@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include "ByteBuffer.hh"
+
 using std::vector;
 using std::shared_ptr;
 using std::make_shared;
@@ -14,14 +16,14 @@ namespace diffraflow {
         ImageFrameRaw();
         ~ImageFrameRaw();
 
-        bool set_data(const shared_ptr<vector<char>>& buffer);
+        bool set_data(const shared_ptr<ByteBuffer>& buffer);
         char* data();
         size_t size();
 
-        bool add_dgram(shared_ptr<vector<char>>& dgram);
+        bool add_dgram(shared_ptr<ByteBuffer>& dgram);
         void sort_dgrams();
         int check_dgrams_integrity();
-        shared_ptr<vector<char>>& get_dgram(size_t index);
+        shared_ptr<ByteBuffer>& get_dgram(size_t index);
         size_t get_dgram_count();
 
         uint64_t get_key();
@@ -34,8 +36,8 @@ namespace diffraflow {
         uint16_t dgram_frm_sn;
 
     private:
-        shared_ptr<vector<char>> data_buffer_;
-        vector<shared_ptr<vector<char>>> dgram_list_;
+        shared_ptr<ByteBuffer> data_buffer_;
+        vector<shared_ptr<ByteBuffer>> dgram_list_;
     };
 } // namespace diffraflow
 

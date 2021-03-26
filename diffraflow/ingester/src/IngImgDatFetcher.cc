@@ -83,7 +83,7 @@ diffraflow::IngImgDatFetcher::ReceiveRes diffraflow::IngImgDatFetcher::receive_o
     shared_ptr<IngBufferItem>& item) {
 
     uint32_t payload_type = 0;
-    shared_ptr<vector<char>> payload_data;
+    shared_ptr<ByteBuffer> payload_data;
     if (!receive_one_(payload_type, payload_data, MAX_PAYLOAD_SIZE)) {
         return kDisconnected;
     }

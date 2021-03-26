@@ -3,16 +3,15 @@
 
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <atomic>
 #include <log4cxx/logger.h>
 
 #include "MetricsProvider.hh"
+#include "ByteBuffer.hh"
 
 using std::atomic;
 using std::shared_ptr;
 using std::make_shared;
-using std::vector;
 
 namespace diffraflow {
     class GenericConnection : public MetricsProvider {
@@ -60,7 +59,7 @@ namespace diffraflow {
 
         bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
         bool receive_one_(
-            uint32_t& payload_type, shared_ptr<vector<char>>& payload_data, const uint32_t max_payload_size = 1048576);
+            uint32_t& payload_type, shared_ptr<ByteBuffer>& payload_data, const uint32_t max_payload_size = 1048576);
 
         // methods to be implemented
         virtual ProcessRes process_payload_(const char* payload_buffer, const size_t payload_size);

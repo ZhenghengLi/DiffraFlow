@@ -186,7 +186,7 @@ bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const ui
 }
 
 bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const uint32_t packet_head,
-    uint32_t& payload_type, shared_ptr<vector<char>>& payload_data, log4cxx::LoggerPtr logger,
+    uint32_t& payload_type, shared_ptr<ByteBuffer>& payload_data, log4cxx::LoggerPtr logger,
     const uint32_t max_payload_size) {
 
     if (client_sock_fd < 0) {
@@ -241,7 +241,7 @@ bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const ui
         LOG4CXX_WARN(logger, "payload_size is too large: " << payload_size << ".");
         return false;
     }
-    payload_data = make_shared<vector<char>>(payload_size);
+    payload_data = make_shared<ByteBuffer>(payload_size);
     for (size_t pos = 0; pos < payload_size;) {
         int count = read(client_sock_fd, payload_data->data() + pos, payload_size - pos);
         if (count < 0) {

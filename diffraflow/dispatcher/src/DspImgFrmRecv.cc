@@ -25,7 +25,7 @@ diffraflow::DspImgFrmRecv::~DspImgFrmRecv() { stop_checker(); }
 
 void diffraflow::DspImgFrmRecv::set_max_queue_size(size_t max_qs) { imgfrm_queue_.set_maxsize(max_qs); }
 
-void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<vector<char>>& datagram) {
+void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<ByteBuffer>& datagram) {
 
     if (datagram->size() < 100) {
         return;

@@ -14,7 +14,7 @@ diffraflow::ImageFrameRaw::ImageFrameRaw() {
 
 diffraflow::ImageFrameRaw::~ImageFrameRaw() {}
 
-bool diffraflow::ImageFrameRaw::set_data(const shared_ptr<vector<char>>& buffer) {
+bool diffraflow::ImageFrameRaw::set_data(const shared_ptr<ByteBuffer>& buffer) {
     if (!buffer) return false;
     if (buffer->size() != FRAME_SIZE) return false;
 
@@ -43,7 +43,7 @@ size_t diffraflow::ImageFrameRaw::size() {
     }
 }
 
-bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<vector<char>>& dgram) {
+bool diffraflow::ImageFrameRaw::add_dgram(shared_ptr<ByteBuffer>& dgram) {
     if (dgram->size() < 24) {
         return false;
     }
@@ -109,6 +109,6 @@ void diffraflow::ImageFrameRaw::sort_dgrams() {
     // implement this method when dgram disorder may occur.
 }
 
-shared_ptr<vector<char>>& diffraflow::ImageFrameRaw::get_dgram(size_t index) { return dgram_list_[index]; }
+shared_ptr<diffraflow::ByteBuffer>& diffraflow::ImageFrameRaw::get_dgram(size_t index) { return dgram_list_[index]; }
 
 size_t diffraflow::ImageFrameRaw::get_dgram_count() { return dgram_list_.size(); }

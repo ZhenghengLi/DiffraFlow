@@ -2,12 +2,12 @@
 #define __NetworkUtils_H__
 
 #include <memory>
-#include <vector>
 #include <cstdint>
 #include <log4cxx/logger.h>
 
+#include "ByteBuffer.hh"
+
 using std::shared_ptr;
-using std::vector;
 using std::make_shared;
 
 namespace diffraflow {
@@ -27,8 +27,7 @@ namespace diffraflow {
             const size_t buffer_size, size_t& packet_size, log4cxx::LoggerPtr logger);
 
         bool receive_packet(const int client_sock_fd, const uint32_t packet_head, uint32_t& payload_type,
-            shared_ptr<vector<char>>& payload_data, log4cxx::LoggerPtr logger,
-            const uint32_t max_payload_size = 1048576);
+            shared_ptr<ByteBuffer>& payload_data, log4cxx::LoggerPtr logger, const uint32_t max_payload_size = 1048576);
 
     }; // namespace NetworkUtils
 } // namespace diffraflow

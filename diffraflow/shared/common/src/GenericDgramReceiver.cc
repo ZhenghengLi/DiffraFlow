@@ -108,7 +108,7 @@ void diffraflow::GenericDgramReceiver::run_() {
 
     while (receiver_status_ == kRunning) {
         LOG4CXX_DEBUG(logger_, "waiting for datagram ...");
-        shared_ptr<vector<char>> datagram = make_shared<vector<char>>(DGRAM_MSIZE);
+        shared_ptr<ByteBuffer> datagram = make_shared<ByteBuffer>(DGRAM_MSIZE);
         int recvlen = recvfrom(receiver_sock_fd_, datagram->data(), datagram->size(), 0,
             (struct sockaddr*)&sender_addr_, &sender_addr_len_);
         LOG4CXX_DEBUG(logger_, "received one datagram of size: " << recvlen);
@@ -135,7 +135,7 @@ void diffraflow::GenericDgramReceiver::run_() {
     cv_status_.notify_all();
 }
 
-void diffraflow::GenericDgramReceiver::process_datagram_(shared_ptr<vector<char>>& datagram) {
+void diffraflow::GenericDgramReceiver::process_datagram_(shared_ptr<ByteBuffer>& datagram) {
     // this method should be implemented by subclasses
 }
 

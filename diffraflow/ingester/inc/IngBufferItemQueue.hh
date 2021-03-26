@@ -2,6 +2,7 @@
 #define __IngBufferItemQueue_H__
 
 #include "BlockingQueue.hh"
+#include "ByteBuffer.hh"
 #include <vector>
 #include <memory>
 
@@ -12,7 +13,7 @@ namespace diffraflow {
 
     struct IngBufferItem {
         explicit IngBufferItem(int idx = -1) : index(idx), rawdata(nullptr), save(false) {}
-        shared_ptr<vector<char>> rawdata;
+        shared_ptr<ByteBuffer> rawdata;
         int index;
         bool save;
     };

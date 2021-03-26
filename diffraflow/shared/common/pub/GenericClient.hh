@@ -3,15 +3,14 @@
 
 #include <string>
 #include <atomic>
-#include <vector>
 #include <memory>
 #include <log4cxx/logger.h>
 
 #include "MetricsProvider.hh"
+#include "ByteBuffer.hh"
 
 using std::string;
 using std::atomic;
-using std::vector;
 using std::shared_ptr;
 
 namespace diffraflow {
@@ -52,7 +51,7 @@ namespace diffraflow {
 
         bool receive_one_(char* buffer, const size_t buffer_size, size_t& payload_size);
         bool receive_one_(
-            uint32_t& payload_type, shared_ptr<vector<char>>& payload_data, const uint32_t max_payload_size = 1048576);
+            uint32_t& payload_type, shared_ptr<ByteBuffer>& payload_data, const uint32_t max_payload_size = 1048576);
 
     protected:
         int is_ipc_;

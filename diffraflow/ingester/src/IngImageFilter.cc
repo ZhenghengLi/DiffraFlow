@@ -56,11 +56,19 @@ void diffraflow::IngImageFilter::do_filter(shared_ptr<IngBufferItem>& item) {
             image_feature_host, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost, cuda_stream_);
         // wait to finish
         cudaStreamSynchronize(cuda_stream_);
+
+        // // if feature extraction needs both CPU and GPU:
+        // cudaMemcpyAsync(
+        //     image_feature_host_gpu, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost,
+        //     cuda_stream_);
+        // cudaStreamSynchronize(cuda_stream_);
+        // merge_feature_(image_feature_host, image_feature_host_gpu);
     }
 
     bool monitor = check_for_monitor_(image_feature_host);
     bool save = check_for_save_(image_feature_host);
 
+    // if calibrated data has not been copied back to CPU: copy it here
     if (use_gpu_ && (monitor || save)) {
         // copy image data from GPU to CPU
         cudaMemcpyAsync(

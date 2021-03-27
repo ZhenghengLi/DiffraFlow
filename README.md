@@ -2,7 +2,7 @@
 
 **Diffra**ction image data **Flow**, aiming at the high throughput streaming data acquisition and online analysis for pixel array detectors.
 
-Started on 12th September 2019 by Zhengheng Li after he joined BE-SHINE, this project is proposed to develop an highly optimized distributed software system that can run on a very large compute cluster for streaming the data from pixel array detectors to distributed file system at a very high overall input data throughput (e.g. >100GiB/s).
+Started on 12th September 2019 by Zhengheng Li after he joined BE-SHINE, this project is proposed to develop a highly optimized distributed software system that can run on a very large compute cluster for streaming the data from pixel array detectors to distributed file system at a very high overall input data throughput (e.g. >100GiB/s).
 
 The software should be capable of doing online event-building for all events before data saving, as well as doing online calibration, deep event filtering and quasi-realtime analysis for fast feedback based on full event image data. CUDA technology will be applied to accelerate the data processing speed using GPUs.
 

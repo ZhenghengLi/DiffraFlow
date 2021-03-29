@@ -1,6 +1,7 @@
 nameSuffix: "1"
 senderCpuId: 1
 senderType: UDP
+senderPort: 27691
 listenPort: 27611
 httpListenPort: 27612
 rawDataDir: /kubernetes/data/lizhh1/diffraflow/sender

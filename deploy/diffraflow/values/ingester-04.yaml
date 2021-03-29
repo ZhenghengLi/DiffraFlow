@@ -1,7 +1,7 @@
 nameSuffix: "04"
 ingesterID: 4
-combinerPort: 27122
-combinerSock: combiner-2.sock
+combinerPort: 27142
+combinerSock: combiner-4.sock
 imageHttpPort: 27317
 metricsHttpPort: 27318
 gpuDeviceIndex: 1

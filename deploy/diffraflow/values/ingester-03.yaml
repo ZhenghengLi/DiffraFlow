@@ -1,7 +1,7 @@
 nameSuffix: "03"
 ingesterID: 3
-combinerPort: 27112
-combinerSock: combiner-1.sock
+combinerPort: 27132
+combinerSock: combiner-3.sock
 imageHttpPort: 27315
 metricsHttpPort: 27316
 gpuDeviceIndex: 0

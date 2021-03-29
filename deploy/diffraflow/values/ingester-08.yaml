@@ -1,7 +1,7 @@
 nameSuffix: "08"
 ingesterID: 8
-combinerPort: 27122
-combinerSock: combiner-2.sock
+combinerPort: 27142
+combinerSock: combiner-4.sock
 imageHttpPort: 27325
 metricsHttpPort: 27326
 gpuDeviceIndex: 1

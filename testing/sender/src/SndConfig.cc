@@ -27,6 +27,8 @@ diffraflow::SndConfig::SndConfig() {
     listen_port = -1;
     sender_type = "TCP";
 
+    sender_port = -1;
+
     data_dir.clear();
     events_per_file = 10000;
     total_events = 89000;
@@ -59,6 +61,8 @@ bool diffraflow::SndConfig::load(const char* filename) {
             sender_type = value.c_str();
         } else if (key == "sender_id") {
             sender_id = atoi(value.c_str());
+        } else if (key == "sender_port") {
+            sender_port = atoi(value.c_str());
         } else if (key == "sender_cpu_id") {
             sender_cpu_id = atoi(value.c_str());
         } else if (key == "sender_buffer_size") {
@@ -172,6 +176,7 @@ bool diffraflow::SndConfig::load(const char* filename) {
         // static config
         static_config_json_["sender_type"] = json::value::string(sender_type);
         static_config_json_["sender_id"] = json::value::number(sender_id);
+        static_config_json_["sender_port"] = json::value::number(sender_port);
         static_config_json_["sender_cpu_id"] = json::value::number(sender_cpu_id);
         static_config_json_["sender_buffer_size"] = json::value::number(sender_buffer_size);
         static_config_json_["listen_host"] = json::value::string(listen_host);
@@ -241,6 +246,7 @@ void diffraflow::SndConfig::print() {
     cout << " ---- Configuration Dump Begin ----" << endl;
     cout << " sender_type        = " << sender_type << endl;
     cout << " sender_id          = " << sender_id << endl;
+    cout << " sender_port        = " << sender_port << endl;
     cout << " sender_cpu_id      = " << sender_cpu_id << endl;
     cout << " sender_buffer_size = " << sender_buffer_size << endl;
     cout << " listen_host        = " << listen_host << endl;

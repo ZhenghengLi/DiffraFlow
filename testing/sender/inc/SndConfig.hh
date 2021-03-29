@@ -37,6 +37,8 @@ namespace diffraflow {
         string listen_host;
         int listen_port;
 
+        int sender_port;
+
         string data_dir;
         int events_per_file;
         int total_events;

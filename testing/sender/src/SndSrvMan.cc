@@ -35,8 +35,8 @@ void diffraflow::SndSrvMan::start_run() {
 
     // prepare data transfer
     if (config_obj_->sender_type == "TCP") {
-        if (data_transfer_->create_tcp_sender(
-                config_obj_->dispatcher_host, config_obj_->dispatcher_port, config_obj_->sender_id)) {
+        if (data_transfer_->create_tcp_sender(config_obj_->dispatcher_host, config_obj_->dispatcher_port,
+                config_obj_->sender_id, config_obj_->sender_port)) {
             LOG4CXX_INFO(logger_, "successfully created TCP sender for dispatcher "
                                       << config_obj_->dispatcher_host << ":" << config_obj_->dispatcher_port);
         } else {

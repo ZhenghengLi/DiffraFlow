@@ -5,8 +5,9 @@
 
 log4cxx::LoggerPtr diffraflow::SndTcpSender::logger_ = log4cxx::Logger::getLogger("SndTcpSender");
 
-diffraflow::SndTcpSender::SndTcpSender(string dispatcher_host, int dispatcher_port, uint32_t sender_id)
+diffraflow::SndTcpSender::SndTcpSender(string dispatcher_host, int dispatcher_port, uint32_t sender_id, int sender_port)
     : GenericClient(dispatcher_host, dispatcher_port, sender_id, 0xFFDD1234, 0xFFF22DDD, 0xDDD22FFF) {
+    set_client_port(sender_port);
     head_buffer_ = new char[4];
     gPS.serializeValue<uint32_t>(0xABCDFFFF, head_buffer_, 4);
 }

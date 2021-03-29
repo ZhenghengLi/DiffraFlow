@@ -57,8 +57,9 @@ diffraflow::SndDatTran::~SndDatTran() {
     delete_sender();
 }
 
-bool diffraflow::SndDatTran::create_tcp_sender(string dispatcher_host, int dispatcher_port, uint32_t sender_id) {
-    tcp_sender_ = new SndTcpSender(dispatcher_host, dispatcher_port, sender_id);
+bool diffraflow::SndDatTran::create_tcp_sender(
+    string dispatcher_host, int dispatcher_port, uint32_t sender_id, int sender_port) {
+    tcp_sender_ = new SndTcpSender(dispatcher_host, dispatcher_port, sender_id, sender_port);
     if (tcp_sender_->connect_to_server()) {
         LOG4CXX_INFO(logger_, "successfully connected to dispatcher: " << tcp_sender_->get_server_address());
         sender_type_ = kTCP;

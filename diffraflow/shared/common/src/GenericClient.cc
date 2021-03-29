@@ -27,6 +27,7 @@ diffraflow::GenericClient::GenericClient(
     sending_head_ = send_hd;
     receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
+    client_port_ = -1;
 
     init_metrics_();
 }
@@ -56,6 +57,14 @@ void diffraflow::GenericClient::init_metrics_() {
     network_metrics.total_sent_counts = 0;
     network_metrics.total_received_size = 0;
     network_metrics.total_received_counts = 0;
+}
+
+void diffraflow::GenericClient::set_client_port(int port) {
+    if (port > 0 && port < 65536) {
+        client_port_ = port;
+    } else {
+        client_port_ = -1;
+    }
 }
 
 bool diffraflow::GenericClient::connect_to_server() {
@@ -105,7 +114,20 @@ bool diffraflow::GenericClient::connect_to_server_tcp_() {
     client_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (client_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "Socket creationg error: " << strerror(errno));
+        freeaddrinfo(infoptr);
         return false;
+    }
+    if (client_port_ > 0) {
+        sockaddr_in client_addr;
+        memset(&client_addr, 0, sizeof(client_addr));
+        client_addr.sin_family = AF_INET;
+        client_addr.sin_addr.s_addr = INADDR_ANY;
+        client_addr.sin_port = htons(client_port_);
+        if (bind(client_sock_fd_, (sockaddr*)&client_addr, sizeof(client_addr)) < 0) {
+            LOG4CXX_ERROR(logger_, "bind: " << strerror(errno));
+            freeaddrinfo(infoptr);
+            return false;
+        }
     }
     ((sockaddr_in*)(infoptr->ai_addr))->sin_port = htons(dest_port_);
     if (connect(client_sock_fd_, infoptr->ai_addr, infoptr->ai_addrlen)) {

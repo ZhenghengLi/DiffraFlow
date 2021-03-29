@@ -10,7 +10,7 @@ data:
     dispatcher_id = 0
     dgram_recv_cpu_id = {{ .Values.dgramRecvCpuId }}
     dgram_recv_buffer_size = 67108864
-    max_queue_size = 5000
+    max_queue_size = 3000
     # http
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

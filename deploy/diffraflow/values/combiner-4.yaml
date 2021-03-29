@@ -1,0 +1,5 @@
+nameSuffix: "4"
+imgfrmListenPort: 27141
+imgdatListenPort: 27142
+imgdatListenSock: combiner-4.sock
+httpListenPort: 27143

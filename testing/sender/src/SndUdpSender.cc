@@ -8,7 +8,8 @@
 
 log4cxx::LoggerPtr diffraflow::SndUdpSender::logger_ = log4cxx::Logger::getLogger("SndUdpSender");
 
-diffraflow::SndUdpSender::SndUdpSender(int sndbufsize) : GenericDgramSender(sndbufsize) {
+diffraflow::SndUdpSender::SndUdpSender(int sndbufsize, int sender_port) : GenericDgramSender(sndbufsize) {
+    set_sender_port(sender_port);
     dgram_buffer_ = new char[DGRAM_MSIZE];
     frame_sequence_number_ = 0;
     segment_sequence_number_ = 0;

@@ -17,6 +17,7 @@ namespace diffraflow {
         explicit GenericDgramSender(int sndbufsize = 4 * 1024 * 1024);
         virtual ~GenericDgramSender();
 
+        void set_sender_port(int port);
         bool init_addr_sock(string host, int port);
         string get_receiver_address();
         bool send_datagram(const char* buffer, size_t len);
@@ -41,6 +42,7 @@ namespace diffraflow {
 
         int sender_sock_fd_;
         int sender_sock_bs_;
+        int sender_port_;
 
         struct sockaddr_in receiver_addr_;
         socklen_t receiver_addr_len_;

@@ -17,6 +17,7 @@ diffraflow::GenericDgramSender::GenericDgramSender(int sndbufsize) {
     receiver_sock_host_ = "";
     receiver_sock_port_ = -1;
     sender_sock_fd_ = -1;
+    sender_port_ = -1;
     if (sndbufsize < 512 * 1024) {
         sender_sock_bs_ = 512 * 1024;
     } else if (sndbufsize > 64 * 1024 * 1024) {
@@ -39,6 +40,14 @@ diffraflow::GenericDgramSender::~GenericDgramSender() { close_sock(); }
 
 string diffraflow::GenericDgramSender::get_receiver_address() {
     return receiver_sock_host_ + ":" + std::to_string(receiver_sock_port_);
+}
+
+void diffraflow::GenericDgramSender::set_sender_port(int port) {
+    if (port > 0 && port < 65536) {
+        sender_port_ = port;
+    } else {
+        sender_port_ = -1;
+    }
 }
 
 bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
@@ -71,14 +80,25 @@ bool diffraflow::GenericDgramSender::init_addr_sock(string host, int port) {
 
     // create socket
     sender_sock_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
-
-    // set larger sender buffer
-    setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sender_sock_bs_, sizeof(sender_sock_bs_));
-
     if (sender_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "failed to create socket with error: " << strerror(errno));
         return false;
     }
+
+    if (sender_port_ > 0) {
+        sockaddr_in sender_addr;
+        memset(&sender_addr, 0, sizeof(sender_addr));
+        sender_addr.sin_family = AF_INET;
+        sender_addr.sin_addr.s_addr = INADDR_ANY;
+        sender_addr.sin_port = htons(sender_port_);
+        if (bind(sender_sock_fd_, (sockaddr*)&sender_addr, sizeof(sender_addr)) < 0) {
+            LOG4CXX_ERROR(logger_, "bind: " << strerror(errno));
+            return false;
+        }
+    }
+
+    // set larger sender buffer
+    setsockopt(sender_sock_fd_, SOL_SOCKET, SO_SNDBUF, (char*)&sender_sock_bs_, sizeof(sender_sock_bs_));
 
     return true;
 }

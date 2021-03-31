@@ -104,9 +104,9 @@ bool diffraflow::DspConfig::load(const char* filename) {
     if (dgram_recv_buffer_size < 512 * 1024) {
         LOG4CXX_WARN(logger_, "dgram_recv_buffer_size it too small (< 512 kiB) use 512 kiB instead.");
         dgram_recv_buffer_size = 512 * 1024;
-    } else if (dgram_recv_buffer_size > 64 * 1024 * 1024) {
+    } else if (dgram_recv_buffer_size > 512 * 1024 * 1024) {
         LOG4CXX_WARN(logger_, "dgram_recv_buffer_size is too large (> 64 MiB), use 64 MiB instead.");
-        dgram_recv_buffer_size = 64 * 1024 * 1024;
+        dgram_recv_buffer_size = 512 * 1024 * 1024;
     }
     if (metrics_pulsar_report_period < 500) {
         LOG4CXX_WARN(logger_, "pulsar_report_period < 500, use 500 instead.");

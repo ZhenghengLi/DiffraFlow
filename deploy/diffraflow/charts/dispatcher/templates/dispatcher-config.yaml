@@ -9,7 +9,7 @@ data:
     listen_port = {{ .Values.listenPort }}
     dispatcher_id = 0
     dgram_recv_cpu_id = {{ .Values.dgramRecvCpuId }}
-    dgram_recv_buffer_size = 201326592
+    dgram_recv_buffer_size = 268435456
     max_queue_size = 3000
     # http
     metrics_http_host = 0.0.0.0

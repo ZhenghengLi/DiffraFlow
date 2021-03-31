@@ -9,7 +9,7 @@ data:
     sender_id = 0
     sender_port = {{ .Values.senderPort }}
     sender_cpu_id = {{ .Values.senderCpuId }}
-    sender_buffer_size = 1048576
+    sender_buffer_size = 2097152
     listen_host = 0.0.0.0
     listen_port = {{ .Values.listenPort }}
     data_dir = /raw-data

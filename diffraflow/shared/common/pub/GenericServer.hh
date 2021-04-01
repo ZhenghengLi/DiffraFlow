@@ -9,6 +9,7 @@
 #include <future>
 #include <condition_variable>
 #include <log4cxx/logger.h>
+#include <sched.h>
 
 #include "MetricsProvider.hh"
 
@@ -33,6 +34,8 @@ namespace diffraflow {
         explicit GenericServer(string host, int port, size_t max_conn = 100);
         explicit GenericServer(string sock_path, size_t max_conn = 100);
         virtual ~GenericServer();
+
+        void set_conn_cpuset(cpu_set_t* cpuset);
 
         bool start(bool receiving_dominant = true);
         void wait();
@@ -76,6 +79,7 @@ namespace diffraflow {
 
         connListT_ connections_;
         size_t max_conn_counts_;
+        cpu_set_t conn_cpuset_;
 
         mutex mtx_conn_;
         condition_variable cv_clean_;

@@ -30,6 +30,7 @@ diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn)
     server_sock_path_ = "";
     is_ipc_ = false;
     max_conn_counts_ = max_conn;
+    CPU_ZERO(&conn_cpuset_);
 }
 
 diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
@@ -40,9 +41,16 @@ diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     server_sock_path_ = sock_path;
     is_ipc_ = true;
     max_conn_counts_ = max_conn;
+    CPU_ZERO(&conn_cpuset_);
 }
 
 diffraflow::GenericServer::~GenericServer() { stop_and_close(); }
+
+void diffraflow::GenericServer::set_conn_cpuset(cpu_set_t* cpuset) {
+    if (cpuset != nullptr) {
+        memcpy(&conn_cpuset_, cpuset, sizeof(cpu_set_t));
+    }
+}
 
 void diffraflow::GenericServer::start_cleaner_() {
     dead_counts_ = 0;
@@ -192,6 +200,13 @@ int diffraflow::GenericServer::serve_(bool receiving_dominant) {
                 dead_counts_++;
                 cv_clean_.notify_one();
             });
+            if (CPU_COUNT(&conn_cpuset_) > 0) {
+                int rc = pthread_setaffinity_np(conn_thread->native_handle(), sizeof(cpu_set_t), &conn_cpuset_);
+                if (rc != 0) {
+                    LOG4CXX_WARN(
+                        logger_, "Failed to pthread_setaffinity_np for connection thread with error code: " << rc);
+                }
+            }
             if (server_status_ == kRunning) {
                 connections_.push_back(make_pair(conn_object, conn_thread));
             } else {

@@ -5,6 +5,7 @@
 #include "BlockingQueue.hh"
 #include <memory>
 #include <thread>
+#include <sched.h>
 
 #define MOD_CNT 16
 
@@ -24,7 +25,7 @@ namespace diffraflow {
 
         void set_max_queue_size(size_t max_qs);
 
-        void start_checker();
+        void start_checker(cpu_set_t* cpuset = nullptr);
         void stop_checker();
 
     public:

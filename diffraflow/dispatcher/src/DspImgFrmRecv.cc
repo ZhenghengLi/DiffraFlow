@@ -69,7 +69,7 @@ void diffraflow::DspImgFrmRecv::process_datagram_(shared_ptr<ByteBuffer>& datagr
     }
 }
 
-void diffraflow::DspImgFrmRecv::start_checker() {
+void diffraflow::DspImgFrmRecv::start_checker(cpu_set_t* cpuset) {
     if (checker_thread_ != nullptr) {
         return;
     }
@@ -91,6 +91,12 @@ void diffraflow::DspImgFrmRecv::start_checker() {
             }
         }
     });
+    if (cpuset && CPU_COUNT(cpuset) > 0) {
+        int rc = pthread_setaffinity_np(checker_thread_->native_handle(), sizeof(cpu_set_t), cpuset);
+        if (rc != 0) {
+            LOG4CXX_WARN(logger_, "Failed to pthread_setaffinity_np for checker thread with error code: " << rc);
+        }
+    }
 }
 
 void diffraflow::DspImgFrmRecv::stop_checker() {

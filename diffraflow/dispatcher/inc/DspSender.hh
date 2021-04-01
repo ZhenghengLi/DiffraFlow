@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <log4cxx/logger.h>
+#include <sched.h>
 
 #include "GenericClient.hh"
 #include "BlockingQueue.hh"
@@ -35,7 +36,7 @@ namespace diffraflow {
 
         bool push(const shared_ptr<ImageFrameRaw>& image_frame);
 
-        bool start();
+        bool start(cpu_set_t* cpuset = nullptr);
         void stop();
 
     public:

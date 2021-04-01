@@ -85,7 +85,7 @@ bool diffraflow::DspSender::push(const shared_ptr<ImageFrameRaw>& image_frame) {
     return result;
 }
 
-bool diffraflow::DspSender::start() {
+bool diffraflow::DspSender::start(cpu_set_t* cpuset) {
     if (sending_thread_ != nullptr) {
         LOG4CXX_WARN(logger_, "sender is already started with connection to combiner " << get_server_address() << ".");
         return true;
@@ -108,6 +108,12 @@ bool diffraflow::DspSender::start() {
             }
         }
     });
+    if (cpuset && CPU_COUNT(cpuset) > 0) {
+        int rc = pthread_setaffinity_np(sending_thread_->native_handle(), sizeof(cpu_set_t), cpuset);
+        if (rc != 0) {
+            LOG4CXX_WARN(logger_, "Failed to pthread_setaffinity_np for sending thread with error code: " << rc);
+        }
+    }
     return true;
 }
 

@@ -1,5 +1,5 @@
 nameSuffix: "4"
-dgramRecvCpuId: 3
+dgramRecvCpuId: 4
 listenPort: 27241
 httpListenPort: 27242
 combinerAddresses: |

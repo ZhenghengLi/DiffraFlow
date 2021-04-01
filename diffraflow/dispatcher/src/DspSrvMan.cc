@@ -32,7 +32,8 @@ diffraflow::DspSrvMan::~DspSrvMan() {}
 void diffraflow::DspSrvMan::start_run() {
     if (running_flag_) return;
     // create senders
-    if (create_senders_(combiner_address_file_.c_str(), config_obj_->dispatcher_id, config_obj_->max_queue_size)) {
+    if (create_senders_(combiner_address_file_.c_str(), config_obj_->dispatcher_id, config_obj_->max_queue_size,
+            &config_obj_->other_cpu_set)) {
         LOG4CXX_INFO(logger_, sender_cnt_ << " senders are created.");
     } else {
         LOG4CXX_ERROR(logger_, "Failed to create senders.");
@@ -41,6 +42,7 @@ void diffraflow::DspSrvMan::start_run() {
     // create receiving server
     // TCP receiver
     imgfrm_srv_ = new DspImgFrmSrv(config_obj_->listen_host, config_obj_->listen_port, sender_arr_, sender_cnt_);
+    imgfrm_srv_->set_conn_cpuset(&config_obj_->other_cpu_set);
     // UDP receiver
     imgfrm_recv_ = new DspImgFrmRecv(config_obj_->listen_host, config_obj_->listen_port, sender_arr_, sender_cnt_,
         config_obj_->dgram_recv_buffer_size);
@@ -54,7 +56,7 @@ void diffraflow::DspSrvMan::start_run() {
         return;
     }
     // UDP receiver
-    imgfrm_recv_->start_checker();
+    imgfrm_recv_->start_checker(&config_obj_->other_cpu_set);
     if (imgfrm_recv_->start(config_obj_->dgram_recv_cpu_id)) {
         LOG4CXX_INFO(logger_, "successfully started image frame UDP receiver.")
     } else {
@@ -139,7 +141,8 @@ void diffraflow::DspSrvMan::terminate() {
     running_flag_ = false;
 }
 
-bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dispatcher_id, int max_queue_size) {
+bool diffraflow::DspSrvMan::create_senders_(
+    const char* address_list_fn, int dispatcher_id, int max_queue_size, cpu_set_t* cpuset) {
     // note: do this before staring DspImgFrmSrv
     vector<pair<string, int>> addr_vec;
     if (!read_address_list_(address_list_fn, addr_vec)) {
@@ -150,7 +153,7 @@ bool diffraflow::DspSrvMan::create_senders_(const char* address_list_fn, int dis
     sender_arr_ = new DspSender*[sender_cnt_];
     for (size_t i = 0; i < addr_vec.size(); i++) {
         sender_arr_[i] = new DspSender(addr_vec[i].first, addr_vec[i].second, dispatcher_id, max_queue_size);
-        if (sender_arr_[i]->start()) {
+        if (sender_arr_[i]->start(cpuset)) {
             LOG4CXX_INFO(logger_, "successfully started sender[" << i << "]");
         } else {
             LOG4CXX_WARN(logger_, "failed to start sender[" << i << "]");

@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <log4cxx/logger.h>
+#include <sched.h>
 
 #include "DspSender.hh"
 #include "MetricsReporter.hh"
@@ -33,7 +34,7 @@ namespace diffraflow {
         void terminate();
 
     private:
-        bool create_senders_(const char* address_list_fn, int dispatcher_id, int max_queue_size);
+        bool create_senders_(const char* address_list_fn, int dispatcher_id, int max_queue_size, cpu_set_t* cpuset);
         void delete_senders_();
         bool read_address_list_(const char* filename, vector<pair<string, int>>& addr_vec);
 

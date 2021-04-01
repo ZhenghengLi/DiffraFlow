@@ -24,6 +24,9 @@ spec:
           # image: zhenghengli/diffraflow:latest
           image: 10.15.86.19:25443/diffraflow:latest
           command:
+            - taskset
+            - --cpu-list
+            - 4-27
             - combiner
             - --config=/config/combiner.conf
             - --logconf=/config/log4cxx.properties

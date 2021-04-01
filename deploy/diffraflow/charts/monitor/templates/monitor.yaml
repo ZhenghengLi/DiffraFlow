@@ -39,6 +39,9 @@ spec:
           # image: zhenghengli/diffraflow:latest
           image: 10.15.86.19:25443/diffraflow:latest
           command:
+            - taskset
+            - --cpu-list
+            - 4-27
             - monitor
             - --config=/config/monitor.conf
             - --ingaddr=/config/ingester_addresses.txt

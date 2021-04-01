@@ -1,5 +1,5 @@
 nameSuffix: "1"
-senderCpuId: 1
+senderCpuId: 0
 senderType: UDP
 senderPort: 27691
 listenPort: 27611

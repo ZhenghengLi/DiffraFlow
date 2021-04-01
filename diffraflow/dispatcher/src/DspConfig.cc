@@ -26,6 +26,9 @@ diffraflow::DspConfig::DspConfig() {
     max_queue_size = 1000;
 
     other_cpu_list.clear();
+    if (sched_getaffinity(0, sizeof(cpu_set_t), &other_cpu_set)) {
+        LOG4CXX_WARN(logger_, "Failed to sched_getaffinity: " << strerror(errno));
+    }
 
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;

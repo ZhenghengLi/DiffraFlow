@@ -8,6 +8,8 @@
 #include <thread>
 #include <boost/algorithm/string.hpp>
 
+#include "schedtools.hh"
+
 using std::cout;
 using std::flush;
 using std::endl;
@@ -129,6 +131,14 @@ bool diffraflow::DspConfig::load(const char* filename) {
     if (dgram_recv_cpu_id >= num_cpus) {
         LOG4CXX_ERROR(logger_, "dgram_recv_cpu_id should be smaller than " << num_cpus << ".");
         succ_flag = false;
+    }
+    if (!other_cpu_list.empty()) {
+        int res = schedtools::string_to_cpu_set(&other_cpu_set, other_cpu_list);
+        if (res != 0) {
+            LOG4CXX_ERROR(
+                logger_, "failed to convert string '" << other_cpu_list << "' to cpu_set with error code: " << res);
+            succ_flag = false;
+        }
     }
 
     if (succ_flag) {

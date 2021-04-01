@@ -4,6 +4,7 @@
 #include "GenericConfiguration.hh"
 #include <log4cxx/logger.h>
 #include <string>
+#include <sched.h>
 
 #include "MetricsProvider.hh"
 
@@ -32,6 +33,9 @@ namespace diffraflow {
         string listen_host;
         int listen_port;
         int max_queue_size;
+
+        string other_cpu_list;
+        cpu_set_t other_cpu_set;
 
         string metrics_pulsar_broker_address;
         string metrics_pulsar_topic_name;

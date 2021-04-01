@@ -25,6 +25,8 @@ diffraflow::DspConfig::DspConfig() {
     listen_port = -1;
     max_queue_size = 1000;
 
+    other_cpu_list.clear();
+
     metrics_pulsar_report_period = 1000;
     metrics_http_port = -1;
 }
@@ -53,6 +55,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             dgram_recv_buffer_size = atoi(value.c_str());
         } else if (key == "max_queue_size") {
             max_queue_size = atoi(value.c_str());
+        } else if (key == "other_cpu_list") {
+            other_cpu_list = value;
         } else if (key == "metrics_pulsar_broker_address") {
             metrics_pulsar_broker_address = value;
         } else if (key == "metrics_pulsar_topic_name") {
@@ -129,6 +133,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
         static_config_json_["max_queue_size"] = json::value::number(max_queue_size);
+        static_config_json_["other_cpu_list"] = json::value::string(other_cpu_list);
         static_config_json_["dgram_recv_cpu_id"] = json::value::number(dgram_recv_cpu_id);
         static_config_json_["dgram_recv_buffer_size"] = json::value::number(dgram_recv_buffer_size);
 
@@ -152,6 +157,7 @@ void diffraflow::DspConfig::print() {
     cout << "  dgram_recv_cpu_id = " << dgram_recv_cpu_id << endl;
     cout << "  dgram_recv_buffer_size = " << dgram_recv_buffer_size << endl;
     cout << "  max_queue_size = " << max_queue_size << endl;
+    cout << "  other_cpu_list = " << other_cpu_list << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;
     cout << "  metrics_pulsar_message_key = " << metrics_pulsar_message_key << endl;

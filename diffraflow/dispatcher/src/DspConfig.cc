@@ -26,6 +26,7 @@ diffraflow::DspConfig::DspConfig() {
     listen_host = "0.0.0.0";
     listen_port = -1;
     max_queue_size = 1000;
+    dgram_queue_size = 16000;
 
     other_cpu_list.clear();
     CPU_ZERO(&other_cpu_set);
@@ -58,6 +59,8 @@ bool diffraflow::DspConfig::load(const char* filename) {
             dgram_recv_buffer_size = atoi(value.c_str());
         } else if (key == "max_queue_size") {
             max_queue_size = atoi(value.c_str());
+        } else if (key == "dgram_queue_size") {
+            dgram_queue_size = atoi(value.c_str());
         } else if (key == "other_cpu_list") {
             other_cpu_list = value;
         } else if (key == "metrics_pulsar_broker_address") {
@@ -108,6 +111,10 @@ bool diffraflow::DspConfig::load(const char* filename) {
         LOG4CXX_WARN(logger_, "max_queue_size is too small (<100), use 100 instead.");
         max_queue_size = 100;
     }
+    if (dgram_queue_size < 8000) {
+        LOG4CXX_WARN(logger_, "dgram_queue_size is too small (<8000), use 8000 instead.");
+        dgram_queue_size = 8000;
+    }
     if (dgram_recv_buffer_size < 512 * 1024) {
         LOG4CXX_WARN(logger_, "dgram_recv_buffer_size it too small (< 512 kiB) use 512 kiB instead.");
         dgram_recv_buffer_size = 512 * 1024;
@@ -144,6 +151,7 @@ bool diffraflow::DspConfig::load(const char* filename) {
         static_config_json_["listen_host"] = json::value::string(listen_host);
         static_config_json_["listen_port"] = json::value::number(listen_port);
         static_config_json_["max_queue_size"] = json::value::number(max_queue_size);
+        static_config_json_["dgram_queue_size"] = json::value::number(dgram_queue_size);
         static_config_json_["other_cpu_list"] = json::value::string(other_cpu_list);
         static_config_json_["dgram_recv_cpu_id"] = json::value::number(dgram_recv_cpu_id);
         static_config_json_["dgram_recv_buffer_size"] = json::value::number(dgram_recv_buffer_size);
@@ -168,6 +176,7 @@ void diffraflow::DspConfig::print() {
     cout << "  dgram_recv_cpu_id = " << dgram_recv_cpu_id << endl;
     cout << "  dgram_recv_buffer_size = " << dgram_recv_buffer_size << endl;
     cout << "  max_queue_size = " << max_queue_size << endl;
+    cout << "  dgram_queue_size = " << dgram_queue_size << endl;
     cout << "  other_cpu_list = " << other_cpu_list << endl;
     cout << "  metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "  metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;

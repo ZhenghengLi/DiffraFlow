@@ -45,7 +45,7 @@ void diffraflow::DspSrvMan::start_run() {
     imgfrm_srv_->set_conn_cpuset(&config_obj_->other_cpu_set);
     // UDP receiver
     imgfrm_recv_ = new DspImgFrmRecv(config_obj_->listen_host, config_obj_->listen_port, sender_arr_, sender_cnt_,
-        config_obj_->dgram_recv_buffer_size);
+        config_obj_->dgram_recv_buffer_size, config_obj_->dgram_queue_size);
 
     // multiple servers start from here
     // TCP receiver

@@ -10,11 +10,11 @@ using std::make_shared;
 log4cxx::LoggerPtr diffraflow::DspImgFrmRecv::logger_ = log4cxx::Logger::getLogger("DspImgFrmRecv");
 
 diffraflow::DspImgFrmRecv::DspImgFrmRecv(
-    string host, int port, DspSender** sender_arr, size_t sender_cnt, int rcvbufsize)
+    string host, int port, DspSender** sender_arr, size_t sender_cnt, int rcvbufsize, int dgram_queue_size)
     : GenericDgramReceiver(host, port, rcvbufsize) {
     sender_array_ = sender_arr;
     sender_count_ = sender_cnt;
-    imgfrm_queue_.set_maxsize(1000);
+    imgfrm_queue_.set_maxsize(dgram_queue_size);
     checker_thread_ = nullptr;
     // init metrics
     frame_metrics.total_received_count = 0;

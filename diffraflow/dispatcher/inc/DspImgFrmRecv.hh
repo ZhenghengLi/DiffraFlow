@@ -19,8 +19,8 @@ namespace diffraflow {
 
     class DspImgFrmRecv : public GenericDgramReceiver {
     public:
-        DspImgFrmRecv(
-            string host, int port, DspSender** sender_arr, size_t sender_cnt, int rcvbufsize = 56 * 1024 * 1024);
+        DspImgFrmRecv(string host, int port, DspSender** sender_arr, size_t sender_cnt,
+            int rcvbufsize = 56 * 1024 * 1024, int dgram_queue_size = 16000);
         ~DspImgFrmRecv();
 
         void set_max_queue_size(size_t max_qs);

@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: feature extraction algorithms with GPU in **ingester**.
 
+## [0.2.4] 2021-04-02
+
+### Added
+
+- Added support to set the port number of UDP/TCP client, then the bandwidth of two 10Gb data links under bond mode 4 with option xmit_hash_policy=layer3+4 can be fully utilized.
+- **dispatcher**: added configurations dgram_queue_size and other_cpu_list.
+- **dispatcher**: added support to set cpu affinity for all other worker threads except the UDP packet receiving thread.
+
+### Changed
+
+- Use 4 combiners for deployment instread of 2.
+- Use taskset to set cpu affinity for the deployment of **combiner**, **ingester** and **monitor**, in order to minimize the effect of the high load of these processes on the UDP packet receiving thread and thus reduce the packet loss rate.
+
 ## [0.2.3] - 2021-03-26
 
 ### Changed

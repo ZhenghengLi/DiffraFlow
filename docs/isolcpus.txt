@@ -1,7 +1,7 @@
 In order to minimize packet loss rate, some dedicated CPU threads can be isolated for UDP data receiving.
 
 in /etc/default/grub:
-add option "isolcpus=24-27" into GRUB_CMDLINE_LINUX
+add option "isolcpus=10-13" into GRUB_CMDLINE_LINUX
 
 # grub2-mkconfig -o /boot/grub2/grub.cfg
 # reboot

@@ -26,7 +26,7 @@ spec:
           command:
             - taskset
             - --cpu-list
-            - 0-23
+            - 0-9,14-27
             - combiner
             - --config=/config/combiner.conf
             - --logconf=/config/log4cxx.properties

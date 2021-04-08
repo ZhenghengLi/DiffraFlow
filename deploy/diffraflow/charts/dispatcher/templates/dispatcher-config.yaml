@@ -12,7 +12,7 @@ data:
     dgram_recv_buffer_size = 67108864
     max_queue_size = 3000
     dgram_queue_size = 40000
-    other_cpu_list = 0-23
+    other_cpu_list = 0-9,14-27
     # http
     metrics_http_host = 0.0.0.0
     metrics_http_port = {{ .Values.httpListenPort }}

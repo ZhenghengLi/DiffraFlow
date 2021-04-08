@@ -41,7 +41,7 @@ spec:
           command:
             - taskset
             - --cpu-list
-            - 0-23
+            - 0-9,14-27
             - monitor
             - --config=/config/monitor.conf
             - --ingaddr=/config/ingester_addresses.txt

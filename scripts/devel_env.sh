@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tmp_dir=$(dirname $(realpath $0))
+tmp_dir=$(dirname ${BASH_SOURCE[0]:-${(%):-%x}})
 my_dir=$(cd $tmp_dir/.. > /dev/null ; pwd)
 
 # change this variable if needed

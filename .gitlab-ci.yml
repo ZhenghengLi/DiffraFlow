@@ -3,7 +3,7 @@ default:
   services:
     - docker:20.10.7-dind
   tags:
-    - workstation
+    - kubernetes
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 

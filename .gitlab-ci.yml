@@ -20,6 +20,7 @@ stages:
 build:
   stage: build
   script:
+    - echo $DOCKER_DRIVER
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
 

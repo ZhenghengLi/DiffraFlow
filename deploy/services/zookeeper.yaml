@@ -50,9 +50,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       containers:
         - name: zookeeper
-          image: zhenghengli/zookeeper:3.5.7
+          # image: zhenghengli/zookeeper:3.5.7
+          image: registry.physky.org/lizhengheng/docker-zookeeper:3.5.7
           imagePullPolicy: Always
           args:
             - zkServer.sh

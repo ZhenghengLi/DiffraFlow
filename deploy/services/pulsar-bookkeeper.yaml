@@ -49,9 +49,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       initContainers:
         - name: zookeeper-cnxn-checker
-          image: zhenghengli/bookkeeper:4.9.2
+          # image: zhenghengli/bookkeeper:4.9.2
+          image: registry.physky.org/lizhengheng/docker-bookkeeper:4.9.2
           imagePullPolicy: Always
           command:
             - check_cnxn_address.sh
@@ -60,7 +63,8 @@ spec:
             - "10.15.39.23:2181"
       containers:
         - name: pulsar-bookkeeper
-          image: zhenghengli/bookkeeper:4.9.2
+          # image: zhenghengli/bookkeeper:4.9.2
+          image: registry.physky.org/lizhengheng/docker-bookkeeper:4.9.2
           imagePullPolicy: Always
           args:
             - bookkeeper
@@ -117,9 +121,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       initContainers:
         - name: zookeeper-cnxn-checker
-          image: zhenghengli/bookkeeper:4.9.2
+          # image: zhenghengli/bookkeeper:4.9.2
+          image: registry.physky.org/lizhengheng/docker-bookkeeper:4.9.2
           imagePullPolicy: Always
           command:
             - check_cnxn_address.sh
@@ -128,7 +135,8 @@ spec:
             - "10.15.39.23:2181"
       containers:
         - name: bookkeeper
-          image: zhenghengli/bookkeeper:4.9.2
+          # image: zhenghengli/bookkeeper:4.9.2
+          image: registry.physky.org/lizhengheng/docker-bookkeeper:4.9.2
           imagePullPolicy: Always
           args:
             - bookkeeper

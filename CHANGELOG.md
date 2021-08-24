@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - next step: feature extraction algorithms with GPU in **ingester**.
 
+## [0.2.5] 2021-08-24
+
+### Changed
+- Change deployment cpu affinity considering the hardware NUMA configuration, i.e. the position of IB network card.
+- Build and deloy all components utilizing the GitLab CI and Registry instead of Docker Hub.
+
 ## [0.2.4] 2021-04-02
 
 ### Added

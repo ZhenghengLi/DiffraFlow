@@ -23,7 +23,7 @@ build-latest:
     - docker build --pull -t $IMAGE_NAME .
     - docker push $IMAGE_NAME
   only:
-    master
+    - master
 
 build-tag:
   stage: build
@@ -32,5 +32,5 @@ build-tag:
     - docker build --pull -t $IMAGE_NAME .
     - docker push $IMAGE_NAME
   only:
-    tags
+    - tags
 

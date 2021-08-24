@@ -17,12 +17,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      # imagePullSecrets:
-      #   - name: docker-hub-zhenghengli
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       initContainers:
         - name: ingester-cnxn-checker
-          # image: zhenghengli/diffraflow:latest
-          image: 10.15.86.19:25443/diffraflow:latest
+          # image: 10.15.86.19:25443/diffraflow:latest
+          image: registry.physky.org/lizhengheng/diffraflow:latest
           command:
             - check_cnxn_addrlist.sh
             - /config/ingester_addresses.txt
@@ -36,8 +36,8 @@ spec:
               mountPath: /config
       containers:
         - name: monitor
-          # image: zhenghengli/diffraflow:latest
-          image: 10.15.86.19:25443/diffraflow:latest
+          # image: 10.15.86.19:25443/diffraflow:latest
+          image: registry.physky.org/lizhengheng/diffraflow:latest
           command:
             - taskset
             - --cpu-list

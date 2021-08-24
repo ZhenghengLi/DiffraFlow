@@ -43,9 +43,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       initContainers:
         - name: zookeeper-cnxn-checker
-          image: zhenghengli/pulsar:2.5.2
+          # image: zhenghengli/pulsar:2.5.2
+          image: registry.physky.org/lizhengheng/docker-pulsar:2.5.2
           imagePullPolicy: Always
           command:
             - check_cnxn_address.sh
@@ -58,7 +61,8 @@ spec:
             - "10.15.39.23:3181"
       containers:
         - name: pulsar-broker
-          image: zhenghengli/pulsar:2.5.2
+          # image: zhenghengli/pulsar:2.5.2
+          image: registry.physky.org/lizhengheng/docker-pulsar:2.5.2
           imagePullPolicy: Always
           args:
             - pulsar

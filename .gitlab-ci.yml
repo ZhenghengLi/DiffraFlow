@@ -5,7 +5,7 @@ default:
   tags:
     - kubernetes
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - until docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY; do sleep 1; done
 
 variables:
   DOCKER_HOST: tcp://docker:2376

@@ -14,12 +14,12 @@ spec:
       securityContext:
         runAsUser: 1017
         runAsGroup: 1010
-      # imagePullSecrets:
-      #   - name: docker-hub-zhenghengli
+      imagePullSecrets:
+        - name: gitlab-registry-lizhengheng
       containers:
         - name: generator
-          # image: zhenghengli/diffraflow:latest
-          image: 10.15.86.19:25443/diffraflow:latest
+          # image: 10.15.86.19:25443/diffraflow:latest
+          image: registry.physky.org/lizhengheng/diffraflow:latest
           command:
             - generator
             - --datdir=/input-data

@@ -162,7 +162,7 @@ void diffraflow::IngCalibrationWorker::do_calib_(const shared_ptr<IngBufferItem>
         // copy data into GPU
         cudaMemcpyAsync(element_device, element_host, element_size, cudaMemcpyHostToDevice, cuda_stream_);
         // do calib on GPU
-        Calibration::do_calib_gpu(image_data_device, calib_data_device_, cuda_stream_);
+        Calibration::do_calib_gpu(cuda_stream_, image_data_device, calib_data_device_);
 
         // // if feature extraction needs both CPU and GPU: copy calibrated data back to CPU here
         // cudaMemcpyAsync(

@@ -15,7 +15,7 @@ namespace diffraflow {
         // total number of pixels that belong to peaks (i.e. outliers)
         int peak_pixels;
 
-        MSGPACK_DEFINE_MAP(global_rms, global_mean, peak_pixels);
+        MSGPACK_DEFINE_MAP(global_rms, global_mean, peak_pixels)
 
         void clear() {
             global_mean = 0;

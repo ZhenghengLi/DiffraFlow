@@ -18,7 +18,7 @@ __global__ void calib_kernel(diffraflow::ImageDataField* image_data, diffraflow:
 }
 
 void diffraflow::Calibration::do_calib_gpu(
-    ImageDataField* image_data_device, CalibDataField* calib_data_device, cudaStream_t stream) {
+    cudaStream_t stream, ImageDataField* image_data_device, CalibDataField* calib_data_device) {
 
     // check arguments
     if (image_data_device == nullptr) return;

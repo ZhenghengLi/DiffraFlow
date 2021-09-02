@@ -33,8 +33,9 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
 
 void diffraflow::IngFeatureExtracter::extract_feature_(const shared_ptr<IngBufferItem>& item) {
     // some example code
-    image_feature_buffer_->image_feature_host(item->index)->peak_counts = 1;
-    image_feature_buffer_->image_feature_host(item->index)->global_rms = 2;
+    image_feature_buffer_->image_feature_host(item->index)->global_mean = 100;
+    image_feature_buffer_->image_feature_host(item->index)->global_rms = 20;
+    image_feature_buffer_->image_feature_host(item->index)->peak_pixels = 10;
 }
 
 int diffraflow::IngFeatureExtracter::run_() {

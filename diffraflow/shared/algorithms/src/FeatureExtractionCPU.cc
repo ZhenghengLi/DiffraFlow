@@ -1,14 +1,7 @@
 #include "FeatureExtraction.hh"
 
-// global mean
-void diffraflow::FeatureExtraction::global_mean_cpu(
-    ImageDataField* image_data_host, ImageFeature* image_feature_host, float min_energy, float max_energy) {
-    //
-    return;
-}
-
-// global rms
-void diffraflow::FeatureExtraction::global_rms_cpu(
+// global mean and rms
+void diffraflow::FeatureExtraction::global_mean_rms_cpu(
     ImageDataField* image_data_host, ImageFeature* image_feature_host, float min_energy, float max_energy) {
     //
     return;

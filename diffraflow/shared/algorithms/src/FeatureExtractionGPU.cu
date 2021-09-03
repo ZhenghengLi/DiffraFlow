@@ -59,6 +59,14 @@ __global__ void divide_init_kernel(float* dst_device, double* sum_device, int* c
     *count_device = 0;
 }
 
+__global__ void divide_root_init_kernel(float* dst_device, double* sum_device, int* count_device) {
+    if (*count_device > 0) {
+        *dst_device = sqrt(*sum_device / *count_device);
+    }
+    *sum_device = 0;
+    *count_device = 0;
+}
+
 // global mean and rms
 void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, double* sum_device, int* count_device,
     ImageDataField* image_data_device, ImageFeature* image_feature_device, float min_energy, float max_energy) {
@@ -76,7 +84,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
     // rms
     mean_square_sum_kernel<<<MOD_CNT, dim3(8, 2), 0, stream>>>(
         mean, image_data_device, sum_device, count_device, min_energy, max_energy);
-    divide_init_kernel<<<1, 1, 0, stream>>>(&image_feature_device->global_rms, sum_device, count_device);
+    divide_root_init_kernel<<<1, 1, 0, stream>>>(&image_feature_device->global_rms, sum_device, count_device);
     // wait finish
     cudaStreamSynchronize(stream);
 }

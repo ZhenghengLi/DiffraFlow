@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 #include <memory>
 #include <chrono>
 #include <cstring>
@@ -75,6 +76,8 @@ int main(int argc, char** argv) {
         return 1;
     }
     // init
+    unsigned int seed = time(NULL);
+    srandom(seed);
     for (int m = 0; m < MOD_CNT; m++) {
         image_data_host->alignment[m] = true;
         for (int h = 0; h < FRAME_H; h++) {

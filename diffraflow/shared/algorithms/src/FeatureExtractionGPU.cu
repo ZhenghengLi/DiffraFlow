@@ -1,5 +1,7 @@
 #include "FeatureExtraction.hh"
 
+// global mean and rms =============================================================================================
+
 __global__ void energy_sum_kernel(diffraflow::ImageDataField* image_data_device, double* sum_device, int* count_device,
     float min_energy, float max_energy) {
     int mod = blockIdx.x;  // module
@@ -67,7 +69,6 @@ __global__ void divide_root_init_kernel(float* dst_device, double* sum_device, i
     *count_device = 0;
 }
 
-// global mean and rms
 void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, double* sum_device, int* count_device,
     ImageDataField* image_data_device, ImageFeature* image_feature_device, float min_energy, float max_energy) {
     // init
@@ -89,7 +90,8 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
     cudaStreamSynchronize(stream);
 }
 
-// peak pixels
+// peak pixels ====================================================================================================
+
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
     ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr, float outlier_thr,
     float min_residual) {

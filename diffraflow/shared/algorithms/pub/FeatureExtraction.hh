@@ -7,6 +7,7 @@
 
 namespace diffraflow {
     namespace FeatureExtraction {
+
         // global mean and rms
         void global_mean_rms_cpu(ImageDataField* image_data_host, ImageFeature* image_feature_host,
             float min_energy = -10, float max_energy = 1000);
@@ -21,6 +22,7 @@ namespace diffraflow {
         void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
             ImageFeature* image_feature_device, float min_energy = -10, float max_energy = 1000, float inlier_thr = 2,
             float outlier_thr = 8, float min_residual = 20);
+
     } // namespace FeatureExtraction
 } // namespace diffraflow
 

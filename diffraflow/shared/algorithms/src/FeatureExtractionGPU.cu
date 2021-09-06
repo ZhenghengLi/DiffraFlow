@@ -144,7 +144,7 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
     }
     double mean_global = sum / 992.0; // 31 * 32
 
-    // (2) global rms
+    // (2) global std
     sum = 0;
     for (int h = 0; h < 31; h++) {
         for (int w = 0; w < 32; w++) {
@@ -153,10 +153,10 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
             sum += residual * residual;
         }
     }
-    double rms_global = sqrt(sum / 992.0); // 31 * 32
+    double std_global = sqrt(sum / 991.0); // 31 * 32 - 1
 
     // (3) inlier mean
-    double residual_max = rms_global * inlier_thr;
+    double residual_max = std_global * inlier_thr;
     sum = 0;
     int count = 0;
     for (int h = 0; h < 31; h++) {
@@ -170,13 +170,13 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
         }
     }
     double mean_inlier(0);
-    if (count > 0) {
+    if (count > 5) {
         mean_inlier = sum / count;
     } else {
         return;
     }
 
-    // (4) inlier rms
+    // (4) inlier std
     sum = 0;
     count = 0;
     for (int h = 0; h < 31; h++) {
@@ -190,16 +190,16 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
             }
         }
     }
-    double rms_inlier(0);
-    if (count > 0) {
-        rms_inlier = sqrt(sum / count);
+    double std_inlier(0);
+    if (count > 5) {
+        std_inlier = sqrt(sum / (count - 1));
     } else {
         return;
     }
 
     // (5) count pixels of outliers
     count = 0;
-    double residual_min = rms_inlier * outlier_thr;
+    double residual_min = std_inlier * outlier_thr;
     for (int h = 0; h < 31; h++) {
         for (int w = 0; w < 32; w++) {
             double energy = energy_cache[h + h_offset][w + w_offset];

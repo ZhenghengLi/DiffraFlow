@@ -162,7 +162,7 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
     for (int h = 0; h < 31; h++) {
         for (int w = 0; w < 32; w++) {
             double energy = energy_cache[h + h_offset][w + w_offset];
-            double residual_global = abs(energy - mean_global);
+            double residual_global = fabs(energy - mean_global);
             if (residual_global < residual_max) {
                 sum += energy;
                 count++;
@@ -182,7 +182,7 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
     for (int h = 0; h < 31; h++) {
         for (int w = 0; w < 32; w++) {
             double energy = energy_cache[h + h_offset][w + w_offset];
-            double residual_global = abs(energy - mean_global);
+            double residual_global = fabs(energy - mean_global);
             if (residual_global < residual_max) {
                 double residual_inlier = energy - mean_inlier;
                 sum += residual_inlier * residual_inlier;

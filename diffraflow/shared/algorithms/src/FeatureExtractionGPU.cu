@@ -103,20 +103,110 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
 __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device,
     diffraflow::ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr,
     float outlier_thr, float min_residual) {
-    // int mod = blockIdx.x;  // module
-    // int blk = blockIdx.y;  // ASIC block
-    // int row = threadIdx.x; // grid row
-    // int col = threadIdx.y; // grid column
+    int mod = blockIdx.x;  // module
+    int blk = blockIdx.y;  // ASIC block
+    int row = threadIdx.x; // grid row
+    int col = threadIdx.y; // grid column
 
-    // if (!image_data_device->alignment[mod]) return;
+    if (!image_data_device->alignment[mod]) return;
 
-    // __shared__ float energy[62][128];
-    // // copy energy from global memory to shared memory
-    // for (int h = row * 31; h < 31; h++) {
-    //     for (int w = col * 32; w < 32; w++) {
-    //         //
-    //     }
-    // }
+    __shared__ float energy_cache[62][128];
+
+    // (0) copy energy from global memory to shared memory
+    // 31 * 32 grid for each thread
+    for (int h = 0; h < 31; h++) {
+        int hc = h + row * 31;
+        int hg = 1 + hc + blk * 64;
+        for (int w = 0; w < 32; w++) {
+            int wc = w + col * 32;
+            int wg = wc;
+            float energy = image_data_device->pixel_data[mod][hg][wg];
+            // apply energy cut
+            if (energy < min_energy) {
+                energy = min_energy;
+            } else if (energy > max_energy) {
+                energy = max_energy;
+            }
+            energy_cache[hc][wc] = energy;
+        }
+    }
+
+    // (1) global mean
+    double sum = 0;
+    for (int h = 0; h < 31; h++) {
+        for (int w = 0; w < 32; w++) {
+            double energy = energy_cache[h + row * 31][w + col * 32];
+            sum += energy;
+        }
+    }
+    double mean_global = sum / 992.0; // 31 * 32
+
+    // (2) global rms
+    sum = 0;
+    for (int h = 0; h < 31; h++) {
+        for (int w = 0; w < 32; w++) {
+            double energy = energy_cache[h + row * 31][w + col * 32];
+            double residual = energy - mean_global;
+            sum += residual * residual;
+        }
+    }
+    double rms_global = sqrt(sum / 992.0); // 31 * 32
+
+    // (3) inlier mean
+    double residual_max = rms_global * inlier_thr;
+    sum = 0;
+    int count = 0;
+    for (int h = 0; h < 31; h++) {
+        for (int w = 0; w < 32; w++) {
+            double energy = energy_cache[h + row * 31][w + col * 32];
+            double residual_global = abs(energy - mean_global);
+            if (residual_global < residual_max) {
+                sum += energy;
+                count++;
+            }
+        }
+    }
+    double mean_inlier(0);
+    if (count > 0) {
+        mean_inlier = sum / count;
+    } else {
+        return;
+    }
+
+    // (4) inlier rms
+    sum = 0;
+    count = 0;
+    for (int h = 0; h < 31; h++) {
+        for (int w = 0; w < 32; w++) {
+            double energy = energy_cache[h + row * 31][w + col * 32];
+            double residual_global = abs(energy - mean_global);
+            if (residual_global < residual_max) {
+                double residual_inlier = energy - mean_inlier;
+                sum += residual_inlier * residual_inlier;
+                count++;
+            }
+        }
+    }
+    double rms_inlier(0);
+    if (count > 0) {
+        rms_inlier = sqrt(sum / count);
+    } else {
+        return;
+    }
+
+    // (5) count pixels of outliers
+    count = 0;
+    double residual_min = rms_inlier * outlier_thr;
+    for (int h = 0; h < 31; h++) {
+        for (int w = 0; w < 32; w++) {
+            double energy = energy_cache[h + row * 31][w + col * 32];
+            double residual = energy - mean_inlier;
+            if (residual > residual_min) {
+                count++;
+            }
+        }
+    }
+    atomicAdd(&image_feature_device->peak_pixels, count);
 }
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,

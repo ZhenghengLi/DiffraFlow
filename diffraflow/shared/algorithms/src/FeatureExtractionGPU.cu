@@ -16,10 +16,14 @@ __global__ void energy_sum_kernel(diffraflow::ImageDataField* image_data_device,
     for (int h_asic = 1; h_asic < 63; h_asic++) {
         for (int w_asic = 0; w_asic < 64; w_asic++) {
             float energy = image_data_device->pixel_data[mod][row * 64 + h_asic][col * 64 + w_asic];
-            if (energy >= min_energy && energy < max_energy) {
-                sum_local += energy;
-                count_local++;
+            // apply energy cut
+            if (energy < min_energy) {
+                energy = min_energy;
+            } else if (energy > max_energy) {
+                energy = max_energy;
             }
+            sum_local += energy;
+            count_local++;
         }
     }
 
@@ -41,11 +45,15 @@ __global__ void mean_square_sum_kernel(float mean, diffraflow::ImageDataField* i
     for (int h_asic = 1; h_asic < 63; h_asic++) {
         for (int w_asic = 0; w_asic < 64; w_asic++) {
             float energy = image_data_device->pixel_data[mod][row * 64 + h_asic][col * 64 + w_asic];
-            if (energy >= min_energy && energy < max_energy) {
-                double residual = energy - mean;
-                sum_local += residual * residual;
-                count_local++;
+            // apply energy cut
+            if (energy < min_energy) {
+                energy = min_energy;
+            } else if (energy > max_energy) {
+                energy = max_energy;
             }
+            double residual = energy - mean;
+            sum_local += residual * residual;
+            count_local++;
         }
     }
 
@@ -92,9 +100,31 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
 
 // peak pixels ====================================================================================================
 
+__global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device,
+    diffraflow::ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr,
+    float outlier_thr, float min_residual) {
+    // int mod = blockIdx.x;  // module
+    // int blk = blockIdx.y;  // ASIC block
+    // int row = threadIdx.x; // grid row
+    // int col = threadIdx.y; // grid column
+
+    // if (!image_data_device->alignment[mod]) return;
+
+    // __shared__ float energy[62][128];
+    // // copy energy from global memory to shared memory
+    // for (int h = row * 31; h < 31; h++) {
+    //     for (int w = col * 32; w < 32; w++) {
+    //         //
+    //     }
+    // }
+}
+
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
     ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr, float outlier_thr,
     float min_residual) {
-    //
-    return;
+    int peak_pixels_host = 0;
+    cudaMemcpyAsync(&image_feature_device->peak_pixels, &peak_pixels_host, sizeof(int), cudaMemcpyHostToDevice, stream);
+    peak_pixels_kernel<<<dim3(16, 8), dim3(2, 4), 0, stream>>>(
+        image_data_device, image_feature_device, min_energy, max_energy, inlier_thr, outlier_thr, min_residual);
+    cudaStreamSynchronize(stream);
 }

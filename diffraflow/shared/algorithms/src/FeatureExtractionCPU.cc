@@ -14,10 +14,14 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
             if (h_asic == 0 || h_asic == 63) continue;
             for (int w = 0; w < FRAME_W; w++) {
                 float energy = image_data_host->pixel_data[m][h][w];
-                if (energy >= min_energy && energy < max_energy) {
-                    energy_sum += energy;
-                    energy_count++;
+                // apply energy cut
+                if (energy < min_energy) {
+                    energy = min_energy;
+                } else if (energy > max_energy) {
+                    energy = max_energy;
                 }
+                energy_sum += energy;
+                energy_count++;
             }
         }
     }
@@ -33,11 +37,15 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
             if (h_asic == 0 || h_asic == 63) continue;
             for (int w = 0; w < FRAME_W; w++) {
                 float energy = image_data_host->pixel_data[m][h][w];
-                if (energy >= min_energy && energy < max_energy) {
-                    double residual = energy - image_feature_host->global_mean;
-                    residual_sum += residual * residual;
-                    residual_count++;
+                // apply energy cut
+                if (energy < min_energy) {
+                    energy = min_energy;
+                } else if (energy > max_energy) {
+                    energy = max_energy;
                 }
+                double residual = energy - image_feature_host->global_mean;
+                residual_sum += residual * residual;
+                residual_count++;
             }
         }
     }

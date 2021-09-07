@@ -102,7 +102,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
 
 __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device,
     diffraflow::ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr,
-    float outlier_thr, float min_residual) {
+    float outlier_thr, float residual_thr) {
     int mod = blockIdx.x;  // module
     int blk = blockIdx.y;  // ASIC block
     int row = threadIdx.x; // grid row
@@ -200,6 +200,9 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
     // (5) count pixels of outliers
     count = 0;
     double residual_min = std_inlier * outlier_thr;
+    if (residual_min < residual_thr) {
+        residual_min = residual_thr;
+    }
     for (int h = 0; h < 31; h++) {
         for (int w = 0; w < 32; w++) {
             double energy = energy_cache[h + h_offset][w + w_offset];
@@ -214,10 +217,10 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
     ImageFeature* image_feature_device, float min_energy, float max_energy, float inlier_thr, float outlier_thr,
-    float min_residual) {
+    float residual_thr) {
     int peak_pixels_host = 0;
     cudaMemcpyAsync(&image_feature_device->peak_pixels, &peak_pixels_host, sizeof(int), cudaMemcpyHostToDevice, stream);
     peak_pixels_kernel<<<dim3(16, 8), dim3(2, 4), 0, stream>>>(
-        image_data_device, image_feature_device, min_energy, max_energy, inlier_thr, outlier_thr, min_residual);
+        image_data_device, image_feature_device, min_energy, max_energy, inlier_thr, outlier_thr, residual_thr);
     cudaStreamSynchronize(stream);
 }

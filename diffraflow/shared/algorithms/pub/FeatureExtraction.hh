@@ -18,10 +18,10 @@ namespace diffraflow {
         // peak pixels
         void peak_pixels_MSSE_cpu(ImageDataField* image_data_host, ImageFeature* image_feature_host,
             float min_energy = -10, float max_energy = 1000, float inlier_thr = 2, float outlier_thr = 8,
-            float min_residual = 20);
+            float residual_thr = 20);
         void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
             ImageFeature* image_feature_device, float min_energy = -10, float max_energy = 1000, float inlier_thr = 2,
-            float outlier_thr = 8, float min_residual = 20);
+            float outlier_thr = 8, float residual_thr = 20);
 
     } // namespace FeatureExtraction
 } // namespace diffraflow

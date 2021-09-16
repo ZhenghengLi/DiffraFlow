@@ -106,7 +106,7 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                     if (count > 5) {
                         mean_inlier = sum / count;
                     } else {
-                        return;
+                        continue;
                     }
 
                     // (4) inlier std
@@ -127,7 +127,7 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                     if (count > 5) {
                         std_inlier = sqrt(sum / (count - 1));
                     } else {
-                        return;
+                        continue;
                     }
 
                     // (5) count pixels of outliers

@@ -212,6 +212,8 @@ __global__ void peak_pixels_kernel(diffraflow::ImageDataField* image_data_device
             }
         }
     }
+
+    // (6) accumulate global count
     atomicAdd(&image_feature_device->peak_pixels, count);
 }
 

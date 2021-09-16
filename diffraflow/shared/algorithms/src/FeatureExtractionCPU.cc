@@ -145,6 +145,8 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                             }
                         }
                     }
+
+                    // (6) accumulate global count
                     image_feature_host->peak_pixels += count;
                 }
             }

@@ -58,7 +58,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_data_host,
     ImageFeature* image_feature_host, float min_energy, float max_energy, float inlier_thr, float outlier_thr,
-    float residual_thr) {
+    float residual_thr, float energy_thr) {
     image_feature_host->peak_pixels = 0;
     for (int mod = 0; mod < MOD_CNT; mod++) {
         if (!image_data_host->alignment[mod]) continue;
@@ -140,7 +140,7 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             double residual = energy - mean_inlier;
-                            if (residual > residual_min) {
+                            if (residual > residual_min && energy > energy_thr) {
                                 count++;
                             }
                         }

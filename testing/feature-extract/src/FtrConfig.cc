@@ -20,11 +20,11 @@ using std::ifstream;
 log4cxx::LoggerPtr diffraflow::FtrConfig::logger_ = log4cxx::Logger::getLogger("FtrConfig");
 
 diffraflow::FtrConfig::FtrConfig() {
-    peak_min_energy = -100;
-    peak_max_energy = 10000;
+    peak_min_energy = -10;
+    peak_max_energy = 1000;
     peak_inlier_thr = 2;
     peak_outlier_thr = 10;
-    peak_residual_thr = 500;
+    peak_residual_thr = 50;
     peak_energy_thr = 0;
 }
 

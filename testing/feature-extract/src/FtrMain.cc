@@ -132,6 +132,9 @@ int main(int argc, char** argv) {
 
     while (image_file.next_batch()) {
         while (image_file.next_image(*image_data_host)) {
+            if (image_file.current_position() % 100 == 0) {
+                cout << image_file.current_position() << endl;
+            }
             if (use_gpu) {
                 cudaMemcpyAsync(
                     image_data_device, image_data_host, sizeof(ImageDataField), cudaMemcpyHostToDevice, stream1);

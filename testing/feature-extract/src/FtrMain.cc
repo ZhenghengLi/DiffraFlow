@@ -10,11 +10,13 @@
 #include <log4cxx/logstring.h>
 #include <cuda_runtime.h>
 
+#include "cudatools.hh"
+
 #include "FtrOptMan.hh"
 #include "FtrConfig.hh"
 #include "ImageFileHDF5R.hh"
 #include "ImageFeature.hh"
-#include "cudatools.hh"
+#include "FeatureExtraction.hh"
 
 using namespace diffraflow;
 using namespace std;
@@ -123,12 +125,37 @@ int main(int argc, char** argv) {
     }
     // cout << "create time: " << image_file.create_time() << endl;
 
+    cudaStream_t stream1;
+    cudaStreamCreateWithFlags(&stream1, cudaStreamNonBlocking);
+    cudaStream_t stream2;
+    cudaStreamCreateWithFlags(&stream2, cudaStreamNonBlocking);
+
     while (image_file.next_batch()) {
         while (image_file.next_image(*image_data_host)) {
-            //
-            cout << image_file.current_position() << endl;
+            if (use_gpu) {
+                cudaMemcpyAsync(
+                    image_data_device, image_data_host, sizeof(ImageDataField), cudaMemcpyHostToDevice, stream1);
+                // do feature extraction on GPU using multiple streams
+                cudaStreamSynchronize(stream1);
+                FeatureExtraction::peak_pixels_MSSE_gpu(stream1, image_data_device, image_feature_device,
+                    config->peak_min_energy, config->peak_max_energy, config->peak_inlier_thr, config->peak_outlier_thr,
+                    config->peak_residual_thr, config->peak_energy_thr);
+                cudaStreamSynchronize(stream1);
+                // copy feature from GPU to CPU only once
+                cudaMemcpyAsync(
+                    image_feature_host, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost, stream1);
+                cudaStreamSynchronize(stream1);
+            } else {
+                FeatureExtraction::peak_pixels_MSSE_cpu(image_data_host, image_feature_host, config->peak_min_energy,
+                    config->peak_max_energy, config->peak_inlier_thr, config->peak_outlier_thr,
+                    config->peak_residual_thr, config->peak_energy_thr);
+            }
+            *output << image_file.current_position() << ", " << image_feature_host->peak_pixels << endl;
         }
     }
+
+    cudaStreamDestroy(stream1);
+    cudaStreamDestroy(stream2);
 
     image_file.close();
 

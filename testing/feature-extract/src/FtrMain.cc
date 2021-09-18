@@ -13,6 +13,7 @@
 #include "FtrOptMan.hh"
 #include "FtrConfig.hh"
 #include "ImageFileHDF5R.hh"
+#include "ImageFeature.hh"
 #include "cudatools.hh"
 
 using namespace diffraflow;
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
     }
     config->print();
     // select gpu
+    bool use_gpu = false;
     if (option_man.gpu_index >= 0) {
         int deviceCount = 0;
         cudaGetDeviceCount(&deviceCount);
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
         }
         cudaError_t cudaerr = cudaSetDevice(option_man.gpu_index);
         if (cudaerr == cudaSuccess) {
+            use_gpu = true;
             cout << "successfully selected device " << option_man.gpu_index << endl;
             cout << cudatools::get_device_string(option_man.gpu_index) << endl;
         } else {
@@ -62,6 +65,32 @@ int main(int argc, char** argv) {
                  << endl;
             return 1;
         }
+    }
+    // allocate memory space
+    ImageDataField* image_data_host = nullptr;
+    ImageDataField* image_data_device = nullptr;
+    ImageFeature* image_feature_host = nullptr;
+    ImageFeature* image_feature_device = nullptr;
+    if (use_gpu) {
+        if (cudaMallocHost(&image_data_host, sizeof(ImageDataField)) != cudaSuccess) {
+            cerr << "cudaMallocHost failed for image_data_host." << endl;
+            return 1;
+        }
+        if (cudaMalloc(&image_data_device, sizeof(ImageDataField)) != cudaSuccess) {
+            cerr << "cudaMalloc failed for image_data_device." << endl;
+            return 1;
+        }
+        if (cudaMallocHost(&image_feature_host, sizeof(ImageFeature)) != cudaSuccess) {
+            cerr << "cudaMallocHost failed for image_feature_host." << endl;
+            return 1;
+        }
+        if (cudaMalloc(&image_feature_device, sizeof(ImageFeature)) != cudaSuccess) {
+            cerr << "cudaMalloc failed for image_feature_device." << endl;
+            return 1;
+        }
+    } else {
+        image_data_host = new ImageDataField();
+        image_feature_host = new ImageFeature();
     }
 
     // ===== process begin =======================================================================
@@ -80,9 +109,8 @@ int main(int argc, char** argv) {
         }
     }
 
-    ImageDataField image_data;
     while (image_file.next_batch()) {
-        while (image_file.next_image(image_data)) {
+        while (image_file.next_image(*image_data_host)) {
             //
             cout << image_file.current_position() << endl;
         }
@@ -98,6 +126,15 @@ int main(int argc, char** argv) {
     // clean
     delete config;
     config = nullptr;
+    if (use_gpu) {
+        cudaFreeHost(image_data_host);
+        cudaFreeHost(image_feature_host);
+        cudaFree(image_data_device);
+        cudaFree(image_feature_device);
+    } else {
+        delete image_data_host;
+        delete image_feature_host;
+    }
 
     return 0;
 }

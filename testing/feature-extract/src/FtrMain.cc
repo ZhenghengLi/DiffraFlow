@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
     ImageDataField* image_data_device = nullptr;
     ImageFeature* image_feature_host = nullptr;
     ImageFeature* image_feature_device = nullptr;
+    double* sum_device = nullptr;
+    int* count_device = nullptr;
     if (use_gpu) {
         if (cudaMallocHost(&image_data_host, sizeof(ImageDataField)) != cudaSuccess) {
             cerr << "cudaMallocHost failed for image_data_host." << endl;
@@ -86,6 +88,14 @@ int main(int argc, char** argv) {
         }
         if (cudaMalloc(&image_feature_device, sizeof(ImageFeature)) != cudaSuccess) {
             cerr << "cudaMalloc failed for image_feature_device." << endl;
+            return 1;
+        }
+        if (cudaMalloc(&sum_device, sizeof(double)) != cudaSuccess) {
+            cerr << "cudaMalloc failed for sum_device." << endl;
+            return 1;
+        }
+        if (cudaMalloc(&count_device, sizeof(int)) != cudaSuccess) {
+            cerr << "cudaMalloc failed for count_device." << endl;
             return 1;
         }
     } else {
@@ -131,6 +141,8 @@ int main(int argc, char** argv) {
         cudaFreeHost(image_feature_host);
         cudaFree(image_data_device);
         cudaFree(image_feature_device);
+        cudaFree(sum_device);
+        cudaFree(count_device);
     } else {
         delete image_data_host;
         delete image_feature_host;

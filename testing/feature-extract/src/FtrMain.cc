@@ -8,10 +8,12 @@
 #include <log4cxx/consoleappender.h>
 #include <log4cxx/logmanager.h>
 #include <log4cxx/logstring.h>
+#include <cuda_runtime.h>
 
 #include "FtrOptMan.hh"
 #include "FtrConfig.hh"
 #include "ImageFileHDF5R.hh"
+#include "cudatools.hh"
 
 using namespace diffraflow;
 using namespace std;
@@ -41,6 +43,26 @@ int main(int argc, char** argv) {
         return 1;
     }
     config->print();
+    // select gpu
+    if (option_man.gpu_index >= 0) {
+        int deviceCount = 0;
+        cudaGetDeviceCount(&deviceCount);
+        cout << "GPU device count: " << deviceCount << endl;
+        if (option_man.gpu_index >= deviceCount) {
+            cerr << "GPU device index " << option_man.gpu_index << " is out of range [0, " << deviceCount << ")"
+                 << endl;
+            return 1;
+        }
+        cudaError_t cudaerr = cudaSetDevice(option_man.gpu_index);
+        if (cudaerr == cudaSuccess) {
+            cout << "successfully selected device " << option_man.gpu_index << endl;
+            cout << cudatools::get_device_string(option_man.gpu_index) << endl;
+        } else {
+            cerr << "failed to select device " << option_man.gpu_index << " with error: " << cudaGetErrorString(cudaerr)
+                 << endl;
+            return 1;
+        }
+    }
 
     // ===== process begin =======================================================================
     ImageFileHDF5R image_file(10, false);

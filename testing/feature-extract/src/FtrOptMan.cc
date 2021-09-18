@@ -8,7 +8,7 @@ using std::endl;
 using std::left;
 using std::setw;
 
-const char diffraflow::FtrOptMan::opt_string_[] = "i:o:c:l:vh";
+const char diffraflow::FtrOptMan::opt_string_[] = "i:o:c:l:g:vh";
 
 // clang-format off
 const option diffraflow::FtrOptMan::long_opts_[] = {
@@ -16,6 +16,7 @@ const option diffraflow::FtrOptMan::long_opts_[] = {
     {"outfile", required_argument, NULL, 'o'},
     {"config",  required_argument, NULL, 'c'},
     {"logconf", required_argument, NULL, 'l'},
+    {"gpu",     no_argument,       NULL, 'g'},
     {"help",    no_argument,       NULL, 'h'},
     {"version", no_argument,       NULL, 'v'},
     {NULL,      no_argument,       NULL, 0}
@@ -26,6 +27,7 @@ diffraflow::FtrOptMan::FtrOptMan() : OptionsManager("generator") {
     data_file.clear();
     output_file.clear();
     config_file.clear();
+    use_gpu = false;
 }
 
 diffraflow::FtrOptMan::~FtrOptMan() {}
@@ -47,6 +49,9 @@ bool diffraflow::FtrOptMan::parse(int argc, char** argv) {
             break;
         case 'l':
             logconf_file = optarg;
+            break;
+        case 'g':
+            use_gpu = true;
             break;
         case 'v':
             version_flag_ = true;
@@ -83,6 +88,7 @@ void diffraflow::FtrOptMan::print_help_() {
     cout << setw(30) << "  -o, --outfile=FILE"  << setw(50) << "output file" << endl;
     cout << setw(30) << "  -c, --config=FILE"   << setw(50) << "config file" << endl;
     cout << setw(30) << "  -l, --logconf=FILE"  << setw(50) << "log configuration file" << endl;
+    cout << setw(30) << "  -g, --gpu"           << setw(50) << "use gpu" << endl;
     cout << setw(30) << "  -v, --version"       << setw(50) << "print version and copyright" << endl;
     cout << setw(30) << "  -h, --help"          << setw(50) << "print this help" << endl;
     cout << endl;

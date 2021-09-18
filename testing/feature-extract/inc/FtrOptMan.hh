@@ -12,6 +12,7 @@ namespace diffraflow {
         string output_file;  // -o, --outfile=FILE
         string config_file;  // -c, --config=FILE
         string logconf_file; // -l, --logconf=FILE
+        bool use_gpu;        // -g, --gpu
 
     public:
         FtrOptMan();

@@ -11,6 +11,7 @@
 
 #include "FtrOptMan.hh"
 #include "FtrConfig.hh"
+#include "ImageFileHDF5R.hh"
 
 using namespace diffraflow;
 using namespace std;
@@ -36,12 +37,37 @@ int main(int argc, char** argv) {
     // parse configuration file
     FtrConfig* config = new FtrConfig();
     if (!option_man.config_file.empty() && !config->load(option_man.config_file.c_str())) {
-        cout << "Failed to load configuration file: " << option_man.config_file << endl;
+        cerr << "Failed to load configuration file: " << option_man.config_file << endl;
         return 1;
     }
     config->print();
 
     // ===== process begin =======================================================================
+    ImageFileHDF5R image_file(10, false);
+    if (!image_file.open(option_man.data_file.c_str())) {
+        cerr << "Failed to open image data file: " << option_man.data_file << endl;
+        return 1;
+    }
+    ofstream outfile;
+    if (!option_man.output_file.empty()) {
+        outfile.open(option_man.output_file.c_str());
+        if (!outfile.is_open()) {
+            cerr << "Failed to open output file: " << option_man.output_file << endl;
+            return 1;
+        }
+    }
+
+    ImageDataField image_data;
+    while (image_file.next_batch()) {
+        while (image_file.next_image(image_data)) {
+            //
+        }
+    }
+
+    if (outfile.is_open()) {
+        outfile.close();
+    }
+    image_file.close();
 
     // ===== process end =========================================================================
 

@@ -20,6 +20,7 @@ diffraflow::ImageFileHDF5R::ImageFileHDF5R(size_t buffer_size, bool swmr) {
 }
 
 diffraflow::ImageFileHDF5R::~ImageFileHDF5R() {
+    close();
     delete[] image_buffer_;
     image_buffer_ = nullptr;
 }

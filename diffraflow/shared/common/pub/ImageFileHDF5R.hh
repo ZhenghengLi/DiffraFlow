@@ -13,7 +13,7 @@ using std::string;
 namespace diffraflow {
     class ImageFileHDF5R {
     public:
-        ImageFileHDF5R(size_t buffer_size, bool swmr = true);
+        explicit ImageFileHDF5R(size_t buffer_size, bool swmr = false);
         ~ImageFileHDF5R();
 
         bool open(const char* filename);

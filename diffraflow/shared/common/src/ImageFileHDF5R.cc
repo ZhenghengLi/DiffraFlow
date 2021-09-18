@@ -140,6 +140,8 @@ bool diffraflow::ImageFileHDF5R::next_image(ImageDataField& imgdat_st) {
     }
 }
 
+size_t diffraflow::ImageFileHDF5R::current_position() { return imgdat_dset_pos_ - buffer_limit_ + buffer_pos_ - 1; }
+
 size_t diffraflow::ImageFileHDF5R::image_dset_size() {
 
     lock_guard<mutex> lg(file_op_mtx_);

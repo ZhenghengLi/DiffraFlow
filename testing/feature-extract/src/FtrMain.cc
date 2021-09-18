@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
         cerr << "Failed to open image data file: " << option_man.data_file << endl;
         return 1;
     }
+    // cout << "create time: " << image_file.create_time() << endl;
     ofstream outfile;
     if (!option_man.output_file.empty()) {
         outfile.open(option_man.output_file.c_str());
@@ -61,6 +62,7 @@ int main(int argc, char** argv) {
     while (image_file.next_batch()) {
         while (image_file.next_image(image_data)) {
             //
+            cout << image_file.current_position() << endl;
         }
     }
 

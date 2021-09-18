@@ -21,6 +21,7 @@ namespace diffraflow {
         bool next_batch();
         bool next_image(ImageDataField& imgdat_st);
         size_t image_dset_size();
+        size_t current_position();
         string create_time();
 
     private:

@@ -23,8 +23,8 @@ diffraflow::FtrConfig::FtrConfig() {
     peak_min_energy = -100;
     peak_max_energy = 10000;
     peak_inlier_thr = 2;
-    peak_outlier_thr = 8;
-    peak_residual_thr = 200;
+    peak_outlier_thr = 10;
+    peak_residual_thr = 500;
     peak_energy_thr = 0;
 }
 

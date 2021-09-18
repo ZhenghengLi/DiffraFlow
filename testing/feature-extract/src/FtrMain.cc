@@ -102,6 +102,18 @@ int main(int argc, char** argv) {
         image_data_host = new ImageDataField();
         image_feature_host = new ImageFeature();
     }
+    // open output file
+    ostream* output = &cout;
+    ofstream* outfile = nullptr;
+    if (!option_man.output_file.empty()) {
+        outfile = new ofstream(option_man.output_file);
+        if (outfile->is_open()) {
+            output = outfile;
+        } else {
+            cerr << "Failed to open output file: " << option_man.output_file << endl;
+            return 1;
+        }
+    }
 
     // ===== process begin =======================================================================
     ImageFileHDF5R image_file(10, false);
@@ -110,14 +122,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     // cout << "create time: " << image_file.create_time() << endl;
-    ofstream outfile;
-    if (!option_man.output_file.empty()) {
-        outfile.open(option_man.output_file.c_str());
-        if (!outfile.is_open()) {
-            cerr << "Failed to open output file: " << option_man.output_file << endl;
-            return 1;
-        }
-    }
 
     while (image_file.next_batch()) {
         while (image_file.next_image(*image_data_host)) {
@@ -126,14 +130,15 @@ int main(int argc, char** argv) {
         }
     }
 
-    if (outfile.is_open()) {
-        outfile.close();
-    }
     image_file.close();
 
     // ===== process end =========================================================================
 
     // clean
+    if (outfile != nullptr) {
+        outfile->close();
+        delete outfile;
+    }
     delete config;
     config = nullptr;
     if (use_gpu) {

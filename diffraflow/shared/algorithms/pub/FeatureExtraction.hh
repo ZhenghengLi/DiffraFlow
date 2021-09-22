@@ -27,9 +27,9 @@ namespace diffraflow {
 
         // peak pixels
         void peak_pixels_MSSE_cpu(
-            ImageFeature* image_feature_host, ImageDataField* image_data_host, PeakPixelsParams params);
+            ImageFeature* image_feature_host, ImageDataField* image_data_host, const PeakPixelsParams& params);
         void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageFeature* image_feature_device,
-            ImageDataField* image_data_device, PeakPixelsParams params);
+            ImageDataField* image_data_device, const PeakPixelsParams& params);
 
     } // namespace FeatureExtraction
 } // namespace diffraflow

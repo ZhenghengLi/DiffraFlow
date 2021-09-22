@@ -57,7 +57,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
 // peak pixels =====================================================================================================
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(
-    ImageFeature* image_feature_host, ImageDataField* image_data_host, PeakPixelsParams params) {
+    ImageFeature* image_feature_host, ImageDataField* image_data_host, const PeakPixelsParams& params) {
     image_feature_host->peak_pixels = 0;
     for (int mod = 0; mod < MOD_CNT; mod++) {
         if (!image_data_host->alignment[mod]) continue;

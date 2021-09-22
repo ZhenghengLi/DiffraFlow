@@ -142,15 +142,20 @@ int main(int argc, char** argv) {
                 cudaStreamSynchronize(stream1);
                 FeatureExtraction::peak_pixels_MSSE_gpu(
                     stream1, image_feature_device, image_data_device, config->peak_msse_params);
-                cudaStreamSynchronize(stream1);
+                FeatureExtraction::global_mean_rms_gpu(stream2, sum_device, count_device, image_feature_device,
+                    image_data_device, config->mean_min_energy, config->mean_max_energy);
+                cudaStreamSynchronize(stream2);
                 // copy feature from GPU to CPU only once
                 cudaMemcpyAsync(
                     image_feature_host, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost, stream1);
                 cudaStreamSynchronize(stream1);
             } else {
                 FeatureExtraction::peak_pixels_MSSE_cpu(image_feature_host, image_data_host, config->peak_msse_params);
+                FeatureExtraction::global_mean_rms_cpu(
+                    image_feature_host, image_data_host, config->mean_min_energy, config->mean_max_energy);
             }
-            *output << image_file.current_position() << ", " << image_feature_host->peak_pixels << endl;
+            *output << image_file.current_position() << ", " << image_feature_host->peak_pixels << ", "
+                    << image_feature_host->global_mean << ", " << image_feature_host->global_rms << endl;
         }
     }
 

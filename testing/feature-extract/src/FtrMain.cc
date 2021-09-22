@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     cudaStream_t stream2;
     cudaStreamCreateWithFlags(&stream2, cudaStreamNonBlocking);
 
-    FeatureExtraction::PeakPixelParams peak_pixel_params{config->peak_min_energy, config->peak_max_energy,
+    FeatureExtraction::PeakPixelsParams peak_pixel_params{config->peak_min_energy, config->peak_max_energy,
         config->peak_inlier_thr, config->peak_outlier_thr, config->peak_residual_thr, config->peak_energy_thr};
 
     while (image_file.next_batch()) {

@@ -78,7 +78,7 @@ __global__ void divide_root_init_kernel(float* dst_device, double* sum_device, i
 }
 
 void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, double* sum_device, int* count_device,
-    ImageDataField* image_data_device, ImageFeature* image_feature_device, float min_energy, float max_energy) {
+    ImageFeature* image_feature_device, ImageDataField* image_data_device, float min_energy, float max_energy) {
     // init
     double sum_host = 0;
     cudaMemcpyAsync(sum_device, &sum_host, sizeof(double), cudaMemcpyHostToDevice, stream);
@@ -101,7 +101,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
 // peak pixels ====================================================================================================
 
 __global__ void peak_pixels_kernel(diffraflow::ImageFeature* image_feature_device,
-    diffraflow::ImageDataField* image_data_device, diffraflow::FeatureExtraction::PeakPixelParams params) {
+    diffraflow::ImageDataField* image_data_device, diffraflow::FeatureExtraction::PeakPixelsParams params) {
     int mod = blockIdx.x;  // module
     int blk = blockIdx.y;  // ASIC block
     int row = threadIdx.x; // grid row
@@ -217,7 +217,7 @@ __global__ void peak_pixels_kernel(diffraflow::ImageFeature* image_feature_devic
 }
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageFeature* image_feature_device,
-    ImageDataField* image_data_device, PeakPixelParams params) {
+    ImageDataField* image_data_device, PeakPixelsParams params) {
     int peak_pixels_host = 0;
     cudaMemcpyAsync(&image_feature_device->peak_pixels, &peak_pixels_host, sizeof(int), cudaMemcpyHostToDevice, stream);
     peak_pixels_kernel<<<dim3(16, 8), dim3(2, 4), 0, stream>>>(image_feature_device, image_data_device, params);

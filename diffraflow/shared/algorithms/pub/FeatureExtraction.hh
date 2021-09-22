@@ -16,7 +16,7 @@ namespace diffraflow {
             const float max_energy = 1000);
 
         // peak pixels parameter
-        struct PeakPixelsParams {
+        struct PeakMsseParams {
             float min_energy;
             float max_energy;
             float inlier_thr;
@@ -27,9 +27,9 @@ namespace diffraflow {
 
         // peak pixels
         void peak_pixels_MSSE_cpu(
-            ImageFeature* image_feature_host, const ImageDataField* image_data_host, const PeakPixelsParams& params);
+            ImageFeature* image_feature_host, const ImageDataField* image_data_host, const PeakMsseParams& params);
         void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageFeature* image_feature_device,
-            const ImageDataField* image_data_device, const PeakPixelsParams& params);
+            const ImageDataField* image_data_device, const PeakMsseParams& params);
 
     } // namespace FeatureExtraction
 } // namespace diffraflow

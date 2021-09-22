@@ -130,9 +130,6 @@ int main(int argc, char** argv) {
     cudaStream_t stream2;
     cudaStreamCreateWithFlags(&stream2, cudaStreamNonBlocking);
 
-    FeatureExtraction::PeakPixelsParams peak_pixel_params{config->peak_min_energy, config->peak_max_energy,
-        config->peak_inlier_thr, config->peak_outlier_thr, config->peak_residual_thr, config->peak_energy_thr};
-
     while (image_file.next_batch()) {
         while (image_file.next_image(*image_data_host)) {
             if (image_file.current_position() % 100 == 0) {
@@ -144,14 +141,14 @@ int main(int argc, char** argv) {
                 // do feature extraction on GPU using multiple streams
                 cudaStreamSynchronize(stream1);
                 FeatureExtraction::peak_pixels_MSSE_gpu(
-                    stream1, image_feature_device, image_data_device, peak_pixel_params);
+                    stream1, image_feature_device, image_data_device, config->peak_msse_params);
                 cudaStreamSynchronize(stream1);
                 // copy feature from GPU to CPU only once
                 cudaMemcpyAsync(
                     image_feature_host, image_feature_device, sizeof(ImageFeature), cudaMemcpyDeviceToHost, stream1);
                 cudaStreamSynchronize(stream1);
             } else {
-                FeatureExtraction::peak_pixels_MSSE_cpu(image_feature_host, image_data_host, peak_pixel_params);
+                FeatureExtraction::peak_pixels_MSSE_cpu(image_feature_host, image_data_host, config->peak_msse_params);
             }
             *output << image_file.current_position() << ", " << image_feature_host->peak_pixels << endl;
         }

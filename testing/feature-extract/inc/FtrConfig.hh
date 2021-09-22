@@ -6,6 +6,8 @@
 #include <string>
 #include <map>
 
+#include "FeatureExtraction.hh"
+
 using std::string;
 using std::map;
 
@@ -19,12 +21,10 @@ namespace diffraflow {
         void print() override;
 
     public:
-        float peak_min_energy;
-        float peak_max_energy;
-        float peak_inlier_thr;
-        float peak_outlier_thr;
-        float peak_residual_thr;
-        float peak_energy_thr;
+        FeatureExtraction::PeakMsseParams peak_msse_params;
+
+        float mean_min_energy;
+        float mean_max_energy;
 
     private:
         static log4cxx::LoggerPtr logger_;

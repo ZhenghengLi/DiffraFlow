@@ -56,9 +56,8 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
 
 // peak pixels =====================================================================================================
 
-void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_data_host,
-    ImageFeature* image_feature_host, float min_energy, float max_energy, float inlier_thr, float outlier_thr,
-    float residual_thr, float energy_thr) {
+void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(
+    ImageFeature* image_feature_host, ImageDataField* image_data_host, PeakPixelParams params) {
     image_feature_host->peak_pixels = 0;
     for (int mod = 0; mod < MOD_CNT; mod++) {
         if (!image_data_host->alignment[mod]) continue;
@@ -73,10 +72,10 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             // apply energy cut
-                            if (energy < min_energy) {
-                                energy = min_energy;
-                            } else if (energy > max_energy) {
-                                energy = max_energy;
+                            if (energy < params.min_energy) {
+                                energy = params.min_energy;
+                            } else if (energy > params.max_energy) {
+                                energy = params.max_energy;
                             }
                             sum += energy;
                         }
@@ -89,10 +88,10 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             // apply energy cut
-                            if (energy < min_energy) {
-                                energy = min_energy;
-                            } else if (energy > max_energy) {
-                                energy = max_energy;
+                            if (energy < params.min_energy) {
+                                energy = params.min_energy;
+                            } else if (energy > params.max_energy) {
+                                energy = params.max_energy;
                             }
                             double residual = energy - mean_global;
                             sum += residual * residual;
@@ -101,17 +100,17 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                     double std_global = sqrt(sum / 991.0); // 31 * 32 - 1
 
                     // (3) inlier mean
-                    double residual_max = std_global * inlier_thr;
+                    double residual_max = std_global * params.inlier_thr;
                     sum = 0;
                     int count = 0;
                     for (int h = 0; h < 31; h++) {
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             // apply energy cut
-                            if (energy < min_energy) {
-                                energy = min_energy;
-                            } else if (energy > max_energy) {
-                                energy = max_energy;
+                            if (energy < params.min_energy) {
+                                energy = params.min_energy;
+                            } else if (energy > params.max_energy) {
+                                energy = params.max_energy;
                             }
                             double residual_global = fabs(energy - mean_global);
                             if (residual_global < residual_max) {
@@ -134,10 +133,10 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             // apply energy cut
-                            if (energy < min_energy) {
-                                energy = min_energy;
-                            } else if (energy > max_energy) {
-                                energy = max_energy;
+                            if (energy < params.min_energy) {
+                                energy = params.min_energy;
+                            } else if (energy > params.max_energy) {
+                                energy = params.max_energy;
                             }
                             double residual_global = fabs(energy - mean_global);
                             if (residual_global < residual_max) {
@@ -156,21 +155,21 @@ void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(ImageDataField* image_d
 
                     // (5) count pixels of outliers
                     count = 0;
-                    double residual_min = std_inlier * outlier_thr;
-                    if (residual_min < residual_thr) {
-                        residual_min = residual_thr;
+                    double residual_min = std_inlier * params.outlier_thr;
+                    if (residual_min < params.residual_thr) {
+                        residual_min = params.residual_thr;
                     }
                     for (int h = 0; h < 31; h++) {
                         for (int w = 0; w < 32; w++) {
                             double energy = image_data_host->pixel_data[mod][1 + h + h_offset + blk * 64][w + w_offset];
                             // apply energy cut
-                            if (energy < min_energy) {
-                                energy = min_energy;
-                            } else if (energy > max_energy) {
-                                energy = max_energy;
+                            if (energy < params.min_energy) {
+                                energy = params.min_energy;
+                            } else if (energy > params.max_energy) {
+                                energy = params.max_energy;
                             }
                             double residual = energy - mean_inlier;
-                            if (residual > residual_min && energy > energy_thr) {
+                            if (residual > residual_min && energy > params.energy_thr) {
                                 count++;
                             }
                         }

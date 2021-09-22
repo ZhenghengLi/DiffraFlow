@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
         duration<double, micro> start_time = system_clock::now().time_since_epoch();
 
         for (int r = 0; r < repeatNum; r++) {
-            FeatureExtraction::peak_pixels_MSSE_cpu(image_data_host, image_feature_host, -10, 2000, 1.0, 2.0, 10);
+            FeatureExtraction::peak_pixels_MSSE_cpu(image_feature_host, image_data_host, {-10, 2000, 1.0, 2.0, 10, 0});
         }
 
         duration<double, micro> finish_time = system_clock::now().time_since_epoch();
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
 
     for (int r = 0; r < repeatNum; r++) {
         FeatureExtraction::peak_pixels_MSSE_gpu(
-            stream, image_data_device, image_feature_device, -10, 2000, 1.0, 2.0, 10);
+            stream, image_feature_device, image_data_device, {-10, 2000, 1.0, 2.0, 10, 0});
         cudaStreamSynchronize(stream);
     }
 

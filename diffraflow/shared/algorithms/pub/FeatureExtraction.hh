@@ -15,13 +15,21 @@ namespace diffraflow {
             ImageDataField* image_data_device, ImageFeature* image_feature_device, float min_energy = -10,
             float max_energy = 1000);
 
+        // peak pixels parameter
+        struct PeakPixelParams {
+            float min_energy;
+            float max_energy;
+            float inlier_thr;
+            float outlier_thr;
+            float residual_thr;
+            float energy_thr;
+        };
+
         // peak pixels
-        void peak_pixels_MSSE_cpu(ImageDataField* image_data_host, ImageFeature* image_feature_host,
-            float min_energy = -10, float max_energy = 1000, float inlier_thr = 2, float outlier_thr = 8,
-            float residual_thr = 20, float energy_thr = 0);
-        void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageDataField* image_data_device,
-            ImageFeature* image_feature_device, float min_energy = -10, float max_energy = 1000, float inlier_thr = 2,
-            float outlier_thr = 8, float residual_thr = 20, float energy_thr = 0);
+        void peak_pixels_MSSE_cpu(
+            ImageFeature* image_feature_host, ImageDataField* image_data_host, PeakPixelParams params);
+        void peak_pixels_MSSE_gpu(cudaStream_t stream, ImageFeature* image_feature_device,
+            ImageDataField* image_data_device, PeakPixelParams params);
 
     } // namespace FeatureExtraction
 } // namespace diffraflow

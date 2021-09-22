@@ -3,8 +3,8 @@
 
 // global mean and rms =============================================================================================
 
-void diffraflow::FeatureExtraction::global_mean_rms_cpu(
-    ImageFeature* image_feature_host, ImageDataField* image_data_host, float min_energy, float max_energy) {
+void diffraflow::FeatureExtraction::global_mean_rms_cpu(ImageFeature* image_feature_host,
+    const ImageDataField* image_data_host, const float min_energy, const float max_energy) {
     double energy_sum = 0;
     int energy_count = 0;
     for (int m = 0; m < MOD_CNT; m++) {
@@ -57,7 +57,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_cpu(
 // peak pixels =====================================================================================================
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_cpu(
-    ImageFeature* image_feature_host, ImageDataField* image_data_host, const PeakPixelsParams& params) {
+    ImageFeature* image_feature_host, const ImageDataField* image_data_host, const PeakPixelsParams& params) {
     image_feature_host->peak_pixels = 0;
     for (int mod = 0; mod < MOD_CNT; mod++) {
         if (!image_data_host->alignment[mod]) continue;

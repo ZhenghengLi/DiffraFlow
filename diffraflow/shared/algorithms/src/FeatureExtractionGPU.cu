@@ -2,8 +2,8 @@
 
 // global mean and rms =============================================================================================
 
-__global__ void energy_sum_kernel(diffraflow::ImageDataField* image_data_device, double* sum_device, int* count_device,
-    float min_energy, float max_energy) {
+__global__ void energy_sum_kernel(double* sum_device, int* count_device,
+    const diffraflow::ImageDataField* image_data_device, const float min_energy, const float max_energy) {
     int mod = blockIdx.x;  // module
     int row = threadIdx.x; // ASIC row
     int col = threadIdx.y; // ASIC column
@@ -31,8 +31,8 @@ __global__ void energy_sum_kernel(diffraflow::ImageDataField* image_data_device,
     atomicAdd(count_device, count_local);
 }
 
-__global__ void mean_square_sum_kernel(float mean, diffraflow::ImageDataField* image_data_device, double* sum_device,
-    int* count_device, float min_energy, float max_energy) {
+__global__ void mean_square_sum_kernel(double* sum_device, int* count_device, const float mean,
+    const diffraflow::ImageDataField* image_data_device, const float min_energy, const float max_energy) {
     int mod = blockIdx.x;  // module
     int row = threadIdx.x; // ASIC row
     int col = threadIdx.y; // ASIC column
@@ -78,7 +78,8 @@ __global__ void divide_root_init_kernel(float* dst_device, double* sum_device, i
 }
 
 void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, double* sum_device, int* count_device,
-    ImageFeature* image_feature_device, ImageDataField* image_data_device, float min_energy, float max_energy) {
+    ImageFeature* image_feature_device, const ImageDataField* image_data_device, const float min_energy,
+    const float max_energy) {
     // init
     double sum_host = 0;
     cudaMemcpyAsync(sum_device, &sum_host, sizeof(double), cudaMemcpyHostToDevice, stream);
@@ -86,13 +87,13 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
     cudaMemcpyAsync(count_device, &count_host, sizeof(int), cudaMemcpyHostToDevice, stream);
     // mean
     energy_sum_kernel<<<MOD_CNT, dim3(8, 2), 0, stream>>>(
-        image_data_device, sum_device, count_device, min_energy, max_energy);
+        sum_device, count_device, image_data_device, min_energy, max_energy);
     divide_init_kernel<<<1, 1, 0, stream>>>(&image_feature_device->global_mean, sum_device, count_device);
     float mean = 0;
     cudaMemcpyAsync(&mean, &image_feature_device->global_mean, sizeof(float), cudaMemcpyDeviceToHost, stream);
     // rms
     mean_square_sum_kernel<<<MOD_CNT, dim3(8, 2), 0, stream>>>(
-        mean, image_data_device, sum_device, count_device, min_energy, max_energy);
+        sum_device, count_device, mean, image_data_device, min_energy, max_energy);
     divide_root_init_kernel<<<1, 1, 0, stream>>>(&image_feature_device->global_rms, sum_device, count_device);
     // wait finish
     cudaStreamSynchronize(stream);
@@ -101,7 +102,7 @@ void diffraflow::FeatureExtraction::global_mean_rms_gpu(cudaStream_t stream, dou
 // peak pixels ====================================================================================================
 
 __global__ void peak_pixels_kernel(diffraflow::ImageFeature* image_feature_device,
-    diffraflow::ImageDataField* image_data_device, const diffraflow::FeatureExtraction::PeakPixelsParams params) {
+    const diffraflow::ImageDataField* image_data_device, const diffraflow::FeatureExtraction::PeakPixelsParams params) {
     int mod = blockIdx.x;  // module
     int blk = blockIdx.y;  // ASIC block
     int row = threadIdx.x; // grid row
@@ -217,7 +218,7 @@ __global__ void peak_pixels_kernel(diffraflow::ImageFeature* image_feature_devic
 }
 
 void diffraflow::FeatureExtraction::peak_pixels_MSSE_gpu(cudaStream_t stream, ImageFeature* image_feature_device,
-    ImageDataField* image_data_device, const PeakPixelsParams& params) {
+    const ImageDataField* image_data_device, const PeakPixelsParams& params) {
     int peak_pixels_host = 0;
     cudaMemcpyAsync(&image_feature_device->peak_pixels, &peak_pixels_host, sizeof(int), cudaMemcpyHostToDevice, stream);
     peak_pixels_kernel<<<dim3(16, 8), dim3(2, 4), 0, stream>>>(image_feature_device, image_data_device, params);

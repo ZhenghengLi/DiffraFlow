@@ -50,14 +50,24 @@ diffraflow::IngConfig::IngConfig() {
 
     zookeeper_setting_ready_flag_ = false;
 
+    metrics_pulsar_report_period = 1000;
+    metrics_http_port = -1;
+
     // initial values of dynamic configurations
     dy_run_number_ = 0;
     dy_param_int_ = 20;
     dy_param_double_ = 100;
     dy_param_string_ = "xfel";
 
-    metrics_pulsar_report_period = 1000;
-    metrics_http_port = -1;
+    dy_peak_msse_min_energy_ = -10;
+    dy_peak_msse_max_energy_ = 1000;
+    dy_peak_msse_inlier_thr_ = 2;
+    dy_peak_msse_outlier_thr_ = 10;
+    dy_peak_msse_residual_thr_ = 50;
+    dy_peak_msse_energy_thr_ = 0;
+
+    dy_mean_rms_min_energy_ = -10;
+    dy_mean_rms_max_energy_ = 1000;
 }
 
 diffraflow::IngConfig::~IngConfig() {}
@@ -305,6 +315,15 @@ json::value diffraflow::IngConfig::collect_metrics() {
 
 bool diffraflow::IngConfig::zookeeper_setting_is_ready() { return zookeeper_setting_ready_flag_; }
 
+bool diffraflow::IngConfig::metrics_pulsar_params_are_set() {
+    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
+            !metrics_pulsar_message_key.empty());
+}
+
+bool diffraflow::IngConfig::metrics_http_params_are_set() {
+    return (!metrics_http_host.empty() && metrics_http_port > 0);
+}
+
 void diffraflow::IngConfig::print() {
     // with all locks
     lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
@@ -350,12 +369,23 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 
     // with all locks
     lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
+    lock_guard<mutex> dy_peak_msse_params_lg(dy_peak_msse_params_mtx_);
 
     // values before commit
     int tmp_dy_run_number = dy_run_number_.load();
     int tmp_dy_param_int = dy_param_int_.load();
     double tmp_dy_param_double = dy_param_double_.load();
     string tmp_dy_param_string = dy_param_string_;
+
+    float tmp_dy_peak_msse_min_energy = dy_peak_msse_min_energy_;
+    float tmp_dy_peak_msse_max_energy = dy_peak_msse_max_energy_;
+    float tmp_dy_peak_msse_inlier_thr = dy_peak_msse_inlier_thr_;
+    float tmp_dy_peak_msse_outlier_thr = dy_peak_msse_outlier_thr_;
+    float tmp_dy_peak_msse_residual_thr = dy_peak_msse_residual_thr_;
+    float tmp_dy_peak_msse_energy_thr = dy_peak_msse_energy_thr_;
+
+    float tmp_dy_mean_rms_min_energy = dy_mean_rms_min_energy_;
+    float tmp_dy_mean_rms_max_energy = dy_mean_rms_max_energy_;
 
     // convert
     for (map<string, string>::const_iterator iter = conf_map.begin(); iter != conf_map.end(); ++iter) {
@@ -369,26 +399,72 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
             tmp_dy_param_double = atof(value.c_str());
         } else if (key == "dy_param_string") {
             tmp_dy_param_string = value;
+        } else if (key == "dy_peak_msse_min_energy") {
+            tmp_dy_peak_msse_min_energy = atof(value.c_str());
+        } else if (key == "dy_peak_msse_max_energy") {
+            tmp_dy_peak_msse_max_energy = atof(value.c_str());
+        } else if (key == "dy_peak_msse_inlier_thr") {
+            tmp_dy_peak_msse_inlier_thr = atof(value.c_str());
+        } else if (key == "dy_peak_msse_outlier_thr") {
+            tmp_dy_peak_msse_outlier_thr = atof(value.c_str());
+        } else if (key == "dy_peak_msse_residual_thr") {
+            tmp_dy_peak_msse_residual_thr = atof(value.c_str());
+        } else if (key == "dy_peak_msse_energy_thr") {
+            tmp_dy_peak_msse_energy_thr = atof(value.c_str());
+        } else if (key == "dy_mean_rms_min_energy") {
+            tmp_dy_mean_rms_min_energy = atof(value.c_str());
+        } else if (key == "dy_mean_rms_max_energy") {
+            tmp_dy_mean_rms_max_energy = atof(value.c_str());
         }
     }
 
     // validation check
     bool invalid_flag = false;
     if (tmp_dy_param_int < 10) {
-        cout << "invalid configuration: dy_param_int(" << tmp_dy_param_int << ") is out of range [10, inf)." << endl;
+        LOG4CXX_WARN(
+            logger_, "invalid configuration: dy_param_int(" << tmp_dy_param_int << ") is out of range [10, inf).");
         invalid_flag = true;
     }
     if (tmp_dy_param_double > 1000) {
-        cout << "invalid configuration: dy_param_double(" << tmp_dy_param_double << ") is out of range (-inf, 1000]."
-             << endl;
+        LOG4CXX_WARN(logger_,
+            "invalid configuration: dy_param_double(" << tmp_dy_param_double << ") is out of range (-inf, 1000].");
         invalid_flag = true;
     }
     if (tmp_dy_param_string.length() < 2) {
-        cout << "invalid configuration: dy_param_string(" << tmp_dy_param_string << ") is too short." << endl;
+        LOG4CXX_WARN(logger_, "invalid configuration: dy_param_string(" << tmp_dy_param_string << ") is too short.");
         invalid_flag = true;
     }
     if (tmp_dy_run_number < 0) {
-        cout << "invalid configuration: dy_run_number(" << tmp_dy_run_number << ") is less than zero." << endl;
+        // cppcheck-suppress shiftNegative
+        LOG4CXX_WARN(logger_, "invalid configuration: dy_run_number(" << tmp_dy_run_number << ") is less than zero.");
+        invalid_flag = true;
+    }
+    if (tmp_dy_peak_msse_min_energy >= tmp_dy_peak_msse_max_energy) {
+        LOG4CXX_WARN(logger_, "invalid configuration: dy_peak_msse_min_energy(" << tmp_dy_peak_msse_min_energy
+                                                                                << ") >= dy_peak_msse_max_energy("
+                                                                                << tmp_dy_peak_msse_max_energy << ").");
+        invalid_flag = true;
+    }
+    if (tmp_dy_peak_msse_inlier_thr >= tmp_dy_peak_msse_outlier_thr) {
+        LOG4CXX_WARN(logger_, "invalid configuration: dy_peak_msse_inlier_thr("
+                                  << tmp_dy_peak_msse_inlier_thr << ") >= dy_peak_msse_outlier_thr("
+                                  << tmp_dy_peak_msse_outlier_thr << ").");
+        invalid_flag = true;
+    }
+    if (tmp_dy_peak_msse_inlier_thr <= 0) {
+        LOG4CXX_WARN(
+            logger_, "invalid configuration: dy_peak_msse_inlier_thr(" << tmp_dy_peak_msse_inlier_thr << ") <= 0.");
+        invalid_flag = true;
+    }
+    if (tmp_dy_peak_msse_outlier_thr <= 0) {
+        LOG4CXX_WARN(
+            logger_, "invalid configuration: dy_peak_msse_outlier_thr(" << tmp_dy_peak_msse_outlier_thr << ") <= 0.");
+        invalid_flag = true;
+    }
+    if (tmp_dy_mean_rms_min_energy >= tmp_dy_mean_rms_max_energy) {
+        LOG4CXX_WARN(logger_, "invalid configuration: dy_mean_rms_min_energy(" << tmp_dy_mean_rms_min_energy
+                                                                               << ") >= dy_mean_rms_max_energy("
+                                                                               << tmp_dy_mean_rms_max_energy << ").");
         invalid_flag = true;
     }
 
@@ -398,24 +474,64 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 
     // commit change
     if (dy_param_int_ != tmp_dy_param_int) {
-        cout << "configuration changed: dy_param_int [ " << dy_param_int_ << " -> " << tmp_dy_param_int << " ]."
-             << endl;
+        LOG4CXX_WARN(
+            logger_, "configuration changed: dy_param_int [ " << dy_param_int_ << " -> " << tmp_dy_param_int << " ].");
         dy_param_int_ = tmp_dy_param_int;
     }
     if (dy_param_double_ != tmp_dy_param_double) {
-        cout << "configuration changed: dy_param_double [ " << dy_param_double_ << " -> " << tmp_dy_param_double
-             << " ]." << endl;
+        LOG4CXX_WARN(logger_,
+            "configuration changed: dy_param_double [ " << dy_param_double_ << " -> " << tmp_dy_param_double << " ].");
         dy_param_double_ = tmp_dy_param_double;
     }
     if (dy_param_string_ != tmp_dy_param_string) {
-        cout << "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string
-             << " ]." << endl;
+        LOG4CXX_WARN(logger_,
+            "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string << " ].");
         dy_param_string_ = tmp_dy_param_string;
     }
     if (dy_run_number_ != tmp_dy_run_number) {
-        cout << "configuration changed: dy_run_number [ " << dy_run_number_ << " -> " << tmp_dy_run_number << " ]."
-             << endl;
+        LOG4CXX_WARN(logger_,
+            "configuration changed: dy_run_number [ " << dy_run_number_ << " -> " << tmp_dy_run_number << " ].");
         dy_run_number_ = tmp_dy_run_number;
+    }
+    if (dy_peak_msse_min_energy_ != tmp_dy_peak_msse_min_energy) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_min_energy [ "
+                                  << dy_peak_msse_min_energy_ << " -> " << tmp_dy_peak_msse_min_energy << " ].");
+        dy_peak_msse_min_energy_ = tmp_dy_peak_msse_min_energy;
+    }
+    if (dy_peak_msse_max_energy_ != tmp_dy_peak_msse_max_energy) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_max_energy [ "
+                                  << dy_peak_msse_max_energy_ << " -> " << tmp_dy_peak_msse_max_energy << " ].");
+        dy_peak_msse_max_energy_ = tmp_dy_peak_msse_max_energy;
+    }
+    if (dy_peak_msse_inlier_thr_ != tmp_dy_peak_msse_inlier_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_inlier_thr ["
+                                  << dy_peak_msse_inlier_thr_ << " -> " << tmp_dy_peak_msse_inlier_thr << " ].");
+        dy_peak_msse_inlier_thr_ = tmp_dy_peak_msse_inlier_thr;
+    }
+    if (dy_peak_msse_outlier_thr_ != tmp_dy_peak_msse_outlier_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_outlier_thr ["
+                                  << dy_peak_msse_outlier_thr_ << " -> " << tmp_dy_peak_msse_outlier_thr << " ].");
+        dy_peak_msse_outlier_thr_ = tmp_dy_peak_msse_outlier_thr;
+    }
+    if (dy_peak_msse_residual_thr_ != tmp_dy_peak_msse_residual_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_residual_thr ["
+                                  << dy_peak_msse_residual_thr_ << " -> " << tmp_dy_peak_msse_residual_thr << " ].");
+        dy_peak_msse_residual_thr_ = tmp_dy_peak_msse_residual_thr;
+    }
+    if (dy_peak_msse_energy_thr_ != tmp_dy_peak_msse_energy_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_energy_thr ["
+                                  << dy_peak_msse_energy_thr_ << " -> " << tmp_dy_peak_msse_energy_thr << " ].");
+        dy_peak_msse_energy_thr_ = tmp_dy_peak_msse_energy_thr;
+    }
+    if (dy_mean_rms_min_energy_ != tmp_dy_mean_rms_min_energy) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_mean_rms_min_energy [" << dy_mean_rms_min_energy_ << " -> "
+                                                                                << tmp_dy_mean_rms_min_energy << " ].");
+        dy_mean_rms_min_energy_ = tmp_dy_mean_rms_min_energy;
+    }
+    if (dy_mean_rms_max_energy_ != tmp_dy_mean_rms_max_energy) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_mean_rms_max_energy [" << dy_mean_rms_max_energy_ << " -> "
+                                                                                << tmp_dy_mean_rms_max_energy << " ].");
+        dy_mean_rms_max_energy_ = tmp_dy_mean_rms_max_energy;
     }
 
     config_mtime_ = conf_mtime;
@@ -425,6 +541,14 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     dynamic_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
     dynamic_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
     dynamic_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
+    dynamic_config_json_["dy_peak_msse_min_energy"] = json::value::number(dy_peak_msse_min_energy_);
+    dynamic_config_json_["dy_peak_msse_max_energy"] = json::value::number(dy_peak_msse_max_energy_);
+    dynamic_config_json_["dy_peak_msse_inlier_thr"] = json::value::number(dy_peak_msse_inlier_thr_);
+    dynamic_config_json_["dy_peak_msse_outlier_thr"] = json::value::number(dy_peak_msse_outlier_thr_);
+    dynamic_config_json_["dy_peak_msse_residual_thr"] = json::value::number(dy_peak_msse_residual_thr_);
+    dynamic_config_json_["dy_peak_msse_energy_thr"] = json::value::number(dy_peak_msse_energy_thr_);
+    dynamic_config_json_["dy_mean_rms_min_energy"] = json::value::number(dy_mean_rms_min_energy_);
+    dynamic_config_json_["dy_mean_rms_max_energy"] = json::value::number(dy_mean_rms_max_energy_);
     dynamic_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
@@ -441,11 +565,12 @@ string diffraflow::IngConfig::get_dy_param_string() {
     return dy_param_string_;
 }
 
-bool diffraflow::IngConfig::metrics_pulsar_params_are_set() {
-    return (!metrics_pulsar_broker_address.empty() && !metrics_pulsar_topic_name.empty() &&
-            !metrics_pulsar_message_key.empty());
+diffraflow::FeatureExtraction::PeakMsseParams diffraflow::IngConfig::get_peak_msse_params() {
+    lock_guard<mutex> lg(dy_peak_msse_params_mtx_);
+    return FeatureExtraction::PeakMsseParams{dy_peak_msse_min_energy_, dy_peak_msse_max_energy_,
+        dy_peak_msse_inlier_thr_, dy_peak_msse_outlier_thr_, dy_peak_msse_residual_thr_, dy_peak_msse_energy_thr_};
 }
 
-bool diffraflow::IngConfig::metrics_http_params_are_set() {
-    return (!metrics_http_host.empty() && metrics_http_port > 0);
-}
+float diffraflow::IngConfig::get_mean_rms_min_energy() { return dy_mean_rms_min_energy_.load(); }
+
+float diffraflow::IngConfig::get_mean_rms_max_energy() { return dy_mean_rms_max_energy_.load(); }

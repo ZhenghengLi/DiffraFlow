@@ -7,6 +7,8 @@
 #include <atomic>
 #include <mutex>
 
+#include "FeatureExtraction.hh"
+
 using std::atomic;
 using std::mutex;
 
@@ -32,6 +34,10 @@ namespace diffraflow {
         int get_dy_param_int();
         double get_dy_param_double();
         string get_dy_param_string();
+
+        FeatureExtraction::PeakMsseParams get_peak_msse_params();
+        float get_mean_rms_min_energy();
+        float get_mean_rms_max_energy();
 
     protected:
         bool check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) override;
@@ -84,6 +90,19 @@ namespace diffraflow {
 
         string dy_param_string_;
         mutex dy_param_string_mtx_;
+
+        // peak msse parameters
+        float dy_peak_msse_min_energy_;
+        float dy_peak_msse_max_energy_;
+        float dy_peak_msse_inlier_thr_;
+        float dy_peak_msse_outlier_thr_;
+        float dy_peak_msse_residual_thr_;
+        float dy_peak_msse_energy_thr_;
+        mutex dy_peak_msse_params_mtx_;
+
+        // mean rms parameters
+        atomic<float> dy_mean_rms_min_energy_;
+        atomic<float> dy_mean_rms_max_energy_;
 
         time_t config_mtime_;
 

@@ -327,6 +327,7 @@ bool diffraflow::IngConfig::metrics_http_params_are_set() {
 void diffraflow::IngConfig::print() {
     // with all locks
     lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
+    lock_guard<mutex> dy_peak_msse_params_lg(dy_peak_msse_params_mtx_);
 
     if (zookeeper_setting_ready_flag_) {
         zookeeper_print_setting();
@@ -356,6 +357,15 @@ void diffraflow::IngConfig::print() {
     cout << "- dy_param_int = " << dy_param_int_.load() << endl;
     cout << "- dy_param_double = " << dy_param_double_.load() << endl;
     cout << "- dy_param_string = " << dy_param_string_ << endl;
+    cout << "- dy_run_number = " << dy_run_number_.load() << endl;
+    cout << "- dy_peak_msse_min_energy = " << dy_peak_msse_min_energy_ << endl;
+    cout << "- dy_peak_msse_max_energy = " << dy_peak_msse_max_energy_ << endl;
+    cout << "- dy_peak_msse_inlier_thr = " << dy_peak_msse_inlier_thr_ << endl;
+    cout << "- dy_peak_msse_outlier_thr = " << dy_peak_msse_outlier_thr_ << endl;
+    cout << "- dy_peak_msse_residual_thr = " << dy_peak_msse_residual_thr_ << endl;
+    cout << "- dy_peak_msse_energy_thr = " << dy_peak_msse_energy_thr_ << endl;
+    cout << "- dy_mean_rms_min_energy = " << dy_mean_rms_min_energy_ << endl;
+    cout << "- dy_mean_rms_max_energy = " << dy_mean_rms_max_energy_ << endl;
     cout << "metrics config:" << endl;
     cout << "- metrics_pulsar_broker_address = " << metrics_pulsar_broker_address << endl;
     cout << "- metrics_pulsar_topic_name = " << metrics_pulsar_topic_name << endl;

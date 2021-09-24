@@ -85,7 +85,7 @@ void diffraflow::IngPipeline::start_run() {
     //// feature extracter
     item_queue_feature_ = new IngBufferItemQueue(config_obj_->queue_capacity_feature);
     feature_extracter_ = new IngFeatureExtracter(image_feature_buffer_, item_queue_calib_, item_queue_feature_,
-        config_obj_->gpu_enable, config_obj_->gpu_device_index);
+        config_obj_, config_obj_->gpu_enable, config_obj_->gpu_device_index);
 
     //// image filter
     item_queue_write_ = new IngBufferItemQueue(config_obj_->queue_capacity_write);

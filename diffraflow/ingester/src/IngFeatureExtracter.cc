@@ -1,13 +1,14 @@
 #include "IngFeatureExtracter.hh"
 #include "IngImgFtrBuffer.hh"
+#include "IngConfig.hh"
 #include "cudatools.hh"
 
 log4cxx::LoggerPtr diffraflow::IngFeatureExtracter::logger_ = log4cxx::Logger::getLogger("IngFeatureExtracter");
 
-diffraflow::IngFeatureExtracter::IngFeatureExtracter(
-    IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out, bool use_gpu, int gpu_index)
-    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), use_gpu_(use_gpu),
-      gpu_index_(gpu_index) {
+diffraflow::IngFeatureExtracter::IngFeatureExtracter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in,
+    IngBufferItemQueue* queue_out, IngConfig* conf_obj, bool use_gpu, int gpu_index)
+    : image_feature_buffer_(buffer), item_queue_in_(queue_in), item_queue_out_(queue_out), config_obj_(conf_obj),
+      use_gpu_(use_gpu), gpu_index_(gpu_index) {
     worker_status_ = kNotStart;
 
     mean_rms_sum_device_ = nullptr;
@@ -71,6 +72,7 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
 }
 
 void diffraflow::IngFeatureExtracter::extract_feature_(const shared_ptr<IngBufferItem>& item) {
+    lock_guard<mutex> common_variables_lg(common_variables_mtx_);
     // some example code
     image_feature_buffer_->image_feature_host(item->index)->global_mean = 100;
     image_feature_buffer_->image_feature_host(item->index)->global_rms = 20;

@@ -24,11 +24,12 @@ using std::make_shared;
 namespace diffraflow {
 
     class IngImgFtrBuffer;
+    class IngConfig;
 
     class IngFeatureExtracter {
     public:
         IngFeatureExtracter(IngImgFtrBuffer* buffer, IngBufferItemQueue* queue_in, IngBufferItemQueue* queue_out,
-            bool use_gpu = false, int gpu_index = 0);
+            IngConfig* conf_obj, bool use_gpu = false, int gpu_index = 0);
 
         ~IngFeatureExtracter();
 
@@ -50,6 +51,8 @@ namespace diffraflow {
         int gpu_index_;
         cudaStream_t cuda_stream_peak_msse_;
         cudaStream_t cuda_stream_mean_rms_;
+
+        mutex common_variables_mtx_;
         double* mean_rms_sum_device_;
         int* mean_rms_count_device_;
 
@@ -61,6 +64,7 @@ namespace diffraflow {
         IngImgFtrBuffer* image_feature_buffer_;
         IngBufferItemQueue* item_queue_in_;
         IngBufferItemQueue* item_queue_out_;
+        IngConfig* config_obj_;
 
     private:
         static log4cxx::LoggerPtr logger_;

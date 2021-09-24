@@ -11,7 +11,11 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
     worker_status_ = kNotStart;
 
     if (use_gpu_) {
-        cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_, cudaStreamNonBlocking);
+        cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_peak_msse_, cudaStreamNonBlocking);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaStreamCreateWithFlags(&cuda_stream_mean_rms_, cudaStreamNonBlocking);
         if (cuda_err != cudaSuccess) {
             LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
         }
@@ -19,12 +23,25 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
 }
 
 diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
+
+    stop();
+
     if (use_gpu_) {
-        cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_);
+        // sync
+        cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_peak_msse_);
         if (cuda_err != cudaSuccess) {
             LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
         }
-        cuda_err = cudaStreamDestroy(cuda_stream_);
+        cuda_err = cudaStreamSynchronize(cuda_stream_mean_rms_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        // destroy
+        cuda_err = cudaStreamDestroy(cuda_stream_peak_msse_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaStreamDestroy(cuda_stream_mean_rms_);
         if (cuda_err != cudaSuccess) {
             LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
         }

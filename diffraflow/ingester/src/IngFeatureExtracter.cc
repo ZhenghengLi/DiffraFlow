@@ -73,10 +73,25 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
 
 void diffraflow::IngFeatureExtracter::extract_feature_(const shared_ptr<IngBufferItem>& item) {
     lock_guard<mutex> common_variables_lg(common_variables_mtx_);
-    // some example code
-    image_feature_buffer_->image_feature_host(item->index)->global_mean = 100;
-    image_feature_buffer_->image_feature_host(item->index)->global_rms = 20;
-    image_feature_buffer_->image_feature_host(item->index)->peak_pixels = 10;
+
+    ImageDataField* image_data_host = image_feature_buffer_->image_data_host(item->index);
+    ImageDataField* image_data_device = image_feature_buffer_->image_data_device(item->index);
+    ImageFeature* image_feature_host = image_feature_buffer_->image_feature_host(item->index);
+    ImageFeature* image_feature_device = image_feature_buffer_->image_feature_device(item->index);
+    if (use_gpu_) {
+        FeatureExtraction::peak_pixels_MSSE_gpu(
+            cuda_stream_peak_msse_, image_feature_device, image_data_device, config_obj_->get_dy_peak_msse_params());
+        FeatureExtraction::global_mean_rms_gpu(cuda_stream_mean_rms_, mean_rms_sum_device_, mean_rms_count_device_,
+            image_feature_device, image_data_device, config_obj_->get_dy_mean_rms_min_energy(),
+            config_obj_->get_dy_mean_rms_max_energy());
+        cudaStreamSynchronize(cuda_stream_peak_msse_);
+        cudaStreamSynchronize(cuda_stream_mean_rms_);
+    } else {
+        FeatureExtraction::peak_pixels_MSSE_cpu(
+            image_feature_host, image_data_host, config_obj_->get_dy_peak_msse_params());
+        FeatureExtraction::global_mean_rms_cpu(image_feature_host, image_data_host,
+            config_obj_->get_dy_mean_rms_min_energy(), config_obj_->get_dy_mean_rms_max_energy());
+    }
 }
 
 int diffraflow::IngFeatureExtracter::run_() {

@@ -575,12 +575,12 @@ string diffraflow::IngConfig::get_dy_param_string() {
     return dy_param_string_;
 }
 
-diffraflow::FeatureExtraction::PeakMsseParams diffraflow::IngConfig::get_peak_msse_params() {
+diffraflow::FeatureExtraction::PeakMsseParams diffraflow::IngConfig::get_dy_peak_msse_params() {
     lock_guard<mutex> lg(dy_peak_msse_params_mtx_);
     return FeatureExtraction::PeakMsseParams{dy_peak_msse_min_energy_, dy_peak_msse_max_energy_,
         dy_peak_msse_inlier_thr_, dy_peak_msse_outlier_thr_, dy_peak_msse_residual_thr_, dy_peak_msse_energy_thr_};
 }
 
-float diffraflow::IngConfig::get_mean_rms_min_energy() { return dy_mean_rms_min_energy_.load(); }
+float diffraflow::IngConfig::get_dy_mean_rms_min_energy() { return dy_mean_rms_min_energy_.load(); }
 
-float diffraflow::IngConfig::get_mean_rms_max_energy() { return dy_mean_rms_max_energy_.load(); }
+float diffraflow::IngConfig::get_dy_mean_rms_max_energy() { return dy_mean_rms_max_energy_.load(); }

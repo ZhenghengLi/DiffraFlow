@@ -35,9 +35,9 @@ namespace diffraflow {
         double get_dy_param_double();
         string get_dy_param_string();
 
-        FeatureExtraction::PeakMsseParams get_peak_msse_params();
-        float get_mean_rms_min_energy();
-        float get_mean_rms_max_energy();
+        FeatureExtraction::PeakMsseParams get_dy_peak_msse_params();
+        float get_dy_mean_rms_min_energy();
+        float get_dy_mean_rms_max_energy();
 
     protected:
         bool check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) override;

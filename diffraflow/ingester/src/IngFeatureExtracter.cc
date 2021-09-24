@@ -10,14 +10,27 @@ diffraflow::IngFeatureExtracter::IngFeatureExtracter(
       gpu_index_(gpu_index) {
     worker_status_ = kNotStart;
 
+    mean_rms_sum_device_ = nullptr;
+    mean_rms_count_device_ = nullptr;
+
     if (use_gpu_) {
+        // create CUDA streams
         cudaError_t cuda_err = cudaStreamCreateWithFlags(&cuda_stream_peak_msse_, cudaStreamNonBlocking);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
         }
         cuda_err = cudaStreamCreateWithFlags(&cuda_stream_mean_rms_, cudaStreamNonBlocking);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "Failed to create cuda stream with error: " << cudaGetErrorString(cuda_err));
+        }
+        // allocate memory on GPU
+        cuda_err = cudaMalloc(&mean_rms_sum_device_, sizeof(double));
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "cudaMalloc failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaMalloc(&mean_rms_count_device_, sizeof(int));
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "cudaMalloc failed with error: " << cudaGetErrorString(cuda_err));
         }
     }
 }
@@ -30,20 +43,29 @@ diffraflow::IngFeatureExtracter::~IngFeatureExtracter() {
         // sync
         cudaError_t cuda_err = cudaStreamSynchronize(cuda_stream_peak_msse_);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
         }
         cuda_err = cudaStreamSynchronize(cuda_stream_mean_rms_);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "cudaStreamSynchronize failed with error: " << cudaGetErrorString(cuda_err));
         }
         // destroy
         cuda_err = cudaStreamDestroy(cuda_stream_peak_msse_);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
         }
         cuda_err = cudaStreamDestroy(cuda_stream_mean_rms_);
         if (cuda_err != cudaSuccess) {
-            LOG4CXX_WARN(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+            LOG4CXX_ERROR(logger_, "cudaStreamDestroy failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        // free memory
+        cuda_err = cudaFree(mean_rms_sum_device_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "cudaFree failed with error: " << cudaGetErrorString(cuda_err));
+        }
+        cuda_err = cudaFree(mean_rms_count_device_);
+        if (cuda_err != cudaSuccess) {
+            LOG4CXX_ERROR(logger_, "cudaFree failed with error: " << cudaGetErrorString(cuda_err));
         }
     }
 }

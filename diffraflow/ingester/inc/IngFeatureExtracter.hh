@@ -50,6 +50,8 @@ namespace diffraflow {
         int gpu_index_;
         cudaStream_t cuda_stream_peak_msse_;
         cudaStream_t cuda_stream_mean_rms_;
+        double* mean_rms_sum_device_;
+        int* mean_rms_count_device_;
 
         atomic<WorkerStatus> worker_status_;
         mutex mtx_status_;

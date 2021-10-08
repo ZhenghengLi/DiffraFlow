@@ -39,9 +39,17 @@ diffraflow::IngImageFilter::~IngImageFilter() {
     }
 }
 
-bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature* image_feature) { return true; }
+bool diffraflow::IngImageFilter::check_for_save_(const ImageFeature* image_feature) {
+    return image_feature->global_mean >= config_obj_->get_dy_saving_global_mean_thr() &&
+           image_feature->global_rms >= config_obj_->get_dy_saving_global_rms_thr() &&
+           image_feature->peak_pixels >= config_obj_->get_dy_saving_peak_pixels_thr();
+}
 
-bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature* image_feature) { return true; }
+bool diffraflow::IngImageFilter::check_for_monitor_(const ImageFeature* image_feature) {
+    return image_feature->global_mean >= config_obj_->get_dy_monitor_global_mean_thr() &&
+           image_feature->global_rms >= config_obj_->get_dy_monitor_global_rms_thr() &&
+           image_feature->peak_pixels >= config_obj_->get_dy_monitor_peak_pixels_thr();
+}
 
 void diffraflow::IngImageFilter::do_filter(shared_ptr<IngBufferItem>& item) {
 

@@ -35,6 +35,14 @@ namespace diffraflow {
         float get_dy_mean_rms_min_energy();
         float get_dy_mean_rms_max_energy();
 
+        float get_dy_saving_global_mean_thr();
+        float get_dy_saving_global_rms_thr();
+        int get_dy_saving_peak_pixels_thr();
+
+        float get_dy_monitor_global_mean_thr();
+        float get_dy_monitor_global_rms_thr();
+        int get_dy_monitor_peak_pixels_thr();
+
     protected:
         bool check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) override;
 
@@ -93,6 +101,16 @@ namespace diffraflow {
         // mean rms parameters
         atomic<float> dy_mean_rms_min_energy_;
         atomic<float> dy_mean_rms_max_energy_;
+
+        // saving filter thresholds
+        atomic<float> dy_saving_global_mean_thr_;
+        atomic<float> dy_saving_global_rms_thr_;
+        atomic<int> dy_saving_peak_pixels_thr_;
+
+        // monitor filter thresholds
+        atomic<float> dy_monitor_global_mean_thr_;
+        atomic<float> dy_monitor_global_rms_thr_;
+        atomic<int> dy_monitor_peak_pixels_thr_;
 
         time_t config_mtime_;
 

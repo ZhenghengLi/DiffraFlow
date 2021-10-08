@@ -65,6 +65,14 @@ diffraflow::IngConfig::IngConfig() {
 
     dy_mean_rms_min_energy_ = -10;
     dy_mean_rms_max_energy_ = 1000;
+
+    dy_saving_global_mean_thr_ = 0;
+    dy_saving_global_rms_thr_ = 0;
+    dy_saving_peak_pixels_thr_ = 100;
+
+    dy_monitor_global_mean_thr_ = 0;
+    dy_monitor_global_rms_thr_ = 0;
+    dy_monitor_peak_pixels_thr_ = 100;
 }
 
 diffraflow::IngConfig::~IngConfig() {}
@@ -383,15 +391,25 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     float tmp_dy_peak_msse_residual_thr = dy_peak_msse_residual_thr_;
     float tmp_dy_peak_msse_energy_thr = dy_peak_msse_energy_thr_;
 
-    float tmp_dy_mean_rms_min_energy = dy_mean_rms_min_energy_;
-    float tmp_dy_mean_rms_max_energy = dy_mean_rms_max_energy_;
+    float tmp_dy_mean_rms_min_energy = dy_mean_rms_min_energy_.load();
+    float tmp_dy_mean_rms_max_energy = dy_mean_rms_max_energy_.load();
+
+    float tmp_dy_saving_global_mean_thr = dy_saving_global_mean_thr_.load();
+    float tmp_dy_saving_global_rms_thr = dy_saving_global_rms_thr_.load();
+    int tmp_dy_saving_peak_pixels_thr = dy_saving_peak_pixels_thr_.load();
+
+    float tmp_dy_monitor_global_mean_thr = dy_monitor_global_mean_thr_.load();
+    float tmp_dy_monitor_global_rms_thr = dy_monitor_global_rms_thr_.load();
+    int tmp_dy_monitor_peak_pixels_thr = dy_monitor_peak_pixels_thr_.load();
 
     // convert
     for (map<string, string>::const_iterator iter = conf_map.begin(); iter != conf_map.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
+        // run number
         if (key == "dy_run_number") {
             tmp_dy_run_number = atoi(value.c_str());
+            // peak msse
         } else if (key == "dy_peak_msse_min_energy") {
             tmp_dy_peak_msse_min_energy = atof(value.c_str());
         } else if (key == "dy_peak_msse_max_energy") {
@@ -404,10 +422,25 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
             tmp_dy_peak_msse_residual_thr = atof(value.c_str());
         } else if (key == "dy_peak_msse_energy_thr") {
             tmp_dy_peak_msse_energy_thr = atof(value.c_str());
+            // global mean and rms
         } else if (key == "dy_mean_rms_min_energy") {
             tmp_dy_mean_rms_min_energy = atof(value.c_str());
         } else if (key == "dy_mean_rms_max_energy") {
             tmp_dy_mean_rms_max_energy = atof(value.c_str());
+            // saving filter thresholds
+        } else if (key == "dy_saving_global_mean_thr") {
+            tmp_dy_saving_global_mean_thr = atof(value.c_str());
+        } else if (key == "dy_saving_global_rms_thr") {
+            tmp_dy_saving_global_rms_thr = atof(value.c_str());
+        } else if (key == "dy_saving_peak_pixels_thr") {
+            tmp_dy_saving_peak_pixels_thr = atoi(value.c_str());
+            // monitor filter thresholds
+        } else if (key == "dy_monitor_global_mean_thr") {
+            tmp_dy_monitor_global_mean_thr = atof(value.c_str());
+        } else if (key == "dy_monitor_global_rms_thr") {
+            tmp_dy_monitor_global_rms_thr = atof(value.c_str());
+        } else if (key == "dy_monitor_peak_pixels_thr") {
+            tmp_dy_monitor_peak_pixels_thr = atoi(value.c_str());
         }
     }
 
@@ -452,11 +485,13 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     }
 
     // commit change
+    // - run number
     if (dy_run_number_ != tmp_dy_run_number) {
         LOG4CXX_WARN(logger_,
             "configuration changed: dy_run_number [ " << dy_run_number_ << " -> " << tmp_dy_run_number << " ].");
         dy_run_number_ = tmp_dy_run_number;
     }
+    // - peak msse
     if (dy_peak_msse_min_energy_ != tmp_dy_peak_msse_min_energy) {
         LOG4CXX_WARN(logger_, "configuration changed: dy_peak_msse_min_energy [ "
                                   << dy_peak_msse_min_energy_ << " -> " << tmp_dy_peak_msse_min_energy << " ].");
@@ -487,6 +522,7 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
                                   << dy_peak_msse_energy_thr_ << " -> " << tmp_dy_peak_msse_energy_thr << " ].");
         dy_peak_msse_energy_thr_ = tmp_dy_peak_msse_energy_thr;
     }
+    // - global mean and rms
     if (dy_mean_rms_min_energy_ != tmp_dy_mean_rms_min_energy) {
         LOG4CXX_WARN(logger_, "configuration changed: dy_mean_rms_min_energy [" << dy_mean_rms_min_energy_ << " -> "
                                                                                 << tmp_dy_mean_rms_min_energy << " ].");
@@ -497,19 +533,63 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
                                                                                 << tmp_dy_mean_rms_max_energy << " ].");
         dy_mean_rms_max_energy_ = tmp_dy_mean_rms_max_energy;
     }
+    // - saving filter thresholds
+    if (dy_saving_global_mean_thr_ != tmp_dy_saving_global_mean_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_saving_global_mean_thr ["
+                                  << dy_saving_global_mean_thr_ << " -> " << tmp_dy_saving_global_mean_thr << " ].");
+        dy_saving_global_mean_thr_ = tmp_dy_saving_global_mean_thr;
+    }
+    if (dy_saving_global_rms_thr_ != tmp_dy_saving_global_rms_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_saving_global_rms_thr ["
+                                  << dy_saving_global_rms_thr_ << " -> " << tmp_dy_saving_global_rms_thr << " ].");
+        dy_saving_global_rms_thr_ = tmp_dy_saving_global_rms_thr;
+    }
+    if (dy_saving_peak_pixels_thr_ != tmp_dy_saving_peak_pixels_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_saving_peak_pixels_thr ["
+                                  << dy_saving_peak_pixels_thr_ << " -> " << tmp_dy_saving_peak_pixels_thr << " ].");
+        dy_saving_peak_pixels_thr_ = tmp_dy_saving_peak_pixels_thr;
+    }
+    // - monitor filter thresholds
+    if (dy_monitor_global_mean_thr_ != tmp_dy_monitor_global_mean_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_monitor_global_mean_thr ["
+                                  << dy_monitor_global_mean_thr_ << " -> " << tmp_dy_monitor_global_mean_thr << " ].");
+        dy_monitor_global_mean_thr_ = tmp_dy_monitor_global_mean_thr;
+    }
+    if (dy_monitor_global_rms_thr_ != tmp_dy_monitor_global_rms_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_monitor_global_rms_thr ["
+                                  << dy_monitor_global_rms_thr_ << " -> " << tmp_dy_monitor_global_rms_thr << " ].");
+        dy_monitor_global_rms_thr_ = tmp_dy_monitor_global_rms_thr;
+    }
+    if (dy_monitor_peak_pixels_thr_ != tmp_dy_monitor_peak_pixels_thr) {
+        LOG4CXX_WARN(logger_, "configuration changed: dy_monitor_peak_pixels_thr ["
+                                  << dy_monitor_peak_pixels_thr_ << " -> " << tmp_dy_monitor_peak_pixels_thr << " ].");
+        dy_monitor_peak_pixels_thr_ = tmp_dy_monitor_peak_pixels_thr;
+    }
 
     config_mtime_ = conf_mtime;
 
     lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
-    dynamic_config_json_["dy_run_number"] = json::value::number(dy_run_number_);
+    // run number
+    dynamic_config_json_["dy_run_number"] = json::value::number(dy_run_number_.load());
+    // peak msse
     dynamic_config_json_["dy_peak_msse_min_energy"] = json::value::number(dy_peak_msse_min_energy_);
     dynamic_config_json_["dy_peak_msse_max_energy"] = json::value::number(dy_peak_msse_max_energy_);
     dynamic_config_json_["dy_peak_msse_inlier_thr"] = json::value::number(dy_peak_msse_inlier_thr_);
     dynamic_config_json_["dy_peak_msse_outlier_thr"] = json::value::number(dy_peak_msse_outlier_thr_);
     dynamic_config_json_["dy_peak_msse_residual_thr"] = json::value::number(dy_peak_msse_residual_thr_);
     dynamic_config_json_["dy_peak_msse_energy_thr"] = json::value::number(dy_peak_msse_energy_thr_);
-    dynamic_config_json_["dy_mean_rms_min_energy"] = json::value::number(dy_mean_rms_min_energy_);
-    dynamic_config_json_["dy_mean_rms_max_energy"] = json::value::number(dy_mean_rms_max_energy_);
+    // global mean and rms
+    dynamic_config_json_["dy_mean_rms_min_energy"] = json::value::number(dy_mean_rms_min_energy_.load());
+    dynamic_config_json_["dy_mean_rms_max_energy"] = json::value::number(dy_mean_rms_max_energy_.load());
+    // saving filter thresholds
+    dynamic_config_json_["dy_saving_global_mean_thr"] = json::value::number(dy_saving_global_mean_thr_.load());
+    dynamic_config_json_["dy_saving_global_rms_thr"] = json::value::number(dy_saving_global_rms_thr_.load());
+    dynamic_config_json_["dy_saving_peak_pixels_thr"] = json::value::number(dy_saving_peak_pixels_thr_.load());
+    // monitor filter thresholds
+    dynamic_config_json_["dy_monitor_global_mean_thr"] = json::value::number(dy_monitor_global_mean_thr_.load());
+    dynamic_config_json_["dy_monitor_global_rms_thr"] = json::value::number(dy_monitor_global_rms_thr_.load());
+    dynamic_config_json_["dy_monitor_peak_pixels_thr"] = json::value::number(dy_monitor_peak_pixels_thr_.load());
+    // mtime
     dynamic_config_json_["config_mtime"] = json::value::string(boost::trim_copy(string(ctime(&config_mtime_))));
 
     return true;
@@ -526,3 +606,15 @@ diffraflow::FeatureExtraction::PeakMsseParams diffraflow::IngConfig::get_dy_peak
 float diffraflow::IngConfig::get_dy_mean_rms_min_energy() { return dy_mean_rms_min_energy_.load(); }
 
 float diffraflow::IngConfig::get_dy_mean_rms_max_energy() { return dy_mean_rms_max_energy_.load(); }
+
+float diffraflow::IngConfig::get_dy_saving_global_mean_thr() { return dy_saving_global_mean_thr_.load(); }
+
+float diffraflow::IngConfig::get_dy_saving_global_rms_thr() { return dy_saving_global_rms_thr_.load(); }
+
+int diffraflow::IngConfig::get_dy_saving_peak_pixels_thr() { return dy_saving_peak_pixels_thr_.load(); }
+
+float diffraflow::IngConfig::get_dy_monitor_global_mean_thr() { return dy_monitor_global_mean_thr_.load(); }
+
+float diffraflow::IngConfig::get_dy_monitor_global_rms_thr() { return dy_monitor_global_rms_thr_.load(); }
+
+int diffraflow::IngConfig::get_dy_monitor_peak_pixels_thr() { return dy_monitor_peak_pixels_thr_.load(); }

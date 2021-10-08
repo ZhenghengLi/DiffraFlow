@@ -31,10 +31,6 @@ namespace diffraflow {
     public:
         int get_dy_run_number();
 
-        int get_dy_param_int();
-        double get_dy_param_double();
-        string get_dy_param_string();
-
         FeatureExtraction::PeakMsseParams get_dy_peak_msse_params();
         float get_dy_mean_rms_min_energy();
         float get_dy_mean_rms_max_energy();
@@ -84,12 +80,6 @@ namespace diffraflow {
     private:
         // dynamic parameters
         atomic<int> dy_run_number_;
-
-        atomic<int> dy_param_int_;
-        atomic<double> dy_param_double_;
-
-        string dy_param_string_;
-        mutex dy_param_string_mtx_;
 
         // peak msse parameters
         float dy_peak_msse_min_energy_;

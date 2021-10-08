@@ -55,9 +55,6 @@ diffraflow::IngConfig::IngConfig() {
 
     // initial values of dynamic configurations
     dy_run_number_ = 0;
-    dy_param_int_ = 20;
-    dy_param_double_ = 100;
-    dy_param_string_ = "xfel";
 
     dy_peak_msse_min_energy_ = -10;
     dy_peak_msse_max_energy_ = 1000;
@@ -326,7 +323,6 @@ bool diffraflow::IngConfig::metrics_http_params_are_set() {
 
 void diffraflow::IngConfig::print() {
     // with all locks
-    lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
     lock_guard<mutex> dy_peak_msse_params_lg(dy_peak_msse_params_mtx_);
 
     if (zookeeper_setting_ready_flag_) {
@@ -354,9 +350,6 @@ void diffraflow::IngConfig::print() {
     cout << "- save_calib_data = " << save_calib_data << endl;
     cout << "- save_raw_data = " << save_raw_data << endl;
     cout << "dynamic parameters:" << endl;
-    cout << "- dy_param_int = " << dy_param_int_.load() << endl;
-    cout << "- dy_param_double = " << dy_param_double_.load() << endl;
-    cout << "- dy_param_string = " << dy_param_string_ << endl;
     cout << "- dy_run_number = " << dy_run_number_.load() << endl;
     cout << "- dy_peak_msse_min_energy = " << dy_peak_msse_min_energy_ << endl;
     cout << "- dy_peak_msse_max_energy = " << dy_peak_msse_max_energy_ << endl;
@@ -378,14 +371,10 @@ void diffraflow::IngConfig::print() {
 bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
 
     // with all locks
-    lock_guard<mutex> dy_param_string_lg(dy_param_string_mtx_);
     lock_guard<mutex> dy_peak_msse_params_lg(dy_peak_msse_params_mtx_);
 
     // values before commit
     int tmp_dy_run_number = dy_run_number_.load();
-    int tmp_dy_param_int = dy_param_int_.load();
-    double tmp_dy_param_double = dy_param_double_.load();
-    string tmp_dy_param_string = dy_param_string_;
 
     float tmp_dy_peak_msse_min_energy = dy_peak_msse_min_energy_;
     float tmp_dy_peak_msse_max_energy = dy_peak_msse_max_energy_;
@@ -401,14 +390,8 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     for (map<string, string>::const_iterator iter = conf_map.begin(); iter != conf_map.end(); ++iter) {
         string key = iter->first;
         string value = iter->second;
-        if (key == "dy_param_int") {
-            tmp_dy_param_int = atoi(value.c_str());
-        } else if (key == "dy_run_number") {
+        if (key == "dy_run_number") {
             tmp_dy_run_number = atoi(value.c_str());
-        } else if (key == "dy_param_double") {
-            tmp_dy_param_double = atof(value.c_str());
-        } else if (key == "dy_param_string") {
-            tmp_dy_param_string = value;
         } else if (key == "dy_peak_msse_min_energy") {
             tmp_dy_peak_msse_min_energy = atof(value.c_str());
         } else if (key == "dy_peak_msse_max_energy") {
@@ -430,20 +413,6 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 
     // validation check
     bool invalid_flag = false;
-    if (tmp_dy_param_int < 10) {
-        LOG4CXX_WARN(
-            logger_, "invalid configuration: dy_param_int(" << tmp_dy_param_int << ") is out of range [10, inf).");
-        invalid_flag = true;
-    }
-    if (tmp_dy_param_double > 1000) {
-        LOG4CXX_WARN(logger_,
-            "invalid configuration: dy_param_double(" << tmp_dy_param_double << ") is out of range (-inf, 1000].");
-        invalid_flag = true;
-    }
-    if (tmp_dy_param_string.length() < 2) {
-        LOG4CXX_WARN(logger_, "invalid configuration: dy_param_string(" << tmp_dy_param_string << ") is too short.");
-        invalid_flag = true;
-    }
     if (tmp_dy_run_number < 0) {
         // cppcheck-suppress shiftNegative
         LOG4CXX_WARN(logger_, "invalid configuration: dy_run_number(" << tmp_dy_run_number << ") is less than zero.");
@@ -483,21 +452,6 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
     }
 
     // commit change
-    if (dy_param_int_ != tmp_dy_param_int) {
-        LOG4CXX_WARN(
-            logger_, "configuration changed: dy_param_int [ " << dy_param_int_ << " -> " << tmp_dy_param_int << " ].");
-        dy_param_int_ = tmp_dy_param_int;
-    }
-    if (dy_param_double_ != tmp_dy_param_double) {
-        LOG4CXX_WARN(logger_,
-            "configuration changed: dy_param_double [ " << dy_param_double_ << " -> " << tmp_dy_param_double << " ].");
-        dy_param_double_ = tmp_dy_param_double;
-    }
-    if (dy_param_string_ != tmp_dy_param_string) {
-        LOG4CXX_WARN(logger_,
-            "configuration changed: dy_param_string [ " << dy_param_string_ << " -> " << tmp_dy_param_string << " ].");
-        dy_param_string_ = tmp_dy_param_string;
-    }
     if (dy_run_number_ != tmp_dy_run_number) {
         LOG4CXX_WARN(logger_,
             "configuration changed: dy_run_number [ " << dy_run_number_ << " -> " << tmp_dy_run_number << " ].");
@@ -548,9 +502,6 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 
     lock_guard<mutex> dynamic_config_json_lg(dynamic_config_json_mtx_);
     dynamic_config_json_["dy_run_number"] = json::value::number(dy_run_number_);
-    dynamic_config_json_["dy_param_int"] = json::value::number(dy_param_int_);
-    dynamic_config_json_["dy_param_double"] = json::value::number(dy_param_double_);
-    dynamic_config_json_["dy_param_string"] = json::value::string(dy_param_string_);
     dynamic_config_json_["dy_peak_msse_min_energy"] = json::value::number(dy_peak_msse_min_energy_);
     dynamic_config_json_["dy_peak_msse_max_energy"] = json::value::number(dy_peak_msse_max_energy_);
     dynamic_config_json_["dy_peak_msse_inlier_thr"] = json::value::number(dy_peak_msse_inlier_thr_);
@@ -565,15 +516,6 @@ bool diffraflow::IngConfig::check_and_commit_(const map<string, string>& conf_ma
 }
 
 int diffraflow::IngConfig::get_dy_run_number() { return dy_run_number_.load(); }
-
-int diffraflow::IngConfig::get_dy_param_int() { return dy_param_int_.load(); }
-
-double diffraflow::IngConfig::get_dy_param_double() { return dy_param_double_.load(); }
-
-string diffraflow::IngConfig::get_dy_param_string() {
-    lock_guard<mutex> lg(dy_param_string_mtx_);
-    return dy_param_string_;
-}
 
 diffraflow::FeatureExtraction::PeakMsseParams diffraflow::IngConfig::get_dy_peak_msse_params() {
     lock_guard<mutex> lg(dy_peak_msse_params_mtx_);

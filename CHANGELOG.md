@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### TODO
+empty
 
-- next step: feature extraction algorithms with GPU in **ingester**.
+## [0.2.6] 2021-10-12
+
+### Added
+
+- Image feature extraction algorithms including global mean/RMS calculation and peak finding (based on MSSE method) has been implemented by CUDA in **ingester**.
+- Online data filtering logic and the related dynamic configuration parameters in **ingester** have been applied and added.
 
 ## [0.2.5] 2021-08-24
 
 ### Changed
+
 - Change deployment cpu affinity considering the hardware NUMA configuration, i.e. the position of IB network card.
 - Build and deloy all components utilizing the GitLab CI and Registry instead of Docker Hub.
 

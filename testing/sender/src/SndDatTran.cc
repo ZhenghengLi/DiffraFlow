@@ -168,7 +168,7 @@ bool diffraflow::SndDatTran::read_and_send(uint32_t bunch_id) {
         return false;
     }
 
-    uint32_t event_index = bunch_id % config_obj_->total_events;
+    uint32_t event_index = config_obj_->start_event + bunch_id % config_obj_->total_events;
 
     unique_lock<mutex> data_lk(data_mtx_, std::try_to_lock);
     if (!data_lk.owns_lock()) {

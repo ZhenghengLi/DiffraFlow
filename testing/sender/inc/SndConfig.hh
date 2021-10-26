@@ -41,7 +41,8 @@ namespace diffraflow {
 
         string data_dir;
         int events_per_file;
-        int total_events;
+        int start_event;
+        int total_events; // start_event + total_events < all events available
 
         string dispatcher_host; // can be also configured by nodemap but with lower priority
         int dispatcher_port;    // can be also configured by nodemap but with lower priority

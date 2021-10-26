@@ -31,6 +31,7 @@ diffraflow::SndConfig::SndConfig() {
 
     data_dir.clear();
     events_per_file = 10000;
+    start_event = 0;
     total_events = 89000;
 
     dispatcher_host = "localhost";
@@ -71,6 +72,8 @@ bool diffraflow::SndConfig::load(const char* filename) {
             data_dir = value.c_str();
         } else if (key == "events_per_file") {
             events_per_file = atoi(value.c_str());
+        } else if (key == "start_event") {
+            start_event = atoi(value.c_str());
         } else if (key == "total_events") {
             total_events = atoi(value.c_str());
         } else if (key == "dispatcher_host") {
@@ -157,6 +160,10 @@ bool diffraflow::SndConfig::load(const char* filename) {
     }
     if (events_per_file < 0) {
         LOG4CXX_ERROR(logger_, "events_per_file < 0.");
+        succ_flag = false;
+    }
+    if (start_event < 0) {
+        LOG4CXX_ERROR(logger_, "start_event < 0.");
         succ_flag = false;
     }
     if (total_events < 0) {

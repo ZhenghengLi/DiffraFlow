@@ -1,5 +1,5 @@
 # dashboard
-server {                                                                                                                                                                  
+server {
     server_name dashboard.diffraflow.physky.org;
     listen 80;
     client_max_body_size 1M;
@@ -9,7 +9,7 @@ server {
 }
 
 # controller
-server {                                                                                                                                                                  
+server {
     server_name controller.diffraflow.physky.org;
     listen 80;
     client_max_body_size 1M;
@@ -18,8 +18,8 @@ server {
     }
 }
 
-# aggregator 
-server {                                                                                                                                                                  
+# aggregator
+server {
     server_name aggregator.diffraflow.physky.org;
     listen 80;
     client_max_body_size 1M;

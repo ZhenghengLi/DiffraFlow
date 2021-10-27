@@ -26,8 +26,10 @@ spec:
           env:
             - name: AGGREGATOR_ADDRESS
               value: "10.15.86.21:27711"
+              # value: "aggregator.diffraflow.physky.org"
             - name: CONTROLLER_ADDRESS
               value: "10.15.86.20:27511"
+              # value: "controller.diffraflow.physky.org"
             - name: INGESTER_CONFIG
               value: "ingester.dyconf"
             - name: MONITOR_CONFIG

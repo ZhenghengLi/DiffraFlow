@@ -1,0 +1,30 @@
+# dashboard
+server {                                                                                                                                                                  
+    server_name dashboard.diffraflow.physky.org;
+    listen 80;
+    client_max_body_size 1M;
+    location / {
+        proxy_pass http://10.15.85.28:27800;
+    }
+}
+
+# controller
+server {                                                                                                                                                                  
+    server_name controller.diffraflow.physky.org;
+    listen 80;
+    client_max_body_size 1M;
+    location / {
+        proxy_pass http://10.15.85.29:27511;
+    }
+}
+
+# aggregator 
+server {                                                                                                                                                                  
+    server_name aggregator.diffraflow.physky.org;
+    listen 80;
+    client_max_body_size 1M;
+    location / {
+        proxy_pass http://10.15.85.30:27711;
+    }
+}
+

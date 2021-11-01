@@ -35,6 +35,8 @@ namespace diffraflow {
         explicit GenericServer(string sock_path, size_t max_conn = 100);
         virtual ~GenericServer();
 
+        void set_tcp_keep_pramas(int alive, int idle, int intvl, int cnt);
+
         void set_conn_cpuset(cpu_set_t* cpuset);
 
         bool start(bool receiving_dominant = true);
@@ -72,6 +74,11 @@ namespace diffraflow {
         int server_sock_port_;
         string server_sock_path_;
         int server_sock_fd_;
+
+        int tcp_keepalive_;
+        int tcp_keepidle_;
+        int tcp_keepintvl_;
+        int tcp_keepcnt_;
 
         atomic<ServerStatus> server_status_;
         mutex mtx_status_;

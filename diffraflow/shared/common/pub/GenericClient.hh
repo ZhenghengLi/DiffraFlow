@@ -20,6 +20,8 @@ namespace diffraflow {
         GenericClient(string sock_path, uint32_t id, uint32_t greet_hd, uint32_t send_hd, uint32_t recv_hd);
         virtual ~GenericClient();
 
+        void set_tcp_keep_pramas(int alive, int idle, int intvl, int cnt);
+
         void set_client_port(int port);
         bool connect_to_server();
         bool not_connected();
@@ -63,6 +65,11 @@ namespace diffraflow {
         uint32_t client_id_;
         int client_sock_fd_;
         int client_port_;
+
+        int tcp_keepalive_;
+        int tcp_keepidle_;
+        int tcp_keepintvl_;
+        int tcp_keepcnt_;
 
         uint32_t greeting_head_;
         uint32_t sending_head_;

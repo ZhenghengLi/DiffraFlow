@@ -29,6 +29,11 @@ diffraflow::GenericClient::GenericClient(
     client_sock_fd_ = -1;
     client_port_ = -1;
 
+    tcp_keepalive_ = -1;
+    tcp_keepidle_ = -1;
+    tcp_keepintvl_ = -1;
+    tcp_keepcnt_ = -1;
+
     init_metrics_();
 }
 
@@ -45,10 +50,22 @@ diffraflow::GenericClient::GenericClient(
     receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
 
+    tcp_keepalive_ = -1;
+    tcp_keepidle_ = -1;
+    tcp_keepintvl_ = -1;
+    tcp_keepcnt_ = -1;
+
     init_metrics_();
 }
 
 diffraflow::GenericClient::~GenericClient() { close_connection(); }
+
+void diffraflow::GenericClient::set_tcp_keep_pramas(int alive, int idle, int intvl, int cnt) {
+    tcp_keepalive_ = alive;
+    tcp_keepidle_ = idle;
+    tcp_keepintvl_ = intvl;
+    tcp_keepcnt_ = cnt;
+}
 
 void diffraflow::GenericClient::init_metrics_() {
     network_metrics.connected = false;
@@ -114,6 +131,13 @@ bool diffraflow::GenericClient::connect_to_server_tcp_() {
     client_sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (client_sock_fd_ < 0) {
         LOG4CXX_ERROR(logger_, "Socket creationg error: " << strerror(errno));
+        freeaddrinfo(infoptr);
+        return false;
+    }
+    if (!NetworkUtils::enable_tcp_keepalive(
+            client_sock_fd_, tcp_keepalive_, tcp_keepidle_, tcp_keepintvl_, tcp_keepcnt_, logger_)) {
+        close_connection();
+        LOG4CXX_ERROR(logger_, "found error when setting tcp keepalive on socket " << client_sock_fd_);
         freeaddrinfo(infoptr);
         return false;
     }

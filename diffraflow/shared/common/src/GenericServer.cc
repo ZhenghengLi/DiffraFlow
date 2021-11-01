@@ -1,5 +1,6 @@
 #include "GenericServer.hh"
 #include "GenericConnection.hh"
+#include "NetworkUtils.hh"
 
 #include <cstdlib>
 #include <cstring>
@@ -31,6 +32,10 @@ diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn)
     is_ipc_ = false;
     max_conn_counts_ = max_conn;
     CPU_ZERO(&conn_cpuset_);
+    tcp_keepalive_ = -1;
+    tcp_keepidle_ = -1;
+    tcp_keepintvl_ = -1;
+    tcp_keepcnt_ = -1;
 }
 
 diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
@@ -42,6 +47,10 @@ diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     is_ipc_ = true;
     max_conn_counts_ = max_conn;
     CPU_ZERO(&conn_cpuset_);
+    tcp_keepalive_ = -1;
+    tcp_keepidle_ = -1;
+    tcp_keepintvl_ = -1;
+    tcp_keepcnt_ = -1;
 }
 
 diffraflow::GenericServer::~GenericServer() { stop_and_close(); }
@@ -50,6 +59,13 @@ void diffraflow::GenericServer::set_conn_cpuset(cpu_set_t* cpuset) {
     if (cpuset != nullptr) {
         memcpy(&conn_cpuset_, cpuset, sizeof(cpu_set_t));
     }
+}
+
+void diffraflow::GenericServer::set_tcp_keep_pramas(int alive, int idle, int intvl, int cnt) {
+    tcp_keepalive_ = alive;
+    tcp_keepidle_ = idle;
+    tcp_keepintvl_ = intvl;
+    tcp_keepcnt_ = cnt;
 }
 
 void diffraflow::GenericServer::start_cleaner_() {
@@ -177,6 +193,13 @@ int diffraflow::GenericServer::serve_(bool receiving_dominant) {
                 LOG4CXX_ERROR(logger_, "got wrong client_sock_fd when server is running.");
                 result = 31;
             }
+            break;
+        }
+        if (!is_ipc_ && !NetworkUtils::enable_tcp_keepalive(
+                            client_sock_fd, tcp_keepalive_, tcp_keepidle_, tcp_keepintvl_, tcp_keepcnt_, logger_)) {
+            LOG4CXX_ERROR(logger_, "found error when setting tcp keepalive on socket " << client_sock_fd);
+            shutdown(client_sock_fd, SHUT_RDWR);
+            close(client_sock_fd);
             break;
         }
         LOG4CXX_INFO(logger_, "One connection is established with client_sock_fd " << client_sock_fd);

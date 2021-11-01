@@ -4,6 +4,8 @@
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -255,5 +257,46 @@ bool diffraflow::NetworkUtils::receive_packet(const int client_sock_fd, const ui
         }
     }
 
+    return true;
+}
+
+bool diffraflow::NetworkUtils::enable_tcp_keepalive(
+    int sock, int alive, int idle, int intvl, int cnt, log4cxx::LoggerPtr logger) {
+    if (sock < 0) {
+        LOG4CXX_WARN(logger, "invalid socket fd: " << sock);
+        return false;
+    }
+    if (alive >= 0) {
+        if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &alive, sizeof(int)) < 0) {
+            LOG4CXX_WARN(logger, "error found when setting SO_KEEPALIVE: " << strerror(errno));
+            return false;
+        } else {
+            LOG4CXX_INFO(logger, "successfully set SO_KEEPALIVE(" << alive << ") on socket " << sock);
+        }
+    }
+    if (idle > 0) {
+        if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, &idle, sizeof(int)) < 0) {
+            LOG4CXX_WARN(logger, "error found when setting TCP_KEEPIDLE: " << strerror(errno));
+            return false;
+        } else {
+            LOG4CXX_INFO(logger, "successfully set TCP_KEEPIDLE(" << idle << ") on socket " << sock);
+        }
+    }
+    if (intvl > 0) {
+        if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &intvl, sizeof(int)) < 0) {
+            LOG4CXX_WARN(logger, "error found when setting TCP_KEEPINTVL: " << strerror(errno));
+            return false;
+        } else {
+            LOG4CXX_INFO(logger, "successfully set TCP_KEEPINTVL(" << intvl << ") on socket " << sock);
+        }
+    }
+    if (cnt > 0) {
+        if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, &cnt, sizeof(int)) < 0) {
+            LOG4CXX_WARN(logger, "error found when setting TCP_KEEPCNT: " << strerror(errno));
+            return false;
+        } else {
+            LOG4CXX_INFO(logger, "successfully set TCP_KEEPCNT(" << cnt << ") on socket " << sock);
+        }
+    }
     return true;
 }

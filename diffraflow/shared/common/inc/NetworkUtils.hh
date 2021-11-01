@@ -29,6 +29,8 @@ namespace diffraflow {
         bool receive_packet(const int client_sock_fd, const uint32_t packet_head, uint32_t& payload_type,
             shared_ptr<ByteBuffer>& payload_data, log4cxx::LoggerPtr logger, const uint32_t max_payload_size = 1048576);
 
+        bool enable_tcp_keepalive(int sock, int alive, int idle, int intvl, int cnt, log4cxx::LoggerPtr logger);
+
     }; // namespace NetworkUtils
 } // namespace diffraflow
 

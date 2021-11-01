@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 empty
 
+## [0.2.7] 2021-11-1
+
+### Added
+
+- **sender**: add support to select any event range within a list of files.
+- GenericClient, GenericServer: enable TCP keepalive and set the related socket options, which default to 60s idle time.
+- add nginx proxy for dashboard.
+
 ## [0.2.6] 2021-10-12
 
 ### Added

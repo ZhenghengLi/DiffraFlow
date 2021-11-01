@@ -32,10 +32,10 @@ diffraflow::GenericServer::GenericServer(string host, int port, size_t max_conn)
     is_ipc_ = false;
     max_conn_counts_ = max_conn;
     CPU_ZERO(&conn_cpuset_);
-    tcp_keepalive_ = -1;
-    tcp_keepidle_ = -1;
-    tcp_keepintvl_ = -1;
-    tcp_keepcnt_ = -1;
+    tcp_keepalive_ = 1;
+    tcp_keepidle_ = 60;
+    tcp_keepintvl_ = 30;
+    tcp_keepcnt_ = 9;
 }
 
 diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
@@ -47,10 +47,10 @@ diffraflow::GenericServer::GenericServer(string sock_path, size_t max_conn) {
     is_ipc_ = true;
     max_conn_counts_ = max_conn;
     CPU_ZERO(&conn_cpuset_);
-    tcp_keepalive_ = -1;
-    tcp_keepidle_ = -1;
-    tcp_keepintvl_ = -1;
-    tcp_keepcnt_ = -1;
+    tcp_keepalive_ = 1;
+    tcp_keepidle_ = 60;
+    tcp_keepintvl_ = 30;
+    tcp_keepcnt_ = 9;
 }
 
 diffraflow::GenericServer::~GenericServer() { stop_and_close(); }

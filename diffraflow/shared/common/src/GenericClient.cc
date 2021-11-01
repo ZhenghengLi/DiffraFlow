@@ -29,10 +29,10 @@ diffraflow::GenericClient::GenericClient(
     client_sock_fd_ = -1;
     client_port_ = -1;
 
-    tcp_keepalive_ = -1;
-    tcp_keepidle_ = -1;
-    tcp_keepintvl_ = -1;
-    tcp_keepcnt_ = -1;
+    tcp_keepalive_ = 1;
+    tcp_keepidle_ = 60;
+    tcp_keepintvl_ = 30;
+    tcp_keepcnt_ = 9;
 
     init_metrics_();
 }
@@ -50,10 +50,10 @@ diffraflow::GenericClient::GenericClient(
     receiving_head_ = recv_hd;
     client_sock_fd_ = -1;
 
-    tcp_keepalive_ = -1;
-    tcp_keepidle_ = -1;
-    tcp_keepintvl_ = -1;
-    tcp_keepcnt_ = -1;
+    tcp_keepalive_ = 1;
+    tcp_keepidle_ = 60;
+    tcp_keepintvl_ = 30;
+    tcp_keepcnt_ = 9;
 
     init_metrics_();
 }

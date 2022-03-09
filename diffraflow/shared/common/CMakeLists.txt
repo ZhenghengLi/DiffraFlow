@@ -13,6 +13,7 @@ df_standard_lib(dfcommon
         boost_filesystem
         boost_system
         CUDA::cudart
+        Threads::Threads
 )
 
 configure_file(inc/VersionInfo.hh.in inc/VersionInfo.hh)

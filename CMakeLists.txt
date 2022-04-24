@@ -24,6 +24,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(VersionInfo)
 include(CommonMacros)
 
+find_package(HDF5 REQUIRED COMPONENTS C CXX)
 find_package(CUDAToolkit REQUIRED)
 find_package(Threads REQUIRED)
 

@@ -8,10 +8,10 @@ df_standard_lib(dfcommon
         cpprest
         ssl
         crypto
-        hdf5_cpp
-        hdf5_serial
         boost_filesystem
         boost_system
+        hdf5::hdf5_cpp
+        HDF5::HDF5
         CUDA::cudart
         Threads::Threads
 )

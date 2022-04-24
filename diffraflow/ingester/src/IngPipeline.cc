@@ -119,9 +119,9 @@ void diffraflow::IngPipeline::start_run() {
     //======================================================
     // start workers in turn
     if (image_data_fetcher_->start()) {
-        LOG4CXX_INFO(logger_, "successfully started image data fetcher.")
+        LOG4CXX_INFO(logger_, "successfully started image data fetcher.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image data fetcher.")
+        LOG4CXX_ERROR(logger_, "failed to start image data fetcher.");
         return;
     }
 

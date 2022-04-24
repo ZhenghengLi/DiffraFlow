@@ -87,7 +87,7 @@ bool diffraflow::IngConfig::load(const char* filename) {
     if (zookeeper_parse_setting_(conf_KV_list)) {
         zookeeper_setting_ready_flag_ = true;
     } else {
-        LOG4CXX_WARN(logger_, "zookeeper setting is not ready, configuration will not be dynamically updated.")
+        LOG4CXX_WARN(logger_, "zookeeper setting is not ready, configuration will not be dynamically updated.");
     }
     map<string, string> dy_conf_map;
     for (list<pair<string, string>>::iterator iter = conf_KV_list.begin(); iter != conf_KV_list.end(); ++iter) {

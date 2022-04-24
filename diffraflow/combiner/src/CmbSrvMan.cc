@@ -34,15 +34,15 @@ void diffraflow::CmbSrvMan::start_run() {
 
     // multiple servers start from here
     if (imgfrm_srv_->start()) {
-        LOG4CXX_INFO(logger_, "successfully started image frame server.")
+        LOG4CXX_INFO(logger_, "successfully started image frame server.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image frame server.")
+        LOG4CXX_ERROR(logger_, "failed to start image frame server.");
         return;
     }
     if (imgdat_srv_->start(false)) {
-        LOG4CXX_INFO(logger_, "successfully started image data server.")
+        LOG4CXX_INFO(logger_, "successfully started image data server.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image data server.")
+        LOG4CXX_ERROR(logger_, "failed to start image data server.");
         return;
     }
 

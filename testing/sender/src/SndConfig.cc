@@ -155,7 +155,7 @@ bool diffraflow::SndConfig::load(const char* filename) {
         succ_flag = false;
     }
     if (data_dir.empty()) {
-        LOG4CXX_ERROR(logger_, "data_dir is not set.")
+        LOG4CXX_ERROR(logger_, "data_dir is not set.");
         succ_flag = false;
     }
     if (events_per_file < 0) {

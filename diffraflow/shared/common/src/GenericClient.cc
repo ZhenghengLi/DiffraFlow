@@ -109,7 +109,7 @@ bool diffraflow::GenericClient::connect_to_server() {
         network_metrics.connected = true;
         return true;
     } else {
-        LOG4CXX_ERROR(logger_, "Failed to greet to server, close the connection.")
+        LOG4CXX_ERROR(logger_, "Failed to greet to server, close the connection.");
         close_connection();
         return false;
     }

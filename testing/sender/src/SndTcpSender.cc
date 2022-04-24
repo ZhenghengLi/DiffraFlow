@@ -29,7 +29,7 @@ bool diffraflow::SndTcpSender::send_frame(const char* buffer, size_t len) {
     }
     // send image frame
     if (send_one_(head_buffer_, 4, buffer, len)) {
-        LOG4CXX_DEBUG(logger_, "successfully send one image frame.")
+        LOG4CXX_DEBUG(logger_, "successfully send one image frame.");
         return true;
     } else {
         close_connection();

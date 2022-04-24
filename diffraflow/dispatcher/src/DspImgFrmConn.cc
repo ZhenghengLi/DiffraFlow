@@ -48,7 +48,7 @@ bool diffraflow::DspImgFrmConn::do_receiving_and_processing_() {
         }
         break;
     default:
-        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.")
+        LOG4CXX_INFO(logger_, "got unknown payload, do nothing and jump it.");
         return true;
     }
 }

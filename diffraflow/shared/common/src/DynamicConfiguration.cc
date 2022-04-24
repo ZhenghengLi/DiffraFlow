@@ -85,13 +85,13 @@ bool diffraflow::DynamicConfiguration::zookeeper_parse_setting_(list<pair<string
     }
     if (!zookeeper_chroot_.empty()) {
         if (!zookeeper_check_path_(zookeeper_chroot_.c_str())) {
-            LOG4CXX_ERROR(logger_, "zookeeper_chroot has invalid path, it must start with / and not end with /.")
+            LOG4CXX_ERROR(logger_, "zookeeper_chroot has invalid path, it must start with / and not end with /.");
             return false;
         }
     }
     if (!zookeeper_config_path_.empty()) {
         if (!zookeeper_check_path_(zookeeper_config_path_.c_str())) {
-            LOG4CXX_ERROR(logger_, "zookeeper_config_path has invalid path, it must start with / and not end with /.")
+            LOG4CXX_ERROR(logger_, "zookeeper_config_path has invalid path, it must start with / and not end with /.");
             return false;
         }
     }
@@ -144,7 +144,7 @@ void diffraflow::DynamicConfiguration::zookeeper_print_setting() {
 }
 
 bool diffraflow::DynamicConfiguration::check_and_commit_(const map<string, string>& conf_map, const time_t conf_mtime) {
-    LOG4CXX_WARN(logger_, "check_and_commit_() is not implemented.")
+    LOG4CXX_WARN(logger_, "check_and_commit_() is not implemented.");
     return false;
 }
 
@@ -208,7 +208,8 @@ int diffraflow::DynamicConfiguration::zookeeper_create_config(
     lock_guard<mutex> op_lg(zookeeper_operation_mtx_);
 
     if (!zookeeper_check_path_(config_path)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        LOG4CXX_ERROR(
+            logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.");
         return 100;
     }
     // wait for re-reconnecting
@@ -256,7 +257,8 @@ int diffraflow::DynamicConfiguration::zookeeper_delete_config(const char* config
     lock_guard<mutex> op_lg(zookeeper_operation_mtx_);
 
     if (!zookeeper_check_path_(config_path)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        LOG4CXX_ERROR(
+            logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.");
         return 100;
     }
     // wait for re-reconnecting
@@ -294,7 +296,8 @@ int diffraflow::DynamicConfiguration::zookeeper_change_config(
     lock_guard<mutex> op_lg(zookeeper_operation_mtx_);
 
     if (!zookeeper_check_path_(config_path)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        LOG4CXX_ERROR(
+            logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.");
         return 100;
     }
     // wait for re-reconnecting
@@ -338,7 +341,8 @@ int diffraflow::DynamicConfiguration::zookeeper_fetch_config(
     lock_guard<mutex> op_lg(zookeeper_operation_mtx_);
 
     if (!zookeeper_check_path_(config_path)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.")
+        LOG4CXX_ERROR(
+            logger_, "config path " << config_path << " is invalid, it must start with / and not end with /.");
         return 100;
     }
     // wait for re-reconnecting
@@ -406,7 +410,7 @@ int diffraflow::DynamicConfiguration::zookeeper_get_children(const char* config_
 
     regex start_with_slash("^\\s*/.*");
     if (!regex_match(config_path, start_with_slash)) {
-        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with /.")
+        LOG4CXX_ERROR(logger_, "config path " << config_path << " is invalid, it must start with /.");
         return 100;
     }
     // wait for re-reconnecting

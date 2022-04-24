@@ -28,7 +28,7 @@ uint64_t diffraflow::ImageFrame::get_key() { return bunch_id; }
 
 bool diffraflow::ImageFrame::decode(const char* buffer, const size_t size) {
     if (size < 131096) {
-        LOG4CXX_WARN(logger_, "frame size is less than 131096, stop decoding.")
+        LOG4CXX_WARN(logger_, "frame size is less than 131096, stop decoding.");
         return false;
     }
     uint32_t header = gDC.decode_byte<uint32_t>(buffer, 0, 3);

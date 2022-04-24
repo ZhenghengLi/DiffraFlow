@@ -188,7 +188,7 @@ bool diffraflow::MonImgHttpServer::request_one_image_(
 
             return false;
         } else {
-            LOG4CXX_DEBUG(logger_, "failed to get one image_data_feature from this ingester, try next one.")
+            LOG4CXX_DEBUG(logger_, "failed to get one image_data_feature from this ingester, try next one.");
         }
     }
 }

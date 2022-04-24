@@ -50,17 +50,17 @@ void diffraflow::DspSrvMan::start_run() {
     // multiple servers start from here
     // TCP receiver
     if (imgfrm_srv_->start()) {
-        LOG4CXX_INFO(logger_, "successfully started image frame TCP receiver.")
+        LOG4CXX_INFO(logger_, "successfully started image frame TCP receiver.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image frame TCP receiver.")
+        LOG4CXX_ERROR(logger_, "failed to start image frame TCP receiver.");
         return;
     }
     // UDP receiver
     imgfrm_recv_->start_checker(&config_obj_->other_cpu_set);
     if (imgfrm_recv_->start(config_obj_->dgram_recv_cpu_id)) {
-        LOG4CXX_INFO(logger_, "successfully started image frame UDP receiver.")
+        LOG4CXX_INFO(logger_, "successfully started image frame UDP receiver.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start image frame UDP receiver.")
+        LOG4CXX_ERROR(logger_, "failed to start image frame UDP receiver.");
         return;
     }
 

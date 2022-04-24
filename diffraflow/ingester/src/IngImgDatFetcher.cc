@@ -131,7 +131,7 @@ int diffraflow::IngImgDatFetcher::run_() {
                     break;
                 }
                 LOG4CXX_WARN(logger_,
-                    "error found when receiving one image from combiner, close the connection and try to reconnect.")
+                    "error found when receiving one image from combiner, close the connection and try to reconnect.");
                 close_connection();
                 running = false;
                 break;

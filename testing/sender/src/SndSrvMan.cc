@@ -68,9 +68,9 @@ void diffraflow::SndSrvMan::start_run() {
 
     // start trigger server
     if (trigger_srv_->start()) {
-        LOG4CXX_INFO(logger_, "successfully started trigger server.")
+        LOG4CXX_INFO(logger_, "successfully started trigger server.");
     } else {
-        LOG4CXX_ERROR(logger_, "failed to start trigger server.")
+        LOG4CXX_ERROR(logger_, "failed to start trigger server.");
         return;
     }
 

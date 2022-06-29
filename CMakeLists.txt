@@ -55,6 +55,7 @@ set(CONFIG_FILES
     config/combiner_addr_list.txt
     config/ingester.conf
     config/ingester.dyconf
+    config/monitor.dyconf
     config/log4cxx.properties
     config/zookeeper_k8s.conf
     )

@@ -1,4 +1,6 @@
 # dynamic parameters
+dy_energy_down_cut = 0
+dy_energy_up_cut = 100
 dy_param_int = 123
 dy_param_double = 3.14159
 dy_param_string = mon

@@ -22,7 +22,7 @@ spec:
         - name: gitlab-registry-lizhengheng
       initContainers:
         - name: combiner-cnxn-checker
-          # image: 10.15.86.19:25443/diffraflow:latest
+          # image: 10.15.85.28:25443/diffraflow:latest
           image: registry.physky.org/lizhengheng/diffraflow:latest
           command:
             - check_cnxn_addrlist.sh
@@ -32,7 +32,7 @@ spec:
               mountPath: /config
       containers:
         - name: dispatcher
-          # image: 10.15.86.19:25443/diffraflow:latest
+          # image: 10.15.85.28:25443/diffraflow:latest
           image: registry.physky.org/lizhengheng/diffraflow:latest
           command:
             - dispatcher

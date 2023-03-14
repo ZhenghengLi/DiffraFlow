@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 empty
 
+## [0.2.8] 2023-03-14
+
+### Changed
+- CMakeLists.txt: use C++17 standard and use FindHDF5 module for linking with HDF5 libraries.
+- Update the NOTICE file and prepare for the first public.
+
 ## [0.2.7] 2021-11-1
 
 ### Added

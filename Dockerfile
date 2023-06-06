@@ -3,7 +3,7 @@
 
 # build ############################################################
 # FROM zhenghengli/ubuntu-devel:20.04-cuda11.0.3 AS builder
-FROM registry.physky.org/lizhengheng/docker-ubuntu-devel:20.04-cuda11.0.3 AS builder
+FROM registry.starlightdf.cc/lizhengheng/docker-ubuntu-devel:20.04-cuda11.0.3 AS builder
 
 # build and install
 ARG SOURCE_DIR=/opt/diffraflow_src
@@ -21,7 +21,7 @@ RUN set -x \
 
 # deploy ############################################################
 # FROM zhenghengli/ubuntu-runtime:20.04-cuda11.0.3
-FROM registry.physky.org/lizhengheng/docker-ubuntu-runtime:20.04-cuda11.0.3
+FROM registry.starlightdf.cc/lizhengheng/docker-ubuntu-runtime:20.04-cuda11.0.3
 
 # copy from builder
 ARG INSTALL_DIR=/opt/diffraflow

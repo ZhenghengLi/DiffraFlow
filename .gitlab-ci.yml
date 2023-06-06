@@ -1,18 +1,10 @@
 default:
-  image: docker:20.10.7
-  services:
-    - docker:20.10.7-dind
-  tags:
-    - kubernetes
+  image: docker
   before_script:
-    - until docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY; do sleep 1; done
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
 variables:
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_VERIFY: 1
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
-  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://dind-rootless:2375
 
 stages:
   - build
